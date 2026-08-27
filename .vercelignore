@@ -1,0 +1,35 @@
+# =============================================================================
+# .vercelignore — qué NO se sube al construir en Vercel
+# © 2026 Roberto Mendizabal. Todos los derechos reservados.
+# =============================================================================
+# ESTO NO ES UN DUPLICADO DE .gitignore.
+#
+# `git push` sube lo que git rastrea. `vercel deploy` sube el DIRECTORIO DE
+# TRABAJO. Son dos cosas distintas, y confundirlas es exactamente como se filtran
+# los secretos que "estaban en .gitignore":
+#
+#   - `secrets/`   credenciales reales. No salen de esta máquina.
+#   - `Y6A/`       32 MB de material docente del centro, propiedad de terceros.
+#                  No se versiona y tampoco tiene por qué viajar a un build.
+#   - `.env.local` claves de desarrollo.
+#
+# Vercel también respeta `.gitignore`, pero depender de un comportamiento
+# implícito para proteger credenciales no es protegerlas. Aquí queda explícito.
+#
+# La lista es CORTA a propósito. Excluir además tests y documentación ahorraría
+# unos megabytes y añadiría una forma nueva de que el build falle por algo que
+# no esperabas. No compensa.
+# =============================================================================
+
+secrets/
+Y6A/
+.env
+.env.*
+!.env.example
+
+node_modules
+.next
+.turbo
+playwright-report
+test-results
+.claude/
