@@ -28,6 +28,34 @@ export const en = {
     themeDark: "Dark",
     themeSystem: "System",
   },
+  /**
+   * Bottom tab bar for students. Three destinations and no more: a child of
+   * eleven should be able to reach anything in one tap, and every extra tab
+   * makes the row harder to hit on a shared tablet.
+   */
+  studentNav: {
+    label: "Sections",
+    learn: "Learn",
+    practice: "Practice",
+    exam: "Exams",
+    account: "My account",
+    /** Screen-reader suffix on the active tab. The dot alone says nothing. */
+    current: "you are here",
+    backTo: "Back to {section}",
+  },
+  account: {
+    title: "My account",
+    subtitle: "Your details and how you sign in.",
+    name: "Name",
+    code: "Student code",
+    school: "School",
+    role: "Role",
+    language: "Language",
+    changePin: "Change my PIN",
+    changePinHint: "Six digits. Nobody else should know it, not even a friend.",
+    changePassword: "Change my password",
+    changePasswordHint: "You will be asked for the current one.",
+  },
   nav: {
     platform: "Platform",
     subjects: "Subjects",

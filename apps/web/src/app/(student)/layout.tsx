@@ -12,8 +12,10 @@
  * `/account/pin` vive en OTRO grupo de rutas precisamente para no quedar
  * atrapado en este redirect.
  */
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { StudentNav } from "@/components/nav/StudentNav";
 import { LocaleSwitcher } from "@/components/PreferenceSwitchers";
 import { requireStudent } from "@/lib/auth/session";
 import { signOut } from "@/lib/auth/actions";
@@ -43,7 +45,14 @@ export default async function StudentLayout({ children }: { children: React.Reac
           <header className="border-b border-line bg-card">
             <div className="mx-auto flex max-w-5xl items-center gap-4 px-4 py-3">
               <span className="font-bold tracking-tight text-ink">{t.common.appName}</span>
-              <span className="ml-auto text-sm text-muted">{student.fullName}</span>
+              {/* El nombre es el camino a la cuenta. Antes era texto muerto y
+                  `/account` no existía: cualquier enlace ahí daba un 404 mudo. */}
+              <Link
+                href="/account"
+                className="ml-auto rounded-lg px-2 py-1 text-sm font-semibold text-muted underline-offset-4 hover:text-ink hover:underline"
+              >
+                {student.fullName}
+              </Link>
               <LocaleSwitcher current={locale} t={t} />
               <form action={signOut}>
                 <button
@@ -56,13 +65,26 @@ export default async function StudentLayout({ children }: { children: React.Reac
             </div>
           </header>
 
-          <main id="main" className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
+          {/* `pb-24`: la barra de pestañas es `fixed` y taparía el final del
+              contenido. Sin este colchón, el último botón de una lección larga
+              queda debajo de la barra y no se puede pulsar. En escritorio la
+              barra pasa a raíl lateral y el colchón se mueve a la izquierda. */}
+          <main
+            id="main"
+            className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 pb-24 md:pb-8 md:pl-60"
+          >
             {children}
           </main>
 
-          <footer className="border-t border-line bg-card py-5">
+          <footer className="border-t border-line bg-card py-5 pb-24 md:pb-5 md:pl-56">
             <p className="text-center text-xs text-muted">{t.footer.copyright}</p>
           </footer>
+
+          {/* Va al final del DOM y no dentro de la cabecera: el orden de
+              tabulación debe llevar primero al contenido y después a la
+              navegación, igual que el `SkipLink`. Visualmente el CSS la coloca
+              donde toca. */}
+          <StudentNav t={t} />
         </div>
       </TelemetryProvider>
     </LocaleProvider>

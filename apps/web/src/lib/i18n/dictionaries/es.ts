@@ -34,6 +34,34 @@ export const es: Dictionary = {
     themeDark: "Oscuro",
     themeSystem: "Sistema",
   },
+  /**
+   * Barra inferior del alumno. Tres destinos y ni uno más: un niño de once años
+   * tiene que llegar a cualquier sitio con un toque, y cada pestaña de más
+   * estrecha el blanco en una tableta compartida.
+   */
+  studentNav: {
+    label: "Secciones",
+    learn: "Aprender",
+    practice: "Practicar",
+    exam: "Exámenes",
+    account: "Mi cuenta",
+    /** Sufijo para lector de pantalla en la pestaña activa. El punto no dice nada. */
+    current: "estás aquí",
+    backTo: "Volver a {section}",
+  },
+  account: {
+    title: "Mi cuenta",
+    subtitle: "Tus datos y cómo entras.",
+    name: "Nombre",
+    code: "Código de alumno",
+    school: "Colegio",
+    role: "Rol",
+    language: "Idioma",
+    changePin: "Cambiar mi PIN",
+    changePinHint: "Seis dígitos. Nadie más debe saberlo, ni tu mejor amigo.",
+    changePassword: "Cambiar mi contraseña",
+    changePasswordHint: "Te pedirá la actual.",
+  },
   nav: {
     platform: "Plataforma",
     subjects: "Materias",
