@@ -160,7 +160,7 @@
           "selection": {
             "engineKey": "math.powten",
             "skillCodes": [
-              "math.place_value.powers_of_ten"
+              "math.decimals.powers_of_ten"
             ]
           },
           "source": "generated",
@@ -176,7 +176,7 @@
           "selection": {
             "engineKey": "math.metric",
             "skillCodes": [
-              "math.measurement.metric_conversion"
+              "math.measurement.metric"
             ]
           },
           "source": "generated",
@@ -230,7 +230,7 @@
           "selection": {
             "engineKey": "math.word",
             "skillCodes": [
-              "math.word_problems.multi_step"
+              "math.problem_solving.word"
             ]
           },
           "source": "generated",
@@ -282,7 +282,7 @@
       "reason": "los trainers Y6A no declaran dificultad, duración estimada, umbral de aprobado ni número de intentos. El pipeline los rellena con valores por defecto uniformes (difficulty 2 en banco / 3 en generadas, estimatedMinutes 20, passThreshold 0.6, maxAttempts sin límite, pointsPerItem 1) que un profesor debe revisar antes de publicar el curso. NO son datos extraídos."
     }
   ],
-  "integrity": "38519f0aef32f67b",
+  "integrity": "2c2525767e7694b7",
   "modules": [
     {
       "description": {
@@ -871,7 +871,7 @@
           "id": "882d2ac6-089a-507f-9da7-8034f080ff17",
           "ord": 4,
           "skillCodes": [
-            "math.place_value.powers_of_ten"
+            "math.decimals.powers_of_ten"
           ],
           "source": {
             "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
@@ -1108,7 +1108,7 @@
           "id": "142674d5-1e9e-5254-9b5c-744b999e0f62",
           "ord": 5,
           "skillCodes": [
-            "math.measurement.metric_conversion"
+            "math.measurement.metric"
           ],
           "source": {
             "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
@@ -1309,7 +1309,7 @@
           "id": "2b323c81-3419-53ee-bce4-86e3ff6b9f5e",
           "ord": 7,
           "skillCodes": [
-            "math.word_problems.multi_step"
+            "math.problem_solving.word"
           ],
           "source": {
             "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
@@ -1496,7 +1496,7 @@
       "kind": "generated",
       "locale": "en",
       "maxPoints": 1,
-      "skillCode": "math.place_value.powers_of_ten",
+      "skillCode": "math.decimals.powers_of_ten",
       "source": {
         "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
         "index": 5,
@@ -1523,7 +1523,7 @@
       "kind": "generated",
       "locale": "en",
       "maxPoints": 1,
-      "skillCode": "math.measurement.metric_conversion",
+      "skillCode": "math.measurement.metric",
       "source": {
         "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
         "index": 6,
@@ -1577,7 +1577,7 @@
       "kind": "generated",
       "locale": "en",
       "maxPoints": 1,
-      "skillCode": "math.word_problems.multi_step",
+      "skillCode": "math.problem_solving.word",
       "source": {
         "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
         "index": 8,
@@ -1654,22 +1654,13 @@
       "parentCode": "math.decimals"
     },
     {
-      "code": "math.place_value",
-      "id": "7856b77f-f6ae-5acd-8b5d-739175c30609",
-      "name": {
-        "en": "Place value"
-      },
-      "ord": 7,
-      "parentCode": null
-    },
-    {
-      "code": "math.place_value.powers_of_ten",
-      "id": "16ddfd3a-d8ee-5776-a9b2-fcaebeda9b87",
+      "code": "math.decimals.powers_of_ten",
+      "id": "2d10ed8f-1b60-5da3-a36e-90237f3559e2",
       "name": {
         "en": "Multiplying and dividing by 10, 100 and 1,000"
       },
-      "ord": 8,
-      "parentCode": "math.place_value"
+      "ord": 7,
+      "parentCode": "math.decimals"
     },
     {
       "code": "math.measurement",
@@ -1677,16 +1668,16 @@
       "name": {
         "en": "Measurement"
       },
-      "ord": 9,
+      "ord": 8,
       "parentCode": null
     },
     {
-      "code": "math.measurement.metric_conversion",
-      "id": "c295a7dd-8dee-5cba-a2e3-2a58f4d964e1",
+      "code": "math.measurement.metric",
+      "id": "847978d4-7fce-55af-9c35-b3430a0b0164",
       "name": {
         "en": "Metric unit conversions"
       },
-      "ord": 10,
+      "ord": 9,
       "parentCode": "math.measurement"
     },
     {
@@ -1695,7 +1686,7 @@
       "name": {
         "en": "Geometry"
       },
-      "ord": 11,
+      "ord": 10,
       "parentCode": null
     },
     {
@@ -1704,26 +1695,26 @@
       "name": {
         "en": "Compound shapes: area and perimeter"
       },
-      "ord": 12,
+      "ord": 11,
       "parentCode": "math.geometry"
     },
     {
-      "code": "math.word_problems",
-      "id": "0d8df1df-f632-5b7a-b3a8-eaaf8299d500",
+      "code": "math.problem_solving",
+      "id": "b81a115a-8cfe-597a-8da5-5cab82bb162a",
+      "name": {
+        "en": "Problem solving"
+      },
+      "ord": 12,
+      "parentCode": null
+    },
+    {
+      "code": "math.problem_solving.word",
+      "id": "6325bba9-cd15-552d-a8b3-6cb4f7d103e4",
       "name": {
         "en": "Word problems"
       },
       "ord": 13,
-      "parentCode": null
-    },
-    {
-      "code": "math.word_problems.multi_step",
-      "id": "3cef6778-75a2-57c0-ae8d-43a16b73e1c5",
-      "name": {
-        "en": "Multi-step word problems"
-      },
-      "ord": 14,
-      "parentCode": "math.word_problems"
+      "parentCode": "math.problem_solving"
     }
   ],
   "studyPlan": {

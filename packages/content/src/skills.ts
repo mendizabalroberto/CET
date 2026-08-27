@@ -43,14 +43,13 @@ export const MATH_SKILLS: readonly SkillDef[] = [
   { code: "math.fractions.mixed", parentCode: "math.fractions", name: en("Improper fractions and mixed numbers"), y6aKey: "mixed" },
   { code: "math.decimals", parentCode: null, name: en("Decimals") },
   { code: "math.decimals.multiply_divide", parentCode: "math.decimals", name: en("Multiplying and dividing decimals"), y6aKey: "decimal" },
-  { code: "math.place_value", parentCode: null, name: en("Place value") },
-  { code: "math.place_value.powers_of_ten", parentCode: "math.place_value", name: en("Multiplying and dividing by 10, 100 and 1,000"), y6aKey: "powten" },
+  { code: "math.decimals.powers_of_ten", parentCode: "math.decimals", name: en("Multiplying and dividing by 10, 100 and 1,000"), y6aKey: "powten" },
   { code: "math.measurement", parentCode: null, name: en("Measurement") },
-  { code: "math.measurement.metric_conversion", parentCode: "math.measurement", name: en("Metric unit conversions"), y6aKey: "metric" },
+  { code: "math.measurement.metric", parentCode: "math.measurement", name: en("Metric unit conversions"), y6aKey: "metric" },
   { code: "math.geometry", parentCode: null, name: en("Geometry") },
   { code: "math.geometry.compound_shapes", parentCode: "math.geometry", name: en("Compound shapes: area and perimeter"), y6aKey: "shape" },
-  { code: "math.word_problems", parentCode: null, name: en("Word problems") },
-  { code: "math.word_problems.multi_step", parentCode: "math.word_problems", name: en("Multi-step word problems"), y6aKey: "word" },
+  { code: "math.problem_solving", parentCode: null, name: en("Problem solving") },
+  { code: "math.problem_solving.word", parentCode: "math.problem_solving", name: en("Word problems"), y6aKey: "word" },
 ];
 
 /**

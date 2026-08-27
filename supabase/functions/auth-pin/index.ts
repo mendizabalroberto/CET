@@ -86,7 +86,11 @@ const DECOY_HASH =
  * gratuita (cada verificación reserva 19 MiB de memoria).
  */
 const loginInput = z.object({
-  schoolSlug: z.string().trim().min(1).max(63).regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$/),
+  // El colegio se identifica por su UUID y no por su slug: `schools.id` es la
+  // clave de tenant en TODO el modelo de datos, y es lo que devuelve el selector
+  // de colegio de la app. El slug es una preocupacion de presentacion (vive en
+  // la URL de login) y aqui se deriva, no se recibe.
+  schoolId: z.string().uuid(),
   studentCode: z.string().trim().min(2).max(32).regex(/^[A-Za-z0-9._-]+$/),
   pin: z.string().regex(/^[0-9]{4,8}$/),
 });
@@ -215,8 +219,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
   /* --- 3. Colegio ---------------------------------------------------------- */
   const { data: school } = await admin
     .from("schools")
-    .select("id, status, pin_length_primary, pin_length_secondary")
-    .eq("slug", input.schoolSlug)
+    .select("id, slug, status, pin_length_primary, pin_length_secondary")
+    .eq("id", input.schoolId)
     .maybeSingle();
 
   // Colegio inexistente o suspendido: se sigue el MISMO camino de coste que un
@@ -309,7 +313,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   /* --- 7. Éxito: sesión real ---------------------------------------------- */
-  const email = `s.${input.studentCode}@${input.schoolSlug}.students.cet.invalid`;
+  const email = `s.${input.studentCode}@${school.slug}.students.cet.invalid`;
   const password = await hmacBase64(passwordSecret, student!.profile_id);
 
   // Cliente ANÓNIMO a propósito: la sesión debe emitirla GoTrue por la vía

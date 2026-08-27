@@ -43,7 +43,25 @@ const config = [
      * un componente de cliente; esto lo detecta antes, en el editor.
      */
     files: ["src/**/*.{ts,tsx}"],
-    ignores: ["src/app/api/**", "src/lib/supabase/**"],
+    ignores: [
+      "src/app/api/**",
+      "src/lib/supabase/**",
+      /**
+       * EXCEPCION TASADA. Dar de alta a un alumno exige crear su fila en
+       * `auth.users`, y eso NINGUNA politica RLS se lo permite a un
+       * administrador de colegio: solo `service_role` puede.
+       *
+       * Es seguro aqui porque una Server Action es codigo de SERVIDOR (nunca
+       * llega al navegador), el rol del actor se comprueba contra la base de
+       * datos antes de escalar, el `school_id` se toma de la sesion y no del
+       * formulario, la llamada declara su motivo, y la operacion queda en el
+       * `audit_log`.
+       *
+       * Si esta lista crece, es un fallo de arquitectura y no una necesidad:
+       * `grep createAdminClient` debe seguir cabiendo en una pantalla.
+       */
+      "src/components/staff/actions.ts",
+    ],
     rules: {
       "no-restricted-imports": [
         "error",

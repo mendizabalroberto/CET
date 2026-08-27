@@ -72,7 +72,11 @@ export const PROTECTED_AREAS: readonly ProtectedArea[] = [
   { prefix: "/reports", allow: ["superadmin", "school_admin", "teacher"], onDeny: "not-found" },
   { prefix: "/learn", allow: ["student"], onDeny: "home" },
   { prefix: "/practice", allow: ["student"], onDeny: "home" },
-  { prefix: "/exams", allow: ["student"], onDeny: "home" },
+  // `/exam` en singular, que es la ruta real. Con el plural, `matchesPrefix`
+  // exige coincidencia exacta o con `/` detras, asi que "/exam/abc" NO casaba
+  // con "/exams" y toda el area de examen quedaba sin filtro de rol: un
+  // profesor podia abrir el examen de un alumno.
+  { prefix: "/exam", allow: ["student"], onDeny: "home" },
   // Cualquiera con sesión puede cambiar su propio PIN / ver su cuenta.
   {
     prefix: "/account",

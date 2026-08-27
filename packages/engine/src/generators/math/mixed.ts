@@ -36,7 +36,7 @@ export type MixedParams = z.infer<typeof mixedParams>;
 export const mixedGenerator: QuestionGenerator<MixedParams> = {
   key: "math.mixed",
   paramsSchema: mixedParams,
-  skillCode: "math.fractions.mixed_numbers",
+  skillCode: "math.fractions.mixed",
   format: "fraction",
 
   generate(params: MixedParams, seedValue: Seed) {
@@ -59,7 +59,7 @@ export const mixedGenerator: QuestionGenerator<MixedParams> = {
         params,
         seed: seedValue,
         format: "fraction",
-        skillCode: "math.fractions.mixed_numbers",
+        skillCode: "math.fractions.mixed",
         difficulty: params.difficulty ?? 2,
         maxPoints: params.maxPoints ?? 1,
         body: {
@@ -93,7 +93,7 @@ export const mixedGenerator: QuestionGenerator<MixedParams> = {
       params,
       seed: seedValue,
       format: "fraction",
-      skillCode: "math.fractions.mixed_numbers",
+      skillCode: "math.fractions.mixed",
       difficulty: params.difficulty ?? 2,
       maxPoints: params.maxPoints ?? 1,
       body: {

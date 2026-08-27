@@ -51,7 +51,7 @@ export type MetricParams = z.infer<typeof metricParams>;
 export const metricGenerator: QuestionGenerator<MetricParams> = {
   key: "math.metric",
   paramsSchema: metricParams,
-  skillCode: "math.measurement.metric_conversion",
+  skillCode: "math.measurement.metric",
   format: "numeric",
 
   generate(params: MetricParams, seedValue: Seed) {
@@ -79,7 +79,7 @@ export const metricGenerator: QuestionGenerator<MetricParams> = {
       params,
       seed: seedValue,
       format: "numeric",
-      skillCode: "math.measurement.metric_conversion",
+      skillCode: "math.measurement.metric",
       difficulty: params.difficulty ?? 3,
       maxPoints: params.maxPoints ?? 1,
       body: {

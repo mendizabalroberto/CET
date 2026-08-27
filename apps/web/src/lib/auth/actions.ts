@@ -69,9 +69,12 @@ function logInternal(context: string, detail: unknown): void {
  * de Supabase. La app web nunca ve el hash.
  */
 interface AuthPinResponse {
-  ok: boolean;
+  /** Presente solo en el 200. La Edge Function no devuelve ningun flag `ok`. */
   session?: { access_token?: string; refresh_token?: string };
-  reason?: string;
+  /** AD-4: si es el primer acceso, hay que llevarle al cambio de PIN. */
+  pinMustChange?: boolean;
+  /** Presente en los fallos: "invalid_credentials" | "server_error". */
+  error?: string;
 }
 
 export async function signInStudent(
@@ -112,6 +115,17 @@ export async function signInStudent(
       cache: "no-store",
     });
 
+    // La Edge Function responde 401 a CUALQUIER fallo de credencial, y a
+    // proposito no distingue entre "el codigo no existe", "el PIN es erroneo" y
+    // "la cuenta esta bloqueada": distinguirlos permitiria enumerar alumnos.
+    // Tratar ese 401 como error inesperado dejaria al alumno con un mensaje
+    // generico de averia en vez de "revisa tu codigo y tu PIN".
+    if (response.status === 401) {
+      return fail("bad_credentials");
+    }
+    if (response.status === 429) {
+      return fail("rate_limited");
+    }
     if (!response.ok) {
       logInternal("auth-pin non-2xx", response.status);
       return fail("unexpected");
@@ -122,13 +136,11 @@ export async function signInStudent(
     return fail("unexpected");
   }
 
-  if (!payload.ok || !payload.session?.access_token || !payload.session.refresh_token) {
-    // `locked` y `bad_credentials` se colapsan en el mismo mensaje a propósito
-    // (ver cabecera del fichero). `rate_limited` no depende de que la cuenta
-    // exista, así que sí se puede distinguir sin filtrar nada.
-    if (payload.reason === "rate_limited") return fail("rate_limited");
-    if (payload.reason === "school_unavailable") return fail("school_unavailable");
-    logInternal("auth-pin rejected", payload.reason ?? "unknown");
+  // El exito se reconoce por la presencia de una sesion utilizable. `locked` y
+  // `bad_credentials` se colapsan en el mismo mensaje a proposito: ver la
+  // cabecera de este fichero y la de la Edge Function.
+  if (!payload.session?.access_token || !payload.session.refresh_token) {
+    logInternal("auth-pin sin sesion", payload.error ?? "unknown");
     return fail("bad_credentials");
   }
 
@@ -146,7 +158,10 @@ export async function signInStudent(
   // `redirect()` lanza una excepción de control de flujo: debe quedar FUERA de
   // cualquier try/catch, o el catch se la tragaría y la acción devolvería
   // "unexpected" después de haber iniciado sesión correctamente.
-  redirect(ROUTES.studentHome);
+  //
+  // AD-4: el profesor genera el PIN inicial y el alumno lo cambia en su primer
+  // acceso. Mientras `pin_must_change` siga a true, no se le lleva a su portada.
+  redirect(payload.pinMustChange ? ROUTES.pinChange : ROUTES.studentHome);
 }
 
 /* ========================================================================== */
@@ -202,10 +217,20 @@ export async function signInStaff(_prev: ActionState, formData: FormData): Promi
 /* ========================================================================== */
 
 /**
- * CONTRATO CON LA VÍA A: función RPC `app.change_student_pin(current_pin, new_pin)`,
- * `security definer` con `search_path` fijado. Verifica el PIN actual, escribe
- * el nuevo hash Argon2id, pone `pin_must_change = false` y registra el evento.
- * El hash NUNCA se calcula en la app web.
+ * Cambio de PIN del alumno (AD-4).
+ *
+ * NO es un RPC de Postgres, aunque el contrato original lo previera así:
+ * `pgcrypto` no implementa Argon2, y la constraint `students_pin_hash_is_argon2id`
+ * exige ese formato. Tampoco se hashea aquí: el PIN en claro no debe pasar por
+ * el servidor de Next.js, que no es el guardián de esa credencial.
+ *
+ * Va a la Edge Function `student-pin`, que es el ÚNICO lugar del sistema que
+ * calcula y verifica hashes de PIN — el mismo que ya usa `auth-pin`.
+ *
+ *   POST {SUPABASE_URL}/functions/v1/student-pin
+ *   body: { op: "change", currentPin, newPin }
+ *   200 -> { ok: true }
+ *   400 -> { error: "bad_current_pin" | "weak_pin" | "wrong_length" | "same_pin" }
  */
 export async function changePin(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const parsed = pinChangeSchema.safeParse({
@@ -228,16 +253,51 @@ export async function changePin(_prev: ActionState, formData: FormData): Promise
 
   if (!user) redirect(ROUTES.login);
 
-  const { data, error } = await supabase.rpc("change_student_pin", {
-    p_current_pin: parsed.data.currentPin,
-    p_new_pin: parsed.data.newPin,
-  });
+  // El JWT del alumno viaja a la Edge Function, que deriva su identidad de ahí
+  // y jamás del cuerpo: sin esto, un alumno podría cambiarle el PIN a otro.
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData.session?.access_token;
+  if (!accessToken) redirect(ROUTES.login);
 
-  if (error) {
-    logInternal("change_student_pin failed", error);
+  let result: { ok?: boolean; error?: string };
+  try {
+    const response = await fetch(`${getSupabaseUrl()}/functions/v1/student-pin`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${accessToken}`,
+        apikey: getSupabaseAnonKey(),
+      },
+      body: JSON.stringify({
+        op: "change",
+        currentPin: parsed.data.currentPin,
+        newPin: parsed.data.newPin,
+      }),
+      cache: "no-store",
+    });
+    result = (await response.json()) as { ok?: boolean; error?: string };
+  } catch (error) {
+    logInternal("student-pin unreachable", error);
     return fail("unexpected");
   }
-  if (data !== true) return fail("bad_credentials", "currentPin");
+
+  if (!result.ok) {
+    switch (result.error) {
+      case "bad_current_pin":
+        return fail("bad_credentials", "currentPin");
+      case "weak_pin":
+        return fail("pin_too_weak", "newPin");
+      case "wrong_length":
+        return fail("pin_wrong_length", "newPin");
+      // `same_pin` reutiliza el mensaje de PIN débil: para el alumno, "elige otro
+      // distinto" es la misma instrucción y no merece una cadena aparte.
+      case "same_pin":
+        return fail("pin_too_weak", "newPin");
+      default:
+        logInternal("student-pin rechazado", result.error ?? "unknown");
+        return fail("unexpected");
+    }
+  }
 
   redirect(ROUTES.studentHome);
 }

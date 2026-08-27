@@ -10,13 +10,13 @@ presume de lo que consiguió es un pipeline en el que no se puede confiar.
 
 | Materia | Idioma | Lecciones | Bloques | Preguntas | Generadas | Blueprints | Ítems | Plan | Skills |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| **math** | `en` | 8 | 56 | 0 | 9 | 1 | 20 | 5 días | 15 |
+| **math** | `en` | 8 | 56 | 0 | 9 | 1 | 20 | 5 días | 14 |
 | **science** | `en` | 5 | 52 | 68 | 0 | 1 | 20 | 5 días | 7 |
 | **english** | `en` | 5 | 63 | 85 | 0 | 1 | 25 | 5 días | 7 |
 | **spanish** | `es` | 3 | 42 | 82 | 0 | 1 | 20 | 5 días | 5 |
 | **socials** | `en` | 6 | 83 | 139 | 0 | 1 | 30 | 6 días | 9 |
 | **ict** | `en` | 6 | 105 | 79 | 0 | 1 | 25 | 5 días | 9 |
-| **TOTAL** | | 33 | 401 | 453 | 9 | 6 | 140 | | 52 |
+| **TOTAL** | | 33 | 401 | 453 | 9 | 6 | 140 | | 51 |
 
 ## Detalle por materia
 
@@ -39,14 +39,14 @@ presume de lo que consiguió es un pipeline en el que no se puede confiar.
 | skill | n |
 |---|---:|
 | `math.decimals.multiply_divide` | 1 |
+| `math.decimals.powers_of_ten` | 1 |
 | `math.fractions.compare` | 1 |
 | `math.fractions.mixed` | 1 |
 | `math.fractions.operations` | 1 |
 | `math.fractions.simplify` | 1 |
 | `math.geometry.compound_shapes` | 1 |
-| `math.measurement.metric_conversion` | 1 |
-| `math.place_value.powers_of_ten` | 1 |
-| `math.word_problems.multi_step` | 1 |
+| `math.measurement.metric` | 1 |
+| `math.problem_solving.word` | 1 |
 
 **Blueprints**
 

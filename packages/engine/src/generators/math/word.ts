@@ -329,7 +329,7 @@ function template6(rng: Rng, loc: Locale): Built {
 export const wordGenerator: QuestionGenerator<WordParams> = {
   key: "math.word",
   paramsSchema: wordParams,
-  skillCode: "math.problem_solving.word_problems",
+  skillCode: "math.problem_solving.word",
   // DECISION: los seis enunciados se responden en una caja de texto libre; unos
   // esperan fraccion y otros decimal. El formato declarado es el widget de entrada
   // (short_text); quien decide como se corrige es answerKey.type, no el formato.
@@ -359,7 +359,7 @@ export const wordGenerator: QuestionGenerator<WordParams> = {
       params,
       seed: seedValue,
       format: "short_text",
-      skillCode: "math.problem_solving.word_problems",
+      skillCode: "math.problem_solving.word",
       difficulty: params.difficulty ?? built.difficulty,
       maxPoints: params.maxPoints ?? 1,
       body: built.body,

@@ -60,10 +60,10 @@ const LESSON_SKILLS: readonly (readonly string[])[] = [
   ["math.fractions.operations"],
   ["math.fractions.mixed"],
   ["math.decimals.multiply_divide"],
-  ["math.place_value.powers_of_ten"],
-  ["math.measurement.metric_conversion"],
+  ["math.decimals.powers_of_ten"],
+  ["math.measurement.metric"],
   ["math.geometry.compound_shapes"],
-  ["math.word_problems.multi_step"],
+  ["math.problem_solving.word"],
 ];
 
 export function extractMath(html: string): ContentPack {

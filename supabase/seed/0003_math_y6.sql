@@ -187,16 +187,16 @@ from course,
    jsonb_build_object('en','Comparing fractions','es','Comparar fracciones'),
    jsonb_build_object('en','Common denominators and the cross-multiplication trick.','es','Denominador común y el truco de multiplicar en cruz.')),
   -- --- GEN.fracop: la familia y sus cuatro operaciones -----------------------
-  ('math.fractions.arithmetic', 13,
+  ('math.fractions.operations', 13,
    jsonb_build_object('en','Fraction arithmetic','es','Aritmética de fracciones'),
    jsonb_build_object('en','The four operations with fractions.','es','Las cuatro operaciones con fracciones.')),
-  ('math.fractions.arithmetic.add', 14,
+  ('math.fractions.operations.add', 14,
    jsonb_build_object('en','Adding fractions','es','Sumar fracciones'), null),
-  ('math.fractions.arithmetic.subtract', 15,
+  ('math.fractions.operations.subtract', 15,
    jsonb_build_object('en','Subtracting fractions','es','Restar fracciones'), null),
-  ('math.fractions.arithmetic.multiply', 16,
+  ('math.fractions.operations.multiply', 16,
    jsonb_build_object('en','Multiplying fractions','es','Multiplicar fracciones'), null),
-  ('math.fractions.arithmetic.divide', 17,
+  ('math.fractions.operations.divide', 17,
    jsonb_build_object('en','Dividing fractions','es','Dividir fracciones'),
    jsonb_build_object('en','Keep, change, flip.','es','Mantener, cambiar, invertir.')),
   -- --- GEN.mixed ------------------------------------------------------------
@@ -280,10 +280,10 @@ select lesson_map.id, skill_map.id, x.weight
 from (values
   (1, 1, 'math.fractions.simplify',                  1.000),
   (1, 1, 'math.fractions.compare',                   1.000),
-  (1, 2, 'math.fractions.arithmetic.add',            1.000),
-  (1, 2, 'math.fractions.arithmetic.subtract',       1.000),
-  (1, 2, 'math.fractions.arithmetic.multiply',       1.000),
-  (1, 2, 'math.fractions.arithmetic.divide',         1.000),
+  (1, 2, 'math.fractions.operations.add',            1.000),
+  (1, 2, 'math.fractions.operations.subtract',       1.000),
+  (1, 2, 'math.fractions.operations.multiply',       1.000),
+  (1, 2, 'math.fractions.operations.divide',         1.000),
   (1, 3, 'math.fractions.mixed',                     1.000),
   (2, 1, 'math.decimals.multiply_divide',            1.000),
   (2, 2, 'math.decimals.powers_of_ten',              1.000),
@@ -295,7 +295,7 @@ from (values
   -- Los problemas de enunciado ejercitan la skill propia y, de rebote, las
   -- fracciones y los decimales: por eso van con peso menor.
   (4, 1, 'math.problem_solving.word',                1.000),
-  (4, 1, 'math.fractions.arithmetic.multiply',       0.300),
+  (4, 1, 'math.fractions.operations.multiply',       0.300),
   (4, 1, 'math.decimals.multiply_divide',            0.300),
   (4, 1, 'math.measurement.metric.length',           0.300)
 ) as x(module_ord, lesson_ord, skill_code, weight)
