@@ -18,7 +18,15 @@
  * Defensa en profundidad: el insert se hace con el cliente de SESIÓN (RLS
  * activa), no con service role. Aunque este código tuviera un fallo y llegara a
  * componer una fila con el `student_id` de otro, la política
- * `student_writes_own` de `learning_events` la rechazaría en la base de datos.
+ * `learning_events_insert_own` la rechazaría en la base de datos.
+ *
+ * OJO CON ESTE COMENTARIO, QUE FUE MENTIRA DURANTE MESES: la política que citaba
+ * (`student_writes_own`) no existía, y `authenticated` ni siquiera tenía el
+ * GRANT de INSERT. Cada lote respondía 500 con «permission denied for table
+ * learning_events» y la cola del navegador reintentaba en bucle. La telemetría
+ * de aprendizaje entera —M11, y con ella el informe para los tutores— llevaba
+ * meses sin guardar una sola fila. Lo arregla la migración 0024, y lo vigilan
+ * `supabase/tests/telemetry_ingest.sql` y `events-route.test.ts`.
  * ===========================================================================
  */
 import { NextResponse } from "next/server";
@@ -167,8 +175,12 @@ export async function POST(request: Request): Promise<NextResponse> {
   const { error: insertError } = await supabase.from("learning_events").insert(rows);
 
   if (insertError) {
-     
-    console.error("[events] insert falló", insertError.message);
+    // Con el código: `42501` es permiso o RLS y es un fallo de despliegue que
+    // hay que arreglar en la base de datos, no un lote malo del cliente.
+    console.error(
+      `[events] insert falló code=${insertError.code ?? "sin-codigo"}`,
+      insertError.message,
+    );
     // 500 para que la cola del cliente reintente con backoff.
     return new NextResponse(null, { status: 500 });
   }

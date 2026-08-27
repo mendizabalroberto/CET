@@ -136,6 +136,25 @@ describe("POST /api/events · lo que le pide a la base", () => {
     expect(response.status).toBe(500);
   });
 
+  it("EL FALLO DE PRODUCCIÓN: el 42501 de permisos queda en el log CON su código", async () => {
+    // Línea literal de producción del 27/08/2026, repetida cada 2-3 segundos
+    // durante meses: "[events] insert falló permission denied for table
+    // learning_events". Faltaba el GRANT de INSERT y la política (migración
+    // 0024). Sin el código en el mensaje, ese 500 era indistinguible de un
+    // fallo de red y nadie miró la base de datos.
+    const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    insert.mockResolvedValue({
+      error: { message: "permission denied for table learning_events", code: "42501" },
+    });
+    const { POST } = await import("./route");
+
+    const response = await POST(lote(1));
+
+    expect(response.status).toBe(500);
+    const mensaje = String(error.mock.calls[0]?.[0] ?? "");
+    expect(mensaje).toContain("code=42501");
+  });
+
   it("un profesor no genera telemetría de aprendizaje, y no es un error", async () => {
     maybeSingle.mockResolvedValue({
       data: { school_id: COLEGIO, role: "teacher", status: "active" },
