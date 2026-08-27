@@ -95,9 +95,22 @@ Contrato en `DATA_MODEL.md` §7.
   es un error de inserción en hora punta.
 - Índices: `(student_id, server_ts desc)`, `(attempt_id)`,
   `(school_id, event_type, server_ts desc)`, `(skill_id, server_ts desc)`.
-- `unique (session_id, seq)` — **idempotencia**. Un lote reintentado tras un
-  fallo de red no debe duplicar eventos, y la cola del cliente reintenta por
-  diseño. Sin esta constraint, cada corte de wifi infla las métricas.
+- `(session_id, seq)` es la **clave lógica** del evento y da su orden dentro de
+  la sesión. **NO es una constraint, y no puede serlo.** Este contrato la
+  declaró como `unique` durante meses y la tabla nunca la tuvo: está
+  particionada por rango sobre `server_ts`, y en una tabla particionada todo
+  índice único debe incluir la clave de partición. Un único sobre
+  `(server_ts, session_id, seq)` sí sería legal, pero no deduplicaría nada — el
+  mismo evento reinsertado un segundo después trae otro `server_ts`.
+
+  El coste de la mentira: `/api/events` hacía `upsert(..., { onConflict:
+  "session_id,seq" })` confiando en esta línea, Postgres devolvía 42P10,
+  PostgREST un 400, y la cola del cliente reintentaba en bucle. Una sesión
+  entera de lecciones en producción dejó **tres filas**.
+
+  La idempotencia se resuelve al LEER: quien agregue horas de estudio o mastery
+  deduplica por `(session_id, seq)`. Un duplicado tras un corte de wifi engorda
+  la tabla y no falsea el informe; cero filas sí lo falsean.
 
 ### `skill_mastery`
 PK `(student_id, skill_id)`. `school_id`, `mastery` 0–1, `confidence` 0–1,
@@ -189,7 +202,8 @@ petición de página es cómo se cae el panel a las 8:30 de la mañana.
 - Un alumno no lee eventos de otro alumno, ni siquiera del mismo colegio.
 - Un alumno **no puede insertar** un evento con `student_id` ajeno (`with check`).
 - Un profesor del colegio A no ve `skill_mastery` del colegio B.
-- `unique (session_id, seq)` rechaza el duplicado de un lote reintentado.
+- Un lote reintentado entra dos veces y la AGREGACIÓN lo deduplica por
+  `(session_id, seq)`: no hay constraint que lo impida al escribir (ver arriba).
 - Las particiones del mes siguiente existen antes de que empiece el mes.
 
 **Vitest (`TelemetryQueue`)**

@@ -139,17 +139,32 @@ export async function POST(request: Request): Promise<NextResponse> {
     // volver a confiar en un reloj que no es el de la base de datos.
   }));
 
-  // UPSERT y no INSERT, ignorando duplicados.
+  // INSERT PLANO. Aquí hubo un `upsert(..., { onConflict: "session_id,seq" })`
+  // y costó toda la telemetría del producto.
   //
-  // La cola del cliente REINTENTA ante un 5xx o un corte de red. Si el insert
-  // llegó a aplicarse y lo que se perdió fue la respuesta, el reintento traería
-  // los mismos eventos: con un INSERT plano se duplicarían (o el lote entero
-  // fallaría por conflicto y se reintentaría en bucle). `(session_id, seq)` es
-  // único por contrato (ver modules/analytics/CLAUDE.md), así que el reintento
-  // es idempotente y las métricas no se inflan con cada corte de wifi.
-  const { error: insertError } = await supabase
-    .from("learning_events")
-    .upsert(rows, { onConflict: "session_id,seq", ignoreDuplicates: true });
+  // El razonamiento original era correcto: la cola del cliente reintenta ante un
+  // 5xx o un corte de red, y sin idempotencia un reintento duplicaría eventos.
+  // El contrato de `modules/analytics/CLAUDE.md` declara `(session_id, seq)`
+  // único, así que `onConflict` parecía la herramienta exacta.
+  //
+  // Lo que ese contrato nunca comprobó es que la constraint EXISTIERA. Y no
+  // puede existir: `learning_events` está particionada por rango sobre
+  // `server_ts`, y en una tabla particionada todo índice único debe incluir la
+  // clave de partición. Un único sobre `(server_ts, session_id, seq)` sí es
+  // legal, pero no deduplica nada — el mismo evento reinsertado un segundo
+  // después trae otro `server_ts` y entra igual. Sería una constraint que
+  // aparenta, que es peor que ninguna.
+  //
+  // Resultado en producción: Postgres devolvía 42P10, PostgREST lo traducía a
+  // 400, este handler respondía 500 y la cola reintentaba EN BUCLE. Una sesión
+  // entera de lecciones dejó tres filas en la tabla.
+  //
+  // Así que la unicidad se trata donde de verdad vive: al LEER. `(session_id,
+  // seq)` sigue siendo la clave lógica del evento y el `seq` sigue dando el
+  // orden dentro de la sesión; quien agregue horas de estudio o mastery debe
+  // deduplicar por ese par. Un duplicado ocasional tras un corte de wifi engorda
+  // la tabla y no miente en el informe. Cero filas, sí mienten.
+  const { error: insertError } = await supabase.from("learning_events").insert(rows);
 
   if (insertError) {
      
