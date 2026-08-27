@@ -292,9 +292,133 @@ body {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Fracciones apiladas (portadas de `.f` / `.a` / `.b` de los trainers Y6A)     */
+/* Fracciones apiladas y hueco de respuesta                                    */
 /* -------------------------------------------------------------------------- */
 
+/*
+ * REGLA DE ESTA SECCION: ninguna marca que TENGA que verse se dibuja con
+ * `border`.
+ *
+ * `tokens.css` entra en `@layer cet-tokens`, que va antes que la capa `base` de
+ * la app, y ahi vive el preflight de Tailwind con `*, ::before, ::after {
+ * border: 0 solid }`. En la cascada gana la capa, no la especificidad: todo
+ * borde declarado aqui lo borra el preflight. Ya paso una vez —la barra de la
+ * fraccion desaparecio y `5/6` quedo como un "5" encima de un "6"— y hubo que
+ * rescatarla con una regla dentro de la app, en otro paquete.
+ *
+ * Aqui la barra es un ELEMENTO con `background` y el contorno del hueco es un
+ * `box-shadow`. El preflight no resetea ninguna de las dos, asi que estas
+ * piezas se ven por si solas, sin depender de un fichero que no es suyo.
+ */
+
+.cet-frac-wrap {
+  /*
+   * En linea, NO `inline-flex`.
+   *
+   * Con un contenedor flex la parte entera de un numero mixto se convierte en
+   * un item flex, y entonces dos cosas van mal: `vertical-align` deja de
+   * aplicarse a la fraccion de dentro (es un item, no una caja en linea), y el
+   * `2` de `2 1/5` se centra contra la fraccion, que es mas alta, y se despega
+   * del renglon del enunciado.
+   *
+   * Asi cada pieza se alinea como debe y como manda la tipografia matematica:
+   * la parte entera se queda en la LINEA BASE del texto, igual que cualquier
+   * otro numero de la frase, y solo la fraccion se centra sobre el eje.
+   */
+  display: inline;
+  margin: 0 0.16em;
+  /* Un enunciado nunca debe partir un numero mixto en dos lineas. */
+  white-space: nowrap;
+}
+
+.cet-frac-whole {
+  /* Se queda en la linea base; solo se separa un pelo de la fraccion. */
+  margin-right: 0.1em;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-weight: inherit;
+}
+
+.cet-frac {
+  /*
+   * Rejilla de tres filas: numerador, barra, denominador. La COLUMNA mide lo
+   * que el mas ancho de los tres, asi que la barra es siempre exactamente tan
+   * larga como el numero mas largo. Con `border-top` sobre el denominador la
+   * barra media lo que el denominador y en `12/5` el numerador sobresalia.
+   */
+  display: inline-grid;
+  grid-template-rows: auto auto auto;
+  justify-items: center;
+  /*
+   * La caja es simetrica respecto de la barra, asi que su centro geometrico ES
+   * la barra. `middle` pone ese centro a media altura de la x del texto vecino,
+   * que es justo donde la tipografia matematica coloca el eje. Antes la
+   * fraccion flotaba muy por encima del renglon.
+   */
+  vertical-align: middle;
+  line-height: 1;
+  /*
+   * Manda sobre el enunciado, no al reves: la fraccion ES el contenido de la
+   * pregunta. Antes iba a 0.95em, mas pequena que el texto que la envuelve.
+   */
+  font-size: 1.08em;
+  /* Cifras de igual ancho: `1` y `7` ocupan lo mismo y la barra no baila. */
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.cet-frac-n,
+.cet-frac-d {
+  display: block;
+  padding: 0 0.16em;
+  /* Mismo hueco arriba y abajo de la barra: la caja queda simetrica. */
+  line-height: 1.06;
+}
+
+.cet-frac-bar {
+  display: block;
+  width: 100%;
+  /* Escala con el texto: ni gruesa a 14px ni anemica a 32px. */
+  height: max(2px, 0.075em);
+  margin: 0.11em 0;
+  background-color: currentColor;
+  border-radius: 999px;
+}
+
+/*
+ * El hueco de respuesta del enunciado.
+ *
+ * Es una CAJA y no una raya a proposito: `___` pintado tal cual es una barra
+ * horizontal, la misma forma que la barra de fraccion, y en un enunciado de
+ * comparar salian tres rayas paralelas seguidas. Ver `AnswerBlank.tsx`.
+ */
+.cet-blank {
+  display: inline-block;
+  vertical-align: middle;
+  /*
+   * Alto y ancho generosos: al lado de una fraccion de dos pisos un hueco
+   * pequeno se lee como un adorno, y el hueco es la parte de la pregunta que
+   * el alumno tiene que contestar.
+   */
+  height: 1.5em;
+  margin: 0 0.42em;
+  border-radius: 0.34em;
+  /* Contorno por `box-shadow`: un `border` lo borraria el preflight. */
+  box-shadow: inset 0 0 0 max(2px, 0.06em) currentColor;
+  background-color: color-mix(in srgb, currentColor 12%, transparent);
+  opacity: 0.85;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Fracciones en HTML crudo (sin pasar por `parseSafeHtml`)                     */
+/* -------------------------------------------------------------------------- */
+
+/*
+ * Todo enunciado del producto pasa por `parseSafeHtml`, que sustituye estos
+ * nodos por `<FractionText>` y por tanto por las clases de arriba. Estas reglas
+ * son la red de seguridad para un HTML saneado que alguien pinte algun dia
+ * directamente (`SafeHtml`): sin barra, pero al menos apilado y legible, nunca
+ * "3 4" en linea. Siguen usando `border-top`, y por eso siguen dependiendo del
+ * rescate que la app tiene en `globals.css`.
+ */
 .cet-fraction {
   display: inline-flex;
   flex-direction: column;
@@ -302,24 +426,18 @@ body {
   vertical-align: middle;
   margin: 0 0.2em;
   line-height: 1.12;
-  font-size: 0.95em;
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
-.cet-fraction > .cet-fraction-num {
+.cet-fraction > .cet-fraction-num,
+.cet-fraction > .cet-fraction-den {
   padding: 0 0.25em;
 }
 
 .cet-fraction > .cet-fraction-den {
-  padding: 0 0.25em;
   border-top: 2px solid currentColor;
 }
 
-/*
- * HTML saneado que viene de la base de datos: los trainers Y6A escriben las
- * fracciones como <span class="f"><span class="a">3</span><span class="b">4</span></span>.
- * El sanitizador reescribe esas clases a las de arriba y aporta el texto
- * accesible; estos alias existen solo por si algun pack antiguo no se remapea.
- */
 .cet-prose .f {
   display: inline-flex;
   flex-direction: column;
@@ -327,7 +445,6 @@ body {
   vertical-align: middle;
   margin: 0 0.2em;
   line-height: 1.12;
-  font-size: 0.95em;
 }
 
 .cet-prose .f > .b {

@@ -20,6 +20,7 @@
 import { createElement, type ReactNode } from "react";
 import { sanitizeHtml, tokenizeHtml, decodeEntities, type HtmlToken } from "./sanitize.js";
 import { FractionText } from "../learning/FractionText.js";
+import { AnswerBlank } from "../learning/AnswerBlank.js";
 
 /** Etiquetas sin hijos, tal como las serializa el sanitizador. */
 const VOID_TAGS = new Set(["br", "hr", "img", "wbr", "col"]);
@@ -108,22 +109,98 @@ function asFraction(node: ElementNode): { numerator: number; denominator: number
   return { numerator, denominator };
 }
 
+/**
+ * La parte entera suelta de un numero mixto.
+ *
+ * `mixh()` escribe `2 1/5` como DOS nodos hermanos:
+ * `<span class="mixw">2</span><span class="f">…</span>`. Si se pintan por
+ * separado, el lector de pantalla dice "dos" y luego "un quinto" —dos cosas—
+ * cuando es un solo numero, y visualmente el 2 se queda en la linea base
+ * mientras la fraccion flota, sin pertenecer el uno al otro.
+ */
+function asWholePart(node: ElementNode): number | null {
+  const className = node.props["className"] ?? "";
+  if (!className.split(/\s+/).includes("cet-mixed-number")) return null;
+  if (findChildByClass(node, "cet-fraction") !== undefined) return null;
+  const value = Number.parseFloat(textOf(node).trim());
+  return Number.isFinite(value) ? value : null;
+}
+
+/**
+ * Dos guiones bajos seguidos o mas son el hueco de respuesta del enunciado.
+ *
+ * Se reconocen aqui, en el renderizador, y no en los generadores: es una
+ * decision de presentacion, y hacerlo en un solo sitio cubre a la vez el `___`
+ * de `math.compare` y el `______` de `math.measurement.metric` sin tocar ni un
+ * generador. Con dos como minimo: un guion bajo suelto en prosa
+ * ("archivo_final") no es un hueco.
+ */
+const BLANK_RUN = /_{2,}/g;
+
+function renderText(text: string, keyPrefix: string): ReactNode[] {
+  BLANK_RUN.lastIndex = 0;
+  if (!BLANK_RUN.test(text)) return [text];
+  BLANK_RUN.lastIndex = 0;
+
+  const out: ReactNode[] = [];
+  let last = 0;
+  let match: RegExpExecArray | null;
+  while ((match = BLANK_RUN.exec(text)) !== null) {
+    if (match.index > last) out.push(text.slice(last, match.index));
+    out.push(<AnswerBlank key={`${keyPrefix}-b${String(match.index)}`} length={match[0].length} />);
+    last = match.index + match[0].length;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return out;
+}
+
 function renderNodes(nodes: ReadonlyArray<ElementNode | string>, keyPrefix: string): ReactNode[] {
-  return nodes.map((node, index) => {
-    const key = `${keyPrefix}-${index}`;
-    if (typeof node === "string") return node;
+  const out: ReactNode[] = [];
+
+  for (let index = 0; index < nodes.length; index += 1) {
+    const node = nodes[index];
+    if (node === undefined) continue;
+    const key = `${keyPrefix}-${String(index)}`;
+
+    if (typeof node === "string") {
+      out.push(...renderText(node, key));
+      continue;
+    }
+
+    // Parte entera seguida de fraccion: un solo numero mixto, un solo anuncio.
+    const whole = asWholePart(node);
+    if (whole !== null) {
+      const next = nodes[index + 1];
+      const nextFraction = typeof next === "object" ? asFraction(next) : null;
+      if (nextFraction) {
+        out.push(
+          <FractionText
+            key={key}
+            whole={whole}
+            numerator={nextFraction.numerator}
+            denominator={nextFraction.denominator}
+          />,
+        );
+        index += 1;
+        continue;
+      }
+    }
 
     const fraction = asFraction(node);
     if (fraction) {
-      return <FractionText key={key} numerator={fraction.numerator} denominator={fraction.denominator} />;
+      out.push(<FractionText key={key} numerator={fraction.numerator} denominator={fraction.denominator} />);
+      continue;
     }
 
     if (VOID_TAGS.has(node.tag)) {
-      return createElement(node.tag, { key, ...node.props });
+      out.push(createElement(node.tag, { key, ...node.props }));
+      continue;
     }
 
-    return createElement(node.tag, { key, ...node.props }, ...renderNodes(node.children, key));
-  });
+    out.push(createElement(node.tag, { key, ...node.props }, ...renderNodes(node.children, key)));
+  }
+
+  return out;
 }
 
 /**

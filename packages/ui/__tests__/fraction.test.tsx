@@ -11,6 +11,7 @@ import { LocaleProvider } from "../src/lib/i18n.js";
 import { FractionText } from "../src/learning/FractionText.js";
 import { MathStem } from "../src/learning/MathStem.js";
 import { fractionToWords } from "../src/lib/fraction-words.js";
+import { textoExpuesto } from "./texto-accesible.js";
 
 function renderEs(node: ReactNode): ReturnType<typeof render> {
   return render(<LocaleProvider locale="es">{node}</LocaleProvider>);
@@ -66,10 +67,24 @@ describe("FractionText", () => {
     expect(screen.getByRole("img", { name: "three quarters" })).toBeInTheDocument();
   });
 
-  it("oculta los digitos al lector para no leerlos dos veces", () => {
+  /**
+   * Este test protege el requisito, no la implementacion.
+   *
+   * Antes comprobaba que un nodo con una clase concreta llevara `aria-hidden`.
+   * Eso ata el test a COMO esta dibujada la fraccion hoy: al redibujarla el
+   * selector no encontraba nada y el test fallaba aunque la lectura fuese
+   * correcta. Ahora se afirma sobre lo que de verdad importa —lo que se oye—:
+   * se dice "tres cuartos", y NO aparecen por ningun lado el "3" y el "4"
+   * sueltos, que es la doble lectura que hay que evitar.
+   */
+  it("se lee 'tres cuartos' una sola vez, sin los digitos sueltos", () => {
     const { container } = renderEs(<FractionText numerator={3} denominator={4} />);
-    const inner = container.querySelector(".cet-fraction");
-    expect(inner).toHaveAttribute("aria-hidden", "true");
+    expect(textoExpuesto(container)).toBe("tres cuartos");
+  });
+
+  it("un numero mixto se anuncia como UN numero, no como un entero y una fraccion", () => {
+    const { container } = renderEs(<FractionText whole={2} numerator={1} denominator={5} />);
+    expect(textoExpuesto(container)).toBe("dos y un quinto");
   });
 
   it("admite un texto accesible propio", () => {
