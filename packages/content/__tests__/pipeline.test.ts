@@ -4,10 +4,26 @@
  *
  * Los tests anteriores usan un fixture. Estos usan el material de verdad: si
  * alguien edita un HTML de Y6A de forma que el extractor deje de entenderlo,
- * es aquí donde se ve, en CI, y no al sembrar la base de datos.
+ * es aquí donde se ve, y no al sembrar la base de datos.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * POR QUÉ SE SALTAN SI FALTA `Y6A/`
+ * ─────────────────────────────────────────────────────────────────────────────
+ * `Y6A/` es material docente del colegio, propiedad de terceros, y NO se
+ * versiona (ver README §Material fuente). Quien clone el repositorio no lo
+ * tiene, así que estos tests no pueden exigirlo.
+ *
+ * Se SALTAN, y se dice por qué. La alternativa —fallar— convertiría un
+ * repositorio recién clonado en un repositorio roto, y la de borrar los tests
+ * perdería la única red que detecta que un trainer cambió de forma.
+ *
+ * Consecuencia honesta: en un CI sin el material, la extracción NO se prueba.
+ * Lo que sí se sigue probando en todas partes son los packs ya generados, que
+ * sí están versionados: su esquema, su saneado, su idempotencia y la paridad de
+ * sus parámetros con el motor.
  */
 
-import { readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -21,12 +37,27 @@ const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repoRoot = resolve(packageRoot, "..", "..");
 const packsDir = join(packageRoot, "packs");
 
+/** ¿Está el material fuente en este clon? */
+const hayMaterial = existsSync(join(repoRoot, "Y6A"));
+
 let results: SubjectResult[];
 beforeAll(() => {
+  if (!hayMaterial) {
+    results = [];
+    return;
+  }
   results = runAll(repoRoot);
 });
 
-describe("las seis materias se extraen", () => {
+/**
+ * Salta el bloque entero cuando no hay material, con un motivo legible en la
+ * salida de los tests en vez de una cascada de ENOENT.
+ */
+const describeConMaterial = hayMaterial
+  ? describe
+  : describe.skip;
+
+describeConMaterial("las seis materias se extraen", () => {
   for (const subject of SUBJECTS) {
     it(`${subject.code} extrae sin error`, () => {
       const r = results.find((x) => x.code === subject.code)!;
@@ -36,7 +67,7 @@ describe("las seis materias se extraen", () => {
   }
 });
 
-describe("todo pack valida contra su esquema Zod", () => {
+describeConMaterial("todo pack valida contra su esquema Zod", () => {
   for (const subject of SUBJECTS) {
     it(`${subject.code}`, () => {
       const pack = results.find((x) => x.code === subject.code)!.pack!;
@@ -48,7 +79,7 @@ describe("todo pack valida contra su esquema Zod", () => {
   }
 });
 
-describe("idempotencia", () => {
+describeConMaterial("idempotencia", () => {
   it("dos ejecuciones producen packs byte-idénticos", () => {
     // Se extrae DE NUEVO desde disco: comparar un objeto consigo mismo no
     // probaría nada. Esto sí detecta un `Date.now()` o un id aleatorio.
@@ -125,7 +156,7 @@ describe("ids deterministas", () => {
   });
 });
 
-describe("seguridad del contenido emitido", () => {
+describeConMaterial("seguridad del contenido emitido", () => {
   it("ningún fragmento HTML del pack contiene marcado ejecutable", () => {
     for (const r of results) {
       if (r.pack === null) continue;
@@ -147,7 +178,7 @@ describe("seguridad del contenido emitido", () => {
   });
 });
 
-describe("integridad semántica de los packs", () => {
+describeConMaterial("integridad semántica de los packs", () => {
   it("Math emite generadores, no preguntas estáticas", () => {
     const math = results.find((r) => r.code === "math")!.pack!;
     expect(math.questions.length).toBeGreaterThan(0);
@@ -297,3 +328,49 @@ function allHtml(value: unknown, out: string[] = []): string[] {
   }
   return out;
 }
+
+/* ========================================================================== */
+/* Estos SÍ corren siempre: leen los packs versionados, no el material fuente */
+/* ========================================================================== */
+/**
+ * Sin este bloque, quitar `Y6A/` del repositorio dejaría el saneado del
+ * contenido sin probar en CI — y el saneado es una frontera de seguridad: todo
+ * lo que hay en estos packs acaba renderizándose en el navegador de un alumno.
+ *
+ * Los packs SÍ están versionados, así que la garantía se puede sostener sin el
+ * material fuente. Lo que se pierde al no tener `Y6A/` es saber si el extractor
+ * sigue entendiendo los trainers; lo que NO se pierde es saber si lo que ya
+ * emitió es seguro.
+ */
+describe("los packs versionados son seguros", () => {
+  const ficheros = readdirSync(packsDir).filter((f) => f.endsWith(".json"));
+
+  it("hay packs versionados que comprobar", () => {
+    expect(ficheros.length).toBeGreaterThan(0);
+  });
+
+  for (const fichero of ficheros) {
+    it(`${fichero} no contiene nada ejecutable`, () => {
+      const texto = readFileSync(join(packsDir, fichero), "utf8");
+
+      expect(texto).not.toMatch(/<\s*script/i);
+      // El manejador tiene que estar DENTRO de una etiqueta. Sin `<[^>]*`, este
+      // patron casaba con la prosa de la leccion de ingles —"no one = nobody"—
+      // y el test habria gritado en falso para siempre, que es la forma mas
+      // rapida de que alguien lo desactive.
+      expect(texto).not.toMatch(/<[^>]*\son\w+\s*=/i);
+      expect(texto).not.toMatch(/javascript\s*:/i);
+      expect(texto).not.toMatch(/<\s*iframe/i);
+      expect(texto).not.toMatch(/srcdoc/i);
+    });
+
+    it(`${fichero} valida contra el esquema del pack`, () => {
+      const pack = JSON.parse(readFileSync(join(packsDir, fichero), "utf8")) as unknown;
+      const resultado = contentPack.safeParse(pack);
+      expect(
+        resultado.success,
+        resultado.success ? "" : JSON.stringify(resultado.error.issues.slice(0, 3), null, 2),
+      ).toBe(true);
+    });
+  }
+});

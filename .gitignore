@@ -1,3 +1,9 @@
+# ---- Material docente de terceros ----
+# `Y6A/` es material del centro educativo, no nuestro. Se trabaja con el en
+# local pero NO se versiona: publicarlo seria redistribuir obra ajena.
+# Ver README, seccion "Material fuente".
+Y6A/
+
 # ---- Secretos: NUNCA commitear ----
 secrets/
 .env
