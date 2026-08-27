@@ -24,7 +24,7 @@
  * puede filtrar el dato de un alumno.
  */
 import { notFound } from "next/navigation";
-import { EffortMeter, MasteryLadder } from "@cet/ui";
+import { EffortMeter, MasteryLadder, MasteryOverview, type MasteryLevel } from "@cet/ui";
 
 import { getLearnDictionary } from "@/components/learn/dictionary";
 import { practiceTopics } from "@/components/learn/practice-topics";
@@ -35,7 +35,11 @@ import {
   summarisePracticeEvents,
   type AnsweredEvent,
 } from "@/components/learn/practice-progress";
-import { nextStepI18n, nextStepTargets } from "@/components/learn/practice-progress-text";
+import {
+  nextStepI18n,
+  nextStepTargets,
+  overviewSummaryI18n,
+} from "@/components/learn/practice-progress-text";
 import { PracticeSession } from "@/components/learn/PracticeSession";
 // El proveedor de telemetria es obligatorio: `useTelemetry()` LANZA en
 // desarrollo si falta (arreglo de hoy — "silencioso es peor que ruidoso"), y la
@@ -76,6 +80,23 @@ function eventosDeEjemplo(): unknown[] {
 
 const NIVELES = ["starting", "learning", "solid", "mastered"] as const;
 
+/**
+ * La vista de conjunto en cuatro momentos del curso, con nueve temas — que son
+ * los que hay en la parrilla real quitando `mix`.
+ */
+const MUESTRAS_DE_CONJUNTO: readonly (readonly [string, readonly (MasteryLevel | null)[]])[] = [
+  ["recién empezado", ["starting", "learning", null, null, null, null, null, null, null]],
+  [
+    "a mitad de curso",
+    ["mastered", "solid", "solid", "learning", "starting", null, null, null, null],
+  ],
+  [
+    "casi todo medido",
+    ["mastered", "mastered", "mastered", "solid", "solid", "learning", "learning", "starting", null],
+  ],
+  ["sin practicar nada", [null, null, null, null, null, null, null, null, null]],
+];
+
 export default async function PracticePreviewPage() {
   if (process.env.NODE_ENV !== "development") notFound();
 
@@ -99,6 +120,29 @@ export default async function PracticePreviewPage() {
           locale={locale}
           progress={progress}
         />
+
+        <section className="flex flex-col gap-4 rounded-2xl border border-line bg-card p-5">
+          <h2 className="text-lg font-bold text-ink">La vista de conjunto, en sus cuatro estados</h2>
+          <p className="text-sm text-muted">
+            Una columna por tema, ordenadas de menos a más nivel: la silueta ES la respuesta a
+            «cómo voy». Los temas sin medir se dibujan como tocones huecos, muy por debajo del primer
+            nivel —si se omitieran, tres columnas altas se leerían igual con cuatro temas que con
+            doce—. Con
+            NINGÚN tema medido no se pinta nada: una fila de tocones sería una medida de cero, y
+            cero no es ausencia.
+          </p>
+          <ul className="flex flex-col gap-3">
+            {MUESTRAS_DE_CONJUNTO.map(([titulo, niveles]) => (
+              <li key={titulo} className="flex flex-wrap items-center gap-3">
+                <code className="w-40 shrink-0 text-xs text-muted">{titulo}</code>
+                <MasteryOverview levels={niveles} summary={overviewSummaryI18n(niveles)} />
+                {niveles.every((n) => n === null) ? (
+                  <em className="text-sm text-muted">(no se pinta nada)</em>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </section>
 
         <section className="flex flex-col gap-4 rounded-2xl border border-line bg-card p-5">
           <h2 className="text-lg font-bold text-ink">Los cuatro peldaños, uno al lado del otro</h2>

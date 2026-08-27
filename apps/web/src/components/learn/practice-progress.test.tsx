@@ -18,10 +18,11 @@ import {
   correctsToReach,
   nextStepFor,
   readAnsweredEvents,
+  overviewLevels,
   summarisePracticeEvents,
   type AnsweredEvent,
 } from "./practice-progress";
-import { nextStepTargets, nextStepText } from "./practice-progress-text";
+import { nextStepTargets, nextStepText, overviewSummaryI18n } from "./practice-progress-text";
 import { getLearnDictionary } from "./dictionary";
 
 /** Fila tal y como la devuelve PostgREST para `select("payload")`. */
@@ -222,5 +223,52 @@ describe("la frase que lee el niño", () => {
     expect(nextStepText({ kind: "to_next_level", correct: 1, level: "solid" }, es, "es")).toContain(
       "1 acierto ",
     );
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+
+describe("la vista de conjunto: «cómo voy en general»", () => {
+  it("un tema por cada clave pedida, en el mismo orden que la parrilla", () => {
+    const progreso = summarisePracticeEvents([
+      ...Array.from({ length: 10 }, () => evento("math.compare", true)),
+      ...Array.from({ length: 5 }, () => evento("math.powten", true)),
+      ...Array.from({ length: 5 }, () => evento("math.powten", false)),
+    ]);
+    expect(overviewLevels(["math.compare", "math.powten", "math.shape"], progreso)).toEqual([
+      "mastered",
+      "learning",
+      null,
+    ]);
+  });
+
+  it("un tema sin evidencia suficiente entra como null y NO como cero", () => {
+    // Dos respuestas acertadas no son "dominado" ni "empezando": son "aún no lo
+    // sabemos". Convertirlo en un nivel sería inventarse la medida.
+    const progreso = summarisePracticeEvents([
+      evento("math.decimal", true),
+      evento("math.decimal", true),
+    ]);
+    expect(overviewLevels(["math.decimal"], progreso)).toEqual([null]);
+  });
+
+  it("con la consulta caída no se resume nada: no hay dato, no hay vista", () => {
+    // `null` es "no lo sabemos", y una consulta caída no puede parecer un alumno
+    // que no ha practicado. Ver `PracticeTopicGridProps.progress`.
+    expect(overviewLevels(["math.compare"], null)).toEqual([]);
+  });
+
+  it("el resumen dice cuántos temas están medidos y cuántos hay, sin porcentajes", () => {
+    const texto = overviewSummaryI18n(["mastered", "solid", null, null]).es;
+    expect(texto).toContain("2");
+    expect(texto).toContain("4");
+    expect(texto).not.toMatch(/%/);
+  });
+
+  it("el resumen solo habla de temas dominados cuando hay alguno", () => {
+    // "Dominas 0" es la forma escrita de la barra al 0 %: parece una medida y
+    // desanima. Sin ninguno dominado, la frase no lo menciona.
+    expect(overviewSummaryI18n(["solid", "learning"]).es).not.toContain("Dominas");
+    expect(overviewSummaryI18n(["mastered", "learning"]).es).toContain("Dominas 1");
   });
 });

@@ -225,3 +225,28 @@ export function summarisePracticeEvents(
   }
   return out;
 }
+
+/**
+ * Los niveles de todos los grupos, en el orden de la parrilla, para la vista de
+ * conjunto (`MasteryOverview`).
+ *
+ * Es una PROYECCIÓN, no un cálculo nuevo: cada elemento es el mismo `level` que
+ * ya pinta la escalera de esa tarjeta. Que la vista de conjunto y las tarjetas
+ * salgan del mismo `TopicProgress` es lo que impide que digan cosas distintas —
+ * el fallo clásico de un resumen es tener su propia fuente y desincronizarse.
+ *
+ * `progress === null` es «la consulta falló», y entonces devuelve una lista
+ * VACÍA: con ella `MasteryOverview` no pinta nada. Una consulta caída no puede
+ * parecer un alumno que aún no ha empezado, ni al revés.
+ *
+ * `engineKeys` NO debe incluir `mix`: no es un grupo, es un sorteo entre los
+ * demás, y contarlo como un tema más inflaría el denominador con algo que nunca
+ * se puede medir. Ver la cabecera de `summarisePracticeEvents`.
+ */
+export function overviewLevels(
+  engineKeys: readonly string[],
+  progress: ReadonlyMap<string, TopicProgress> | null,
+): (MasteryLevel | null)[] {
+  if (progress === null) return [];
+  return engineKeys.map((key) => progress.get(key)?.level ?? null);
+}

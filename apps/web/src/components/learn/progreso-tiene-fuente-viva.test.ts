@@ -70,6 +70,14 @@ const FUENTES: Readonly<Record<string, readonly Fuente[]>> = {
       indicador: "Escalera de nivel y «siguiente paso» de cada grupo de práctica",
       fichero: "apps/web/src/components/learn/queries.ts :: getPracticeProgress",
     },
+    {
+      // No es una segunda fuente: es una PROYECCIÓN de los mismos
+      // `TopicProgress` (ver `overviewLevels`). Se declara aparte porque lo que
+      // este invariante vigila es el indicador, y el día que alguien lo
+      // reapunte a otra tabla la declaración es donde tiene que notarse.
+      indicador: "Vista de conjunto «cómo voy en general» de /practice",
+      fichero: "apps/web/src/components/learn/practice-progress.ts :: overviewLevels",
+    },
   ],
   skill_mastery: [
     {

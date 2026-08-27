@@ -13,7 +13,7 @@
  */
 import Link from "next/link";
 import type { Locale } from "@cet/shared";
-import { EffortMeter, MasteryLadder } from "@cet/ui";
+import { EffortMeter, MasteryLadder, MasteryOverview } from "@cet/ui";
 
 import { learnI18n, type LearnDictionary } from "./dictionary";
 import { MIXED_TOPIC_ID, type PracticeTopic } from "./practice-topics";
@@ -22,8 +22,9 @@ import {
   nextStepI18n,
   nextStepTargets,
   nextStepText,
+  overviewSummaryI18n,
 } from "./practice-progress-text";
-import type { TopicProgress } from "./practice-progress";
+import { overviewLevels, type TopicProgress } from "./practice-progress";
 
 export interface PracticeTopicGridProps {
   readonly topics: readonly PracticeTopic[];
@@ -45,11 +46,30 @@ export function PracticeTopicGrid({
 }: PracticeTopicGridProps) {
   const t = dictionary.practice;
 
+  // La vista de conjunto sale de los MISMOS `TopicProgress` que las tarjetas: es
+  // una proyección, no un segundo cálculo. Un resumen con su propia fuente se
+  // desincroniza del detalle el primer día. Ver `overviewLevels`.
+  //
+  // `mix` queda fuera: no es un tema, es un sorteo entre los demás, y contarlo
+  // inflaría el denominador con algo que nunca se puede medir.
+  const overview = overviewLevels(
+    topics.filter((topic) => topic.id !== MIXED_TOPIC_ID).map((topic) => topic.id),
+    progress ?? null,
+  );
+
   return (
     <nav aria-label={t.topicLegend}>
       <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
         {t.progressLegend}
       </h2>
+
+      {/* Lo único de esta pantalla que responde «cómo voy en general». Va
+          arriba y solo: es lo que el alumno lee de un vistazo, y las diez
+          tarjetas de abajo son el detalle para quien quiera bajar. Sin ningún
+          tema medido no se pinta —`MasteryOverview` devuelve `null`—, que es lo
+          correcto el primer día: entonces las tarjetas ya dicen «Sin practicar
+          todavía» diez veces y un resumen a cero sería una medida inventada. */}
+      <MasteryOverview levels={overview} summary={overviewSummaryI18n(overview)} className="mt-3" />
       <ul className="mt-3 grid gap-3 sm:grid-cols-2">
         {topics.map((topic) => {
           // `mix` no es un grupo: es un sorteo entre los demás, y sus respuestas

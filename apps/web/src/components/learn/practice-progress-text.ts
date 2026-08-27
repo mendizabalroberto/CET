@@ -30,6 +30,7 @@ import { UI_STRINGS } from "@cet/ui";
 
 import { getLearnDictionary, type LearnDictionary } from "./dictionary";
 import type { NextStep } from "./practice-progress";
+import type { MasteryLevel } from "@cet/ui";
 
 /**
  * Las palabras de los cuatro niveles salen de `@cet/ui` y NO del diccionario de
@@ -111,4 +112,57 @@ export function nextStepTargets(step: NextStep): number {
 export function answeredCountText(total: number, dictionary: LearnDictionary): string {
   const t = dictionary.practice;
   return total === 1 ? t.answeredCountOne : fill(t.answeredCount, { count: total });
+}
+
+/**
+ * El resumen de la vista de conjunto, en los dos idiomas.
+ *
+ * ===========================================================================
+ * POR QUÉ CUENTA TEMAS Y NO UN PORCENTAJE NI UNA MEDIA
+ * ===========================================================================
+ * Un «65 % de dominio global» sale de promediar cuatro tramos, y promediar
+ * tramos comprime dos situaciones muy distintas en el mismo número: dominar la
+ * mitad de los temas y no haber tocado la otra mitad da lo mismo que ir regular
+ * en todos. Contar temas no comprime, y además es lo que se ve dibujado: hay
+ * tantas columnas como temas dice la frase.
+ *
+ * ===========================================================================
+ * «DOMINAS 0» NO SE ESCRIBE
+ * ===========================================================================
+ * Es la forma escrita de la barra al 0 %: parece una medida y lo único que hace
+ * es desanimar a quien acaba de empezar. Sin ningún tema dominado, la frase
+ * simplemente no menciona el dominio.
+ *
+ * ===========================================================================
+ * POR QUÉ ESTAS CADENAS NO ESTÁN EN `learn.es.ts` / `learn.en.ts`
+ * ===========================================================================
+ * Por el mismo motivo que `dictionary.ts` no vive en `lib/i18n/index.ts`: esos
+ * dos ficheros los comparten las vías que trabajan a la vez en `apps/web`, y al
+ * integrar, cablearlas allí es mover seis líneas. Mientras tanto, nadie pisa a
+ * nadie.
+ */
+const OVERVIEW_TEXT = {
+  es: {
+    measured: "Ya sabes cómo llevas {measured} de {total} temas.",
+    mastered: " Dominas {mastered}.",
+  },
+  en: {
+    measured: "You know how you are doing in {measured} of {total} topics.",
+    mastered: " You have mastered {mastered}.",
+  },
+} as const;
+
+/** El resumen de `MasteryOverview`, contado sobre los mismos niveles que dibuja. */
+export function overviewSummaryI18n(levels: readonly (MasteryLevel | null)[]): I18nText {
+  const total = levels.length;
+  const measured = levels.filter((level) => level !== null).length;
+  const mastered = levels.filter((level) => level === "mastered").length;
+
+  const frase = (locale: Locale): string => {
+    const t = OVERVIEW_TEXT[locale];
+    const base = fill(t.measured, { measured, total });
+    return mastered === 0 ? base : base + fill(t.mastered, { mastered });
+  };
+
+  return { es: frase("es"), en: frase("en") };
 }

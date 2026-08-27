@@ -48,6 +48,7 @@ import type { ReactNode } from "react";
 import { LocaleProvider } from "../src/lib/i18n.js";
 import { MasteryLadder } from "../src/progress/MasteryLadder.js";
 import { EffortMeter } from "../src/progress/EffortMeter.js";
+import { MasteryOverview } from "../src/progress/MasteryOverview.js";
 import { MasteryMeter } from "../src/data/MasteryMeter.js";
 import { ProgressBar } from "../src/data/ProgressBar.js";
 import { ScoreRing } from "../src/data/ScoreRing.js";
@@ -58,6 +59,14 @@ const PROGRESS_DIR = join(process.cwd(), "src", "progress");
 
 const T = (es: string, en: string): { es: string; en: string } => ({ es, en });
 const GRUPO = T("Comparar", "Compare");
+/**
+ * El resumen se mantiene FIJO a proposito: asi la unica cosa que puede cambiar
+ * el dibujo de `MasteryOverview` entre las entradas son los niveles. Si pasara
+ * un resumen distinto en cada una, la firma cambiaria por el texto y el test
+ * dejaria pasar una silueta constante — que es justo la barra decorativa que
+ * este fichero persigue.
+ */
+const RESUMEN = T("Resumen", "Summary");
 
 /**
  * Atributos que llevan GEOMETRIA. `fill` y `stroke` quedan fuera porque son
@@ -178,6 +187,18 @@ const INDICADORES: Readonly<Record<string, Declaracion>> = {
     ],
     // El caso que motiva todo: sin evidencia no se dibuja una escalera vacia.
     sinDato: <MasteryLadder level={null} groupLabel={GRUPO} />,
+  },
+  "progress/MasteryOverview.tsx": {
+    dibuja: true,
+    entradas: [
+      <MasteryOverview levels={["starting", null, null]} summary={RESUMEN} />,
+      <MasteryOverview levels={["mastered", null, null]} summary={RESUMEN} />,
+      <MasteryOverview levels={["mastered", "solid", null]} summary={RESUMEN} />,
+      <MasteryOverview levels={["mastered", "solid", "learning"]} summary={RESUMEN} />,
+    ],
+    // Todos los temas sin medir NO es «cero temas dominados»: es que aun no hay
+    // nada que resumir, y entonces no hay dibujo.
+    sinDato: <MasteryOverview levels={[null, null, null]} summary={RESUMEN} />,
   },
   "progress/EffortMeter.tsx": {
     dibuja: true,
