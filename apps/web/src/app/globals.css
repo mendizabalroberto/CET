@@ -1,0 +1,210 @@
+/*
+ * Estilos base de la app web.
+ * © 2026 Roberto Mendizabal. Todos los derechos reservados.
+ *
+ * Tailwind CSS v4: la configuración es CSS-first. `@config` engancha el
+ * `tailwind.config.ts` (que a su vez aplica el preset de @cet/ui) para que la
+ * lista de ficheros escaneados y los tokens del design system convivan.
+ *
+ * ---------------------------------------------------------------------------
+ * NOTA DE INTEGRACIÓN — leer antes de tocar los colores
+ * ---------------------------------------------------------------------------
+ * La paleta que hay aquí abajo es la de los trainers Y6A (navy #173a63,
+ * teal #0f9b8e, amber #f2a71b) y es la MISMA que debe exponer el preset de
+ * @cet/ui. Se declara también aquí por dos motivos:
+ *   1. La app tiene que renderizar correctamente antes de que exista @cet/ui.
+ *   2. Los tokens SEMÁNTICOS (--surface, --ink, --line…) son los que cambian
+ *      con el tema, y esa mecánica pertenece a la app, no al preset.
+ * Al integrar @cet/ui, los tokens de MARCA (--color-brand, --color-teal,
+ * --color-amber) deben venir del preset y borrarse del bloque @theme.
+ */
+
+@import "tailwindcss";
+@config "../../tailwind.config.ts";
+
+/* ==========================================================================
+   Tema — dos ejes: elección explícita ([data-theme]) y preferencia del sistema
+   ==========================================================================
+   El servidor pinta `data-theme` en <html> a partir de una cookie. Si no hay
+   cookie, no hay atributo y manda `prefers-color-scheme`. Con esto no hace
+   falta ningún script en línea para evitar el parpadeo de tema, lo cual encaja
+   con una CSP que prohíbe scripts sin nonce.
+   ========================================================================== */
+
+:root {
+  /* Marca — constantes en ambos temas. */
+  --brand: #173a63;
+  --brand-deep: #0f2a49;
+  --brand-bright: #1d5a8a;
+  --teal: #0f9b8e;
+  --amber: #f2a71b;
+  --success: #12805c;
+  --danger: #c0392b;
+
+  /* Semánticos — claro. */
+  --surface: #f4f7fb;
+  --surface-alt: #eef2f7;
+  --card: #ffffff;
+  --ink: #12202f;
+  --muted: #5d7086;
+  --line: #dfe6ee;
+  --ring: #0f9b8e;
+  --on-brand: #ffffff;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --brand: #4a8fce;
+    --brand-deep: #0b1a2b;
+    --brand-bright: #6fb0e6;
+    --teal: #34c3b4;
+    --amber: #ffc247;
+    --success: #2fb782;
+    --danger: #f0705f;
+
+    --surface: #0b141f;
+    --surface-alt: #121e2c;
+    --card: #16222f;
+    --ink: #e7eef6;
+    --muted: #93a6ba;
+    --line: #24374a;
+    --ring: #34c3b4;
+    --on-brand: #08131e;
+
+    color-scheme: dark;
+  }
+}
+
+[data-theme="dark"] {
+  --brand: #4a8fce;
+  --brand-deep: #0b1a2b;
+  --brand-bright: #6fb0e6;
+  --teal: #34c3b4;
+  --amber: #ffc247;
+  --success: #2fb782;
+  --danger: #f0705f;
+
+  --surface: #0b141f;
+  --surface-alt: #121e2c;
+  --card: #16222f;
+  --ink: #e7eef6;
+  --muted: #93a6ba;
+  --line: #24374a;
+  --ring: #34c3b4;
+  --on-brand: #08131e;
+
+  color-scheme: dark;
+}
+
+/* ==========================================================================
+   Puente hacia Tailwind: cada token semántico se convierte en una utilidad.
+   `bg-surface`, `text-ink`, `border-line`… cambian solas con el tema, así que
+   NO hace falta escribir `dark:` en ningún componente. Un `dark:` olvidado es
+   un bug invisible hasta que alguien usa el tema oscuro; esto lo hace imposible.
+   ========================================================================== */
+@theme inline {
+  --color-brand: var(--brand);
+  --color-brand-deep: var(--brand-deep);
+  --color-brand-bright: var(--brand-bright);
+  --color-teal: var(--teal);
+  --color-amber: var(--amber);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+
+  --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-on-brand: var(--on-brand);
+
+  --font-sans:
+    "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: Consolas, "SF Mono", "Liberation Mono", monospace;
+
+  --radius-card: 0.75rem;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Respeta a quien tiene mareo con el movimiento. WCAG 2.3.3. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  body {
+    background-color: var(--surface);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Foco SIEMPRE visible. Quitarlo rompe la navegación por teclado, que es la
+     única que tienen algunos alumnos. WCAG 2.4.7. */
+  :focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Los números del PIN y de las respuestas se leen mejor tabulares. */
+  input[inputmode="numeric"] {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer utilities {
+  /* Enlace de salto: invisible hasta que recibe foco con el tabulador. */
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+  }
+  .skip-link:focus {
+    left: 1rem;
+    top: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--card);
+    color: var(--ink);
+    border: 2px solid var(--ring);
+    border-radius: 8px;
+  }
+
+  .cet-hero-gradient {
+    background-image: linear-gradient(
+      135deg,
+      var(--brand-deep) 0%,
+      var(--brand) 55%,
+      var(--brand-bright) 100%
+    );
+  }
+
+  /* Retícula tenue del fondo del hero: da textura sin cargar una imagen. */
+  .cet-grid-overlay {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.06) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.06) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+}

@@ -65,8 +65,20 @@ export const questionFormat = z.enum([
 ]);
 export type QuestionFormat = z.infer<typeof questionFormat>;
 
+/** CÓMO se califica una pregunta. Propiedad de la pregunta, no del intento. */
 export const gradingMode = z.enum(["auto", "partial", "manual"]);
 export type GradingMode = z.infer<typeof gradingMode>;
+
+/**
+ * QUIÉN produjo una calificación. Distinto de `gradingMode`: una pregunta de
+ * `gradingMode: "partial"` la califica el sistema (`auto`), y ese mismo ítem
+ * puede recibir después una recalificación `manual` de un profesor.
+ *
+ * Se llama `grading_actor` y no `graded_by` para no colisionar en Postgres con
+ * el nombre de la columna que lo usa (`attempt_gradings.graded_by`).
+ */
+export const gradingActor = z.enum(["auto", "manual"]);
+export type GradingActor = z.infer<typeof gradingActor>;
 
 export const feedbackMode = z.enum(["never", "after_submit", "immediate"]);
 export type FeedbackMode = z.infer<typeof feedbackMode>;
@@ -93,3 +105,13 @@ export type RegistrationStatus = z.infer<typeof registrationStatus>;
 
 export const blueprintSectionSource = z.enum(["bank", "generated", "mixed"]);
 export type BlueprintSectionSource = z.infer<typeof blueprintSectionSource>;
+
+/**
+ * Papel de una persona dentro de una clase (`section_members.role_in_section`).
+ *
+ * `assistant` es el profesor de apoyo: ve la clase y el progreso, pero no
+ * califica. Sin este tercer valor habría que darle rol de `teacher` completo,
+ * que es más permiso del que su trabajo necesita.
+ */
+export const sectionRole = z.enum(["student", "teacher", "assistant"]);
+export type SectionRole = z.infer<typeof sectionRole>;

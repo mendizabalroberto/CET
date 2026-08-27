@@ -1,0 +1,1884 @@
+{
+  "blueprints": [
+    {
+      "allowBack": true,
+      "code": "math.y6.mock",
+      "description": {
+        "en": "20 questions covering all 8 topics, one point each, 25 minutes — the same pace as the real paper."
+      },
+      "durationSeconds": 1500,
+      "feedbackMode": "after_submit",
+      "id": "85c95259-a9f3-5269-8956-2474e9339484",
+      "maxAttempts": null,
+      "passThreshold": 0.6,
+      "sections": [
+        {
+          "id": "cb7b4f00-eac9-5757-b781-e7c12f76f79d",
+          "itemCount": 1,
+          "ord": 0,
+          "pointsPerItem": 1,
+          "selection": {
+            "engineKey": "math.simplify",
+            "skillCodes": [
+              "math.fractions.simplify"
+            ]
+          },
+          "source": "generated",
+          "title": {
+            "en": "Simplifying fractions"
+          }
+        },
+        {
+          "id": "a6a5c490-d0d3-5bdd-b8e8-e1e7c4b04548",
+          "itemCount": 1,
+          "ord": 1,
+          "pointsPerItem": 1,
+          "selection": {
+            "engineKey": "math.compare",
+            "skillCodes": [
+              "math.fractions.compare"
+            ]
+          },
+          "source": "generated",
+          "title": {
+            "en": "Comparing fractions"
+          }
+        },
+        {
+          "id": "ab38738f-5edf-5ed4-a958-147a69d5992f",
+          "itemCount": 1,
+          "ord": 2,
+          "pointsPerItem": 1,
+          "selection": {
+            "engineKey": "math.fracop",
+            "params": {
+              "op": "+"
+            },
+            "skillCodes": [
+              "math.fractions.operations"
+            ]
+          },
+          "source": "generated",
+          "title": {
+            "en": "Fraction operations (+)"
+          }
+        },
+        {
+          "id": "072c045a-09c8-5e16-b6cd-3b98b72a25ee",
+          "itemCount": 1,
+          "ord": 3,
+          "pointsPerItem": 1,
+          "selection": {
+            "engineKey": "math.fracop",
+            "params": {
+              "op": "−"
+            },
+            "skillCodes": [
+              "math.fractions.operations"
+            ]
+          },
+          "source": "generated",
+          "title": {
+            "en": "Fraction operations (−)"
+          }
+        },
+        {
+          "id": "20fe3498-60f9-5658-9dbf-8ad90a86fe9e",
+          "itemCount": 1,
+          "ord": 4,
+          "pointsPerItem": 1,
+          "selection": {
+            "engineKey": "math.fracop",
+            "params": {
+              "op": "×"
+            },
+            "skillCodes": [
+              "math.fractions.operations"
+            ]
+          },
+          "source": "generated",
+          "title": {
+            "en": "Fraction operations (×)"
+          }
+        },
+        {
+          "id": "ed272b2d-0ef9-551d-aaae-b819d66dfe8c",
+          "itemCount": 1,
+          "ord": 5,
+          "pointsPerItem": 1,
+          "selection": {
+            "engineKey": "math.fracop",
+            "params": {
+              "op": "÷"
+            },
+            "skillCodes": [
+              "math.fractions.operations"
+            ]
+          },
+          "source": "generated",
+          "title": {
+            "en": "Fraction operations (÷)"
+          }
+        },
+        {
+          "id": "b4e97266-33e7-5f7d-ac39-8f3035a1aa7d",
+          "itemCount": 2,
+          "ord": 6,
+          "pointsPerItem": 1,
+          "selection": {
+            "engineKey": "math.mixed",
+            "skillCodes": [
+              "math.fractions.mixed"
+            ]
+          },
+          "source": "generated",
+          "title": {
+            "en": "Improper and mixed numbers"
+          }
+        },
+        {
+          "id": "91e66786-077d-505f-a555-e7adb0279852",
+          "itemCount": 3,
+          "ord": 7,
+          "pointsPerItem": 1,
+          "selection": {
+            "engineKey": "math.decimal",
+            "skillCodes": [
+              "math.decimals.multiply_divide"
+            ]
+          },
+          "source": "generated",
+          "title": {
+            "en": "Multiplying and dividing decimals"
+          }
+        },
+        {
+          "id": "93b70af2-81dd-512c-bb36-3fd637814fbd",
+          "itemCount": 2,
+          "ord": 8,
+          "pointsPerItem": 1,
+          "selection": {
+            "engineKey": "math.powten",
+            "skillCodes": [
+              "math.place_value.powers_of_ten"
+            ]
+          },
+          "source": "generated",
+          "title": {
+            "en": "Multiplying and dividing by 10, 100 and 1,000"
+          }
+        },
+        {
+          "id": "3add2a24-c44b-5527-b716-ccf8d70bd228",
+          "itemCount": 3,
+          "ord": 9,
+          "pointsPerItem": 1,
+          "selection": {
+            "engineKey": "math.metric",
+            "skillCodes": [
+              "math.measurement.metric_conversion"
+            ]
+          },
+          "source": "generated",
+          "title": {
+            "en": "Metric conversions"
+          }
+        },
+        {
+          "id": "93124d1a-47cd-5f3a-9167-d442b83dfc2b",
+          "itemCount": 1,
+          "ord": 10,
+          "pointsPerItem": 1,
+          "selection": {
+            "engineKey": "math.shape",
+            "params": {
+              "want": "area"
+            },
+            "skillCodes": [
+              "math.geometry.compound_shapes"
+            ]
+          },
+          "source": "generated",
+          "title": {
+            "en": "Compound shapes (area)"
+          }
+        },
+        {
+          "id": "d77e6fe5-3a3e-59d2-a850-db076f33f5d0",
+          "itemCount": 1,
+          "ord": 11,
+          "pointsPerItem": 1,
+          "selection": {
+            "engineKey": "math.shape",
+            "params": {
+              "want": "perimeter"
+            },
+            "skillCodes": [
+              "math.geometry.compound_shapes"
+            ]
+          },
+          "source": "generated",
+          "title": {
+            "en": "Compound shapes (perimeter)"
+          }
+        },
+        {
+          "id": "6a5dfe4e-00d0-5468-b3b5-378e6de7517f",
+          "itemCount": 2,
+          "ord": 12,
+          "pointsPerItem": 1,
+          "selection": {
+            "engineKey": "math.word",
+            "skillCodes": [
+              "math.word_problems.multi_step"
+            ]
+          },
+          "source": "generated",
+          "title": {
+            "en": "Word problems"
+          }
+        }
+      ],
+      "shuffleOptions": false,
+      "shuffleQuestions": false,
+      "source": {
+        "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+        "symbol": "MOCK_PLAN"
+      },
+      "title": {
+        "en": "Timed mock exam — 20 marks"
+      }
+    }
+  ],
+  "course": {
+    "code": "math.y6",
+    "id": "0242a0e3-61db-5341-b63f-0ef32bdca52b",
+    "locale": "en",
+    "name": {
+      "en": "Grade 5 Mathematics — Year 6"
+    },
+    "status": "published",
+    "version": 1,
+    "yearLevel": 6
+  },
+  "gaps": [
+    {
+      "area": "Shape Lab",
+      "reason": "figura SVG generada en tiempo de ejecución con lados ocultos. No es contenido estático: se reimplementa como generador `math.shape` en @cet/engine, que emite `renderedBody.figureSvg`.",
+      "symbol": "makeShape / shapeSVG / LAB"
+    },
+    {
+      "area": "lógica de los generadores",
+      "reason": "el cuerpo de cada generador es código (aritmética de fracciones, tolerancias de comparación). Se declara el contrato `engine_key` y lo implementa @cet/engine; duplicarlo aquí garantizaría que las dos copias divergieran.",
+      "symbol": "GEN.*"
+    },
+    {
+      "area": "pistas y soluciones de los generadores",
+      "reason": "se construyen con interpolación sobre los valores sorteados, así que no existen como texto hasta que hay una instancia. Las produce el generador junto con el enunciado.",
+      "symbol": "GEN.*.hint / GEN.*.sol"
+    },
+    {
+      "area": "campos sin equivalente en el material original",
+      "reason": "los trainers Y6A no declaran dificultad, duración estimada, umbral de aprobado ni número de intentos. El pipeline los rellena con valores por defecto uniformes (difficulty 2 en banco / 3 en generadas, estimatedMinutes 20, passThreshold 0.6, maxAttempts sin límite, pointsPerItem 1) que un profesor debe revisar antes de publicar el curso. NO son datos extraídos."
+    }
+  ],
+  "integrity": "38519f0aef32f67b",
+  "modules": [
+    {
+      "description": {
+        "en": "Fractions, decimals, powers of ten, metric conversions, compound shapes and word problems."
+      },
+      "id": "13ddb373-02b7-54c4-9ae5-e6d1f8dc199d",
+      "lessons": [
+        {
+          "blocks": [
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Simplify</b> = divide the top and the bottom by the same number until you can't any more. The biggest number that divides both is the <b>highest common factor</b>."
+                }
+              },
+              "id": "c096fc5a-4a1b-5c74-a00d-05299952af49",
+              "kind": "rule",
+              "ord": 0,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 0,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Simplify 24/36</b> <div class=\"step\">24 ÷ 12 = 2    36 ÷ 12 = 3  →  <b>2/3</b></div> <div class=\"step\">Not sure of the HCF? Halve step by step: 24/36 → 12/18 → 6/9 → 2/3. Same answer.</div>"
+                }
+              },
+              "id": "a941bbe9-ec1a-5015-92fa-bfeefeaa52a7",
+              "kind": "example",
+              "ord": 1,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 0,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Compare</b> two fractions by giving them the <b>same denominator</b>, then just look at the numerators. Same-denominator fractions are easy: bigger top = bigger fraction."
+                }
+              },
+              "id": "6970eda3-4fd8-5c86-9036-4b8a08480a45",
+              "kind": "rule",
+              "ord": 2,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 0,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Which is bigger, 5/9 or 2/3?</b> <div class=\"step\">Common denominator 9:   2/3 = 6/9</div> <div class=\"step\">5/9 vs 6/9 → 5 &lt; 6, so  <b>5/9 &lt; 2/3</b></div>"
+                }
+              },
+              "id": "17adc977-fff9-596b-b6c6-acaee10ced52",
+              "kind": "example",
+              "ord": 3,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 0,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Fast trick — cross multiply.</b> For a/b vs c/d, compare a×d against c×b. 5/9 vs 2/3 → 5×3 = 15 and 2×9 = 18. 15 &lt; 18, so 5/9 &lt; 2/3."
+                }
+              },
+              "id": "d75fdb2f-c12e-5755-bdfd-584de2459170",
+              "kind": "tip",
+              "ord": 4,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 0,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Careful:</b> a bigger denominator does <u>not</u> mean a bigger fraction. 1/10 is much smaller than 1/2 — more slices means smaller slices."
+                }
+              },
+              "id": "5bfbec70-80f4-531c-918a-4de4576abfb2",
+              "kind": "warning",
+              "ord": 5,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 0,
+                "symbol": "LESSONS"
+              }
+            }
+          ],
+          "estimatedMinutes": 20,
+          "id": "c4f3bc7f-e465-5f62-a374-0b060f5ff05c",
+          "ord": 0,
+          "skillCodes": [
+            "math.fractions.simplify",
+            "math.fractions.compare"
+          ],
+          "source": {
+            "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+            "index": 0,
+            "symbol": "LESSONS"
+          },
+          "title": {
+            "en": "Comparing &amp; simplifying fractions"
+          }
+        },
+        {
+          "blocks": [
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Adding &amp; subtracting</b> — you MUST have the same denominator first. Find a common denominator, convert both fractions, then add or subtract the <b>tops only</b>. The bottom never changes."
+                }
+              },
+              "id": "cc5ff287-9392-56ea-849e-eb0fcccd25f6",
+              "kind": "rule",
+              "ord": 0,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 1,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>3/8 + 1/6</b> <div class=\"step\">Common denominator of 8 and 6 → 24</div> <div class=\"step\">3/8 = 9/24    1/6 = 4/24</div> <div class=\"step\">9/24 + 4/24 = <b>13/24</b>  (already simplest)</div>"
+                }
+              },
+              "id": "9b180b79-9162-5e73-9ec1-ad14e60d1368",
+              "kind": "example",
+              "ord": 1,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 1,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Multiplying</b> — no common denominator needed! Tops × tops, bottoms × bottoms, then simplify."
+                }
+              },
+              "id": "bcd47f21-655b-5a69-bd95-bbdd0f81dfc9",
+              "kind": "rule",
+              "ord": 2,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 1,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>3/4 × 8/9</b> <div class=\"step\">3 × 8 = 24    4 × 9 = 36  →  24/36</div> <div class=\"step\">Simplify: 24/36 = <b>2/3</b></div>"
+                }
+              },
+              "id": "9118e42a-b675-5cb3-ac19-685c190253d7",
+              "kind": "example",
+              "ord": 3,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 1,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Dividing</b> — <b>Keep, Change, Flip</b>. Keep the first fraction, change ÷ to ×, flip the second fraction upside down. Then multiply as normal."
+                }
+              },
+              "id": "c8b276c6-9dd8-54e3-9232-57fc27cf2e93",
+              "kind": "rule",
+              "ord": 4,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 1,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>4/5 ÷ 2/3</b> <div class=\"step\">Keep 4/5 · Change ÷ to × · Flip 2/3 → 3/2</div> <div class=\"step\">4/5 × 3/2 = 12/10 = 6/5 = <b>1 1/5</b></div>"
+                }
+              },
+              "id": "13260340-b78f-5c6b-868f-03f3a24b6bd7",
+              "kind": "example",
+              "ord": 5,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 1,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>The two classic errors:</b> finding a common denominator before multiplying (unnecessary), and forgetting to flip when dividing (fatal)."
+                }
+              },
+              "id": "4bfe1a78-7a0d-5670-b130-e91f47a70695",
+              "kind": "warning",
+              "ord": 6,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 1,
+                "symbol": "LESSONS"
+              }
+            }
+          ],
+          "estimatedMinutes": 20,
+          "id": "4b4998fa-53d6-57e0-9434-ef21f7445b15",
+          "ord": 1,
+          "skillCodes": [
+            "math.fractions.operations"
+          ],
+          "source": {
+            "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+            "index": 1,
+            "symbol": "LESSONS"
+          },
+          "title": {
+            "en": "Adding, subtracting, multiplying &amp; dividing fractions"
+          }
+        },
+        {
+          "blocks": [
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Mixed → improper:</b> multiply the whole number by the denominator, add the numerator, keep the same denominator.  <i>(bottom × side + top)</i>"
+                }
+              },
+              "id": "74ed100f-11a6-5fcb-88bf-d41c0ba8c41a",
+              "kind": "rule",
+              "ord": 0,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 2,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>5 2/3 → improper</b> <div class=\"step\">5 × 3 = 15    15 + 2 = 17</div> <div class=\"step\">Answer: <b>17/3</b></div>"
+                }
+              },
+              "id": "ffd02692-f57d-5efd-ac1a-0ee057bb0976",
+              "kind": "example",
+              "ord": 1,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 2,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Improper → mixed:</b> divide the top by the bottom. The answer is the whole number, the remainder is the new numerator, the denominator stays the same."
+                }
+              },
+              "id": "ab0f76a6-6d5e-5302-bd25-f90cf7cea796",
+              "kind": "rule",
+              "ord": 2,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 2,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>41/6 → mixed</b> <div class=\"step\">41 ÷ 6 = 6 remainder 5</div> <div class=\"step\">Answer: <b>6 5/6</b></div>"
+                }
+              },
+              "id": "bbb4b19e-756e-5a86-93de-1fec2d4cb789",
+              "kind": "example",
+              "ord": 3,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 2,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Check yourself instantly:</b> 6 5/6 back to improper is 6×6+5 = 41 → 41/6 ✓ Every conversion can be checked in five seconds. Do it."
+                }
+              },
+              "id": "e0a0678c-d0eb-5ec6-80d6-b258af227489",
+              "kind": "tip",
+              "ord": 4,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 2,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>An improper fraction is always 1 or more</b> — the top is bigger than (or equal to) the bottom. If your \"improper\" fraction is smaller than 1, you've made a mistake."
+                }
+              },
+              "id": "cd6842ac-9de6-5e9b-9157-539779029fa0",
+              "kind": "warning",
+              "ord": 5,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 2,
+                "symbol": "LESSONS"
+              }
+            }
+          ],
+          "estimatedMinutes": 20,
+          "id": "478ffcb6-329d-58ab-98f8-f8d6408cb135",
+          "ord": 2,
+          "skillCodes": [
+            "math.fractions.mixed"
+          ],
+          "source": {
+            "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+            "index": 2,
+            "symbol": "LESSONS"
+          },
+          "title": {
+            "en": "Improper fractions &amp; mixed numbers"
+          }
+        },
+        {
+          "blocks": [
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Multiplying:</b> ignore the decimal points, multiply as whole numbers, then count how many decimal digits were in the question <i>altogether</i> — the answer has exactly that many."
+                }
+              },
+              "id": "6bd50629-f4b6-5e94-8d3b-341112a6ebcb",
+              "kind": "rule",
+              "ord": 0,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 3,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>12.6 × 4.3</b> <div class=\"step\">Ignore points: 126 × 43 = 5418</div> <div class=\"step\">Decimal digits: 12.<b>6</b> has 1, 4.<b>3</b> has 1 → total 2</div> <div class=\"step\">Put 2 decimal places back: <b>54.18</b></div>"
+                }
+              },
+              "id": "05183885-67db-537d-8d4d-9c502a4914e4",
+              "kind": "example",
+              "ord": 1,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 3,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Dividing by a whole number:</b> use short division and keep the decimal point in the answer <b>directly above</b> the one in the question."
+                }
+              },
+              "id": "0b58492b-8680-5562-81de-2c41070cf55f",
+              "kind": "rule",
+              "ord": 2,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 3,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>48.24 ÷ 8</b> <div class=\"step\">48 ÷ 8 = 6  ·  2 ÷ 8 = 0 remainder 2  ·  24 ÷ 8 = 3</div> <div class=\"step\">Answer: <b>6.03</b>  (don't lose that zero!)</div>"
+                }
+              },
+              "id": "d8035e40-96af-5433-a945-103be7f365f1",
+              "kind": "example",
+              "ord": 3,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 3,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Estimate first, every time.</b> 12.6 × 4.3 is roughly 13 × 4 = 52. If you got 5.418 or 541.8 you'd instantly know the point is in the wrong place."
+                }
+              },
+              "id": "33049197-0c8e-5312-9672-c0185239c114",
+              "kind": "tip",
+              "ord": 4,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 3,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Zeros matter.</b> 48.24 ÷ 8 = 6.03, not 6.3. Write the placeholder zero."
+                }
+              },
+              "id": "d81cbb1e-ce9d-559f-8968-95352b610741",
+              "kind": "warning",
+              "ord": 5,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 3,
+                "symbol": "LESSONS"
+              }
+            }
+          ],
+          "estimatedMinutes": 20,
+          "id": "89a48d9e-ea60-5bdb-8969-e1d2ce48a125",
+          "ord": 3,
+          "skillCodes": [
+            "math.decimals.multiply_divide"
+          ],
+          "source": {
+            "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+            "index": 3,
+            "symbol": "LESSONS"
+          },
+          "title": {
+            "en": "Multiplying &amp; dividing decimals"
+          }
+        },
+        {
+          "blocks": [
+            {
+              "content": {
+                "html": {
+                  "en": "Nothing moves the decimal point — the <b>digits move</b>. <b>× 10</b> → 1 place left  ·  <b>× 100</b> → 2 places left  ·  <b>× 1,000</b> → 3 places left. Dividing moves them the same number of places to the <b>right</b>."
+                }
+              },
+              "id": "415676cc-2f05-5f1a-a0c4-733e584347dc",
+              "kind": "rule",
+              "ord": 0,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 4,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  null,
+                  {
+                    "en": "× 10"
+                  },
+                  {
+                    "en": "× 100"
+                  },
+                  {
+                    "en": "× 1,000"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "en": "<b>4.7</b>"
+                    },
+                    {
+                      "en": "47"
+                    },
+                    {
+                      "en": "470"
+                    },
+                    {
+                      "en": "4,700"
+                    }
+                  ],
+                  [
+                    null,
+                    {
+                      "en": "÷ 10"
+                    },
+                    {
+                      "en": "÷ 100"
+                    },
+                    {
+                      "en": "÷ 1,000"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>65.2</b>"
+                    },
+                    {
+                      "en": "6.52"
+                    },
+                    {
+                      "en": "0.652"
+                    },
+                    {
+                      "en": "0.0652"
+                    }
+                  ]
+                ]
+              },
+              "id": "8aca9309-1560-5862-846b-03f1c0a5e7db",
+              "kind": "table",
+              "ord": 1,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 4,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>0.086 × 1,000</b> <div class=\"step\">3 places left: 0.086 → 0.86 → 8.6 → <b>86</b></div>"
+                }
+              },
+              "id": "6ac8f3ae-7cbd-519c-819f-5bd4e8d8c8c6",
+              "kind": "example",
+              "ord": 2,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 4,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>9.3 ÷ 100</b> <div class=\"step\">2 places right: 9.3 → 0.93 → <b>0.093</b>  (add zeros as placeholders)</div>"
+                }
+              },
+              "id": "4fbbb146-f93c-53f7-9869-b5a7ee700202",
+              "kind": "example",
+              "ord": 3,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 4,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Sense check:</b> multiplying makes it <i>bigger</i>, dividing makes it <i>smaller</i>. If 9.3 ÷ 100 gave you 930, you moved the wrong way."
+                }
+              },
+              "id": "e633ffc8-ca63-5664-b78d-1a74b85227c6",
+              "kind": "tip",
+              "ord": 4,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 4,
+                "symbol": "LESSONS"
+              }
+            }
+          ],
+          "estimatedMinutes": 20,
+          "id": "882d2ac6-089a-507f-9da7-8034f080ff17",
+          "ord": 4,
+          "skillCodes": [
+            "math.place_value.powers_of_ten"
+          ],
+          "source": {
+            "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+            "index": 4,
+            "symbol": "LESSONS"
+          },
+          "title": {
+            "en": "Multiplying &amp; dividing by 10, 100 and 1,000"
+          }
+        },
+        {
+          "blocks": [
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Going to a smaller unit → multiply. Going to a bigger unit → divide.</b> A metre is bigger than a centimetre, so metres → cm means × 100."
+                }
+              },
+              "id": "a875fc75-c859-53d3-84d0-cd134192a638",
+              "kind": "rule",
+              "ord": 0,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 5,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<p>LENGTH</p>"
+                }
+              },
+              "id": "ca3b65a7-1fe0-59cb-87d5-44a97a3c8897",
+              "kind": "text",
+              "ord": 1,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 5,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "steps": [
+                  {
+                    "en": "km"
+                  },
+                  {
+                    "en": "<b>× 1,000 →</b><i>← ÷ 1,000</i>"
+                  },
+                  {
+                    "en": "m"
+                  },
+                  {
+                    "en": "<b>× 100 →</b><i>← ÷ 100</i>"
+                  },
+                  {
+                    "en": "cm"
+                  },
+                  {
+                    "en": "<b>× 10 →</b><i>← ÷ 10</i>"
+                  },
+                  {
+                    "en": "mm"
+                  }
+                ]
+              },
+              "id": "67ab44cb-3dc4-5032-8d15-a9da1e85aa60",
+              "kind": "steps",
+              "ord": 2,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 5,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<p>MASS</p>"
+                }
+              },
+              "id": "65023992-f606-551a-aa2f-3986b4fc404f",
+              "kind": "text",
+              "ord": 3,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 5,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "steps": [
+                  {
+                    "en": "t"
+                  },
+                  {
+                    "en": "<b>× 1,000 →</b><i>← ÷ 1,000</i>"
+                  },
+                  {
+                    "en": "kg"
+                  },
+                  {
+                    "en": "<b>× 1,000 →</b><i>← ÷ 1,000</i>"
+                  },
+                  {
+                    "en": "g"
+                  },
+                  {
+                    "en": "<b>× 1,000 →</b><i>← ÷ 1,000</i>"
+                  },
+                  {
+                    "en": "mg"
+                  }
+                ]
+              },
+              "id": "7231b418-2081-566a-b742-980437a03d55",
+              "kind": "steps",
+              "ord": 4,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 5,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<p>CAPACITY</p>"
+                }
+              },
+              "id": "d541e56e-4116-5457-9285-4b75c1a0079c",
+              "kind": "text",
+              "ord": 5,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 5,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "steps": [
+                  {
+                    "en": "kL"
+                  },
+                  {
+                    "en": "<b>× 1,000 →</b><i>← ÷ 1,000</i>"
+                  },
+                  {
+                    "en": "L"
+                  },
+                  {
+                    "en": "<b>× 1,000 →</b><i>← ÷ 1,000</i>"
+                  },
+                  {
+                    "en": "mL"
+                  }
+                ]
+              },
+              "id": "b9fe3efd-7fa0-5e4e-add1-366278fd972f",
+              "kind": "steps",
+              "ord": 6,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 5,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>6.35 km → m</b>   km is bigger, so × 1,000 → <b>6,350 m</b>"
+                }
+              },
+              "id": "743b1297-b340-57c2-b521-8d735bba25cc",
+              "kind": "example",
+              "ord": 7,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 5,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>950 g → kg</b>   g is smaller, so ÷ 1,000 → <b>0.95 kg</b>"
+                }
+              },
+              "id": "dbc8cc2d-9087-5c2f-a72f-218f67d9484b",
+              "kind": "example",
+              "ord": 8,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 5,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>2,480 m → km</b>   ÷ 1,000 → <b>2.48 km</b>"
+                }
+              },
+              "id": "4c65ea10-0dd7-5885-8938-91cf28b8df86",
+              "kind": "example",
+              "ord": 9,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 5,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "Only <b>length</b> uses 10 and 100. Mass and capacity are <b>always 1,000</b> — that alone is worth several marks."
+                }
+              },
+              "id": "6d97afed-cc5f-514d-ac7b-c36d408d2a8b",
+              "kind": "tip",
+              "ord": 10,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 5,
+                "symbol": "LESSONS"
+              }
+            }
+          ],
+          "estimatedMinutes": 20,
+          "id": "142674d5-1e9e-5254-9b5c-744b999e0f62",
+          "ord": 5,
+          "skillCodes": [
+            "math.measurement.metric_conversion"
+          ],
+          "source": {
+            "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+            "index": 5,
+            "symbol": "LESSONS"
+          },
+          "title": {
+            "en": "Metric unit conversions (length, mass, capacity)"
+          }
+        },
+        {
+          "blocks": [
+            {
+              "content": {
+                "html": {
+                  "en": "A compound shape is just rectangles stuck together. Split it up, or start with the big rectangle and cut a piece out."
+                }
+              },
+              "id": "598d2181-ae12-58b7-b712-da79915c97e3",
+              "kind": "rule",
+              "ord": 0,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 6,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>An L-shape: 12 cm wide, 9 cm tall, with a 5 cm × 5 cm corner cut out</b> <div class=\"step\">Area = 12 × 9 − 5 × 5 = 108 − 25 = <b>83 cm²</b></div> <div class=\"step\">Perimeter = 12 + 9 + 7 + 5 + 5 + 4 = <b>42 cm</b></div>"
+                }
+              },
+              "id": "d85be5ad-6437-5844-b64d-4ea488cc6756",
+              "kind": "example",
+              "ord": 1,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 6,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Missing sides.</b> The two horizontal pieces on one level must add up to the full width. Same for vertical. So: full length − known piece = missing piece."
+                }
+              },
+              "id": "4bfdc21b-d73c-56bb-bf3e-3bf964a19384",
+              "kind": "rule",
+              "ord": 2,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 6,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Top is 12 cm, bottom is 7 cm →</b> the missing horizontal step = 12 − 7 = <b>5 cm</b> <div class=\"step\">Left is ? and the shape is 9 cm tall with a 5 cm step → 9 − 5 = <b>4 cm</b></div>"
+                }
+              },
+              "id": "98c93547-d1c3-528f-aabc-ac243643f6a5",
+              "kind": "example",
+              "ord": 3,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 6,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "Practise this in the <b>Shape Lab</b> tab — it generates a new shape with hidden sides every time you click."
+                }
+              },
+              "id": "b9936ab9-fe16-5833-995e-f04be6bbc12a",
+              "kind": "tip",
+              "ord": 4,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 6,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Units:</b> area is squared (cm², mm², m²), perimeter is not (cm, mm, m). Writing the wrong one loses the mark even when the number is right."
+                }
+              },
+              "id": "9debe8c4-45c2-5512-997d-1474926cfe05",
+              "kind": "warning",
+              "ord": 5,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 6,
+                "symbol": "LESSONS"
+              }
+            }
+          ],
+          "estimatedMinutes": 20,
+          "id": "9471657f-85ea-5ac1-8ba9-3e8d749c2959",
+          "ord": 6,
+          "skillCodes": [
+            "math.geometry.compound_shapes"
+          ],
+          "source": {
+            "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+            "index": 6,
+            "symbol": "LESSONS"
+          },
+          "title": {
+            "en": "Compound shapes: area and perimeter"
+          }
+        },
+        {
+          "blocks": [
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Read it twice.</b> The second read is where you spot what it's actually asking for. Then follow four steps."
+                }
+              },
+              "id": "f74d473a-ef8b-5955-bcf0-70d385d0618d",
+              "kind": "rule",
+              "ord": 0,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 7,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<ol> <li><b>Underline the numbers and the units.</b></li> <li><b>Decide the operation.</b> \"altogether / in total\" → add · \"left over / difference\" → subtract · \"each / per / shared equally\" → divide · \"of\" (as in 2/3 of) → multiply.</li> <li><b>Work it out, showing every line.</b> Working earns marks even if the final answer slips.</li> <li><b>Answer the question that was asked</b> — with the right unit, simplified.</li> </ol>"
+                }
+              },
+              "id": "eb361c18-16e7-5319-8f6b-eca5968a5b88",
+              "kind": "text",
+              "ord": 1,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 7,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>A recipe needs 3/4 kg of flour. Maria makes 2/3 of the recipe. How much flour?</b> <div class=\"step\">\"2/3 <b>of</b> 3/4\" → multiply</div> <div class=\"step\">3/4 × 2/3 = 6/12 = <b>1/2 kg</b></div>"
+                }
+              },
+              "id": "55fcc3f6-361d-58ea-9091-068b47b86990",
+              "kind": "example",
+              "ord": 2,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 7,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>A ribbon 9.6 m long is cut into 8 equal pieces. How long is each piece in cm?</b> <div class=\"step\">\"equal pieces\" → divide: 9.6 ÷ 8 = 1.2 m</div> <div class=\"step\">Question asked for <b>cm</b>: 1.2 × 100 = <b>120 cm</b></div>"
+                }
+              },
+              "id": "898bfa16-8874-50ce-b850-6723a8f5be5e",
+              "kind": "example",
+              "ord": 3,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 7,
+                "symbol": "LESSONS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>The classic loss:</b> doing the maths perfectly and then giving the answer in the wrong unit. Re-read the last line of the question before you write your answer."
+                }
+              },
+              "id": "ceca862d-f568-572f-8b66-74e63a5ad612",
+              "kind": "warning",
+              "ord": 4,
+              "source": {
+                "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+                "index": 7,
+                "symbol": "LESSONS"
+              }
+            }
+          ],
+          "estimatedMinutes": 20,
+          "id": "2b323c81-3419-53ee-bce4-86e3ff6b9f5e",
+          "ord": 7,
+          "skillCodes": [
+            "math.word_problems.multi_step"
+          ],
+          "source": {
+            "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+            "index": 7,
+            "symbol": "LESSONS"
+          },
+          "title": {
+            "en": "Word problems"
+          }
+        }
+      ],
+      "ord": 0,
+      "overview": [
+        {
+          "content": {
+            "html": {
+              "en": "The 8 topics on your exam <p>Click a topic to open the rules, worked examples and the mistakes to avoid. Read one, then jump to <b>Practice</b> and drill it until you get 5 in a row.</p>"
+            }
+          },
+          "id": "0a37ccc4-d48e-5a94-a0d4-ede9ef6eab35",
+          "kind": "text",
+          "ord": 0,
+          "source": {
+            "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+            "symbol": "#learn (introducción)"
+          }
+        }
+      ],
+      "title": {
+        "en": "The 8 topics on your exam"
+      }
+    }
+  ],
+  "packFormatVersion": 1,
+  "questions": [
+    {
+      "answerSpec": {
+        "engineKey": "math.simplify",
+        "type": "engine"
+      },
+      "body": {
+        "engineKey": "math.simplify",
+        "paramSpec": {}
+      },
+      "difficulty": 3,
+      "format": "fraction",
+      "gradingMode": "auto",
+      "id": "28406bc2-34c7-538a-89fd-ec84a25a1097",
+      "kind": "generated",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "math.fractions.simplify",
+      "source": {
+        "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+        "index": 0,
+        "symbol": "TOPICS"
+      },
+      "tags": [
+        "y6a:simplify",
+        "generated"
+      ]
+    },
+    {
+      "answerSpec": {
+        "engineKey": "math.compare",
+        "type": "engine"
+      },
+      "body": {
+        "engineKey": "math.compare",
+        "paramSpec": {}
+      },
+      "difficulty": 3,
+      "format": "short_text",
+      "gradingMode": "auto",
+      "id": "d825b383-21f8-5820-8be6-e9422755f62b",
+      "kind": "generated",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "math.fractions.compare",
+      "source": {
+        "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+        "index": 1,
+        "symbol": "TOPICS"
+      },
+      "tags": [
+        "y6a:compare",
+        "generated"
+      ]
+    },
+    {
+      "answerSpec": {
+        "engineKey": "math.fracop",
+        "type": "engine"
+      },
+      "body": {
+        "engineKey": "math.fracop",
+        "paramSpec": {}
+      },
+      "difficulty": 3,
+      "format": "fraction",
+      "gradingMode": "auto",
+      "id": "91754ead-2e51-50d3-9a37-2f7309d4b760",
+      "kind": "generated",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "math.fractions.operations",
+      "source": {
+        "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+        "index": 2,
+        "symbol": "TOPICS"
+      },
+      "tags": [
+        "y6a:fracop",
+        "generated"
+      ]
+    },
+    {
+      "answerSpec": {
+        "engineKey": "math.mixed",
+        "type": "engine"
+      },
+      "body": {
+        "engineKey": "math.mixed",
+        "paramSpec": {}
+      },
+      "difficulty": 3,
+      "format": "fraction",
+      "gradingMode": "auto",
+      "id": "4a1610ac-e88a-503c-a504-07863aa50a7a",
+      "kind": "generated",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "math.fractions.mixed",
+      "source": {
+        "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+        "index": 3,
+        "symbol": "TOPICS"
+      },
+      "tags": [
+        "y6a:mixed",
+        "generated"
+      ]
+    },
+    {
+      "answerSpec": {
+        "engineKey": "math.decimal",
+        "type": "engine"
+      },
+      "body": {
+        "engineKey": "math.decimal",
+        "paramSpec": {}
+      },
+      "difficulty": 3,
+      "format": "numeric",
+      "gradingMode": "auto",
+      "id": "43313817-3d96-5514-959c-d3ea8bf30d8a",
+      "kind": "generated",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "math.decimals.multiply_divide",
+      "source": {
+        "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+        "index": 4,
+        "symbol": "TOPICS"
+      },
+      "tags": [
+        "y6a:decimal",
+        "generated"
+      ]
+    },
+    {
+      "answerSpec": {
+        "engineKey": "math.powten",
+        "type": "engine"
+      },
+      "body": {
+        "engineKey": "math.powten",
+        "paramSpec": {}
+      },
+      "difficulty": 3,
+      "format": "numeric",
+      "gradingMode": "auto",
+      "id": "5ed9bcc8-823d-5042-9eff-3d88325849c4",
+      "kind": "generated",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "math.place_value.powers_of_ten",
+      "source": {
+        "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+        "index": 5,
+        "symbol": "TOPICS"
+      },
+      "tags": [
+        "y6a:powten",
+        "generated"
+      ]
+    },
+    {
+      "answerSpec": {
+        "engineKey": "math.metric",
+        "type": "engine"
+      },
+      "body": {
+        "engineKey": "math.metric",
+        "paramSpec": {}
+      },
+      "difficulty": 3,
+      "format": "numeric",
+      "gradingMode": "auto",
+      "id": "85fa6c90-a85d-5cfa-8535-b08682a7b986",
+      "kind": "generated",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "math.measurement.metric_conversion",
+      "source": {
+        "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+        "index": 6,
+        "symbol": "TOPICS"
+      },
+      "tags": [
+        "y6a:metric",
+        "generated"
+      ]
+    },
+    {
+      "answerSpec": {
+        "engineKey": "math.shape",
+        "type": "engine"
+      },
+      "body": {
+        "engineKey": "math.shape",
+        "paramSpec": {}
+      },
+      "difficulty": 3,
+      "format": "numeric",
+      "gradingMode": "auto",
+      "id": "6a0cb8c8-0e84-598c-9b8b-0fa6252bb043",
+      "kind": "generated",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "math.geometry.compound_shapes",
+      "source": {
+        "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+        "index": 7,
+        "symbol": "TOPICS"
+      },
+      "tags": [
+        "y6a:shape",
+        "generated"
+      ]
+    },
+    {
+      "answerSpec": {
+        "engineKey": "math.word",
+        "type": "engine"
+      },
+      "body": {
+        "engineKey": "math.word",
+        "paramSpec": {}
+      },
+      "difficulty": 3,
+      "format": "numeric",
+      "gradingMode": "auto",
+      "id": "137ef925-fd92-50fa-9de3-a8d32b664db7",
+      "kind": "generated",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "math.word_problems.multi_step",
+      "source": {
+        "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+        "index": 8,
+        "symbol": "TOPICS"
+      },
+      "tags": [
+        "y6a:word",
+        "generated"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "code": "math.fractions",
+      "id": "b2c66ea5-dba6-5288-9d4b-6ba5b59df7c5",
+      "name": {
+        "en": "Fractions"
+      },
+      "ord": 0,
+      "parentCode": null
+    },
+    {
+      "code": "math.fractions.simplify",
+      "id": "90915082-d3b1-5fc8-8a96-792361d93947",
+      "name": {
+        "en": "Simplifying fractions"
+      },
+      "ord": 1,
+      "parentCode": "math.fractions"
+    },
+    {
+      "code": "math.fractions.compare",
+      "id": "7ea8199b-d528-5ff1-a18f-29fe5315a062",
+      "name": {
+        "en": "Comparing fractions"
+      },
+      "ord": 2,
+      "parentCode": "math.fractions"
+    },
+    {
+      "code": "math.fractions.operations",
+      "id": "82f4f316-afb1-50e6-b670-867a553a2dcb",
+      "name": {
+        "en": "Adding, subtracting, multiplying and dividing fractions"
+      },
+      "ord": 3,
+      "parentCode": "math.fractions"
+    },
+    {
+      "code": "math.fractions.mixed",
+      "id": "4bece72e-6c2a-5903-9b0f-4a3da1185066",
+      "name": {
+        "en": "Improper fractions and mixed numbers"
+      },
+      "ord": 4,
+      "parentCode": "math.fractions"
+    },
+    {
+      "code": "math.decimals",
+      "id": "8c930e92-ae18-50a7-98d2-0000a5379f46",
+      "name": {
+        "en": "Decimals"
+      },
+      "ord": 5,
+      "parentCode": null
+    },
+    {
+      "code": "math.decimals.multiply_divide",
+      "id": "e4d03d57-cae4-5a2c-a78c-3dd2d1838d4a",
+      "name": {
+        "en": "Multiplying and dividing decimals"
+      },
+      "ord": 6,
+      "parentCode": "math.decimals"
+    },
+    {
+      "code": "math.place_value",
+      "id": "7856b77f-f6ae-5acd-8b5d-739175c30609",
+      "name": {
+        "en": "Place value"
+      },
+      "ord": 7,
+      "parentCode": null
+    },
+    {
+      "code": "math.place_value.powers_of_ten",
+      "id": "16ddfd3a-d8ee-5776-a9b2-fcaebeda9b87",
+      "name": {
+        "en": "Multiplying and dividing by 10, 100 and 1,000"
+      },
+      "ord": 8,
+      "parentCode": "math.place_value"
+    },
+    {
+      "code": "math.measurement",
+      "id": "cced3b2e-adf1-52fb-ae42-c1ea80c3fffb",
+      "name": {
+        "en": "Measurement"
+      },
+      "ord": 9,
+      "parentCode": null
+    },
+    {
+      "code": "math.measurement.metric_conversion",
+      "id": "c295a7dd-8dee-5cba-a2e3-2a58f4d964e1",
+      "name": {
+        "en": "Metric unit conversions"
+      },
+      "ord": 10,
+      "parentCode": "math.measurement"
+    },
+    {
+      "code": "math.geometry",
+      "id": "f80c8755-e10d-5efc-abfb-042249b2856a",
+      "name": {
+        "en": "Geometry"
+      },
+      "ord": 11,
+      "parentCode": null
+    },
+    {
+      "code": "math.geometry.compound_shapes",
+      "id": "8bccfbe0-fcc3-5278-9d22-ab636ff5091a",
+      "name": {
+        "en": "Compound shapes: area and perimeter"
+      },
+      "ord": 12,
+      "parentCode": "math.geometry"
+    },
+    {
+      "code": "math.word_problems",
+      "id": "0d8df1df-f632-5b7a-b3a8-eaaf8299d500",
+      "name": {
+        "en": "Word problems"
+      },
+      "ord": 13,
+      "parentCode": null
+    },
+    {
+      "code": "math.word_problems.multi_step",
+      "id": "3cef6778-75a2-57c0-ae8d-43a16b73e1c5",
+      "name": {
+        "en": "Multi-step word problems"
+      },
+      "ord": 14,
+      "parentCode": "math.word_problems"
+    }
+  ],
+  "studyPlan": {
+    "days": [
+      {
+        "id": "56c2e436-602e-5141-bd72-607d5afa1b2b",
+        "ord": 0,
+        "tasks": [
+          {
+            "ord": 0,
+            "target": {
+              "en": "5 in a row on each"
+            },
+            "text": {
+              "en": "Read topics 1–3 (comparing &amp; simplifying, the four fraction operations, improper ↔ mixed). Practise each one."
+            }
+          }
+        ],
+        "title": {
+          "en": "Day 1"
+        }
+      },
+      {
+        "id": "42a6f6c4-28a5-51a1-9716-e7e391dc786d",
+        "ord": 1,
+        "tasks": [
+          {
+            "ord": 0,
+            "target": {
+              "en": "90% accuracy"
+            },
+            "text": {
+              "en": "Topics 4–5: multiplying &amp; dividing decimals, then × and ÷ by 10 / 100 / 1,000. These are pure speed — go for accuracy first, then speed."
+            }
+          }
+        ],
+        "title": {
+          "en": "Day 2"
+        }
+      },
+      {
+        "id": "9098fb53-f69a-5f8d-bc20-fe83b38b0d53",
+        "ord": 2,
+        "tasks": [
+          {
+            "ord": 0,
+            "target": {
+              "en": "10 correct, no notes"
+            },
+            "text": {
+              "en": "Topic 6: metric conversions. Learn the two chains by heart, then drill."
+            }
+          }
+        ],
+        "title": {
+          "en": "Day 3"
+        }
+      },
+      {
+        "id": "4c3f73b7-9d3d-5b60-bfda-e43dffbf9b0e",
+        "ord": 3,
+        "tasks": [
+          {
+            "ord": 0,
+            "target": {
+              "en": "4 shapes fully correct"
+            },
+            "text": {
+              "en": "Shape Lab until you can find missing sides without help. Then word problems."
+            }
+          }
+        ],
+        "title": {
+          "en": "Day 4"
+        }
+      },
+      {
+        "id": "2c3e3bde-e0cd-5fc7-a564-f9a97958fe06",
+        "ord": 4,
+        "tasks": [
+          {
+            "ord": 0,
+            "target": {
+              "en": "16 / 20 or better"
+            },
+            "text": {
+              "en": "Full timed mock exam. Review every mistake, then re-drill only those topics."
+            }
+          }
+        ],
+        "title": {
+          "en": "Day 5"
+        }
+      }
+    ],
+    "id": "15dcdae5-d3eb-5a3e-9319-f593a523eea2",
+    "notes": [
+      {
+        "content": {
+          "html": {
+            "en": "A 5-day plan to walk into that exam ready <p>Short sessions beat one long panic session. 30–40 minutes a day is plenty.</p> <h3>The 10 marks students throw away every year</h3> <ol> <li>Forgetting to <b>simplify</b> the final fraction.</li> <li>Finding a common denominator when <b>multiplying</b> (you don't need one).</li> <li>Forgetting to <b>flip the second fraction</b> when dividing.</li> <li>Losing the decimal point: 12.6 × 4.3 has <b>2 decimal places</b> in the answer.</li> <li>Moving digits the wrong way when dividing by 100.</li> <li>Multiplying when you should divide in a conversion (small unit → big unit means ÷).</li> <li>Writing cm instead of cm² for an area.</li> <li>Missing a side when going round a compound shape.</li> <li>Not answering the actual question in a word problem (it asked for mL, you wrote L).</li> <li>Leaving a question blank. Always write your working — it can earn marks.</li> </ol>"
+          }
+        },
+        "id": "f1f3b068-0388-5bbb-acb1-29b3606eac96",
+        "kind": "text",
+        "ord": 0,
+        "source": {
+          "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+          "symbol": "#plan"
+        }
+      },
+      {
+        "content": {
+          "html": {
+            "en": "<b>The night before:</b> don't learn anything new. Re-read the rule boxes in <b>Learn</b>, do 10 quick questions in <b>Practice</b>, then stop. Sleep is worth more marks than another hour of revision."
+          }
+        },
+        "id": "9a946eb8-ebf9-5c95-a839-bd79e6aba377",
+        "kind": "tip",
+        "ord": 1,
+        "source": {
+          "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+          "symbol": "#plan"
+        }
+      },
+      {
+        "content": {
+          "html": {
+            "en": "<b>In the exam:</b> do the sections you find easy first (usually multiple choice, powers of 10, conversions). Bank those marks, then come back to the shapes and word problems with the time you have left. Check every answer has a <b>unit</b>."
+          }
+        },
+        "id": "d0811f4e-21c7-5897-94e1-e0375d1632a8",
+        "kind": "rule",
+        "ord": 2,
+        "source": {
+          "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+          "symbol": "#plan"
+        }
+      }
+    ],
+    "source": {
+      "file": "Y6A/Math/Grade 5 Maths Exam Trainer.html",
+      "symbol": "#plan"
+    },
+    "title": {
+      "en": "A 5-day plan to walk into that exam ready"
+    }
+  },
+  "subject": {
+    "code": "math",
+    "color": "#173a63",
+    "icon": "📐",
+    "name": {
+      "en": "Mathematics"
+    },
+    "ord": 0
+  }
+}

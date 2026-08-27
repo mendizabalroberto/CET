@@ -1,0 +1,6393 @@
+{
+  "blueprints": [
+    {
+      "allowBack": true,
+      "code": "spanish.y6.mock",
+      "description": {
+        "es": "Verbos regulares, diptongo e hiato, y tilde diacrítica. 15 minutos."
+      },
+      "durationSeconds": 900,
+      "feedbackMode": "after_submit",
+      "id": "f30886af-c245-506e-aaa1-51f99d0d04f9",
+      "maxAttempts": null,
+      "passThreshold": 0.6,
+      "sections": [
+        {
+          "id": "14d58913-abd1-55cf-b89d-2522ca854e5a",
+          "itemCount": 7,
+          "ord": 0,
+          "pointsPerItem": 1,
+          "selection": {
+            "skillCodes": [
+              "spanish.verbos.regulares"
+            ]
+          },
+          "source": "bank",
+          "title": {
+            "es": "Parte 1 · Verbos regulares y verbos modelo"
+          }
+        },
+        {
+          "id": "802be3bb-442d-5a20-92d4-3f2ce71e3729",
+          "itemCount": 7,
+          "ord": 1,
+          "pointsPerItem": 1,
+          "selection": {
+            "skillCodes": [
+              "spanish.ortografia.diptongo_hiato"
+            ]
+          },
+          "source": "bank",
+          "title": {
+            "es": "Parte 2 · Diptongo, hiato y tilde en los hiatos"
+          }
+        },
+        {
+          "id": "5af1a8db-1b13-5f4d-ab68-e9c7a86b1f2a",
+          "itemCount": 6,
+          "ord": 2,
+          "pointsPerItem": 1,
+          "selection": {
+            "skillCodes": [
+              "spanish.ortografia.tilde_diacritica"
+            ]
+          },
+          "source": "bank",
+          "title": {
+            "es": "Parte 3 · Tilde diacrítica"
+          }
+        }
+      ],
+      "shuffleOptions": true,
+      "shuffleQuestions": false,
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "symbol": "MPARTS"
+      },
+      "title": {
+        "es": "Examen simulacro — 20 preguntas"
+      }
+    }
+  ],
+  "course": {
+    "code": "spanish.y6",
+    "id": "3d0a63ee-42c2-551c-ae5c-8585b7ee7eaa",
+    "locale": "es",
+    "name": {
+      "es": "Español — Year 6"
+    },
+    "status": "published",
+    "version": 1,
+    "yearLevel": 6
+  },
+  "gaps": [
+    {
+      "area": "los 5 juegos",
+      "reason": "máquina de conjugar, clasificador diptongo/hiato, memoria de monosílabos y cazador de errores. Formatos `cloze`, `matching` y `hotspot` fuera del alcance actual del pipeline.",
+      "symbol": "VERBS / PRON / ENDS / CONJNAME / DHW / TILQ / MPAIRS / ERRS"
+    },
+    {
+      "area": "desbloqueo del simulacro por progreso",
+      "reason": "el trainer exige el 90% de la práctica antes de abrir el examen. Es una regla de progresión que corresponde a `exam_assignments` y a la capa de analítica, no al contenido.",
+      "symbol": "GOAL / answered / isUnlocked"
+    },
+    {
+      "area": "campos sin equivalente en el material original",
+      "reason": "los trainers Y6A no declaran dificultad, duración estimada, umbral de aprobado ni número de intentos. El pipeline los rellena con valores por defecto uniformes (difficulty 2 en banco / 3 en generadas, estimatedMinutes 20, passThreshold 0.6, maxAttempts sin límite, pointsPerItem 1) que un profesor debe revisar antes de publicar el curso. NO son datos extraídos."
+    }
+  ],
+  "integrity": "0380d137707f74e2",
+  "modules": [
+    {
+      "description": {
+        "es": "Temas 21, 22 y 23: verbos regulares, diptongo e hiato, y tilde diacrítica."
+      },
+      "id": "875bb528-c03b-5613-a0ea-6634d78657bb",
+      "lessons": [
+        {
+          "blocks": [
+            {
+              "content": {
+                "html": {
+                  "es": "<b>¿Qué son los verbos?</b><br> Los verbos son palabras que expresan <b>acciones, estados o procesos</b>.<br> <span class=\"tsub\">Ejemplos: correr, cantar, estudiar, vivir.</span>"
+                }
+              },
+              "id": "7a3aac89-32ee-5622-906f-5d52d36df543",
+              "kind": "rule",
+              "ord": 0,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<h3>1 · ¿Qué es un verbo regular?</h3>"
+                }
+              },
+              "id": "d2b853cf-f771-50f5-adb7-89beb2c86dad",
+              "kind": "text",
+              "ord": 1,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "Los verbos regulares son los que <b>mantienen su raíz</b> y siguen <b>las mismas reglas</b> al conjugarse.<br> <span class=\"tsub\">cant<b>ar</b> → yo cant<b>o</b>, tú cant<b>as</b>, nosotros cant<b>amos</b> … la raíz <b>cant-</b> nunca cambia.</span>"
+                }
+              },
+              "id": "79a4edcd-e0a3-599f-a35e-4037e11522b1",
+              "kind": "tip",
+              "ord": 2,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<h3>2 · Raíz y terminación</h3>"
+                }
+              },
+              "id": "81ce685c-8858-5f69-93a1-8d4cf0d3ad43",
+              "kind": "text",
+              "ord": 3,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "es": "Verbo"
+                  },
+                  {
+                    "es": "Raíz (no cambia)"
+                  },
+                  {
+                    "es": "Terminación (cambia)"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "es": "cantar"
+                    },
+                    {
+                      "es": "<b>cant-</b>"
+                    },
+                    {
+                      "es": "-ar · -o · -as · -a · -amos · -an"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "comer"
+                    },
+                    {
+                      "es": "<b>com-</b>"
+                    },
+                    {
+                      "es": "-er · -o · -es · -e · -emos · -en"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "vivir"
+                    },
+                    {
+                      "es": "<b>viv-</b>"
+                    },
+                    {
+                      "es": "-ir · -o · -es · -e · -imos · -en"
+                    }
+                  ]
+                ]
+              },
+              "id": "e7b87ce1-98c8-54df-b18d-d232e0a447f9",
+              "kind": "table",
+              "ord": 4,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<b>Truco:</b> tapa las dos últimas letras del infinitivo con el dedo. Lo que queda es la <b>raíz</b>; lo que tapaste dice a qué <b>conjugación</b> pertenece."
+                }
+              },
+              "id": "f2cf2579-6b8c-5759-a5a3-78ff055fec86",
+              "kind": "tip",
+              "ord": 5,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<h3>3 · Las tres conjugaciones</h3>"
+                }
+              },
+              "id": "4c7ef94d-05f5-5d8d-b2fa-cba04d786baa",
+              "kind": "text",
+              "ord": 6,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "es": "Conjugación"
+                  },
+                  {
+                    "es": "Termina en"
+                  },
+                  {
+                    "es": "Verbo modelo"
+                  },
+                  {
+                    "es": "Otros ejemplos"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "es": "<b>1.ª</b>"
+                    },
+                    {
+                      "es": "-AR"
+                    },
+                    {
+                      "es": "amar"
+                    },
+                    {
+                      "es": "cantar, bailar, estudiar, trabajar"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "<b>2.ª</b>"
+                    },
+                    {
+                      "es": "-ER"
+                    },
+                    {
+                      "es": "temer"
+                    },
+                    {
+                      "es": "comer, leer, correr, vender"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "<b>3.ª</b>"
+                    },
+                    {
+                      "es": "-IR"
+                    },
+                    {
+                      "es": "vivir"
+                    },
+                    {
+                      "es": "vivir, escribir, abrir, partir"
+                    }
+                  ]
+                ]
+              },
+              "id": "f2d345a4-3e2e-5ef5-8a7f-7fc4b384d23f",
+              "kind": "table",
+              "ord": 7,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<b>Verbo modelo</b> = el verbo que sirve de <b>molde</b>. Si sabes conjugar <b>amar, temer y vivir</b>, sabes conjugar todos los verbos regulares del español."
+                }
+              },
+              "id": "713f5f28-d0b5-5773-b1ac-2bb500d991e9",
+              "kind": "rule",
+              "ord": 8,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<h3>4 · Las tres tablas que hay que saber de memoria</h3>"
+                }
+              },
+              "id": "9a24c730-620e-5884-b12c-c924e3f18f7a",
+              "kind": "text",
+              "ord": 9,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "es": "Pronombre"
+                  },
+                  {
+                    "es": "amar <span class=\"tsub\">(1.ª)</span>"
+                  },
+                  {
+                    "es": "temer <span class=\"tsub\">(2.ª)</span>"
+                  },
+                  {
+                    "es": "vivir <span class=\"tsub\">(3.ª)</span>"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "es": "Yo"
+                    },
+                    {
+                      "es": "am<b>o</b>"
+                    },
+                    {
+                      "es": "tem<b>o</b>"
+                    },
+                    {
+                      "es": "viv<b>o</b>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "Tú"
+                    },
+                    {
+                      "es": "am<b>as</b>"
+                    },
+                    {
+                      "es": "tem<b>es</b>"
+                    },
+                    {
+                      "es": "viv<b>es</b>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "Él / Ella"
+                    },
+                    {
+                      "es": "am<b>a</b>"
+                    },
+                    {
+                      "es": "tem<b>e</b>"
+                    },
+                    {
+                      "es": "viv<b>e</b>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "Nosotros"
+                    },
+                    {
+                      "es": "am<b>amos</b>"
+                    },
+                    {
+                      "es": "tem<b>emos</b>"
+                    },
+                    {
+                      "es": "viv<b>imos</b>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "Ustedes"
+                    },
+                    {
+                      "es": "am<b>an</b>"
+                    },
+                    {
+                      "es": "tem<b>en</b>"
+                    },
+                    {
+                      "es": "viv<b>en</b>"
+                    }
+                  ]
+                ]
+              },
+              "id": "4a6412c1-d5a8-50a7-9fbd-6ede5f532b04",
+              "kind": "table",
+              "ord": 10,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<b>Lo único que separa a -ER de -IR</b> es la fila de <b>nosotros</b>: tem<b>emos</b> pero viv<b>imos</b>. Todo lo demás es igual."
+                }
+              },
+              "id": "b460e3a3-07a8-5f1b-b8d8-f26a61687d97",
+              "kind": "tip",
+              "ord": 11,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<h3>5 · Verbos irregulares (para no confundirse)</h3>"
+                }
+              },
+              "id": "439ae9a6-d5f7-504d-9b53-9b2bd7a44010",
+              "kind": "text",
+              "ord": 12,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "Un verbo es <b>irregular</b> cuando <b>cambia la raíz</b> o la terminación al conjugarse:<br> <span>ser → yo <b>soy</b></span> · <span>ir → yo <b>voy</b></span> · <span>tener → yo <b>tengo</b></span> · <span>jugar → yo <b>juego</b></span> · <span>poder → yo <b>puedo</b></span><br> Compáralos con un regular: <span>cantar → yo canto</span>. La raíz <b>cant-</b> sigue intacta."
+                }
+              },
+              "id": "d9aa6adb-a820-5785-a4f4-26ffdfdda9b7",
+              "kind": "warning",
+              "ord": 13,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<h3>6 · Actividad del texto</h3>"
+                }
+              },
+              "id": "3b34760e-d236-5a8f-a630-d4865ff800ec",
+              "kind": "text",
+              "ord": 14,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "es": "Oración"
+                  },
+                  {
+                    "es": "Respuesta"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "es": "Yo _____ (cantar)"
+                    },
+                    {
+                      "es": "canto"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "Nosotros _____ (comer)"
+                    },
+                    {
+                      "es": "comemos"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "Tú _____ (vivir)"
+                    },
+                    {
+                      "es": "vives"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "Ellos _____ (trabajar)"
+                    },
+                    {
+                      "es": "trabajan"
+                    }
+                  ]
+                ]
+              },
+              "id": "bee8b500-6a5a-5807-ace6-354cfea3dc55",
+              "kind": "table",
+              "ord": 15,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            }
+          ],
+          "estimatedMinutes": 20,
+          "id": "9d945794-2b3b-5596-b700-0fc784c60202",
+          "ord": 0,
+          "skillCodes": [
+            "spanish.verbos.regulares"
+          ],
+          "source": {
+            "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+            "index": 0,
+            "symbol": "#learn .topic"
+          },
+          "title": {
+            "es": "🅰️ Tema 21 · Los verbos regulares y los verbos modelo — amar · temer · vivir"
+          }
+        },
+        {
+          "blocks": [
+            {
+              "content": {
+                "html": {
+                  "es": "<b>Vocales abiertas (fuertes):</b> <span>a</span> <span>e</span> <span>o</span>  ·  <b>Vocales cerradas (débiles):</b> <span>i</span> <span>u</span><br> <span class=\"tsub\">Aprende esto primero: sin esto, no se entiende nada de lo demás.</span>"
+                }
+              },
+              "id": "96f810db-b46b-5619-98f8-949451435f02",
+              "kind": "rule",
+              "ord": 0,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 1,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<h3>1 · Diptongo e hiato</h3>"
+                }
+              },
+              "id": "a162ca6c-e6ca-5592-a129-21b2bd102f0a",
+              "kind": "text",
+              "ord": 1,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 1,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<b>DIPTONGO — las vocales se juntan</b><br> Dos vocales seguidas en la <b>misma sílaba</b>.<br> <b>ciudad → ciu-dad</b><br> <span class=\"tsub\">aire · reino · deuda · viaje · nieve · monstruo · ruido · incluido · jaula · viudo</span>"
+                }
+              },
+              "id": "a5c7a459-7862-5a91-a9de-2ec5ab0b3967",
+              "kind": "tip",
+              "ord": 2,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 1,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<b>HIATO — las vocales se separan</b><br> Dos vocales seguidas en <b>sílabas distintas</b>.<br> <b>teatro → te-a-tro</b><br> <span class=\"tsub\">caer · correo · toalla · raíz · baúl · freír · egoísta · sandía · frío · grúa</span>"
+                }
+              },
+              "id": "3487eec3-7ca0-59bf-94ef-d50b23adc085",
+              "kind": "tip",
+              "ord": 3,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 1,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<h3>2 · Los tres tipos de hiato</h3>"
+                }
+              },
+              "id": "c2326dfe-73d4-5785-b4bc-f4f490d65ebb",
+              "kind": "text",
+              "ord": 4,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 1,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "es": "Tipo"
+                  },
+                  {
+                    "es": "Ejemplos"
+                  },
+                  {
+                    "es": "¿Lleva tilde?"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "es": "<b>abierta + abierta</b><br><span class=\"tsub\">(a, e, o) + (a, e, o)</span>"
+                    },
+                    {
+                      "es": "ca-<b>e</b>r · te-<b>a</b>-tro · co-rr<b>e</b>-o · to-<b>a</b>-lla · po-<b>e</b>-ta · le-<b>e</b>r"
+                    },
+                    {
+                      "es": "Solo si lo mandan las reglas generales de acentuación. <span class=\"tsub\">(caer, correo, poeta → sin tilde)</span>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "<b>abierta + cerrada tónica</b><br><span class=\"tsub\">(a, e, o) + (í, ú)</span>"
+                    },
+                    {
+                      "es": "ra-<b>íz</b> · ba-<b>úl</b> · fre-<b>ír</b> · e-go-<b>ís</b>-ta · pa-<b>ís</b> · o-<b>í</b>-do"
+                    },
+                    {
+                      "es": "SIEMPRE lleva tilde"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "<b>cerrada tónica + abierta</b><br><span class=\"tsub\">(í, ú) + (a, e, o)</span>"
+                    },
+                    {
+                      "es": "san-d<b>í</b>-a · fr<b>í</b>-o · gr<b>ú</b>-a · fl<b>ú</b>-or · M<b>a</b>-r<b>í</b>-a · t<b>í</b>-o"
+                    },
+                    {
+                      "es": "SIEMPRE lleva tilde"
+                    }
+                  ]
+                ]
+              },
+              "id": "524ead1a-d724-59ba-8ccc-cf3ecd4a089f",
+              "kind": "table",
+              "ord": 5,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 1,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<h3>3 · La regla de oro del tema</h3>"
+                }
+              },
+              "id": "545baa44-12c3-5bbf-bf33-a933efc3e0ea",
+              "kind": "text",
+              "ord": 6,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 1,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<b>Si el hiato tiene una vocal cerrada (i, u) que suena FUERTE, esa vocal lleva tilde SIEMPRE</b>, aunque las reglas generales de acentuación digan que no.<br> <span class=\"tsub\">ra-íz (aguda terminada en z → “no debería” llevar tilde, pero la lleva) · dí-a · pú-a · ba-úl · re-ír</span>"
+                }
+              },
+              "id": "ab4519f2-6c8b-58ec-969f-e8b66dbe37ae",
+              "kind": "rule",
+              "ord": 7,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 1,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<b>Ojo con el par que más confunde:</b><br> <span>✓ frí-o</span> (hiato, la i suena fuerte → tilde)  vs  <span>✓ vio</span> (diptongo, una sola sílaba → sin tilde).<br> <span>✓ ha-cí-a</span> (yo hacía)  vs  <span>✓ ha-cia</span> (dirección)."
+                }
+              },
+              "id": "515b71f8-a2a7-5db9-aece-5e3406126870",
+              "kind": "warning",
+              "ord": 8,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 1,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<h3>4 · La letra H no molesta</h3>"
+                }
+              },
+              "id": "82e11758-8fa4-5db7-a43e-838830a7c6b2",
+              "kind": "text",
+              "ord": 9,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 1,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "La <b>h</b> intercalada <b>no impide</b> que se forme un diptongo o un hiato: se hace como si no estuviera.<br> DIPTONGO: <b>ahumado → ahu-ma-do</b>  ·  HIATO: <b>bahía → ba-hí-a</b> (con tilde, porque la í es tónica).<br> <span class=\"tsub\">Más ejemplos: búho, prohíbe, rehúsa (hiatos con tilde) · ahijado, ahora (diptongos).</span>"
+                }
+              },
+              "id": "df18b7ae-32ae-5886-bf27-78be9c343efb",
+              "kind": "text",
+              "ord": 10,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 1,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<h3>5 · Prueba de 3 pasos para cualquier palabra</h3> <ol> <li><b>¿Hay dos vocales juntas?</b> Si no, este tema no aplica.</li> <li><b>Sepáralas en sílabas en voz alta.</b> ¿Se quedan juntas? → diptongo. ¿Se separan? → hiato.</li> <li><b>Si es hiato y la fuerza cae en la i o en la u</b> → ponle tilde <b>siempre</b>.</li> </ol>"
+                }
+              },
+              "id": "a1ec29c5-a2a2-51be-bdcb-956f4de084db",
+              "kind": "text",
+              "ord": 11,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 1,
+                "symbol": "#learn .topic"
+              }
+            }
+          ],
+          "estimatedMinutes": 20,
+          "id": "97278a59-952a-5ee7-a96d-c68e8be08da0",
+          "ord": 1,
+          "skillCodes": [
+            "spanish.ortografia.diptongo_hiato"
+          ],
+          "source": {
+            "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+            "index": 1,
+            "symbol": "#learn .topic"
+          },
+          "title": {
+            "es": "🔤 Tema 22 · La tilde en los hiatos — diptongo / hiato"
+          }
+        },
+        {
+          "blocks": [
+            {
+              "content": {
+                "html": {
+                  "es": "<b>Concepto.</b> Como regla general las palabras <b>monosílabas no llevan tilde</b>. Sin embargo, a veces se escribe tilde sobre algunas de ellas <b>para diferenciarlas de otras que tienen la misma forma pero diferente significado</b>. Esa tilde se llama <b>tilde diacrítica</b>.<br> <span class=\"tsub\"><b>Sí</b>, quiero participar en la actividad.  ·  <b>Si</b> estudias, aprobarás el examen.</span>"
+                }
+              },
+              "id": "a1a30d07-a65c-56d6-8486-6ea0493c5cf1",
+              "kind": "rule",
+              "ord": 0,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 2,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<h3>1 · La tabla completa</h3>"
+                }
+              },
+              "id": "4993f44f-a633-5484-bf5f-a5f3bed885e6",
+              "kind": "text",
+              "ord": 1,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 2,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "es": "Con tilde"
+                  },
+                  {
+                    "es": "Qué es"
+                  },
+                  {
+                    "es": "Sin tilde"
+                  },
+                  {
+                    "es": "Qué es"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "es": "<b>mí</b>"
+                    },
+                    {
+                      "es": "pronombre<br><span class=\"tsub\">A <b>mí</b> me gusta.</span>"
+                    },
+                    {
+                      "es": "<b>mi</b>"
+                    },
+                    {
+                      "es": "posesivo<br><span class=\"tsub\"><b>Mi</b> madre es inglesa.</span>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "<b>tú</b>"
+                    },
+                    {
+                      "es": "pronombre<br><span class=\"tsub\"><b>Tú</b> eres alta.</span>"
+                    },
+                    {
+                      "es": "<b>tu</b>"
+                    },
+                    {
+                      "es": "posesivo<br><span class=\"tsub\"><b>Tu</b> libro es el rojo.</span>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "<b>él</b>"
+                    },
+                    {
+                      "es": "pronombre<br><span class=\"tsub\"><b>Él</b> es de Chile.</span>"
+                    },
+                    {
+                      "es": "<b>el</b>"
+                    },
+                    {
+                      "es": "artículo<br><span class=\"tsub\"><b>El</b> gato está aquí.</span>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "<b>té</b>"
+                    },
+                    {
+                      "es": "sustantivo (la bebida)<br><span class=\"tsub\">¿Quieres un <b>té</b>?</span>"
+                    },
+                    {
+                      "es": "<b>te</b>"
+                    },
+                    {
+                      "es": "pronombre<br><span class=\"tsub\">¿<b>Te</b> gusta el arroz?</span>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "<b>sí</b>"
+                    },
+                    {
+                      "es": "adverbio de afirmación / pronombre<br><span class=\"tsub\"><b>Sí</b>, soy yo. · Ella piensa en <b>sí</b> misma.</span>"
+                    },
+                    {
+                      "es": "<b>si</b>"
+                    },
+                    {
+                      "es": "conjunción (condición)<br><span class=\"tsub\"><b>Si</b> quieres, voy contigo.</span>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "<b>sé</b>"
+                    },
+                    {
+                      "es": "verbo <b>saber</b> (o <i>ser</i> en orden)<br><span class=\"tsub\">Yo <b>sé</b> tocar el violín.</span>"
+                    },
+                    {
+                      "es": "<b>se</b>"
+                    },
+                    {
+                      "es": "pronombre<br><span class=\"tsub\"><b>Se</b> levanta ahora.</span>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "<b>dé</b>"
+                    },
+                    {
+                      "es": "verbo <b>dar</b><br><span class=\"tsub\">Dile que <b>dé</b> las gracias.</span>"
+                    },
+                    {
+                      "es": "<b>de</b>"
+                    },
+                    {
+                      "es": "preposición<br><span class=\"tsub\">La casa <b>de</b> Jaime.</span>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "<b>más</b>"
+                    },
+                    {
+                      "es": "cantidad<br><span class=\"tsub\">Quiero <b>más</b> pan.</span>"
+                    },
+                    {
+                      "es": "<b>mas</b>"
+                    },
+                    {
+                      "es": "= pero<br><span class=\"tsub\">Te busqué, <b>mas</b> no te encontré.</span>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "<b>aún</b>"
+                    },
+                    {
+                      "es": "= todavía<br><span class=\"tsub\"><b>Aún</b> no llegaba nadie.</span>"
+                    },
+                    {
+                      "es": "<b>aun</b>"
+                    },
+                    {
+                      "es": "= incluso, hasta<br><span class=\"tsub\">Llegó <b>aun</b> después de varias horas.</span>"
+                    }
+                  ]
+                ]
+              },
+              "id": "79d04485-d4b5-526d-bba0-94500c6fed71",
+              "kind": "table",
+              "ord": 2,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 2,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<h3>2 · Los cuatro del título, en detalle</h3>"
+                }
+              },
+              "id": "87dedd8b-449f-5519-8a4f-ebc5ef0f7c56",
+              "kind": "text",
+              "ord": 3,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 2,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<b>DÉ</b> = del verbo <b>dar</b>. Prueba: cámbialo por <b>“entregue”</b>.<br> <span class=\"tsub\">Espero que me <b>dé</b> permiso. → Espero que me <i>entregue</i> permiso. ✔ lleva tilde.</span><br> <b>de</b> = preposición (indica de quién o de qué). <span class=\"tsub\">El libro <b>de</b> historia.</span>"
+                }
+              },
+              "id": "28e2f95a-dcd3-52d8-bada-935811cee1d8",
+              "kind": "tip",
+              "ord": 4,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 2,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<b>MÍ</b> = pronombre, siempre va <b>después de una preposición</b> (a mí, para mí, de mí, por mí, sin mí).<br> <b>mi</b> = posesivo, siempre va <b>delante de un sustantivo</b> (mi casa, mi perro, mi esfuerzo).<br> <span class=\"tsub\">Prueba: si puedes decir “<i>mi</i> + cosa”, va sin tilde.</span>"
+                }
+              },
+              "id": "cf6118a7-0747-5287-8b2f-490fff405200",
+              "kind": "tip",
+              "ord": 5,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 2,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<b>SÍ</b> = respuesta afirmativa o pronombre reflexivo. Prueba: cámbialo por <b>“claro que sí”</b> o por <b>“sí mismo”</b>.<br> <b>si</b> = condición (= “en caso de que”) o pregunta indirecta. <span class=\"tsub\">No sé <b>si</b> vendrá.</span>"
+                }
+              },
+              "id": "b76bf4ca-1e9f-5076-8e02-754adf3a32fa",
+              "kind": "text",
+              "ord": 6,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 2,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<b>SÉ</b> = verbo <b>saber</b> (yo sé) o mandato del verbo <b>ser</b> (¡sé bueno!). Prueba: cámbialo por <b>“conozco”</b>.<br> <b>se</b> = pronombre. <span class=\"tsub\"><b>Se</b> lavó las manos. · <b>Se</b> fue de viaje.</span>"
+                }
+              },
+              "id": "376886e1-a573-5803-a7d0-0cbdc2f62d02",
+              "kind": "text",
+              "ord": 7,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 2,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<h3>3 · El ejercicio de clase, ya resuelto</h3>"
+                }
+              },
+              "id": "76488947-9110-5e8a-bf02-d3d130b6d883",
+              "kind": "text",
+              "ord": 8,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 2,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "es": "Par"
+                  },
+                  {
+                    "es": "Oración"
+                  },
+                  {
+                    "es": "Respuesta"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "es": "Dé – de"
+                    },
+                    {
+                      "es": "No le _____ nada, no se lo merece."
+                    },
+                    {
+                      "es": "dé <span class=\"tsub\">(verbo dar)</span>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "Dé – de"
+                    },
+                    {
+                      "es": "La dueña _____ la tienda se fue de viaje."
+                    },
+                    {
+                      "es": "de <span class=\"tsub\">(preposición)</span>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "Sé – se"
+                    },
+                    {
+                      "es": "Yo _____ que ustedes son muy capaces."
+                    },
+                    {
+                      "es": "sé <span class=\"tsub\">(verbo saber)</span>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "Sé – se"
+                    },
+                    {
+                      "es": "Marlene _____ sacó excelentes notas."
+                    },
+                    {
+                      "es": "se <span class=\"tsub\">(pronombre)</span>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "Más – mas"
+                    },
+                    {
+                      "es": "Rocío posee _____ conocimiento, solo debe aplicarlo."
+                    },
+                    {
+                      "es": "más <span class=\"tsub\">(cantidad)</span>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "Más – mas"
+                    },
+                    {
+                      "es": "Te fuimos a buscar, _____ no te encontramos."
+                    },
+                    {
+                      "es": "mas <span class=\"tsub\">(= pero)</span>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "Aún – aun"
+                    },
+                    {
+                      "es": "Cuando llegamos al colegio, _____ no llegaba nadie."
+                    },
+                    {
+                      "es": "aún <span class=\"tsub\">(= todavía)</span>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "Aún – aun"
+                    },
+                    {
+                      "es": "Alberto llegó _____ después de varias horas."
+                    },
+                    {
+                      "es": "aun <span class=\"tsub\">(= incluso)</span>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "Té – te"
+                    },
+                    {
+                      "es": "_____ imaginas nosotros graduándonos."
+                    },
+                    {
+                      "es": "Te <span class=\"tsub\">(pronombre)</span>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "Té – te"
+                    },
+                    {
+                      "es": "El _____ es relajante."
+                    },
+                    {
+                      "es": "té <span class=\"tsub\">(la bebida)</span>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "Mí – mi"
+                    },
+                    {
+                      "es": "No sé si se acuerde de _____, éramos tan niños."
+                    },
+                    {
+                      "es": "mí <span class=\"tsub\">(tras preposición)</span>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "Mí – mi"
+                    },
+                    {
+                      "es": "_____ esfuerzo me deja tranquilo."
+                    },
+                    {
+                      "es": "Mi <span class=\"tsub\">(posesivo)</span>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "Tú – tu"
+                    },
+                    {
+                      "es": "¿Acaso _____ vas a dar la cara por ese resultado?"
+                    },
+                    {
+                      "es": "tú <span class=\"tsub\">(pronombre)</span>"
+                    }
+                  ],
+                  [
+                    {
+                      "es": "Tú – tu"
+                    },
+                    {
+                      "es": "_____ camisa está en el closet."
+                    },
+                    {
+                      "es": "Tu <span class=\"tsub\">(posesivo)</span>"
+                    }
+                  ]
+                ]
+              },
+              "id": "e82fff41-468b-5bf9-ac15-6af8d6fe3f8b",
+              "kind": "table",
+              "ord": 9,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 2,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "es": "<b>Error clásico:</b> poner tilde “por si acaso”. Si la palabra <b>no tiene pareja</b> con la que confundirse, <b>no lleva tilde</b>: <span>✗ fé, ✗ vió, ✗ dió, ✗ fué</span> → <span>✓ fe, vio, dio, fue</span>."
+                }
+              },
+              "id": "f5f2480c-f4a8-57f1-a887-94ae6f4717be",
+              "kind": "warning",
+              "ord": 10,
+              "source": {
+                "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+                "index": 2,
+                "symbol": "#learn .topic"
+              }
+            }
+          ],
+          "estimatedMinutes": 20,
+          "id": "51fd7add-c079-56cf-9fe2-1766dba24246",
+          "ord": 2,
+          "skillCodes": [
+            "spanish.ortografia.tilde_diacritica"
+          ],
+          "source": {
+            "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+            "index": 2,
+            "symbol": "#learn .topic"
+          },
+          "title": {
+            "es": "✒️ Tema 23 · La tilde en dé, mí, sí y sé — tilde diacrítica"
+          }
+        }
+      ],
+      "ord": 0,
+      "overview": [
+        {
+          "content": {
+            "html": {
+              "es": "📘 Todo lo que entra en el examen <p>Tres temas. Abre uno, léelo en voz alta, ciérralo y trata de repetir la regla de memoria.</p>"
+            }
+          },
+          "id": "1b0d9764-9a2b-52af-83c3-343fc6332f52",
+          "kind": "text",
+          "ord": 0,
+          "source": {
+            "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+            "symbol": "#learn (fuera de .topic)"
+          }
+        },
+        {
+          "content": {
+            "headers": [
+              {
+                "es": "Tema"
+              },
+              {
+                "es": "Contenido"
+              },
+              {
+                "es": "Página del texto"
+              }
+            ],
+            "rows": [
+              [
+                {
+                  "es": "<b>21</b>"
+                },
+                {
+                  "es": "Los verbos regulares y los verbos modelo"
+                },
+                {
+                  "es": "82"
+                }
+              ],
+              [
+                {
+                  "es": "<b>22</b>"
+                },
+                {
+                  "es": "La tilde en los hiatos"
+                },
+                {
+                  "es": "84 y 85"
+                }
+              ],
+              [
+                {
+                  "es": "<b>23</b>"
+                },
+                {
+                  "es": "La tilde en <b>dé, mí, sí, sé</b> (tilde diacrítica)"
+                },
+                {
+                  "es": "106 y 107"
+                }
+              ]
+            ]
+          },
+          "id": "c31cfff7-9fb8-5d82-95d1-652c609cfad1",
+          "kind": "table",
+          "ord": 1,
+          "source": {
+            "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+            "symbol": "#learn (fuera de .topic)"
+          }
+        },
+        {
+          "content": {
+            "html": {
+              "es": "<b>Cómo usar esta página:</b> primero <b>Aprende</b>, después <b>Práctica</b> (ahí se cuenta tu avance) y los <b>Juegos</b> para soltar la mano. El <b>Examen</b> aparece bloqueado hasta que completes el <b>90%</b> de las prácticas."
+            }
+          },
+          "id": "fbecb966-edc4-5806-bb58-371d17102c0a",
+          "kind": "tip",
+          "ord": 2,
+          "source": {
+            "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+            "symbol": "#learn (fuera de .topic)"
+          }
+        }
+      ],
+      "title": {
+        "es": "Todo lo que entra en el examen"
+      }
+    }
+  ],
+  "packFormatVersion": 1,
+  "questions": [
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "Acciones, estados o procesos"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "Solo acciones"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "Cualidades de las cosas"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "Cantidades"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "¿Qué expresan los verbos?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "46694893-c779-5cfb-83b9-cefbe1f094eb",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "Los verbos expresan <b>acciones, estados o procesos</b>: correr, cantar, estudiar, vivir."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 0,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "cambia su raíz al conjugarse"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "mantiene su raíz y sigue las mismas reglas"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "termina siempre en -ar"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "se usa solo en presente"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "Un verbo es <b>regular</b> cuando…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "e3cec84b-c4c0-5388-aa3c-ca9a9ee5e3e2",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "Los verbos regulares <b>mantienen su raíz</b> y siguen las mismas reglas al conjugarse."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 1,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "1.ª conjugación (-ar)"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "2.ª conjugación (-er)"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "3.ª conjugación (-ir)"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "ninguna, es irregular"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "El verbo <b>cantar</b> pertenece a la…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "4b3d1b9e-4bfc-501b-906f-6671fe8b5d34",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "Termina en <b>-ar</b> → <b>1.ª conjugación</b>, modelo <b>amar</b>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 2,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "1.ª conjugación"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "2.ª conjugación"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "3.ª conjugación"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "4.ª conjugación"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "El verbo <b>vender</b> pertenece a la…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "6e7ad9ae-2d3a-521a-bfe1-16bd53fe426c",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "Termina en <b>-er</b> → <b>2.ª conjugación</b>, modelo <b>temer</b>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 3,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "1.ª conjugación"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "2.ª conjugación"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "3.ª conjugación"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "ninguna"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "El verbo <b>escribir</b> pertenece a la…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "b6d59c8d-84f5-5c50-ab7c-7bd1cf0d53fb",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "Termina en <b>-ir</b> → <b>3.ª conjugación</b>, modelo <b>vivir</b>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 4,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "amar"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "temer"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "vivir"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "cantar"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "¿Cuál es el <b>verbo modelo</b> de la 1.ª conjugación?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "379fb740-d5c8-5b29-8e4c-2dec4e4c3db3",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "1.ª (-ar) → <b>amar</b> · 2.ª (-er) → temer · 3.ª (-ir) → vivir."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 5,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "comer"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "temer"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "vender"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "leer"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "¿Cuál es el <b>verbo modelo</b> de la 2.ª conjugación?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "0df2e187-7056-5842-ad8d-96495c7f23e2",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "El modelo de los verbos en <b>-er</b> es <b>temer</b>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 6,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "partir"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "abrir"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "vivir"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "escribir"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "¿Cuál es el <b>verbo modelo</b> de la 3.ª conjugación?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "2147e53d-9777-5dc2-aa32-ebaae9e8a599",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "El modelo de los verbos en <b>-ir</b> es <b>vivir</b>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 7,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "trabaj-"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "traba-"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "trabaja-"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "-ar"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "La <b>raíz</b> del verbo <b>trabajar</b> es…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "b1274226-0006-5fab-9326-ee93e6e15505",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "Se quitan las dos últimas letras del infinitivo: trabaj<b>ar</b> → raíz <b>trabaj-</b>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 8,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "-mos"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "-amos"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "-os"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "am-"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "En <b>amamos</b>, la terminación es…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "c007d188-1792-56cf-b9d6-295fdfd99d85",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "Raíz <b>am-</b> + terminación <b>-amos</b> (nosotros, 1.ª conjugación)."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 9,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "cantas"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "canto"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "canta"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "cantamos"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "Yo ______ (cantar)"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "94eb3efe-a727-5d1a-a1bb-10c21d432486",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "Yo + 1.ª conjugación → <b>canto</b>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 10,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "comemos"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "comimos"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "comamos"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "comen"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "Nosotros ______ (comer)"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "fd9ce96a-b64e-51b5-a6df-2063ba6c5dd2",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "2.ª conjugación, nosotros → <b>comemos</b> (como tem<b>emos</b>)."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 11,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "vive"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "vivas"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "vives"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "vivís"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "Tú ______ (vivir)"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "1ab3b0bb-768f-5789-82a6-035285c31586",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "3.ª conjugación, tú → <b>vives</b>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 12,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "trabajan"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "trabajen"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "trabajamos"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "trabajas"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "Ellos ______ (trabajar)"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "ba986be0-822c-5843-b98a-ee1a1776e454",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "1.ª conjugación, ellos/ustedes → <b>trabajan</b>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 13,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "vivemos"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "vivimos"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "vivamos"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "vivíamos"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "Nosotros ______ (vivir)"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "c913dffe-e939-52a4-a85a-de28ede608ae",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "¡Ojo! En <b>-ir</b> la forma de nosotros es <b>-imos</b>: viv<b>imos</b>, no “vivemos”."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 14,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "tema"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "teme"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "temes"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "temo"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "Él ______ (temer)"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "4121d82e-3b23-53b6-a272-9531bd927add",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "2.ª conjugación, él/ella → <b>teme</b>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 15,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "escriben"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "escribimos"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "escribís"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "escribe"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "Ustedes ______ (escribir)"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "1f9b942e-ec92-5b5c-bafc-c7372fd6d360",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "3.ª conjugación, ustedes → <b>escriben</b>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 16,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "ama"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "amas"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "amamos"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "amás"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "Tú ______ (amar)"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "97a8f930-8a01-5392-8e6e-0af141e4ce7a",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "1.ª conjugación, tú → <b>amas</b>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 17,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "parto"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "parte"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "partes"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "partimos"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "Yo ______ (partir)"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "d1b830a0-edef-552c-ac73-036fbc5a1940",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "3.ª conjugación, yo → <b>parto</b>. La forma de <b>yo</b> siempre termina en <b>-o</b>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 18,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "cantar"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "comer"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "ir"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "vivir"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "¿Cuál de estos verbos es <b>irregular</b>?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "2adb0682-bff3-51c5-9766-ddaff3829977",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "<b>ir</b> cambia por completo: yo <b>voy</b>, tú <b>vas</b>. Los otros mantienen su raíz."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 19,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "bailar"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "tener"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "vender"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "abrir"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "¿Cuál de estos verbos es <b>irregular</b>?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "932844be-11ac-55ae-bdfb-072ce71440e4",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "<b>tener</b> → yo <b>tengo</b>: la raíz cambia, por eso es irregular."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 20,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "mesa"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "estudiar"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "rápido"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "alegría"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "¿Cuál de estas palabras <b>es</b> un verbo?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "0e2604a7-7aa2-5500-8be1-1be385b534d8",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "<b>estudiar</b> expresa una acción → es un verbo (además, regular, de 1.ª conjugación)."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 21,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "vivo"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "vives"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "vivemos"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "viven"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "¿Qué forma NO corresponde al verbo <b>vivir</b>?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "8213a20d-24f9-5036-ad7b-b95521851376",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "La forma correcta es <b>vivimos</b>. “Vivemos” mezcla la terminación de -er."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 22,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "bailamos"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "bailemos"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "bailámos"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "bailan"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "Nosotros ______ (bailar)"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "d0b61849-6514-507e-8e28-45b6cd85f3b8",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "1.ª conjugación, nosotros → <b>bailamos</b>, sin tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 23,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "niños"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "leen"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "cuento"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "los"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "En la oración “Los niños leen un cuento”, ¿cuál es el verbo?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "0540feb7-63fe-5a99-ab51-dd39b7569282",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "<b>leen</b> es la acción → el verbo (de <i>leer</i>, 2.ª conjugación)."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 24,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "Son irregulares"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "Son los verbos modelo de cada conjugación"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "Terminan en -ar"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "Son sustantivos"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "¿Qué tienen en común <b>amar, temer</b> y <b>vivir</b>?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "6115b030-aec8-532c-9f53-96458c3e1cc0",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.verbos.regulares",
+      "solution": {
+        "es": "Son los <b>verbos modelo</b>: sirven de molde para conjugar todos los regulares."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 25,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:vr"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "a, e, o"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "i, u"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "a, i, u"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "e, i, o"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "Las vocales <b>abiertas</b> (fuertes) son…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "b302eb2d-5f45-51d4-bdf1-881e95703bfa",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "Abiertas o fuertes: <b>a, e, o</b>. Cerradas o débiles: <b>i, u</b>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 26,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "a, e"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "i, u"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "o, u"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "a, o"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "Las vocales <b>cerradas</b> (débiles) son…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "3e0522fb-28fa-57dd-873f-c879654578c4",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "Cerradas o débiles: <b>i, u</b>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 27,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "dos vocales seguidas en sílabas distintas"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "dos vocales seguidas en la misma sílaba"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "tres vocales juntas"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "una vocal con tilde"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "Un <b>diptongo</b> es…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "2aa25e50-733a-50dd-a81a-3db7fc06190b",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "Diptongo = las vocales <b>se juntan</b> en la misma sílaba: ciu-dad."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 28,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "dos vocales seguidas en la misma sílaba"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "dos consonantes juntas"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "dos vocales seguidas en sílabas distintas"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "una sílaba sin vocal"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "Un <b>hiato</b> es…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "69abc6c2-acc9-5b13-afbc-1db059205d7e",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "Hiato = las vocales <b>se separan</b>: te-a-tro."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 29,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "diptongo"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "hiato"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "ninguno"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "dos hiatos"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "<b>ciudad</b> tiene…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "c7e23c74-3b13-57df-8f68-777d76c92e89",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "ciu-dad: <b>i + u</b> (dos cerradas) en la misma sílaba → <b>diptongo</b>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 30,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "diptongo"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "hiato"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "ninguno"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "dos diptongos"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "<b>teatro</b> tiene…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "4cc5f9f3-61e9-5138-aff7-a78f79803a1a",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "te-a-tro: <b>e + a</b> (dos abiertas) en sílabas distintas → <b>hiato</b>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 31,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "hiato"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "diptongo"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "ninguno"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "hiato con tilde"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "<b>aire</b> tiene…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "78794a1f-8c8a-5dc0-8f5e-e6e086016b1c",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "ai-re: abierta + cerrada átona → <b>diptongo</b>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 32,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "diptongo"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "hiato"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "ninguno"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "dos sílabas juntas"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "<b>raíz</b> tiene…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "d9e634d7-3ebd-5ed4-8a33-51ef3c32a19f",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "ra-íz: abierta + <b>í tónica</b> → <b>hiato</b>, y por eso lleva tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 33,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "Porque es esdrújula"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "Porque es un hiato con vocal cerrada tónica"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "Porque termina en vocal"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "Porque es un diptongo"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "¿Por qué <b>sandía</b> lleva tilde?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "ccb47b00-b87e-5ad8-99ba-ca2edc49895e",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "san-d<b>í</b>-a: la <b>i</b> es cerrada y suena fuerte → <b>tilde siempre</b>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 34,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "diptongo, porque la h separa"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "hiato, porque la h no interfiere"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "ninguno"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "diptongo con tilde"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "<b>bahía</b> tiene…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "30e38489-8501-5be8-8759-2e14d62c08ce",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "ba-hí-a: la <b>h intercalada no impide</b> el hiato. La í tónica lleva tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 35,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "hiato"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "diptongo"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "tres hiatos"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "ninguno"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "<b>ahumado</b> tiene…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "f3ff50cd-cacc-528f-ac82-3d850b4c2a4c",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "ahu-ma-do: a + u en la misma sílaba (la h no cuenta) → <b>diptongo</b>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 36,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "baul"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "baúl"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "bául"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "ba-ul"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "¿Cuál está bien escrita?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "614b2634-a92f-5fd9-a0bd-3092eae19d24",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "ba-<b>úl</b>: hiato con <b>ú</b> tónica → tilde obligatoria."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 37,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "frio"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "frío"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "fríio"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "fríoo"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "¿Cuál está bien escrita?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "b9f31d3e-56b8-5b66-9575-0fb82daab056",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "fr<b>í</b>-o: hiato con í tónica → <b>frío</b>, con tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 38,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "es hiato y lleva tilde"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "es hiato y NO lleva tilde"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "es diptongo"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "es diptongo con tilde"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "<b>correo</b>…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "611c4ec5-cf55-54fd-b26a-7e0aace37931",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "co-rre-o: hiato de <b>dos abiertas</b> (e + o). No lleva tilde porque no la exigen las reglas generales."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 39,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "tea-tro"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "te-a-tro"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "teat-ro"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "te-at-ro"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "La separación correcta de <b>teatro</b> es…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "dcc78239-ca46-52d0-8be6-13cf6b036a85",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "Las dos abiertas se separan: <b>te-a-tro</b>, tres sílabas."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 40,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "hiato"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "diptongo"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "ninguno"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "dos hiatos"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "<b>monstruo</b> tiene…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "3d9ef83c-a724-5926-912a-4d140cfe0b0a",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "mons-truo: <b>u + o</b> (cerrada átona + abierta) en la misma sílaba → diptongo."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 41,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "diptongo"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "hiato"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "ninguno"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "triptongo"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "<b>grúa</b> tiene…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "4de63daf-eadd-54c1-b8a6-d84ee5888cf0",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "gr<b>ú</b>-a: cerrada tónica + abierta → <b>hiato</b> con tilde obligatoria."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 42,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "egoista"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "egoísta"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "egoísta no existe"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "egóista"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "¿Cuál está bien escrita?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "309fdac7-0424-5102-8433-70245ca153c7",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "e-go-<b>ís</b>-ta: hiato con í tónica → siempre tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 43,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "Sí, porque es hiato"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "No: es hiato de dos abiertas y no le corresponde tilde"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "Sí, porque es aguda"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "No, porque es diptongo"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "¿<b>caer</b> lleva tilde?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "fead9555-86b4-5665-b8f5-a7444ce9799c",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "ca-er es hiato, pero de <b>dos abiertas</b>: la tilde obligatoria solo aparece cuando la i o la u son tónicas."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 44,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "pais"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "país"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "páis"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "pa-is"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "¿Cuál está bien escrita?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "a0c25066-4664-56ab-9d8f-24d1823a7b12",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "pa-<b>ís</b>: abierta + í tónica → hiato con tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 45,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "nieve"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "jaula"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "poeta"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "viaje"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "¿Cuál de estas palabras tiene <b>hiato</b>?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "b69cfc51-ced4-54dd-9eb0-7006107eab9c",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "po-e-ta: dos abiertas separadas → hiato. Las otras son diptongos."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 46,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "María"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "reino"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "tío"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "búho"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "¿Cuál de estas palabras tiene <b>diptongo</b>?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "dbdec2e8-9cff-57bc-8c68-32a3902b3a05",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "rei-no: abierta + cerrada átona en la misma sílaba → diptongo."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 47,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "nunca lleva tilde"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "lleva tilde solo si la palabra es aguda"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "lleva tilde SIEMPRE"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "lleva tilde solo si es esdrújula"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "En un hiato, la vocal cerrada tónica (í, ú)…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "705b794d-281b-5fee-8a7c-254a5cdf887c",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "Esta es la regla de oro del tema: <b>siempre</b> lleva tilde, aunque las reglas generales digan lo contrario."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 48,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "rompe siempre el diptongo"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "no interfiere en la formación del diptongo o del hiato"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "obliga a poner tilde"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "forma una sílaba nueva"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "La letra <b>h</b> intercalada entre dos vocales…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "6439a550-e9ab-5345-bda4-1c128a530ce0",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "Se lee como si la h no estuviera: ahu-ma-do (diptongo) · ba-hí-a (hiato)."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 49,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "reir"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "reír"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "réir"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "re-ir"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "¿Cuál está bien escrita?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "aa14ce20-b90c-50d5-ae2f-21f8add5f88e",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "re-<b>ír</b>: hiato con í tónica → tilde. Igual que fre-ír y o-ír."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 50,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "es esdrújula"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "es un hiato con vocal cerrada tónica"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "termina en r"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "es un diptongo"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "<b>flúor</b> lleva tilde porque…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "0e38745c-ba62-5539-9c79-6d6321aad5c5",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.diptongo_hiato",
+      "solution": {
+        "es": "fl<b>ú</b>-or: la <b>ú</b> es tónica y forma hiato con la o → tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 51,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:hi"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "marcar la sílaba tónica de las esdrújulas"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "diferenciar palabras que se escriben igual pero significan distinto"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "separar sílabas"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "indicar plural"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "La <b>tilde diacrítica</b> sirve para…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "7f2d2377-52b4-58a9-90d7-9ab6763dc29a",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "Los monosílabos normalmente no llevan tilde; la diacrítica se pone para <b>diferenciar</b> dos palabras iguales de distinto significado."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 52,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "mi"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "mí"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "mí no existe"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "mih"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "A ______ me gusta el chocolate."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "f609eb21-506b-5cea-ba4b-760222b66278",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "Después de la preposición <b>a</b> va el pronombre <b>mí</b>, con tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 53,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "Mí"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "Mi"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "Mî"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "Mi/Mí igual"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "______ madre es inglesa."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "c9288ef1-898c-5198-9b5c-6a6df3ef461c",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "<b>Mi</b> posesivo (va delante de un sustantivo) → sin tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 54,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "Tu"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "Tú"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "Tuh"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "Túh"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "______ eres muy alta."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "bbed6bd0-b452-57f5-ae6e-49a5243f6001",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "<b>Tú</b> pronombre (haces la acción) → con tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 55,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "Tú"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "Tu"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "Tuu"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "Tú/Tu igual"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "______ libro es el rojo."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "d65d8ee8-24ba-5c0d-b3b1-8ab157f85509",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "<b>Tu</b> posesivo, delante del sustantivo <i>libro</i> → sin tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 56,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "El"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "Él"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "Ell"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "Èl"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "______ es de Chile."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "e19844d7-2087-569f-bd88-c2f47284a3a7",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "<b>Él</b> pronombre (la persona) → con tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 57,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "Él"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "El"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "Ell"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "Èl"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "______ gato está aquí."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "71ff955d-f1c6-52df-8156-a7cd44fadaea",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "<b>El</b> artículo, acompaña al sustantivo <i>gato</i> → sin tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 58,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "te"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "té"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "teh"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "tè"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "¿Quieres un ______ ?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "cd854526-7953-55c4-bc38-99f94cc62d79",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "<b>té</b> = la bebida (sustantivo) → con tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 59,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "Té"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "Te"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "Tê"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "Té/Te igual"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "¿______ gusta el arroz?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "e73eb55b-7ec2-5d5f-886c-3ac10386b101",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "<b>Te</b> pronombre → sin tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 60,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "Si"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "Sí"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "Sii"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "Sì"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "______ , soy yo."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "3cf03710-1ea5-581f-a71f-049673099fbd",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "<b>Sí</b> de afirmación → con tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 61,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "Sí"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "Si"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "Sii"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "Sì"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "______ estudias, aprobarás el examen."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "0f1c6f5e-b0d8-54de-9d2a-ab01275f7b3d",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "<b>Si</b> de condición (= en caso de que) → sin tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 62,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "si"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "sí"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "sii"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "se"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "Ella piensa en ______ misma."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "b5674b85-612a-540e-a652-c2dfadb4470e",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "<b>sí</b> también es pronombre reflexivo: <i>en sí mismo</i> → con tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 63,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "se"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "sé"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "sè"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "seh"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "Yo ______ tocar el violín."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "c949f296-6458-5e31-8e5e-c6a6a6cfe798",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "<b>sé</b> del verbo <b>saber</b> (= conozco) → con tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 64,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "Sé"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "Se"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "Sè"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "Séh"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "______ levanta temprano todos los días."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "78399ced-02c0-5f42-a42a-7c6631c5c11f",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "<b>Se</b> pronombre → sin tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 65,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "de"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "dé"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "dè"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "deh"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "Dile que ______ las gracias."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "fc4a103c-1e18-5869-8ed3-47a5676844a0",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "<b>dé</b> del verbo <b>dar</b> (= entregue) → con tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 66,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "dé"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "de"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "dè"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "de/dé igual"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "La casa ______ Jaime es azul."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "cc44c590-9166-50d7-9e8e-1194adcb4fea",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "<b>de</b> preposición → sin tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 67,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "de"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "dé"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "dee"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "deh"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "No le ______ nada, no se lo merece."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "04260c46-a286-5a19-824f-066312b0bc16",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "Es el verbo <b>dar</b>: “no le <i>entregue</i> nada” → <b>dé</b>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 68,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "dé"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "de"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "dee"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "dè"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "La dueña ______ la tienda se fue de viaje."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "dc731126-70da-5808-9f32-c34dd66a9301",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "Indica posesión (la dueña <i>de</i> la tienda) → preposición <b>de</b>, sin tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 69,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "se"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "sé"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "sè"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "seh"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "Yo ______ que ustedes son muy capaces."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "9726119a-5d2f-5b11-b2df-c93d678ff3a9",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "Verbo saber: “yo <i>conozco</i> / <i>estoy seguro</i>” → <b>sé</b>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 70,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "sé"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "se"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "sè"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "seh"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "Marlene ______ sacó excelentes notas."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "56fab0da-8c0d-511f-9e45-7d0312f1002c",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "Es un pronombre que acompaña al verbo → <b>se</b>, sin tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 71,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "mas"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "más"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "máss"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "mas/más igual"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "Rocío posee ______ conocimiento, solo debe aplicarlo."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "76ff7ad8-cd36-528d-9a67-b0910db196f7",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "Indica <b>cantidad</b> → <b>más</b>, con tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 72,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "más"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "mas"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "mass"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "mah"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "Te fuimos a buscar, ______ no te encontramos."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "48c25473-5199-50ba-a1f3-74796ee00182",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "Aquí significa <b>pero</b> → <b>mas</b>, sin tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 73,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "aun"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "aún"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "aunn"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "àun"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "Cuando llegamos al colegio, ______ no llegaba nadie."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "403449ec-3109-5304-a94e-18fbe0f2db21",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "Significa <b>todavía</b> → <b>aún</b>, con tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 74,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "aún"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "aun"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "aunn"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "àun"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "Alberto llegó ______ después de varias horas."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "54c31311-0e5a-52f3-a390-9603ccdf6087",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "Significa <b>incluso / hasta</b> → <b>aun</b>, sin tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 75,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "mi"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "mí"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "mih"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "mì"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "No sé si se acuerde de ______ , éramos tan niños."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "6f0dc566-85e8-5d1d-b4e2-5bc7e193dad9",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "Va después de la preposición <b>de</b> → pronombre <b>mí</b>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 76,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "Mí"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "Mi"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "Mih"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "Mì"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "______ esfuerzo me deja tranquilo."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "4ed60558-69fc-5c90-85ae-c7bcb8554d74",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "Acompaña al sustantivo <i>esfuerzo</i> → posesivo <b>Mi</b>, sin tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 77,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "tu"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "tú"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "tuh"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "tù"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "¿Acaso ______ vas a dar la cara por ese resultado?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "cf1ef23d-c493-50ac-97ac-b551e8708c81",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "Es la persona que hace la acción → pronombre <b>tú</b>, con tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 78,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "fué"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "él"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "sé"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "más"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "¿Cuál de estas palabras <b>NO</b> debe llevar tilde?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "96bab486-ced7-57c6-9cc0-3a4755dbc0a1",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "<b>fue</b> se escribe sin tilde: no tiene ninguna pareja de la que diferenciarse. Igual que <i>vio</i> y <i>dio</i>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 79,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "de"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "dé"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "del"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "de/dé igual"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "“Espero que me ______ una oportunidad.” La palabra correcta es…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "95ccef20-bfbf-5411-99ff-b9db10c6f411",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "Se puede cambiar por <i>entregue</i> → verbo dar → <b>dé</b>."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 80,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "es": "sí"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "es": "si"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "es": "sii"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "es": "sì"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "es": "“No sé ______ vendrá a la fiesta.” La palabra correcta es…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "3b044242-89dc-5488-831b-70dd6927508a",
+      "kind": "static",
+      "locale": "es",
+      "maxPoints": 1,
+      "skillCode": "spanish.ortografia.tilde_diacritica",
+      "solution": {
+        "es": "Es una pregunta indirecta (= <i>en caso de que / acaso</i>) → <b>si</b>, sin tilde."
+      },
+      "source": {
+        "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+        "index": 81,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:td"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "code": "spanish.verbos",
+      "id": "b161cfdd-39a1-5b08-984c-3a2396669ba7",
+      "name": {
+        "es": "Los verbos"
+      },
+      "ord": 0,
+      "parentCode": null
+    },
+    {
+      "code": "spanish.verbos.regulares",
+      "id": "40bb0d50-c065-5fac-a68b-fec989902d13",
+      "name": {
+        "es": "Verbos regulares y verbos modelo"
+      },
+      "ord": 1,
+      "parentCode": "spanish.verbos"
+    },
+    {
+      "code": "spanish.ortografia",
+      "id": "8a25734e-b2bd-53d8-9e07-144138401891",
+      "name": {
+        "es": "Ortografía"
+      },
+      "ord": 2,
+      "parentCode": null
+    },
+    {
+      "code": "spanish.ortografia.diptongo_hiato",
+      "id": "2c25b00b-3841-5d58-96da-6fa3ee0eb2d5",
+      "name": {
+        "es": "Diptongo, hiato y la tilde en los hiatos"
+      },
+      "ord": 3,
+      "parentCode": "spanish.ortografia"
+    },
+    {
+      "code": "spanish.ortografia.tilde_diacritica",
+      "id": "0a5b4b86-30ec-512f-a28d-6d01f628b007",
+      "name": {
+        "es": "Tilde diacrítica"
+      },
+      "ord": 4,
+      "parentCode": "spanish.ortografia"
+    }
+  ],
+  "studyPlan": {
+    "days": [
+      {
+        "id": "fea52801-ec48-5ca1-ad67-8ea2bf123d88",
+        "ord": 0,
+        "tasks": [
+          {
+            "ord": 0,
+            "text": {
+              "es": "Lee el Tema 21 completo en la pestaña Aprende"
+            }
+          },
+          {
+            "ord": 1,
+            "text": {
+              "es": "Copia a mano las tres tablas (amar, temer, vivir)"
+            }
+          },
+          {
+            "ord": 2,
+            "text": {
+              "es": "Práctica: tema 🅰️ Verbos regulares, hasta terminarlo"
+            }
+          },
+          {
+            "ord": 3,
+            "text": {
+              "es": "Juego 1 (Máquina de conjugar): llega a una racha de 8"
+            }
+          }
+        ],
+        "title": {
+          "es": "Día 1 · Verbos regulares"
+        }
+      },
+      {
+        "id": "07076ce4-9210-534b-9ec4-652a8ffa4c50",
+        "ord": 1,
+        "tasks": [
+          {
+            "ord": 0,
+            "text": {
+              "es": "Lee el Tema 22 y repite en voz alta: abiertas a-e-o, cerradas i-u"
+            }
+          },
+          {
+            "ord": 1,
+            "text": {
+              "es": "Separa en sílabas 10 palabras de la tabla, en tu cuaderno"
+            }
+          },
+          {
+            "ord": 2,
+            "text": {
+              "es": "Práctica: tema 🔤 Diptongo e hiato, hasta terminarlo"
+            }
+          },
+          {
+            "ord": 3,
+            "text": {
+              "es": "Juego 2 (Diptongo o hiato): 15 palabras seguidas"
+            }
+          }
+        ],
+        "title": {
+          "es": "Día 2 · Diptongo e hiato"
+        }
+      },
+      {
+        "id": "2fe2e237-5038-5fa0-ba06-a0e31a0a1975",
+        "ord": 2,
+        "tasks": [
+          {
+            "ord": 0,
+            "text": {
+              "es": "Lee el Tema 23 y tapa la columna derecha de la tabla"
+            }
+          },
+          {
+            "ord": 1,
+            "text": {
+              "es": "Escribe una oración propia con dé, mí, sí y sé"
+            }
+          },
+          {
+            "ord": 2,
+            "text": {
+              "es": "Práctica: tema ✒️ Tilde diacrítica, hasta terminarlo"
+            }
+          },
+          {
+            "ord": 3,
+            "text": {
+              "es": "Juego 3 y Juego 4 (memoria de monosílabos)"
+            }
+          }
+        ],
+        "title": {
+          "es": "Día 3 · Tilde diacrítica"
+        }
+      },
+      {
+        "id": "d78bc43b-21b9-5651-9302-7a695f52c983",
+        "ord": 3,
+        "tasks": [
+          {
+            "ord": 0,
+            "text": {
+              "es": "Práctica con el chip 🎲 Todo hasta pasar el 90% (ahí se abre el examen)"
+            }
+          },
+          {
+            "ord": 1,
+            "text": {
+              "es": "Juego 5 (Cazador de errores): 10 oraciones"
+            }
+          },
+          {
+            "ord": 2,
+            "text": {
+              "es": "Vuelve a leer las partes que fallaste en Aprende"
+            }
+          }
+        ],
+        "title": {
+          "es": "Día 4 · Mezclar todo"
+        }
+      },
+      {
+        "id": "13e067e8-2569-5d4e-82f3-c7e49ceb6723",
+        "ord": 4,
+        "tasks": [
+          {
+            "ord": 0,
+            "text": {
+              "es": "Haz el Examen simulacro sin apuntes y sin pausas"
+            }
+          },
+          {
+            "ord": 1,
+            "text": {
+              "es": "Anota las preguntas falladas y busca su regla en Aprende"
+            }
+          },
+          {
+            "ord": 2,
+            "text": {
+              "es": "Repite el simulacro al final del día"
+            }
+          },
+          {
+            "ord": 3,
+            "text": {
+              "es": "Lee las 10 reglas de oro antes de dormir"
+            }
+          }
+        ],
+        "title": {
+          "es": "Día 5 · Simulacro"
+        }
+      }
+    ],
+    "id": "5157d443-1a36-5ec2-8887-8be5fd7aadf1",
+    "notes": [],
+    "source": {
+      "file": "Y6A/Español/Entrenador de Examen - Español Y6.html",
+      "symbol": "PLAN"
+    },
+    "title": {
+      "es": "Plan de estudio de 5 días"
+    }
+  },
+  "subject": {
+    "code": "spanish",
+    "color": "#c0392b",
+    "icon": "🇪🇸",
+    "name": {
+      "es": "Español"
+    },
+    "ord": 3
+  }
+}

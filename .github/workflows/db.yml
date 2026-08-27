@@ -1,0 +1,170 @@
+# =============================================================================
+# DB — migraciones y pgTAP contra un Postgres efímero
+# © 2026 Roberto Mendizabal. Todos los derechos reservados.
+#
+# Este workflow existe para responder a una pregunta antes de cada merge:
+#   "¿Se aplican estas migraciones desde cero, y siguen las RLS impidiendo que
+#    un colegio lea los datos de otro?"
+#
+# Se ejecuta contra un Postgres LOCAL Y DESECHABLE, nunca contra el proyecto
+# `clcutoqjdgeggvgyreud`. Un CI con credenciales de producción es un CI que,
+# antes o después, borra producción.
+#
+# NOTA DE PROPIEDAD: `supabase/` pertenece a la vía A. Este workflow es el
+# contrato de CI que la vía E (deployment) le ofrece; si la estructura de
+# `supabase/migrations` o `supabase/tests` cambia, hay que ajustar los pasos.
+# =============================================================================
+name: DB
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/**"
+      - ".github/workflows/db.yml"
+  pull_request:
+    paths:
+      - "supabase/**"
+      - ".github/workflows/db.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: db-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  migrations:
+    name: Migraciones + pgTAP
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        # Postgres 17: la misma versión mayor que usa Supabase (MASTER_PLAN §3).
+        # Probar contra otra versión es probar otra base de datos.
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    env:
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar cliente de Postgres y pg_prove
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          # En el RUNNER solo hacen falta dos cosas: `psql` para hablar con la
+          # base de datos y `pg_prove` para interpretar la salida TAP.
+          # Se usa el metapaquete `postgresql-client`, no `postgresql-client-17`:
+          # el protocolo es compatible entre versiones y `-17` no está en los
+          # repositorios por defecto de Ubuntu, así que fijarlo aquí rompería el
+          # CI en cuanto GitHub cambiara de imagen base.
+          sudo apt-get install -y --no-install-recommends \
+            postgresql-client \
+            libtap-parser-sourcehandler-pgtap-perl
+        # La EXTENSIÓN pgTAP, en cambio, tiene que existir DENTRO del contenedor
+        # de Postgres, que es donde corren los tests. Ver el paso siguiente.
+
+      - name: Habilitar pgTAP dentro del contenedor de Postgres
+        run: |
+          set -euo pipefail
+          # El contenedor `postgres:17` no trae pgTAP. Se instala dentro de él,
+          # que es donde la extensión tiene que existir para poder crearse.
+          CONTAINER=$(docker ps --filter "ancestor=postgres:17" --format "{{.ID}}" | head -n1)
+          if [ -z "$CONTAINER" ]; then
+            echo "::error::No se encontró el contenedor de Postgres."
+            exit 1
+          fi
+          docker exec "$CONTAINER" bash -lc "apt-get update -qq && apt-get install -y -qq postgresql-17-pgtap"
+          psql -v ON_ERROR_STOP=1 -c "create extension if not exists pgtap;"
+
+      - name: Extensiones que asume el esquema
+        run: |
+          set -euo pipefail
+          # Las mismas que trae Supabase por defecto. Si una migración usa una
+          # extensión que no está aquí, es que asume algo del entorno gestionado
+          # que no está declarado — y eso hay que verlo en CI, no en producción.
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          create extension if not exists "pgcrypto";
+          create extension if not exists "citext";
+          create extension if not exists "uuid-ossp";
+          SQL
+
+      - name: Aplicar migraciones en orden estricto
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(supabase/migrations/*.sql)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::warning::No hay migraciones todavía (la vía A aún no ha entregado). Nada que validar."
+            exit 0
+          fi
+          # Orden lexicográfico = orden cronológico, por el prefijo de timestamp
+          # que impone el CLI de Supabase.
+          for file in "${files[@]}"; do
+            echo "── aplicando $file"
+            # ON_ERROR_STOP: una migración que falla a la mitad debe romper el
+            # CI, no dejar la base de datos a medias y continuar.
+            psql -v ON_ERROR_STOP=1 -f "$file"
+          done
+
+      - name: Verificar que TODA tabla de negocio tiene RLS
+        run: |
+          set -euo pipefail
+          # Comprobación transversal, independiente de que alguien se acuerde de
+          # escribir el test: DATA_MODEL §0 dice "toda tabla lleva RLS, sin
+          # excepción". Aquí se demuestra en vez de confiar.
+          UNPROTECTED=$(psql -tAX -c "
+            select coalesce(string_agg(c.relname, ', '), '')
+            from pg_class c
+            join pg_namespace n on n.oid = c.relnamespace
+            where n.nspname = 'public'
+              and c.relkind = 'r'
+              and not c.relrowsecurity;
+          ")
+          if [ -n "$UNPROTECTED" ]; then
+            echo "::error::Tablas sin RLS en el esquema public: $UNPROTECTED"
+            exit 1
+          fi
+          echo "Todas las tablas de public tienen RLS habilitada."
+
+      - name: Sembrar datos de prueba
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          for file in supabase/seed/*.sql; do
+            echo "── sembrando $file"
+            psql -v ON_ERROR_STOP=1 -f "$file"
+          done
+
+      - name: Ejecutar pgTAP
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          tests=(supabase/tests/*.sql)
+          if [ ${#tests[@]} -eq 0 ]; then
+            echo "::warning::Aún no hay tests pgTAP."
+            exit 0
+          fi
+          # pg_prove devuelve código distinto de 0 si algún test falla, que es
+          # lo que hace que este job sea útil.
+          pg_prove --ext .sql --verbose "${tests[@]}"

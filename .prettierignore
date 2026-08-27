@@ -1,0 +1,9 @@
+node_modules
+dist
+.next
+.turbo
+coverage
+pnpm-lock.yaml
+Y6A
+packages/content/packs
+packages/shared/src/database.types.ts

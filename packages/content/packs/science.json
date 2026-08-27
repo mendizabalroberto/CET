@@ -1,0 +1,5794 @@
+{
+  "blueprints": [
+    {
+      "allowBack": true,
+      "code": "science.y6.mock",
+      "description": {
+        "en": "4 questions from each of the 5 topics. No hints, no help. Aim for 16/20 or better."
+      },
+      "durationSeconds": null,
+      "feedbackMode": "after_submit",
+      "id": "abcc24a6-e21e-58f6-8f85-4e0cbdd79a1b",
+      "maxAttempts": null,
+      "passThreshold": 0.6,
+      "sections": [
+        {
+          "id": "b7028790-3a77-5f28-b219-e0077975097f",
+          "itemCount": 4,
+          "ord": 0,
+          "pointsPerItem": 1,
+          "selection": {
+            "skillCodes": [
+              "science.environment.acid_rain"
+            ]
+          },
+          "source": "bank",
+          "title": {
+            "en": "🌧️ Acid Rain"
+          }
+        },
+        {
+          "id": "83949916-ab52-5507-900a-186e13167399",
+          "itemCount": 4,
+          "ord": 1,
+          "pointsPerItem": 1,
+          "selection": {
+            "skillCodes": [
+              "science.environment.recycling"
+            ]
+          },
+          "source": "bank",
+          "title": {
+            "en": "♻️ Recycling"
+          }
+        },
+        {
+          "id": "a4b55326-1727-56cc-867b-038039615757",
+          "itemCount": 4,
+          "ord": 2,
+          "pointsPerItem": 1,
+          "selection": {
+            "skillCodes": [
+              "science.electricity.conductors"
+            ]
+          },
+          "source": "bank",
+          "title": {
+            "en": "⚡ Conductors &amp; Insulators"
+          }
+        },
+        {
+          "id": "07f43d61-d6ca-52aa-83ac-840033c2cea6",
+          "itemCount": 4,
+          "ord": 3,
+          "pointsPerItem": 1,
+          "selection": {
+            "skillCodes": [
+              "science.electricity.circuits"
+            ]
+          },
+          "source": "bank",
+          "title": {
+            "en": "💡 Electricity &amp; Circuits"
+          }
+        },
+        {
+          "id": "bb4a7ca7-358b-5978-a4d0-5478f71fe0e9",
+          "itemCount": 4,
+          "ord": 4,
+          "pointsPerItem": 1,
+          "selection": {
+            "skillCodes": [
+              "science.electricity.symbols"
+            ]
+          },
+          "source": "bank",
+          "title": {
+            "en": "🔌 Circuit Symbols"
+          }
+        }
+      ],
+      "shuffleOptions": true,
+      "shuffleQuestions": true,
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "note": "plan implícito: 4 por tema",
+        "symbol": "buildMock"
+      },
+      "title": {
+        "en": "Mock exam — 20 questions"
+      }
+    }
+  ],
+  "course": {
+    "code": "science.y6",
+    "id": "31618ad6-2668-579c-bc92-69b3741e0370",
+    "locale": "en",
+    "name": {
+      "en": "Grade 5 Science — Year 6"
+    },
+    "status": "published",
+    "version": 1,
+    "yearLevel": 6
+  },
+  "gaps": [
+    {
+      "area": "símbolos de circuito dentro de las lecciones",
+      "reason": "7 símbolos SVG (battery, bulb, cell, motor, switchClosed, switchOpen, wire) sustituidos por un marcador de texto `[circuit symbol: …]`. El SVG original usa atributos que la allowlist del saneador elimina; los repone @cet/ui con un componente propio.",
+      "symbol": "sym()"
+    },
+    {
+      "area": "Circuit Lab",
+      "reason": "simulador de circuitos con SVG y estado (ranuras, interruptor abierto/cerrado, misiones). Es una actividad interactiva, no contenido: necesita un componente propio en @cet/ui + un generador de misiones.",
+      "symbol": "PARTS / SLOTNAMES / MISSIONS"
+    },
+    {
+      "area": "juegos",
+      "reason": "listas de parejas y de objetos que alimentan mini-juegos de emparejar y clasificar. Son datos aprovechables, pero su formato de pregunta (`matching`, `drag_drop`) no está cubierto por este pipeline todavía.",
+      "symbol": "PAIRS / THINGS"
+    },
+    {
+      "area": "campos sin equivalente en el material original",
+      "reason": "los trainers Y6A no declaran dificultad, duración estimada, umbral de aprobado ni número de intentos. El pipeline los rellena con valores por defecto uniformes (difficulty 2 en banco / 3 en generadas, estimatedMinutes 20, passThreshold 0.6, maxAttempts sin límite, pointsPerItem 1) que un profesor debe revisar antes de publicar el curso. NO son datos extraídos."
+    }
+  ],
+  "integrity": "c8a7f6e30084a94b",
+  "modules": [
+    {
+      "description": {
+        "en": "Acid rain, recycling, conductors and insulators, circuits and circuit symbols."
+      },
+      "id": "c3ae8aea-cd5c-5aa8-8cdd-bfa35d2373da",
+      "lessons": [
+        {
+          "blocks": [
+            {
+              "content": {
+                "html": {
+                  "en": "<b>What is acid rain?</b> Acid rain is rain (or snow, fog or mist) that has become <b>acidic</b> because polluting gases have mixed with the water in the clouds. It looks like normal rain — but it damages plants, animals, water and even buildings."
+                }
+              },
+              "id": "43daa3ce-ebab-5ec8-a637-adcfac62ecfe",
+              "kind": "rule",
+              "ord": 0,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 0,
+                "note": "Classwork #20",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>🔥 What causes it?</h3><ul><li><b>Burning fossil fuels</b> — coal, oil and gas — in <b>factories</b> and <b>power stations</b>.</li><li><b>Cars, buses and lorries</b> burning petrol and diesel.</li><li>A small amount comes from nature too, like <b>volcanoes</b>.</li></ul>"
+                }
+              },
+              "id": "62d64019-ab66-5ee5-9edf-e2409e7c48a2",
+              "kind": "text",
+              "ord": 1,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 0,
+                "note": "Classwork #20",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>⭐ Learn these two gases by heart:</b><br><b>Sulfur dioxide (SO₂)</b> and <b>Nitrogen oxides (NOₓ)</b>.<br>They mix with water in the air and turn into <b>sulfuric acid</b> and <b>nitric acid</b>."
+                }
+              },
+              "id": "5e4bf42f-f06c-5909-9a47-c9d8d398fd2e",
+              "kind": "tip",
+              "ord": 2,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 0,
+                "note": "Classwork #20",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>💧 How is acid rain formed? (5 steps)</h3>"
+                }
+              },
+              "id": "488b6ceb-fef5-5022-9bf6-29b64e4479d5",
+              "kind": "text",
+              "ord": 3,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 0,
+                "note": "Classwork #20",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "steps": [
+                  {
+                    "en": "<span class=\"sn\">1</span><span class=\"ic\">🏭</span>Factories and cars <b>burn fossil fuels</b>."
+                  },
+                  {
+                    "en": "<span class=\"sn\">2</span><span class=\"ic\">💨</span>They release <b>sulfur dioxide</b> and <b>nitrogen oxides</b> into the air."
+                  },
+                  {
+                    "en": "<span class=\"sn\">3</span><span class=\"ic\">☁️</span>The gases rise and <b>mix with water</b> in the clouds."
+                  },
+                  {
+                    "en": "<span class=\"sn\">4</span><span class=\"ic\">🧪</span>They become <b>acids</b> (sulfuric &amp; nitric acid)."
+                  },
+                  {
+                    "en": "<span class=\"sn\">5</span><span class=\"ic\">🌧️</span>The acid falls as <b>acid rain</b>."
+                  }
+                ]
+              },
+              "id": "4961b3fd-b57f-5344-8a59-09558b3caed3",
+              "kind": "steps",
+              "ord": 4,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 0,
+                "note": "Classwork #20",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "💨 The wind can carry those gases <b>very far</b>. Acid rain can fall in a country hundreds of kilometres away from the factory that made the pollution!"
+                }
+              },
+              "id": "0f8f0ef0-97b8-5121-9566-755d9e0c07ce",
+              "kind": "tip",
+              "ord": 5,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 0,
+                "note": "Classwork #20",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>🌍 Effects on the environment</h3>"
+                }
+              },
+              "id": "6bae84ff-f9b2-5d2b-90b9-14d61b337ab1",
+              "kind": "text",
+              "ord": 6,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 0,
+                "note": "Classwork #20",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "en": "Where"
+                  },
+                  {
+                    "en": "What acid rain does"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "en": "🌳 Trees &amp; plants"
+                    },
+                    {
+                      "en": "Damages the leaves, poisons the soil, takes away the goodness plants need. Trees get weak and die."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "🐟 Lakes &amp; rivers"
+                    },
+                    {
+                      "en": "The water becomes acidic. Fish and frog eggs are damaged and <b>may not hatch</b>."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "🦐 Freshwater shrimps"
+                    },
+                    {
+                      "en": "Their shells are made of <b>calcium</b>. The acid <b>wears the calcium away</b>, and the animal dies."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "🏛️ Buildings &amp; statues"
+                    },
+                    {
+                      "en": "Slowly eats away stone, metal and paint. Old statues lose their faces!"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "👃 People"
+                    },
+                    {
+                      "en": "The same polluted air can make breathing problems worse."
+                    }
+                  ]
+                ]
+              },
+              "id": "bf632868-057a-5197-acf5-f27dd14f123e",
+              "kind": "table",
+              "ord": 7,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 0,
+                "note": "Classwork #20",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>🔗 Acid rain breaks the food chain!</b><br>In a freshwater lake: <b>shrimps → fish → herons</b>.<br>If the acid kills the <b>shrimps</b>, the <b>fish</b> have no food and die. Then the <b>herons</b> have no fish to eat, so they die or fly away. <b>One dead animal affects everything above it in the food chain.</b>"
+                }
+              },
+              "id": "60022229-3ede-580d-a9ad-464611d8bf96",
+              "kind": "warning",
+              "ord": 8,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 0,
+                "note": "Classwork #20",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>✅ Ways to reduce acid rain</h3><ul><li>🔆 Use <b>renewable energy</b> — solar panels, wind turbines, water power — instead of burning coal.</li><li>💡 <b>Use less electricity</b>: turn off lights, TVs and chargers you are not using.</li><li>🚲 <b>Walk, cycle, share a car or take the bus</b> instead of one car per person.</li><li>🏭 Put <b>filters (scrubbers)</b> on factory chimneys to trap the gases before they escape.</li><li>🚗 Use <b>catalytic converters</b> and cleaner fuels in cars.</li><li>🌱 <b>Plant trees</b> and add lime to damaged lakes to help them recover.</li></ul>"
+                }
+              },
+              "id": "47b3d754-a763-56b9-9abc-a98c10c23ec3",
+              "kind": "text",
+              "ord": 9,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 0,
+                "note": "Classwork #20",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Exam sentence you can use:</b> \"Acid rain is formed when sulfur dioxide and nitrogen oxides from burning fossil fuels mix with water in the atmosphere and fall as acidic rain.\""
+                }
+              },
+              "id": "999cf5e7-9189-5dc8-aa0b-9a2cf17cc18e",
+              "kind": "tip",
+              "ord": 10,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 0,
+                "note": "Classwork #20",
+                "symbol": "TOPICS"
+              }
+            }
+          ],
+          "estimatedMinutes": 20,
+          "id": "37f38b6a-7073-5844-b8cd-7131c9904e97",
+          "ord": 0,
+          "skillCodes": [
+            "science.environment.acid_rain"
+          ],
+          "source": {
+            "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+            "index": 0,
+            "note": "Classwork #20",
+            "symbol": "TOPICS"
+          },
+          "title": {
+            "en": "🌧️ Acid Rain"
+          }
+        },
+        {
+          "blocks": [
+            {
+              "content": {
+                "html": {
+                  "en": "<b>What is recycling?</b> Recycling means <b>taking used materials and turning them into new things</b> instead of throwing them away as rubbish. An old plastic bottle can become a new bottle — or even a fleece jacket!"
+                }
+              },
+              "id": "669c8188-3cae-5171-a2f0-3ab8f095eff5",
+              "kind": "rule",
+              "ord": 0,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 1,
+                "note": "Classwork #21",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>❓ Why is recycling important?</h3><ul><li>🌳 It <b>saves natural resources</b> — trees, oil, sand and metal stay in the ground.</li><li>⚡ It <b>saves energy</b>. Making a can from recycled aluminium uses far less energy than making a brand-new one.</li><li>🗑️ It means <b>less rubbish in landfills</b>, so we need fewer of them.</li><li>💨 It creates <b>less pollution</b> in the air, soil and water.</li><li>🐢 It <b>protects animals</b> and their habitats.</li></ul><h3>📦 Recyclable materials</h3>"
+                }
+              },
+              "id": "c28e23e1-c768-546f-8b42-23b08ae10064",
+              "kind": "text",
+              "ord": 1,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 1,
+                "note": "Classwork #21",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "en": "✅ Usually recyclable"
+                  },
+                  {
+                    "en": "❌ Usually NOT recyclable"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "en": "📄 Paper and cardboard<br>🍾 Glass bottles and jars<br>🧴 Plastic bottles and containers<br>🥫 Aluminium cans and metal tins<br>📰 Newspapers and magazines"
+                    },
+                    {
+                      "en": "🍌 Food scraps (compost these instead!)<br>🧻 Dirty tissues and greasy pizza boxes<br>🍽️ Broken ceramic plates and mirrors<br>🩹 Nappies and plasters"
+                    }
+                  ]
+                ]
+              },
+              "id": "cc69cf93-bf82-57af-a044-3fc44d8d3176",
+              "kind": "table",
+              "ord": 2,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 1,
+                "note": "Classwork #21",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Golden rule:</b> rinse it first! Dirty containers with food on them can spoil a whole batch of recycling. 🚿"
+                }
+              },
+              "id": "73e40851-8247-5cc4-88c3-b0318d17ebfd",
+              "kind": "tip",
+              "ord": 3,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 1,
+                "note": "Classwork #21",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>🔺 The 3 Rs — in this exact order</h3>"
+                }
+              },
+              "id": "c8f39bef-5c82-5707-8140-00fb1510b9d8",
+              "kind": "text",
+              "ord": 4,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 1,
+                "note": "Classwork #21",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "steps": [
+                  {
+                    "en": "<span class=\"sn\">1</span><span class=\"ic\">🔻</span><b>REDUCE</b><br>Use <b>less</b> in the first place. Take a cloth bag to the shop. Don't buy things you don't need."
+                  },
+                  {
+                    "en": "<span class=\"sn\">2</span><span class=\"ic\">🔁</span><b>REUSE</b><br>Use it <b>again as it is</b>. Refill your water bottle. Turn a jar into a pencil pot. Give clothes away."
+                  },
+                  {
+                    "en": "<span class=\"sn\">3</span><span class=\"ic\">♻️</span><b>RECYCLE</b><br>Turn it into <b>something new</b>. Send paper, glass, plastic and metal to the recycling plant."
+                  }
+                ]
+              },
+              "id": "bae6c500-0389-5d11-b453-19abf0928e78",
+              "kind": "steps",
+              "ord": 5,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 1,
+                "note": "Classwork #21",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Don't mix these up!</b> 🔁 <b>Reuse</b> = the same object is used again (refilling a bottle). ♻️ <b>Recycle</b> = the object is broken down and <b>made into a new object</b> (a bottle becomes a T-shirt)."
+                }
+              },
+              "id": "0690c48b-4350-58ca-a983-443d71ea3510",
+              "kind": "warning",
+              "ord": 6,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 1,
+                "note": "Classwork #21",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>🗑️ What happens if we throw away too much trash?</h3><ul><li>Landfills fill up and take over land where plants and animals used to live.</li><li>Rubbish gives off <b>harmful gases</b> and poisons that leak into the soil and water.</li><li>Plastic ends up in rivers and the sea. 🐋 Animals <b>eat it or get trapped in it</b> and die.</li><li>Plastic takes <b>hundreds of years</b> to break down.</li></ul>"
+                }
+              },
+              "id": "164e9dda-0fb4-5e53-8b1e-01193cc5dce7",
+              "kind": "text",
+              "ord": 7,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 1,
+                "note": "Classwork #21",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Exam sentence you can use:</b> \"Recycling is important because it saves natural resources and energy, reduces the amount of rubbish in landfills, and protects animals and the environment from pollution.\""
+                }
+              },
+              "id": "b3d00237-7741-55f0-a0c5-5f07a0a264a9",
+              "kind": "tip",
+              "ord": 8,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 1,
+                "note": "Classwork #21",
+                "symbol": "TOPICS"
+              }
+            }
+          ],
+          "estimatedMinutes": 20,
+          "id": "cd5758fb-56a9-5d96-96ca-3af2c8c5425e",
+          "ord": 1,
+          "skillCodes": [
+            "science.environment.recycling"
+          ],
+          "source": {
+            "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+            "index": 1,
+            "note": "Classwork #21",
+            "symbol": "TOPICS"
+          },
+          "title": {
+            "en": "♻️ Recycling"
+          }
+        },
+        {
+          "blocks": [
+            {
+              "content": {
+                "html": {
+                  "en": "<b>⚡ A CONDUCTOR</b> is a material that <b>lets electric current pass through it</b> easily.<br><b>🚫 An INSULATOR</b> is a material that <b>does NOT let electric current pass through it</b>."
+                }
+              },
+              "id": "dea6ca90-0713-522f-b553-bd1a2249bfe2",
+              "kind": "rule",
+              "ord": 0,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 2,
+                "note": "Classwork #26",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Easy way to remember:</b> if it is a <b>metal</b>, it is almost always a <b>conductor</b>. If it is <b>not</b> a metal (plastic, rubber, glass, wood), it is almost always an <b>insulator</b>. 🧲"
+                }
+              },
+              "id": "3ebc34d0-9b29-5fd0-b6bc-e39ef40a10ea",
+              "kind": "tip",
+              "ord": 1,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 2,
+                "note": "Classwork #26",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>📋 Examples of each</h3>"
+                }
+              },
+              "id": "138064e1-9a9b-5ede-85c8-3f730acd1739",
+              "kind": "text",
+              "ord": 2,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 2,
+                "note": "Classwork #26",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "en": "⚡ Conductors"
+                  },
+                  {
+                    "en": "🚫 Insulators"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "en": "🟠 Copper<br>⚪ Aluminium<br>⚙️ Iron and steel<br>🥇 Gold and silver<br>✏️ Pencil \"lead\" (graphite)"
+                    },
+                    {
+                      "en": "🧴 Plastic<br>🛞 Rubber<br>🍾 Glass<br>🪵 Dry wood<br>🍽️ Ceramic<br>👕 Cloth and paper<br>🌬️ Air"
+                    }
+                  ]
+                ]
+              },
+              "id": "fef1bb4d-58ff-5d6e-b7cf-e34c957561ef",
+              "kind": "table",
+              "ord": 3,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 2,
+                "note": "Classwork #26",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>🛠️ Uses — why we need BOTH</h3>"
+                }
+              },
+              "id": "8f0e7107-737b-5a16-bd2b-3450462ec397",
+              "kind": "text",
+              "ord": 4,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 2,
+                "note": "Classwork #26",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "en": "Object"
+                  },
+                  {
+                    "en": "Conductor part"
+                  },
+                  {
+                    "en": "Insulator part"
+                  },
+                  {
+                    "en": "Why"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "en": "🔌 Electrical wire"
+                    },
+                    {
+                      "en": "Copper inside"
+                    },
+                    {
+                      "en": "Plastic cover outside"
+                    },
+                    {
+                      "en": "The copper carries the electricity; the plastic <b>stops it reaching your hand</b>, so you are safe."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "🍳 Frying pan"
+                    },
+                    {
+                      "en": "Metal pan"
+                    },
+                    {
+                      "en": "Plastic or wooden handle"
+                    },
+                    {
+                      "en": "The pan lets heat through to cook; the handle <b>does not</b>, so you don't burn your hand."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "🪛 Screwdriver"
+                    },
+                    {
+                      "en": "Metal tip"
+                    },
+                    {
+                      "en": "Rubber handle"
+                    },
+                    {
+                      "en": "The tip does the work; the handle protects the electrician."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "🔦 Torch / switch"
+                    },
+                    {
+                      "en": "Metal contacts inside"
+                    },
+                    {
+                      "en": "Plastic case"
+                    },
+                    {
+                      "en": "Electricity flows inside only — the outside is safe to touch."
+                    }
+                  ]
+                ]
+              },
+              "id": "73ca0056-0d48-54c6-a377-ba5e09dfff98",
+              "kind": "table",
+              "ord": 5,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 2,
+                "note": "Classwork #26",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>⚠️ Safety!</b> Your body and water are conductors too. Never touch plugs or switches with <b>wet hands</b>, and never poke anything metal into a socket."
+                }
+              },
+              "id": "1d007a32-66b7-5a74-b7c3-bfc002f0128e",
+              "kind": "warning",
+              "ord": 6,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 2,
+                "note": "Classwork #26",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Exam sentence you can use:</b> \"Electrical wires are covered with plastic because plastic is an insulator. It stops the electricity from escaping and keeps people safe from electric shocks.\""
+                }
+              },
+              "id": "1e8f0da0-3a3d-55b3-b555-ef7769028cc2",
+              "kind": "tip",
+              "ord": 7,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 2,
+                "note": "Classwork #26",
+                "symbol": "TOPICS"
+              }
+            }
+          ],
+          "estimatedMinutes": 20,
+          "id": "e7e63229-057c-538d-b52f-f780700fc923",
+          "ord": 2,
+          "skillCodes": [
+            "science.electricity.conductors"
+          ],
+          "source": {
+            "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+            "index": 2,
+            "note": "Classwork #26",
+            "symbol": "TOPICS"
+          },
+          "title": {
+            "en": "⚡ Conductors and Insulators"
+          }
+        },
+        {
+          "blocks": [
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>📖 The 10 words you MUST know</h3>"
+                }
+              },
+              "id": "995997d9-4e22-5c22-8b67-b1063eb11a48",
+              "kind": "text",
+              "ord": 0,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 3,
+                "note": "Classwork #28",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "en": "Word"
+                  },
+                  {
+                    "en": "Definition (learn it word for word!)"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "en": "<b>1. Electricity</b> ⚡"
+                    },
+                    {
+                      "en": "A form of <b>energy</b> that can make things work."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>2. Electric current</b> 🌊"
+                    },
+                    {
+                      "en": "The <b>flow of electric charge</b> through a circuit."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>3. Circuit</b> 🔄"
+                    },
+                    {
+                      "en": "A <b>complete path</b> through which electric current can flow."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>4. Cell</b> 🔋"
+                    },
+                    {
+                      "en": "A source of electrical energy that provides energy to a circuit. (<b>ONE</b>)"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>5. Battery</b> 🔋🔋"
+                    },
+                    {
+                      "en": "<b>Two or more cells</b> connected together to provide electrical energy."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>6. Wire</b> ➖"
+                    },
+                    {
+                      "en": "A <b>metal conductor</b> that allows electric current to flow through a circuit."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>7. Bulb</b> 💡"
+                    },
+                    {
+                      "en": "A component that <b>produces light</b> when electric current flows through it."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>8. Switch</b> 🎚️"
+                    },
+                    {
+                      "en": "A component that <b>opens or closes</b> a circuit."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>9. Complete circuit</b> ✅"
+                    },
+                    {
+                      "en": "A circuit with a <b>continuous path</b> that allows electric current to flow."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>10. Open circuit</b> ❌"
+                    },
+                    {
+                      "en": "A circuit with a <b>break in the path</b>, so electric current cannot flow."
+                    }
+                  ]
+                ]
+              },
+              "id": "2f44054f-dc42-5a34-b13a-3e6b94ae6c07",
+              "kind": "table",
+              "ord": 1,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 3,
+                "note": "Classwork #28",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>The #1 mistake:</b> a <b>cell</b> is ONE. A <b>battery</b> is TWO OR MORE cells joined together. The thing in your TV remote is really a <i>cell</i>, even though everyone calls it a battery! 😄"
+                }
+              },
+              "id": "7c383c4f-e3fa-5a54-b0fc-9519ca45515e",
+              "kind": "warning",
+              "ord": 2,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 3,
+                "note": "Classwork #28",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>🔄 Parts of a simple circuit</h3>"
+                }
+              },
+              "id": "d4ccaaa5-d13d-54d5-bcd6-34eaab6da9df",
+              "kind": "text",
+              "ord": 3,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 3,
+                "note": "Classwork #28",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "steps": [
+                  {
+                    "en": "<span class=\"ic\">🔋</span><b>Cell / battery</b><br>gives the energy"
+                  },
+                  {
+                    "en": "<span class=\"ic\">➖</span><b>Wires</b><br>carry the current"
+                  },
+                  {
+                    "en": "<span class=\"ic\">💡</span><b>Bulb</b> (or motor)<br>does the job"
+                  },
+                  {
+                    "en": "<span class=\"ic\">🎚️</span><b>Switch</b><br>turns it on and off"
+                  }
+                ]
+              },
+              "id": "f27d879c-37ed-572b-a7cc-a87347ed1bde",
+              "kind": "steps",
+              "ord": 4,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 3,
+                "note": "Classwork #28",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>⚙️ How does an electric circuit work?</h3>"
+                }
+              },
+              "id": "7d04af0d-1e27-5d8d-80fa-a9b5b7d35162",
+              "kind": "text",
+              "ord": 5,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 3,
+                "note": "Classwork #28",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "The <b>cell</b> pushes electric charge out. The charge travels along the <b>wires</b>, goes <b>through the bulb</b> (making it light up), and comes <b>all the way back to the cell</b>. It must go round in a <b>complete loop</b> — like a running track. 🏃‍♂️"
+                }
+              },
+              "id": "4f64596c-c40e-5199-b051-bbb99ad4cc8f",
+              "kind": "rule",
+              "ord": 6,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 3,
+                "note": "Classwork #28",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>✅ Complete vs ❌ Incomplete (open) circuits</h3>"
+                }
+              },
+              "id": "ff7585be-562b-539b-8278-330aaf10dbde",
+              "kind": "text",
+              "ord": 7,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 3,
+                "note": "Classwork #28",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  null,
+                  {
+                    "en": "✅ Complete (closed) circuit"
+                  },
+                  {
+                    "en": "❌ Incomplete (open) circuit"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "en": "<b>The path</b>"
+                    },
+                    {
+                      "en": "No break anywhere — it goes all the way round."
+                    },
+                    {
+                      "en": "There is a <b>gap</b>, a loose wire, or the switch is <b>open</b>."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>The current</b>"
+                    },
+                    {
+                      "en": "Current <b>flows</b>."
+                    },
+                    {
+                      "en": "Current <b>cannot flow</b>."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>The bulb</b>"
+                    },
+                    {
+                      "en": "Lights up! 💡"
+                    },
+                    {
+                      "en": "Stays off. 🌑"
+                    }
+                  ]
+                ]
+              },
+              "id": "2c7bc3de-ff70-54a2-a5f5-a68ac1ce028e",
+              "kind": "table",
+              "ord": 8,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 3,
+                "note": "Classwork #28",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Why does a bulb not light in an open circuit?</b> Because the path is <b>broken</b>, so the electric current <b>cannot flow</b> through the bulb. Learn that sentence! ✏️"
+                }
+              },
+              "id": "81e1f73b-3a12-5aca-bf75-42a66f2e0fab",
+              "kind": "tip",
+              "ord": 9,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 3,
+                "note": "Classwork #28",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "🧪 Go to the <b>🔌 Circuit Lab</b> tab and build one yourself — it is the fastest way to remember this."
+                }
+              },
+              "id": "75e5a84f-6f48-5b28-93cd-8c1bddbf7549",
+              "kind": "tip",
+              "ord": 10,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 3,
+                "note": "Classwork #28",
+                "symbol": "TOPICS"
+              }
+            }
+          ],
+          "estimatedMinutes": 20,
+          "id": "68512387-d036-5246-9efe-bf44d87806bd",
+          "ord": 3,
+          "skillCodes": [
+            "science.electricity.circuits"
+          ],
+          "source": {
+            "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+            "index": 3,
+            "note": "Classwork #28",
+            "symbol": "TOPICS"
+          },
+          "title": {
+            "en": "💡 Electricity and Electric Circuits"
+          }
+        },
+        {
+          "blocks": [
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Circuit symbols</b> are simple drawings that represent electrical components. They help us draw circuits <b>clearly and quickly</b> — everyone in the world uses the same ones, so any scientist can read your diagram. 🌍"
+                }
+              },
+              "id": "3e04ddab-2b37-56c6-ad04-decec8a062c3",
+              "kind": "rule",
+              "ord": 0,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 4,
+                "note": "Classwork #30",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>⚡ The 7 symbols you need</h3>"
+                }
+              },
+              "id": "f6f248dc-0c75-542a-b103-e27cc92e3bcb",
+              "kind": "text",
+              "ord": 1,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 4,
+                "note": "Classwork #30",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "en": "Name"
+                  },
+                  {
+                    "en": "Symbol"
+                  },
+                  {
+                    "en": "Function"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "en": "<b>1. Cell</b> 🔋"
+                    },
+                    {
+                      "en": "<span class=\"tsub\">[circuit symbol: cell]</span>"
+                    },
+                    {
+                      "en": "Provides electrical energy to the circuit. <b>One</b> long line + <b>one</b> short thick line."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>2. Battery</b> 🔋🔋"
+                    },
+                    {
+                      "en": "<span class=\"tsub\">[circuit symbol: battery]</span>"
+                    },
+                    {
+                      "en": "Provides electrical energy. It is made of <b>two or more cells</b> — so you draw the pattern <b>twice</b>."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>3. Bulb</b> 💡"
+                    },
+                    {
+                      "en": "<span class=\"tsub\">[circuit symbol: bulb]</span>"
+                    },
+                    {
+                      "en": "Changes electrical energy into <b>light</b> energy."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>4. Switch (open)</b> 🔓"
+                    },
+                    {
+                      "en": "<span class=\"tsub\">[circuit symbol: open switch]</span>"
+                    },
+                    {
+                      "en": "<b>Breaks</b> the circuit, so electric current <b>cannot</b> flow. The line is lifted up."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>5. Switch (closed)</b> 🔒"
+                    },
+                    {
+                      "en": "<span class=\"tsub\">[circuit symbol: closed switch]</span>"
+                    },
+                    {
+                      "en": "<b>Completes</b> the circuit, so electric current <b>can</b> flow. The line is flat."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>6. Motor</b> ⚙️"
+                    },
+                    {
+                      "en": "<span class=\"tsub\">[circuit symbol: motor]</span>"
+                    },
+                    {
+                      "en": "Changes electrical energy into <b>movement</b>. A circle with an <b>M</b> inside."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>7. Wire</b> ➖"
+                    },
+                    {
+                      "en": "<span class=\"tsub\">[circuit symbol: wire]</span>"
+                    },
+                    {
+                      "en": "Connects the components and allows electric current to flow. A <b>straight line</b> — use a ruler! 📏"
+                    }
+                  ]
+                ]
+              },
+              "id": "c53ab97e-ab84-5d82-82cc-04f8e5806543",
+              "kind": "table",
+              "ord": 2,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 4,
+                "note": "Classwork #30",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Cell vs Battery symbol:</b> count the pairs of lines!<br><b>1 pair</b> = cell. <b>2 or more pairs</b> = battery."
+                }
+              },
+              "id": "a391b31b-8ff9-57da-80bc-571e08d85b03",
+              "kind": "warning",
+              "ord": 3,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 4,
+                "note": "Classwork #30",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Bulb vs Motor:</b> both are circles. <b>X inside = bulb</b> (light 💡). <b>M inside = motor</b> (movement ⚙️)."
+                }
+              },
+              "id": "6eb5d440-954c-52c0-9f17-e2f31e94ebc0",
+              "kind": "tip",
+              "ord": 4,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 4,
+                "note": "Classwork #30",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>📐 Reading a circuit diagram</h3>"
+                }
+              },
+              "id": "3959fbb4-d7b6-55b7-b96e-4fed0f029cab",
+              "kind": "text",
+              "ord": 5,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 4,
+                "note": "Classwork #30",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "Follow the wire with your finger, starting at the cell. Say the name of every symbol you pass. When you get back to the cell — that's the whole circuit! If your finger has to <b>jump a gap</b>, the circuit is <b>open</b> and nothing will work."
+                }
+              },
+              "id": "de965aee-7fc7-58cb-9322-63034e347c86",
+              "kind": "rule",
+              "ord": 6,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 4,
+                "note": "Classwork #30",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Rules for drawing:</b> ✏️ use a <b>ruler</b> for every wire · draw <b>symbols only</b>, never the real objects · make corners into <b>right angles</b> · <b>label</b> each component."
+                }
+              },
+              "id": "7471b53b-cdc2-5e52-bf00-c4a8c406cdc4",
+              "kind": "tip",
+              "ord": 7,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 4,
+                "note": "Classwork #30",
+                "symbol": "TOPICS"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "🃏 Go to the <b>🎮 Games</b> tab and win <b>Symbol Match</b> — after two or three games you will know all 7 symbols without thinking."
+                }
+              },
+              "id": "e17d278b-b23c-5df0-801c-344f09069dfe",
+              "kind": "tip",
+              "ord": 8,
+              "source": {
+                "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+                "index": 4,
+                "note": "Classwork #30",
+                "symbol": "TOPICS"
+              }
+            }
+          ],
+          "estimatedMinutes": 20,
+          "id": "8728f633-cb5c-59c2-a220-3f72e1191800",
+          "ord": 4,
+          "skillCodes": [
+            "science.electricity.symbols"
+          ],
+          "source": {
+            "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+            "index": 4,
+            "note": "Classwork #30",
+            "symbol": "TOPICS"
+          },
+          "title": {
+            "en": "🔌 Electric Circuit Symbols"
+          }
+        }
+      ],
+      "ord": 0,
+      "overview": [
+        {
+          "content": {
+            "html": {
+              "en": "The 5 topics on your Final Exam <p>Click a topic to open it. Read the boxes, look at the pictures, then go to <b>🎯 Practice</b> and try to get <b>5 right in a row</b> before moving on.</p>"
+            }
+          },
+          "id": "142e722c-04e2-5941-a7f9-a0407584688d",
+          "kind": "text",
+          "ord": 0,
+          "source": {
+            "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+            "symbol": "#learn (introducción)"
+          }
+        }
+      ],
+      "title": {
+        "en": "The 5 exam topics"
+      }
+    }
+  ],
+  "packFormatVersion": 1,
+  "questions": [
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Burning fossil fuels like coal, oil and gas in factories and cars"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Too many trees growing near a lake"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Very cold weather in the mountains"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "People swimming in rivers"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "What is the main cause of acid rain?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Think about what comes out of a factory chimney. 🏭"
+      },
+      "id": "25bfce72-6dca-5daa-8ebc-de071cba22df",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.acid_rain",
+      "solution": {
+        "en": "Acid rain is caused by burning fossil fuels. Factories, power stations and vehicles release polluting gases into the air."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 0,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:acid"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Sulfur dioxide and nitrogen oxides"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Oxygen and helium"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Water vapour and steam"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Carbon and sand"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Which TWO gases mix with water in the atmosphere to create acid rain?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "One starts with S, the other with N."
+      },
+      "id": "dcc7753b-ba17-5d32-a8d9-e5fccaae9bb0",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.acid_rain",
+      "solution": {
+        "en": "Sulfur dioxide (SO₂) and nitrogen oxides (NOₓ) mix with water in the clouds and turn into sulfuric acid and nitric acid."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 1,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:acid"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "In the atmosphere, when the gases mix with water in the clouds"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Inside the factory chimney"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "At the bottom of the lake"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Underground in the soil"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Where does acid rain actually form?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Look up! ☁️"
+      },
+      "id": "8f81444c-8614-5dc0-a5b5-b5e5db9c0009",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.acid_rain",
+      "solution": {
+        "en": "The gases rise up into the atmosphere, mix with water vapour in the clouds, become acid, and then fall as rain."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 2,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:acid"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "The water becomes acidic and fish and frog eggs are damaged"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "The water turns into ice all year"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "The lake gets bigger every year"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Fish grow twice as fast"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Name a harmful effect of acid rain on lakes and rivers."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Think about baby animals that have not been born yet. 🐸"
+      },
+      "id": "96173ec8-ef97-5bea-af13-1c259ac813fe",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.acid_rain",
+      "solution": {
+        "en": "Acid makes the water acidic. The eggs of fish and amphibians become damaged and may never hatch."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 3,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:acid"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "The acid wears away the calcium in their hard shells"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "They cannot swim in acid water"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "They get too hot"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "They lose their colour"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Why do freshwater shrimps die when a lake becomes acidic?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "What is their shell made of? 🦐"
+      },
+      "id": "b158858b-03b9-573b-b3ec-efcb00415d85",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.acid_rain",
+      "solution": {
+        "en": "Shrimps have a tough shell made of calcium. The acid wears the calcium away, so the animal dies."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 4,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:acid"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "The fish have no food and die, so then the herons have no food either"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Only the shrimps are affected — nothing else changes"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "The fish start eating the herons"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "The herons grow bigger"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "In a lake, shrimps → fish → herons. If acid rain kills all the shrimps, what happens?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Follow the arrows up the food chain. 🔗"
+      },
+      "id": "c164a3a6-04e0-5bfe-b1e1-b9d95648d054",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.acid_rain",
+      "solution": {
+        "en": "This is a food chain. If one living thing is killed, everything above it in the chain loses its food. Damage spreads all the way up."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 5,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:acid"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "It slowly wears away and damages the stone"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "It makes them shine and look new"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "It makes them grow taller"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Nothing at all"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "What does acid rain do to old buildings and statues?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Think of a very old statue in a city. 🏛️"
+      },
+      "id": "768c34e7-bdbe-56f9-a860-4e8d67a3f95b",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.acid_rain",
+      "solution": {
+        "en": "Acid rain slowly eats away stone, metal and paint. That is why many old statues have lost their faces."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 6,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:acid"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "It damages the leaves and poisons the soil, so trees get weak and die"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "It helps them grow faster"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "It changes their leaves to blue"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "It gives them extra fruit"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "What does acid rain do to trees?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Is acid good or bad for a plant? 🌳"
+      },
+      "id": "316b6c56-97cf-5071-b627-638886be6abb",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.acid_rain",
+      "solution": {
+        "en": "Acid rain damages leaves and takes the goodness out of the soil, so trees become weak and can die."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 7,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:acid"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Use renewable energy like solar and wind instead of burning coal"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Build more coal power stations"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Use more cars every day"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Cut down more trees"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Which of these is the BEST way to reduce acid rain?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Which energy comes from the sun and the wind? 🔆"
+      },
+      "id": "d837995f-1447-51f8-b012-7e02b4df0768",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.acid_rain",
+      "solution": {
+        "en": "Renewable energy (solar, wind, water) does not burn fossil fuels, so it does not release the gases that cause acid rain."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 8,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:acid"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Walk, cycle, share a car or take the bus, so fewer fuels are burned"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Always travel alone in a big car"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Leave the car engine running while you wait"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Take a plane to school"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "How can the way you travel help reduce acid rain?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "What uses no fuel at all? 🚲"
+      },
+      "id": "3a94d950-cecf-54f5-a8bf-50b82be683d3",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.acid_rain",
+      "solution": {
+        "en": "Fewer vehicles burning petrol and diesel means fewer polluting gases in the air."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 9,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:acid"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "They trap the harmful gases before they escape into the air"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "They make the smoke a nicer colour"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "They make the factory work faster"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "They cool down the building"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "What do filters (scrubbers) on a factory chimney do?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Like a net that catches something. 🕸️"
+      },
+      "id": "f282464c-3611-5726-acb2-231dbf366071",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.acid_rain",
+      "solution": {
+        "en": "Filters or \"scrubbers\" catch sulfur dioxide and other harmful gases before they reach the atmosphere."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 10,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:acid"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "No — it can also fall as snow, fog or mist"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Yes, only ever as rain"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Only as hail"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Only at night"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Does acid rain only fall as rain?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Think of all the ways water falls from the sky. ❄️"
+      },
+      "id": "f0df9138-6709-5786-a553-55b315718762",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.acid_rain",
+      "solution": {
+        "en": "Any acidic precipitation counts: rain, snow, fog and mist can all be acidic."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 11,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:acid"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "True — the wind carries the gases hundreds of kilometres"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "False — it always falls on the same factory"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "False — gases never move"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "True, but only 1 metre"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "True or false: the pollution that causes acid rain can travel a long way from where it was made."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "What moves clouds across the sky? 💨"
+      },
+      "id": "87b79ce7-88bf-5b90-88a0-f01581283bb4",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.acid_rain",
+      "solution": {
+        "en": "Wind carries the gases far away, so acid rain can fall in a completely different region or country."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 12,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:acid"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Taking used materials and turning them into new products"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Burning rubbish in the garden"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Burying all rubbish in a big hole"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Throwing everything in one bin"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "What is recycling?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Old thing → new thing. ♻️"
+      },
+      "id": "ecd52015-507f-55ed-adf0-0199b4fb3531",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.recycling",
+      "solution": {
+        "en": "Recycling means used materials are collected, broken down, and made into new things instead of becoming rubbish."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 13,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:recycle"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "It saves natural resources and energy, and creates less rubbish and pollution"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "It makes rubbish disappear by magic"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "It makes shopping more expensive"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "It has no real effect"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Why is recycling important?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Think about what stays safe: trees, energy, animals. 🌳"
+      },
+      "id": "fc1ee1c0-a69f-541c-a60e-78a8207b9253",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.recycling",
+      "solution": {
+        "en": "Recycling saves trees, oil and metal, uses less energy, reduces landfill and reduces pollution."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 14,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:recycle"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Leftover food scraps"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "A glass jar"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "A newspaper"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "An aluminium can"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Which of these can usually NOT be recycled in the normal recycling bin?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "One of these goes rotten. 🍌"
+      },
+      "id": "eb7e2d9d-001d-5537-968d-f830120d71f5",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.recycling",
+      "solution": {
+        "en": "Food scraps should be composted, not put in the recycling bin — they can spoil the whole batch."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 15,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:recycle"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Reduce, Reuse, Recycle"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Recycle, Reduce, Reuse"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Reuse, Recycle, Reduce"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Repair, Return, Recycle"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "What are the 3 Rs, in the correct order?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Which one means \"use less in the first place\"? That one is first."
+      },
+      "id": "8dcffee3-9524-5beb-bafb-71bc6d4a31e1",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.recycling",
+      "solution": {
+        "en": "The order matters! Reduce first (use less), then Reuse (use it again), and only then Recycle."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 16,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:recycle"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Use less in the first place, so there is less waste"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Break things into smaller pieces"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Make things into new objects"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Buy twice as much"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "What does REDUCE mean?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Less of something. 🔻"
+      },
+      "id": "2945e2e1-9e4c-5e53-87e5-b4fc0ea472ea",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.recycling",
+      "solution": {
+        "en": "Reduce means buying and using less, so less waste is created at all. It is the most powerful R."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 17,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:recycle"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Refilling the same water bottle every day"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Melting plastic bottles to make a new jacket"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Putting paper in the blue bin"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Throwing a bottle in the bin"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Which of these is an example of REUSE?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "The object stays the SAME object. 🔁"
+      },
+      "id": "31638703-6f20-54f2-82bb-e472630d9b71",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.recycling",
+      "solution": {
+        "en": "Reuse means using the same object again, just as it is. Refilling a bottle or turning a jar into a pencil pot are reuse."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 18,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:recycle"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Old newspapers being turned into new cardboard boxes"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Giving your old coat to your little brother"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Using a jam jar to hold your pencils"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Refilling your lunch box"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Which of these is an example of RECYCLE (not reuse)?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Which one changes into a totally different object?"
+      },
+      "id": "42aad142-e169-5187-8409-01dd5e9c1723",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.recycling",
+      "solution": {
+        "en": "Recycling means the material is broken down and made into a NEW object. The others are all reuse."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 19,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:recycle"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Landfills fill up, the soil and water get polluted, and animals are harmed"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Nothing — the Earth absorbs it all"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "The rubbish turns into soil in one week"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "It makes the air cleaner"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "What happens when we throw away too much trash?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Think about where all the rubbish actually goes. 🗑️"
+      },
+      "id": "a5f89db1-a70e-53d9-ab93-f2fce4097be8",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.recycling",
+      "solution": {
+        "en": "Landfills take over land, leak harmful liquids and gases, and plastic reaches rivers and oceans where animals eat it or get trapped."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 20,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:recycle"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Less plastic reaches oceans and habitats, so fewer animals eat it or get trapped"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "It teaches animals to clean up"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "It makes animals grow bigger"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "It has no effect on animals"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "How does recycling help animals and the environment?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Think of a turtle and a plastic bag. 🐢"
+      },
+      "id": "c444f64e-b463-5bdb-b386-384ca8f01fcb",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.recycling",
+      "solution": {
+        "en": "Recycling keeps rubbish out of rivers, oceans and forests, protects habitats, and reduces the pollution animals live in."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 21,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:recycle"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Trees"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Sunshine"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Wind"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Sand"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Recycling paper mainly helps to save…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "What is paper made from? 🌲"
+      },
+      "id": "e1bba957-8226-59f8-a0c3-c78d3ba137fd",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.recycling",
+      "solution": {
+        "en": "Paper is made from trees, so recycling paper means fewer trees have to be cut down."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 22,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:recycle"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Much LESS energy than making one from new material"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Much MORE energy"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Exactly the same energy"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "No energy at all"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Making a new aluminium can from a recycled can uses…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Recycling is the energy-saving option. ⚡"
+      },
+      "id": "0bd6c810-2db9-51b6-b0c1-8909946858aa",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.recycling",
+      "solution": {
+        "en": "Recycling aluminium uses far less energy than digging up and processing new metal — that is a big benefit of recycling."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 23,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:recycle"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Reduce"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Recycle"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Reuse"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Rebuild"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Which R should we always try FIRST?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "The best rubbish is… no rubbish at all!"
+      },
+      "id": "6aa7cc2b-3e09-5f7e-83ef-3e3edd01e3a7",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.recycling",
+      "solution": {
+        "en": "Reduce comes first, because the best kind of waste is the waste that is never created."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 24,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:recycle"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Because food and dirt can spoil the whole batch of recycling"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Because it makes it heavier"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "So it looks prettier"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "It is not necessary at all"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Why should you rinse a container before recycling it?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Nobody wants a mouldy yoghurt pot in the mix. 🚿"
+      },
+      "id": "701be2c5-723a-5cd4-9051-0e9ca6693aec",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.environment.recycling",
+      "solution": {
+        "en": "Dirty containers can contaminate the other materials, so a quick rinse helps the recycling actually work."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 25,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:recycle"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "A material that lets electric current pass through it"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "A material that blocks electric current"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "A material that makes electricity"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "A material that is always soft"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "What is a conductor?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "It conducts — it lets it through. ⚡"
+      },
+      "id": "1e6a4bfe-10b5-57c8-b2d5-c26a13d5cd2b",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.conductors",
+      "solution": {
+        "en": "A conductor lets electric current pass through it easily. Most metals are good conductors."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 26,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:cond"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "A material that does NOT let electric current pass through it"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "A material that lets electricity through easily"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "A metal that carries electricity"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "A type of battery"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "What is an insulator?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "It insulates — it blocks. 🚫"
+      },
+      "id": "0768d905-58ac-5dd4-998f-7ffe015626a6",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.conductors",
+      "solution": {
+        "en": "An insulator blocks electric current. Plastic, rubber, glass and dry wood are insulators."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 27,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:cond"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Conductor"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Insulator"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Neither"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Both at once"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Copper is a…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "What colour metal is inside an electric wire? 🟠"
+      },
+      "id": "7fdd726f-e42d-54ce-a2ef-86f8c1e960b8",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.conductors",
+      "solution": {
+        "en": "Copper is a metal and one of the best conductors — that is why wires are made of it."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 28,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:cond"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Insulator"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Conductor"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Metal"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Liquid"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Plastic is a…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "It keeps you safe when you touch a wire."
+      },
+      "id": "55e3c2bc-4217-5437-8c03-caa3577ed846",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.conductors",
+      "solution": {
+        "en": "Plastic is an insulator. It does not let electricity through, which is why it covers wires."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 29,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:cond"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Insulator"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Conductor"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Metal"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Battery"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Glass is a…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "It is not a metal. 🍾"
+      },
+      "id": "2760552d-1460-5bbc-82c1-e6404c677fec",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.conductors",
+      "solution": {
+        "en": "Glass is an insulator — electricity cannot pass through it."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 30,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:cond"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Conductor"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Insulator"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Non-metal"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Gas"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Aluminium is a…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Metals conduct. ⚪"
+      },
+      "id": "ca9d9843-9dc1-5eb6-82f6-167d909e0ffb",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.conductors",
+      "solution": {
+        "en": "Aluminium is a metal, so it is a conductor. Cans and foil are made of it."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 31,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:cond"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Insulator"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Conductor"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Metal"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Fuel"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Rubber is a…"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Think of an electrician's gloves. 🧤"
+      },
+      "id": "628b14a1-a3e1-5620-a2d7-f62234be09c8",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.conductors",
+      "solution": {
+        "en": "Rubber is an insulator, which is why electricians wear rubber gloves."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 32,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:cond"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Metals"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Plastics"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Woods"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Fabrics"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Which GROUP of materials are usually conductors?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Shiny and hard. 🧲"
+      },
+      "id": "5b980dab-86b7-5b90-877e-7ea66c2da39d",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.conductors",
+      "solution": {
+        "en": "Almost all metals conduct electricity. Non-metals like plastic, wood and glass usually do not."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 33,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:cond"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Because plastic is an insulator, so it stops the electricity reaching us and keeps us safe"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Because plastic is a good conductor"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "To make the wire heavier"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "To make the wire look colourful only"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Why are electrical wires covered with plastic?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "What would happen if the copper was bare? ⚡"
+      },
+      "id": "3ca16ea2-1018-531b-b667-9a7b9e1310d0",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.conductors",
+      "solution": {
+        "en": "The copper inside carries the current; the plastic outside is an insulator that stops the electricity escaping, protecting people from electric shocks."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 34,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:cond"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "An insulator, so the heat does not reach your hand and burn you"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "A conductor, so your hand gets hot faster"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "A conductor, because it looks nicer"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "It does not matter"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "If you were designing the HANDLE of a frying pan, would you use a conductor or an insulator?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Do you want a hot handle or a cool one? 🍳"
+      },
+      "id": "7014ce2f-cd43-5fd1-a194-c3177f40b67c",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.conductors",
+      "solution": {
+        "en": "The handle should be an insulator (plastic or wood) so heat cannot travel to your hand."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 35,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:cond"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Metal tip = conductor, rubber handle = insulator"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Metal tip = insulator, rubber handle = conductor"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Both are conductors"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Both are insulators"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "A screwdriver has a metal tip and a rubber handle. Which is which?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Metals conduct, rubber blocks. 🪛"
+      },
+      "id": "20bed549-ba6d-5afc-af9a-70ac2edb4e70",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.conductors",
+      "solution": {
+        "en": "Metal conducts, rubber insulates. The rubber handle protects the person using it."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 36,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:cond"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "No, because plastic is an insulator"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Yes, because plastic is a conductor"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Only if the ruler is blue"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Only on Mondays"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Will electricity flow through a plastic ruler?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Plastic blocks electricity. 📏"
+      },
+      "id": "acea8a68-8f18-5c38-980e-644ae6fda94d",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.conductors",
+      "solution": {
+        "en": "Plastic is an insulator, so electric current cannot pass through it."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 37,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:cond"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Because water and your body conduct electricity, so you could get a shock"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Because the plug will rust"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Because water makes plastic a conductor forever"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Because it makes the plug cold"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Why should you never touch a plug with wet hands?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Is water a conductor or an insulator? 💧"
+      },
+      "id": "c0bcd295-cb9b-596e-97d1-893ac22eb378",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.conductors",
+      "solution": {
+        "en": "Water and the human body conduct electricity, so wet hands make an electric shock much more likely. Always dry your hands first!"
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 38,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:cond"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "A form of energy that can make things work"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "A type of metal"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "A kind of water"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "A sort of plastic"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "What is electricity?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "It is a form of… ⚡"
+      },
+      "id": "90e70d9d-dd01-5321-9925-c11e2da30319",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.circuits",
+      "solution": {
+        "en": "Electricity is a form of energy that can make things work — lights, motors, fridges and phones."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 39,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:elec"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "The flow of electric charge through a circuit"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "A piece of wire"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "A type of switch"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "A source of light"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "What is electric current?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Think of a river flowing. 🌊"
+      },
+      "id": "81ce5e8f-787c-5b99-9787-835aa4db16ca",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.circuits",
+      "solution": {
+        "en": "Electric current is the flow of electric charge through a circuit — like water flowing through a pipe."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 40,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:elec"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "A complete path through which electric current can flow"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "A single piece of copper"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "A kind of bulb"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "A machine that makes electricity"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "What is a circuit?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "It must be a complete loop. 🔄"
+      },
+      "id": "8a9d403a-d019-5199-8761-ff5cfb306301",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.circuits",
+      "solution": {
+        "en": "A circuit is a complete path for electric current — it must go all the way round and come back."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 41,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:elec"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "A source of electrical energy that provides energy to a circuit"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Two or more batteries joined together"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "A component that gives light"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "A metal wire"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "What is a cell?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "It is just ONE of them. 🔋"
+      },
+      "id": "d6a7ddb9-738b-5769-a52b-52c6490c9d72",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.circuits",
+      "solution": {
+        "en": "A cell is a source of electrical energy. Two or more cells joined together make a battery."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 42,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:elec"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Two or more cells connected together to provide electrical energy"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "A single cell on its own"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "A very long wire"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "A switch that is always on"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "What is a battery?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "How many cells? More than one! 🔋🔋"
+      },
+      "id": "9d819a37-c59b-5c88-9ac4-d038b09f475b",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.circuits",
+      "solution": {
+        "en": "A battery is TWO OR MORE cells connected together. One on its own is a cell."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 43,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:elec"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "It produces light when electric current flows through it"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "It stores electricity"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "It stops the current"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "It makes the circuit longer"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "What does a bulb do in a circuit?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "It glows. 💡"
+      },
+      "id": "79b676d8-c477-5b5f-b5c2-735d8ecc234b",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.circuits",
+      "solution": {
+        "en": "A bulb changes electrical energy into light energy when current flows through it."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 44,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:elec"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "It opens or closes a circuit"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "It produces light"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "It stores energy"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "It makes the wire longer"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "What does a switch do?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "On… off… on… off. 🎚️"
+      },
+      "id": "22594ff1-d457-5c79-acec-e57113b578a4",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.circuits",
+      "solution": {
+        "en": "A switch opens the circuit (current stops) or closes it (current flows). It turns things on and off."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 45,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:elec"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "A circuit with a continuous path that allows electric current to flow"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "A circuit with a break in it"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "A circuit with no cell"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "A circuit made only of plastic"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "What is a complete circuit?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "No breaks anywhere! ✅"
+      },
+      "id": "d610c003-c9cc-50f4-b3f4-6df5dd390e4f",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.circuits",
+      "solution": {
+        "en": "A complete circuit has a continuous path with no break, so current can flow and the bulb lights up."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 46,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:elec"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "A circuit with a break in the path, so current cannot flow"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "A circuit that works perfectly"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "A circuit with two bulbs"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "A circuit made of copper only"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "What is an open circuit?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Something is missing or lifted up. ❌"
+      },
+      "id": "ce19ee8b-108a-5144-bf23-2cc522c13266",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.circuits",
+      "solution": {
+        "en": "An open circuit has a break — a gap, a loose wire, or an open switch — so current cannot flow."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 47,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:elec"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Because the path is broken, so electric current cannot flow through the bulb"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Because the bulb is too old"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Because the wires are too short"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Because the cell is upside down"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Why does a bulb NOT light up in an open circuit?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "What must the current have all the way round? 🔄"
+      },
+      "id": "764bbc9a-cfc1-56bb-afac-25526b8ca04b",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.circuits",
+      "solution": {
+        "en": "The current needs a complete path. If the path is broken, no current reaches the bulb, so it stays off."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 48,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:elec"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Because metal is a conductor, so current can flow through it"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Because metal is cheap"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Because metal is an insulator"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Because metal is soft"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Why are wires made of metal?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Conductor or insulator? ⚡"
+      },
+      "id": "0f613f50-00a9-5f55-85ad-8dd62e20b70d",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.circuits",
+      "solution": {
+        "en": "Metal is a conductor, so it allows electric current to flow through the circuit."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 49,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:elec"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "A cell, wires and a bulb"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Paper, glue and scissors"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Water, sand and air"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "A ruler, a pencil and a rubber"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Name three components of a simple electric circuit."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Energy source + path + something that works. 🔋➖💡"
+      },
+      "id": "91e642cb-0c3c-548c-9384-54000375d128",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.circuits",
+      "solution": {
+        "en": "A simple circuit needs a cell (energy), wires (to carry the current) and a bulb (to do the job). A switch is often added too."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 50,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:elec"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "A CLOSED switch"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "An OPEN switch"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "No cell at all"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "A cut wire"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Which will make the bulb light up?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Closed = joined = current flows. 🔒"
+      },
+      "id": "0ca7f387-c041-5ec0-9f62-c26eed051a6d",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.circuits",
+      "solution": {
+        "en": "A closed switch completes the circuit so current can flow and the bulb lights."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 51,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:elec"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "The circuit becomes open, so the current stops and the bulb goes off"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "The bulb gets brighter"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Nothing changes"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "The cell explodes"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "What happens if you remove one wire from a working circuit?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "You just made a gap. ✂️"
+      },
+      "id": "debfd079-f934-5e69-b5b4-3eaacddb8533",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.circuits",
+      "solution": {
+        "en": "Removing a wire creates a break, making the circuit open. Current cannot flow, so the bulb goes out."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 52,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:elec"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "False — a complete circuit has NO break"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "True"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "True, but only with a battery"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Only if there is a motor"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "True or false: a complete circuit has a broken path."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Careful — this one is a trick. 🤔"
+      },
+      "id": "c993cff1-7315-573e-925b-0829a0ca8e19",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.circuits",
+      "solution": {
+        "en": "False! A complete circuit has a continuous path with no break. It is the OPEN circuit that has a break."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 53,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:elec"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "A cell"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "A battery"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "A bulb"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "A switch"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Which component does this symbol represent?<br><span class=\"tsub\">[circuit symbol: cell]</span>"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Count the pairs of lines. Only one pair!"
+      },
+      "id": "fcabf2ac-b386-50a3-a893-1e735a04407f",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.symbols",
+      "solution": {
+        "en": "One long thin line + one short thick line = a CELL. It provides electrical energy to the circuit."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 54,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:sym"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "A battery"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "A cell"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "A motor"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "A wire"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Which component does this symbol represent?<br><span class=\"tsub\">[circuit symbol: battery]</span>"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Count the pairs of lines. Two pairs!"
+      },
+      "id": "736e361a-b1fb-572b-8b3d-e4fb0af805e0",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.symbols",
+      "solution": {
+        "en": "Two pairs of lines = a BATTERY, because a battery is two or more cells connected together."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 55,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:sym"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "A bulb"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "A motor"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "A cell"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "An open switch"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Which component does this symbol represent?<br><span class=\"tsub\">[circuit symbol: bulb]</span>"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "A circle with a cross. What gives light? 💡"
+      },
+      "id": "149b360e-c9b0-503c-a10e-af3140d9eb74",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.symbols",
+      "solution": {
+        "en": "A circle with an X inside = a BULB. It changes electrical energy into light energy."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 56,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:sym"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "A motor"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "A bulb"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "A battery"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "A closed switch"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Which component does this symbol represent?<br><span class=\"tsub\">[circuit symbol: motor]</span>"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "M is for… ⚙️"
+      },
+      "id": "1681cc60-8ecb-56c0-be70-051c673ca21f",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.symbols",
+      "solution": {
+        "en": "A circle with an M inside = a MOTOR. It changes electrical energy into movement."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 57,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:sym"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "An open switch"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "A closed switch"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "A wire"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "A cell"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Which component does this symbol represent?<br><span class=\"tsub\">[circuit symbol: open switch]</span>"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Is the line flat or lifted up? 🔓"
+      },
+      "id": "e3468dfe-b527-5b07-96bb-351cfb0d69db",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.symbols",
+      "solution": {
+        "en": "Two dots with the line LIFTED UP = an OPEN switch. It breaks the circuit, so current cannot flow."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 58,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:sym"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "A closed switch"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "An open switch"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "A wire"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "A bulb"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Which component does this symbol represent?<br><span class=\"tsub\">[circuit symbol: closed switch]</span>"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "The line is flat and joins both dots. 🔒"
+      },
+      "id": "e15f1771-1bea-5f13-a20d-4cc0ba9399da",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.symbols",
+      "solution": {
+        "en": "Two dots joined by a FLAT line = a CLOSED switch. It completes the circuit, so current can flow."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 59,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:sym"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "It changes electrical energy into movement"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "It changes electrical energy into light"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "It stores electrical energy"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "It stops the current"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "What is the function of a MOTOR in a circuit?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "What does a motor make things do? ⚙️"
+      },
+      "id": "b677334d-c9ac-582d-8377-05385428b7c6",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.symbols",
+      "solution": {
+        "en": "A motor changes electrical energy into movement — it makes things spin or move."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 60,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:sym"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "It changes electrical energy into light energy"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "It changes electrical energy into movement"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "It provides electrical energy"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "It breaks the circuit"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "What is the function of a BULB in a circuit?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "It shines. 💡"
+      },
+      "id": "2fcfdc67-5e77-5e60-8bfd-282ff0f5b9de",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.symbols",
+      "solution": {
+        "en": "A bulb changes electrical energy into light energy."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 61,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:sym"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Because symbols are simple, clear and quick to draw, and everyone understands them"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Because drawing objects is not allowed"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Because symbols are prettier"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Because symbols use less ink"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Why do scientists use circuit symbols instead of drawing the real objects?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Which is faster to draw: a real light bulb or a circle with an X? ⏱️"
+      },
+      "id": "25640d80-84d1-50e9-b570-435879a80c78",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.symbols",
+      "solution": {
+        "en": "Symbols are simple drawings that let us show circuits clearly and quickly — and every scientist in the world uses the same ones."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 62,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:sym"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "An open switch"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "A closed switch"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "A battery"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "A motor"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "You want the current to STOP flowing. Which symbol would you draw?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Which switch makes a gap? 🔓"
+      },
+      "id": "b93da40e-a989-5d1c-bdf2-5eec87b9d8a8",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.symbols",
+      "solution": {
+        "en": "An open switch breaks the circuit, so the current stops flowing."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 63,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:sym"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "It connects the components and allows current to flow through the circuit"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "It produces the light"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "It stores the energy"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "It opens and closes the circuit"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "What is the function of a WIRE in a circuit?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "It joins everything together. ➖"
+      },
+      "id": "09d97710-fdd8-5180-b9a1-ef832caea159",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.symbols",
+      "solution": {
+        "en": "A wire is a metal conductor. It connects the components and allows electric current to flow."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 64,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:sym"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "A ruler, so the lines are straight"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "A wavy freehand line"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "A curly spiral"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Small dots"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "When you draw a circuit diagram, what should you use to draw the wires?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Straight lines need a… 📏"
+      },
+      "id": "5b242c87-0145-5cac-bd52-fd3320048582",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.symbols",
+      "solution": {
+        "en": "Always use a ruler. Circuit diagrams use straight lines and right-angled corners, and every component should be labelled."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 65,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:sym"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "No, because the open switch breaks the circuit"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Yes, always"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Yes, but only a little"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Only if you add a motor"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "A circuit shows a cell, a bulb and an open switch. Will the bulb light up?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "Follow the path with your finger — is there a gap? 🔓"
+      },
+      "id": "5b64216c-aad7-5c1f-93ba-279c12b31111",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.symbols",
+      "solution": {
+        "en": "An open switch means the circuit is not complete, so current cannot flow and the bulb stays off."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 66,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:sym"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "2 cells"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "1 cell"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "4 cells"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "No cells"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "How many cells are shown in a battery symbol that has TWO pairs of lines?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "hint": {
+        "en": "One pair = one cell. 🔋"
+      },
+      "id": "35d8b27f-6f55-55d1-90cf-667b4b801a28",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "science.electricity.symbols",
+      "solution": {
+        "en": "Each pair of lines (one long thin + one short thick) is one cell. Two pairs = 2 cells = a battery."
+      },
+      "source": {
+        "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+        "index": 67,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:sym"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "code": "science.environment",
+      "id": "bd66b3f0-994b-5c74-8f4a-8d4015002075",
+      "name": {
+        "en": "Environment"
+      },
+      "ord": 0,
+      "parentCode": null
+    },
+    {
+      "code": "science.environment.acid_rain",
+      "id": "070407b8-04d2-5626-bb26-15fbb176c70b",
+      "name": {
+        "en": "Acid rain"
+      },
+      "ord": 1,
+      "parentCode": "science.environment"
+    },
+    {
+      "code": "science.environment.recycling",
+      "id": "327a3e8e-8f6d-5e53-9d69-2fa93923618a",
+      "name": {
+        "en": "Recycling"
+      },
+      "ord": 2,
+      "parentCode": "science.environment"
+    },
+    {
+      "code": "science.electricity",
+      "id": "69bcdad1-6016-586c-8c6c-5164d5ef3ccc",
+      "name": {
+        "en": "Electricity"
+      },
+      "ord": 3,
+      "parentCode": null
+    },
+    {
+      "code": "science.electricity.conductors",
+      "id": "3d839bf6-404a-5eaf-bb3a-c23fa970e3fd",
+      "name": {
+        "en": "Conductors and insulators"
+      },
+      "ord": 4,
+      "parentCode": "science.electricity"
+    },
+    {
+      "code": "science.electricity.circuits",
+      "id": "f03462db-78e1-5af1-a68b-fd589db430ae",
+      "name": {
+        "en": "Electricity and circuits"
+      },
+      "ord": 5,
+      "parentCode": "science.electricity"
+    },
+    {
+      "code": "science.electricity.symbols",
+      "id": "3017f988-0217-57bf-a1ac-67eb9d45fb1c",
+      "name": {
+        "en": "Circuit symbols"
+      },
+      "ord": 6,
+      "parentCode": "science.electricity"
+    }
+  ],
+  "studyPlan": {
+    "days": [
+      {
+        "id": "8305ebda-53ad-507a-92be-97c3a95b48d9",
+        "ord": 0,
+        "tasks": [
+          {
+            "ord": 0,
+            "target": {
+              "en": "5 right in a row"
+            },
+            "text": {
+              "en": "🌧️ Read <b>Acid Rain</b> in Learn. Then Practice the Acid Rain questions."
+            }
+          }
+        ],
+        "title": {
+          "en": "Day 1"
+        }
+      },
+      {
+        "id": "034f389a-0e20-5d34-b0e4-221b61900e23",
+        "ord": 1,
+        "tasks": [
+          {
+            "ord": 0,
+            "target": {
+              "en": "5 right in a row"
+            },
+            "text": {
+              "en": "♻️ Read <b>Recycling</b>. Learn the <b>3 Rs in order</b>. Then Practice."
+            }
+          }
+        ],
+        "title": {
+          "en": "Day 2"
+        }
+      },
+      {
+        "id": "4a1db9be-82a6-5efa-ac3d-97e87645f80e",
+        "ord": 2,
+        "tasks": [
+          {
+            "ord": 0,
+            "target": {
+              "en": "12 / 12 sorted"
+            },
+            "text": {
+              "en": "⚡ Read <b>Conductors &amp; Insulators</b>. Play the <b>sorting game</b> until you get 12/12."
+            }
+          }
+        ],
+        "title": {
+          "en": "Day 3"
+        }
+      },
+      {
+        "id": "b795720c-ccd0-5a2d-aeea-7d8d92da79b9",
+        "ord": 3,
+        "tasks": [
+          {
+            "ord": 0,
+            "target": {
+              "en": "All 7 pairs matched"
+            },
+            "text": {
+              "en": "💡 Read <b>Electricity &amp; Circuits</b> + 🔌 <b>Circuit Symbols</b>. Do 3 Circuit Lab missions and win Symbol Match."
+            }
+          }
+        ],
+        "title": {
+          "en": "Day 4"
+        }
+      },
+      {
+        "id": "d4ec16ec-15aa-5ed7-a7d7-0ce51c1cf218",
+        "ord": 4,
+        "tasks": [
+          {
+            "ord": 0,
+            "target": {
+              "en": "16 / 20 or better"
+            },
+            "text": {
+              "en": "⏱️ Full <b>Mock Exam</b>. Review every mistake, then re-practise only those topics."
+            }
+          }
+        ],
+        "title": {
+          "en": "Day 5"
+        }
+      }
+    ],
+    "id": "12690b0e-d7c4-51e8-9088-06dfb79222cf",
+    "notes": [
+      {
+        "content": {
+          "html": {
+            "en": "🗓️ A 5-day plan to be ready <p>Short study sessions beat one long panic session. <b>25–35 minutes a day</b> is plenty.</p> <h3>⭐ The 10 marks students throw away every year</h3> <ol> <li>Saying acid rain is caused by \"dirty water\" — it's caused by <b>burning fossil fuels</b>.</li> <li>Forgetting the two gases: <b>sulfur dioxide</b> and <b>nitrogen oxides</b>.</li> <li>Writing the 3 Rs in the wrong order. It is <b>Reduce → Reuse → Recycle</b>.</li> <li>Mixing up <b>Reuse</b> (use it again as it is) and <b>Recycle</b> (make it into something new).</li> <li>Saying glass is a conductor. Glass is an <b>insulator</b>. Metals are the conductors.</li> <li>Mixing up <b>cell</b> (one) and <b>battery</b> (two or more cells).</li> <li>Saying a complete circuit has a break. <b>A complete circuit has NO break.</b></li> <li>Drawing the real objects instead of the <b>symbols</b> in a circuit diagram.</li> <li>Drawing an open switch when the question asked for a <b>closed</b> one (or the other way round).</li> <li>Leaving a question blank. <b>Always write something</b> — you can't get marks for an empty line.</li> </ol>"
+          }
+        },
+        "id": "8c1ed9a1-430a-5855-a847-2d7d34582c1f",
+        "kind": "text",
+        "ord": 0,
+        "source": {
+          "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+          "symbol": "#plan"
+        }
+      },
+      {
+        "content": {
+          "html": {
+            "en": "<b>The night before:</b> don't learn anything new. Re-read the blue rule boxes in <b>Learn</b>, do 10 quick questions in <b>Practice</b>, then stop. Sleep is worth more marks than another hour of studying. 😴"
+          }
+        },
+        "id": "006d2baf-1cc2-5425-b373-3dcec7a2c227",
+        "kind": "tip",
+        "ord": 1,
+        "source": {
+          "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+          "symbol": "#plan"
+        }
+      },
+      {
+        "content": {
+          "html": {
+            "en": "<b>In the exam:</b> read every question twice. Underline the question word (<i>name, explain, draw, why</i>). If it says <b>explain</b>, write a <b>because…</b> sentence. If it says <b>draw</b>, use a ruler and label everything. 📏"
+          }
+        },
+        "id": "bf80ee85-081d-5f7c-83ed-f96355af69ff",
+        "kind": "tip",
+        "ord": 2,
+        "source": {
+          "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+          "symbol": "#plan"
+        }
+      }
+    ],
+    "source": {
+      "file": "Y6A/Science/Grade 5 Science Exam Trainer.html",
+      "symbol": "#plan"
+    },
+    "title": {
+      "en": "Study plan"
+    }
+  },
+  "subject": {
+    "code": "science",
+    "color": "#2e9bd6",
+    "icon": "🔬",
+    "name": {
+      "en": "Science"
+    },
+    "ord": 1
+  }
+}

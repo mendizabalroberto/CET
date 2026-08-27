@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // `rootDir: "."` y no `"src"`: el include abarca tambien vitest.config.ts,
+    // que vive en la raiz del paquete. Con rootDir en src, tsc falla con TS6059.
+    "rootDir": ".",
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "types": ["node"]
+  },
+  "include": ["src/**/*", "vitest.config.ts"]
+}

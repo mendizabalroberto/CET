@@ -1,0 +1,527 @@
+-- =============================================================================
+-- helpers/fixture.psql — mundo de pruebas compartido por los tests pgTAP
+-- Cambridge Exam Trainer · © 2026 Roberto Mendizabal.
+-- =============================================================================
+-- NO es un fichero de test. Vive en `helpers/` y con extensión `.psql` para que
+-- el glob de pg_prove (`supabase/tests/*.sql`) no lo recoja como test suelto: un
+-- fichero sin `plan()` se contaría como fallo.
+--
+-- Se incluye con `\ir helpers/fixture.psql`, que es relativo AL FICHERO que lo
+-- incluye, no al directorio de trabajo. Así los tests corren igual desde la raíz
+-- del repo, desde supabase/ o desde CI.
+--
+-- Todo lo que crea vive dentro de la transacción del test y desaparece con el
+-- ROLLBACK final. Ninguna prueba deja rastro.
+--
+-- EL MUNDO:
+--   Colegio A "alfa"  — admin_a, teacher_a, alumnos s1a y s2a
+--   Colegio B "beta"  — admin_b, teacher_b, alumno  s1b
+--   superadmin sin colegio
+--   Curso Math Y6 GLOBAL + una skill + una pregunta con dos versiones
+--   Un blueprint y una asignación por colegio, con un intento completo por
+--   alumno (items, respuestas con revisiones y calificación).
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- Suplantación de identidad
+-- -----------------------------------------------------------------------------
+-- Reproduce exactamente lo que hace PostgREST al recibir un JWT: fija el GUC
+-- `request.jwt.claims` y cambia al rol `authenticated`. A partir de ahí,
+-- auth.uid() devuelve el sub y TODAS las políticas RLS se aplican de verdad.
+-- Un test de RLS que corre como `postgres` no prueba nada: el propietario de la
+-- tabla se salta las políticas.
+create or replace function pg_temp.login_as(p_profile uuid)
+returns void language plpgsql as $fn$
+begin
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', p_profile::text, 'role', 'authenticated')::text, true);
+  perform set_config('role', 'authenticated', true);
+end $fn$;
+
+-- Vuelve al rol de la sesión (postgres) para poder seguir sembrando.
+create or replace function pg_temp.logout()
+returns void language plpgsql as $fn$
+begin
+  perform set_config('request.jwt.claims', '', true);
+  reset role;
+end $fn$;
+
+-- Cuenta filas visibles capturando el "permission denied for table/column" como
+-- 0 filas. Sin esto, un test que comprueba aislamiento revienta con un error de
+-- privilegios en vez de reportar el número de filas visibles — y un error no es
+-- un resultado, es un test que no ha llegado a ejecutarse.
+create or replace function pg_temp.visible_count(p_sql text)
+returns integer language plpgsql as $fn$
+declare n integer;
+begin
+  execute p_sql into n;
+  return n;
+exception
+  when insufficient_privilege then return 0;
+  when undefined_table        then return 0;
+end $fn$;
+
+-- Nº de filas que una escritura consigue tocar. Devuelve -1 si el rol ni
+-- siquiera tiene el GRANT. La distinción importa: "0 filas afectadas" significa
+-- que la RLS filtró la fila; "-1" que el privilegio no existe. Ambas son
+-- defensas válidas, pero son defensas DISTINTAS y conviene saber cuál actuó.
+create or replace function pg_temp.affected(p_sql text)
+returns integer language plpgsql as $fn$
+declare n integer;
+begin
+  execute p_sql;
+  get diagnostics n = row_count;
+  return n;
+exception when insufficient_privilege then
+  return -1;
+end $fn$;
+
+-- ¿Falla esta sentencia? Devuelve el SQLSTATE, o NULL si tuvo éxito.
+create or replace function pg_temp.errcode_of(p_sql text)
+returns text language plpgsql as $fn$
+begin
+  execute p_sql;
+  return null;
+exception when others then
+  return sqlstate;
+end $fn$;
+
+
+-- -----------------------------------------------------------------------------
+-- Colegios
+-- -----------------------------------------------------------------------------
+insert into public.schools (id, name, slug, timezone, default_locale,
+                            pin_length_primary, pin_length_secondary, status)
+values
+  ('11111111-1111-4111-8111-111111111111', 'Colegio Alfa', 'alfa',
+   'Europe/Madrid', 'es', 4, 6, 'active'),
+  ('22222222-2222-4222-8222-222222222222', 'Colegio Beta', 'beta',
+   'Europe/Madrid', 'en', 4, 6, 'active');
+
+
+-- -----------------------------------------------------------------------------
+-- auth.users — los perfiles llevan FK contra esta tabla
+-- -----------------------------------------------------------------------------
+-- Se insertan las columnas mínimas. Estas filas nunca se autentican de verdad
+-- (los tests suplantan por GUC, no por JWT firmado), así que no necesitan hash
+-- de contraseña ni tokens.
+insert into auth.users (id, email)
+values
+  ('aaaaaaaa-0000-4000-8000-00000000000a', 'super@cet.test'),
+  ('aaaaaaaa-0000-4000-8000-00000000001a', 'admin.a@alfa.test'),
+  ('aaaaaaaa-0000-4000-8000-00000000002a', 'teacher.a@alfa.test'),
+  ('aaaaaaaa-0000-4000-8000-00000000003a', 's.S1A@alfa.students.cet.invalid'),
+  ('aaaaaaaa-0000-4000-8000-00000000004a', 's.S2A@alfa.students.cet.invalid'),
+  ('bbbbbbbb-0000-4000-8000-00000000001b', 'admin.b@beta.test'),
+  ('bbbbbbbb-0000-4000-8000-00000000002b', 'teacher.b@beta.test'),
+  ('bbbbbbbb-0000-4000-8000-00000000003b', 's.S1B@beta.students.cet.invalid');
+
+
+-- -----------------------------------------------------------------------------
+-- Perfiles
+-- -----------------------------------------------------------------------------
+insert into public.profiles (id, school_id, role, full_name, email, locale, status)
+values
+  ('aaaaaaaa-0000-4000-8000-00000000000a', null,
+   'superadmin',   'Super Admin',  'super@cet.test',      'es', 'active'),
+  ('aaaaaaaa-0000-4000-8000-00000000001a', '11111111-1111-4111-8111-111111111111',
+   'school_admin', 'Admin Alfa',   'admin.a@alfa.test',   'es', 'active'),
+  ('aaaaaaaa-0000-4000-8000-00000000002a', '11111111-1111-4111-8111-111111111111',
+   'teacher',      'Teacher Alfa', 'teacher.a@alfa.test', 'es', 'active'),
+  ('aaaaaaaa-0000-4000-8000-00000000003a', '11111111-1111-4111-8111-111111111111',
+   'student',      'Alumno S1A',   null,                  'es', 'active'),
+  ('aaaaaaaa-0000-4000-8000-00000000004a', '11111111-1111-4111-8111-111111111111',
+   'student',      'Alumno S2A',   null,                  'es', 'active'),
+  ('bbbbbbbb-0000-4000-8000-00000000001b', '22222222-2222-4222-8222-222222222222',
+   'school_admin', 'Admin Beta',   'admin.b@beta.test',   'en', 'active'),
+  ('bbbbbbbb-0000-4000-8000-00000000002b', '22222222-2222-4222-8222-222222222222',
+   'teacher',      'Teacher Beta', 'teacher.b@beta.test', 'en', 'active'),
+  ('bbbbbbbb-0000-4000-8000-00000000003b', '22222222-2222-4222-8222-222222222222',
+   'student',      'Alumno S1B',   null,                  'en', 'active');
+
+
+-- -----------------------------------------------------------------------------
+-- Fichas de alumno
+-- -----------------------------------------------------------------------------
+-- Hash Argon2id de juguete, sintácticamente válido (el CHECK exige el prefijo
+-- `$argon2id$`). No corresponde a ningún PIN real y no se usa para autenticar.
+insert into public.students (profile_id, school_id, student_code, year_level, stage,
+                             section, pin_hash, guardian_email)
+values
+  ('aaaaaaaa-0000-4000-8000-00000000003a', '11111111-1111-4111-8111-111111111111',
+   'S1A', 6, 'primary', 'Y6A',
+   '$argon2id$v=19$m=19456,t=2,p=1$c2FsdHNhbHRzYWx0$ZmFrZWhhc2hmYWtlaGFzaGZha2U',
+   'tutor.s1a@example.com'),
+  ('aaaaaaaa-0000-4000-8000-00000000004a', '11111111-1111-4111-8111-111111111111',
+   'S2A', 6, 'primary', 'Y6A',
+   '$argon2id$v=19$m=19456,t=2,p=1$c2FsdHNhbHRzYWx0$ZmFrZWhhc2hmYWtlaGFzaGZha2U',
+   'tutor.s2a@example.com'),
+  ('bbbbbbbb-0000-4000-8000-00000000003b', '22222222-2222-4222-8222-222222222222',
+   'S1B', 6, 'primary', 'Y6B',
+   '$argon2id$v=19$m=19456,t=2,p=1$c2FsdHNhbHRzYWx0$ZmFrZWhhc2hmYWtlaGFzaGZha2U',
+   'tutor.s1b@example.com');
+
+
+-- -----------------------------------------------------------------------------
+-- Clases
+-- -----------------------------------------------------------------------------
+insert into public.sections (id, school_id, name, year_level, academic_year)
+values
+  ('11111111-0000-4000-8000-0000000000a1', '11111111-1111-4111-8111-111111111111',
+   'Y6A', 6, '2026-2027'),
+  ('22222222-0000-4000-8000-0000000000b1', '22222222-2222-4222-8222-222222222222',
+   'Y6B', 6, '2026-2027');
+
+insert into public.section_members (section_id, profile_id, role_in_section, school_id)
+values
+  ('11111111-0000-4000-8000-0000000000a1', 'aaaaaaaa-0000-4000-8000-00000000003a',
+   'student', '11111111-1111-4111-8111-111111111111'),
+  ('11111111-0000-4000-8000-0000000000a1', 'aaaaaaaa-0000-4000-8000-00000000004a',
+   'student', '11111111-1111-4111-8111-111111111111'),
+  ('11111111-0000-4000-8000-0000000000a1', 'aaaaaaaa-0000-4000-8000-00000000002a',
+   'teacher', '11111111-1111-4111-8111-111111111111'),
+  ('22222222-0000-4000-8000-0000000000b1', 'bbbbbbbb-0000-4000-8000-00000000003b',
+   'student', '22222222-2222-4222-8222-222222222222'),
+  ('22222222-0000-4000-8000-0000000000b1', 'bbbbbbbb-0000-4000-8000-00000000002b',
+   'teacher', '22222222-2222-4222-8222-222222222222');
+
+
+-- -----------------------------------------------------------------------------
+-- Currículo: uno global y uno privado de cada colegio (para probar AD-2)
+-- -----------------------------------------------------------------------------
+insert into public.subjects (id, school_id, code, name, ord)
+values
+  ('cccccccc-0000-4000-8000-000000000001', null, 'math',
+   '{"en":"Mathematics","es":"Matemáticas"}'::jsonb, 1),
+  ('cccccccc-0000-4000-8000-00000000000a', '11111111-1111-4111-8111-111111111111',
+   'alfa_only', '{"en":"Alfa only","es":"Solo Alfa"}'::jsonb, 2),
+  ('cccccccc-0000-4000-8000-00000000000b', '22222222-2222-4222-8222-222222222222',
+   'beta_only', '{"en":"Beta only","es":"Solo Beta"}'::jsonb, 2);
+
+insert into public.courses (id, school_id, subject_id, name, year_level, locale, status)
+values
+  ('dddddddd-0000-4000-8000-000000000001', null,
+   'cccccccc-0000-4000-8000-000000000001',
+   '{"en":"Mathematics — Year 6"}'::jsonb, 6, 'en', 'published'),
+  ('dddddddd-0000-4000-8000-00000000000a', '11111111-1111-4111-8111-111111111111',
+   'cccccccc-0000-4000-8000-00000000000a',
+   '{"en":"Alfa private course"}'::jsonb, 6, 'es', 'published'),
+  ('dddddddd-0000-4000-8000-00000000000b', '22222222-2222-4222-8222-222222222222',
+   'cccccccc-0000-4000-8000-00000000000b',
+   '{"en":"Beta private course"}'::jsonb, 6, 'en', 'published');
+
+insert into public.course_modules (id, course_id, ord, title)
+values
+  ('eeeeeeee-0000-4000-8000-000000000001', 'dddddddd-0000-4000-8000-000000000001',
+   1, '{"en":"Fractions","es":"Fracciones"}'::jsonb),
+  ('eeeeeeee-0000-4000-8000-00000000000b', 'dddddddd-0000-4000-8000-00000000000b',
+   1, '{"en":"Beta module"}'::jsonb);
+
+insert into public.lessons (id, module_id, ord, title, status)
+values
+  ('ffffffff-0000-4000-8000-000000000001', 'eeeeeeee-0000-4000-8000-000000000001',
+   1, '{"en":"Comparing & simplifying fractions"}'::jsonb, 'published'),
+  ('ffffffff-0000-4000-8000-00000000000b', 'eeeeeeee-0000-4000-8000-00000000000b',
+   1, '{"en":"Beta lesson"}'::jsonb, 'published');
+
+insert into public.skills (id, school_id, course_id, code, name)
+values
+  ('99999999-0000-4000-8000-000000000001', null, 'dddddddd-0000-4000-8000-000000000001',
+   'math.fractions.simplify', '{"en":"Simplifying fractions"}'::jsonb),
+  ('99999999-0000-4000-8000-00000000000b', '22222222-2222-4222-8222-222222222222',
+   'dddddddd-0000-4000-8000-00000000000b',
+   'beta.secret_skill', '{"en":"Beta secret skill"}'::jsonb);
+
+
+-- -----------------------------------------------------------------------------
+-- Preguntas — una global con dos versiones, una privada de Beta
+-- -----------------------------------------------------------------------------
+insert into public.questions (id, school_id, course_id, skill_id, kind, status)
+values
+  ('77777777-0000-4000-8000-000000000001', null,
+   'dddddddd-0000-4000-8000-000000000001', '99999999-0000-4000-8000-000000000001',
+   'static', 'published'),
+  ('77777777-0000-4000-8000-00000000000b', '22222222-2222-4222-8222-222222222222',
+   'dddddddd-0000-4000-8000-00000000000b', '99999999-0000-4000-8000-00000000000b',
+   'static', 'published');
+
+insert into public.question_versions
+  (id, question_id, version, format, body, answer_spec, hint, solution,
+   difficulty, max_points, grading_mode, locale, published_at)
+values
+  -- v1: la versión ANTIGUA. Existe para demostrar que el intento apunta a la
+  -- versión concreta que se usó y no "a la pregunta".
+  ('88888888-0000-4000-8000-000000000001', '77777777-0000-4000-8000-000000000001',
+   1, 'mcq_single',
+   '{"stem":"Simplify 24/36 (v1)","options":[{"id":"a","html":"2/3"},{"id":"b","html":"3/4"}]}'::jsonb,
+   '{"type":"choice","correctIds":["a"]}'::jsonb,
+   '{"en":"Divide by the HCF."}'::jsonb,
+   '{"en":"24/36 = 2/3"}'::jsonb,
+   2, 1, 'auto', 'en', now() - interval '30 days'),
+  -- v2: la versión VIGENTE, con el enunciado corregido.
+  ('88888888-0000-4000-8000-000000000002', '77777777-0000-4000-8000-000000000001',
+   2, 'mcq_single',
+   '{"stem":"Simplify 24/36","options":[{"id":"a","html":"2/3"},{"id":"b","html":"3/4"},{"id":"c","html":"4/6"}]}'::jsonb,
+   '{"type":"choice","correctIds":["a"]}'::jsonb,
+   '{"en":"Divide top and bottom by 12."}'::jsonb,
+   '{"en":"24 ÷ 12 = 2, 36 ÷ 12 = 3 → 2/3"}'::jsonb,
+   2, 1, 'auto', 'en', now() - interval '1 day'),
+  ('88888888-0000-4000-8000-00000000000b', '77777777-0000-4000-8000-00000000000b',
+   1, 'numeric',
+   '{"stem":"Beta private question"}'::jsonb,
+   '{"type":"numeric","value":42,"tolerance":0,"canonical":"42"}'::jsonb,
+   null, null, 3, 1, 'auto', 'en', now());
+
+update public.questions
+   set current_version_id = '88888888-0000-4000-8000-000000000002'
+ where id = '77777777-0000-4000-8000-000000000001';
+update public.questions
+   set current_version_id = '88888888-0000-4000-8000-00000000000b'
+ where id = '77777777-0000-4000-8000-00000000000b';
+
+
+-- -----------------------------------------------------------------------------
+-- Exámenes
+-- -----------------------------------------------------------------------------
+insert into public.exam_blueprints
+  (id, school_id, course_id, title, duration_seconds, pass_threshold, max_attempts, status, version)
+values
+  ('66666666-0000-4000-8000-000000000001', null, 'dddddddd-0000-4000-8000-000000000001',
+   '{"en":"Fractions mock paper"}'::jsonb, 1800, 50, 2, 'published', 1),
+  ('66666666-0000-4000-8000-00000000000b', '22222222-2222-4222-8222-222222222222',
+   'dddddddd-0000-4000-8000-00000000000b',
+   '{"en":"Beta private paper"}'::jsonb, 1800, 50, 1, 'published', 1);
+
+insert into public.exam_blueprint_sections
+  (id, blueprint_id, ord, title, item_count, selection, source, points_per_item)
+values
+  ('55555555-0000-4000-8000-000000000001', '66666666-0000-4000-8000-000000000001',
+   1, '{"en":"Part 1"}'::jsonb, 3,
+   '{"skill_ids":["99999999-0000-4000-8000-000000000001"],"difficulty":{"min":1,"max":5}}'::jsonb,
+   'bank', 1);
+
+insert into public.exam_assignments
+  (id, blueprint_id, blueprint_version, school_id, section_id,
+   opens_at, closes_at, max_attempts)
+values
+  ('44444444-0000-4000-8000-00000000000a', '66666666-0000-4000-8000-000000000001', 1,
+   '11111111-1111-4111-8111-111111111111', '11111111-0000-4000-8000-0000000000a1',
+   now() - interval '1 hour', now() + interval '1 day', 2),
+  ('44444444-0000-4000-8000-00000000000b', '66666666-0000-4000-8000-00000000000b', 1,
+   '22222222-2222-4222-8222-222222222222', '22222222-0000-4000-8000-0000000000b1',
+   now() - interval '1 hour', now() + interval '1 day', 1);
+
+
+-- -----------------------------------------------------------------------------
+-- Intentos
+-- -----------------------------------------------------------------------------
+-- s1a: intento COMPLETO y calificado (es el que reconstruye el test forense).
+-- s2a: intento del compañero de clase — el que s1a NO debe poder ver.
+-- s1b: intento del otro colegio — el que nadie de Alfa debe poder ver.
+insert into public.exam_attempts
+  (id, assignment_id, student_id, school_id, attempt_number, blueprint_snapshot,
+   seed, status, started_at, server_deadline_at, submitted_at, submitted_by,
+   graded_at, score_raw, score_max, score_pct, passed, ip_hash)
+values
+  ('33333333-0000-4000-8000-0000000000a1', '44444444-0000-4000-8000-00000000000a',
+   'aaaaaaaa-0000-4000-8000-00000000003a', '11111111-1111-4111-8111-111111111111', 1,
+   '{"title":{"en":"Fractions mock paper"},"duration_seconds":1800,"sections":[{"ord":1,"item_count":3}]}'::jsonb,
+   4242424242, 'graded',
+   now() - interval '90 minutes', now() - interval '60 minutes',
+   now() - interval '70 minutes', 'student',
+   now() - interval '69 minutes', 2, 3, 66.67, true,
+   repeat('a', 64)),
+  ('33333333-0000-4000-8000-0000000000a2', '44444444-0000-4000-8000-00000000000a',
+   'aaaaaaaa-0000-4000-8000-00000000004a', '11111111-1111-4111-8111-111111111111', 1,
+   '{"title":{"en":"Fractions mock paper"},"duration_seconds":1800}'::jsonb,
+   777777, 'graded',
+   now() - interval '90 minutes', now() - interval '60 minutes',
+   now() - interval '75 minutes', 'student',
+   now() - interval '74 minutes', 3, 3, 100.00, true, null),
+  ('33333333-0000-4000-8000-0000000000b1', '44444444-0000-4000-8000-00000000000b',
+   'bbbbbbbb-0000-4000-8000-00000000003b', '22222222-2222-4222-8222-222222222222', 1,
+   '{"title":{"en":"Beta private paper"},"duration_seconds":1800}'::jsonb,
+   999999, 'graded',
+   now() - interval '90 minutes', now() - interval '60 minutes',
+   now() - interval '80 minutes', 'student',
+   now() - interval '79 minutes', 1, 1, 100.00, true, null);
+
+
+-- --- Los 3 items del intento de s1a ------------------------------------------
+-- El item 1 usa la versión ANTIGUA (v1) a propósito: demuestra que el intento
+-- conserva la versión que se le mostró aunque el banco haya avanzado a la v2.
+insert into public.attempt_items
+  (id, attempt_id, ord, section_ord, question_id, question_version_id, item_seed,
+   rendered_body, option_order, answer_key, skill_id, difficulty, max_points)
+values
+  ('a1a1a1a1-0000-4000-8000-000000000001', '33333333-0000-4000-8000-0000000000a1',
+   1, 1, '77777777-0000-4000-8000-000000000001', '88888888-0000-4000-8000-000000000001',
+   4242424243,
+   '{"stem":"Simplify 24/36 (v1)","options":[{"id":"b","html":"3/4"},{"id":"a","html":"2/3"}]}'::jsonb,
+   array[1, 0],      -- se le mostró primero la opción "b" y después la "a"
+   '{"type":"choice","correctIds":["a"]}'::jsonb,
+   '99999999-0000-4000-8000-000000000001', 2, 1),
+  ('a1a1a1a1-0000-4000-8000-000000000002', '33333333-0000-4000-8000-0000000000a1',
+   2, 1, '77777777-0000-4000-8000-000000000001', '88888888-0000-4000-8000-000000000002',
+   4242424244,
+   '{"stem":"Simplify 24/36","options":[{"id":"a","html":"2/3"},{"id":"c","html":"4/6"},{"id":"b","html":"3/4"}]}'::jsonb,
+   array[0, 2, 1],
+   '{"type":"choice","correctIds":["a"]}'::jsonb,
+   '99999999-0000-4000-8000-000000000001', 2, 1),
+  ('a1a1a1a1-0000-4000-8000-000000000003', '33333333-0000-4000-8000-0000000000a1',
+   3, 1, '77777777-0000-4000-8000-000000000001', '88888888-0000-4000-8000-000000000002',
+   4242424245,
+   '{"stem":"Simplify 24/36","options":[{"id":"b","html":"3/4"},{"id":"a","html":"2/3"},{"id":"c","html":"4/6"}]}'::jsonb,
+   array[2, 0, 1],
+   '{"type":"choice","correctIds":["a"]}'::jsonb,
+   '99999999-0000-4000-8000-000000000001', 2, 1);
+
+-- Un item para cada uno de los otros dos intentos, para tener algo que NO se
+-- debe poder leer.
+insert into public.attempt_items
+  (id, attempt_id, ord, question_id, question_version_id, item_seed,
+   rendered_body, answer_key, max_points)
+values
+  ('a2a2a2a2-0000-4000-8000-000000000001', '33333333-0000-4000-8000-0000000000a2',
+   1, '77777777-0000-4000-8000-000000000001', '88888888-0000-4000-8000-000000000002',
+   777778, '{"stem":"Simplify 24/36"}'::jsonb,
+   '{"type":"choice","correctIds":["a"]}'::jsonb, 1),
+  ('b1b1b1b1-0000-4000-8000-000000000001', '33333333-0000-4000-8000-0000000000b1',
+   1, '77777777-0000-4000-8000-00000000000b', '88888888-0000-4000-8000-00000000000b',
+   1000000, '{"stem":"Beta private question"}'::jsonb,
+   '{"type":"numeric","value":42}'::jsonb, 1);
+
+
+-- --- Respuestas: el historial de cambios de opinión --------------------------
+-- Item 1: dos revisiones (empezó mal, rectificó y acertó).
+-- Item 2: tres revisiones (dudó, acertó, y volvió a cambiar para fallar).
+-- Item 3: una sola revisión (respondió y no volvió).
+insert into public.attempt_responses
+  (id, attempt_id, attempt_item_id, revision, response, is_final,
+   client_ts, server_ts, time_on_item_ms, source)
+values
+  ('c1c1c1c1-0000-4000-8000-000000000001', '33333333-0000-4000-8000-0000000000a1',
+   'a1a1a1a1-0000-4000-8000-000000000001', 0,
+   '{"type":"choice","selectedIds":["b"]}'::jsonb, false,
+   now() - interval '88 minutes', now() - interval '88 minutes', 12000, 'selected'),
+  ('c1c1c1c1-0000-4000-8000-000000000002', '33333333-0000-4000-8000-0000000000a1',
+   'a1a1a1a1-0000-4000-8000-000000000001', 1,
+   '{"type":"choice","selectedIds":["a"]}'::jsonb, true,
+   now() - interval '87 minutes', now() - interval '87 minutes', 31000, 'selected'),
+
+  ('c1c1c1c1-0000-4000-8000-000000000003', '33333333-0000-4000-8000-0000000000a1',
+   'a1a1a1a1-0000-4000-8000-000000000002', 0,
+   '{"type":"choice","selectedIds":["c"]}'::jsonb, false,
+   now() - interval '85 minutes', now() - interval '85 minutes', 8000, 'selected'),
+  ('c1c1c1c1-0000-4000-8000-000000000004', '33333333-0000-4000-8000-0000000000a1',
+   'a1a1a1a1-0000-4000-8000-000000000002', 1,
+   '{"type":"choice","selectedIds":["a"]}'::jsonb, false,
+   now() - interval '84 minutes', now() - interval '84 minutes', 19000, 'selected'),
+  ('c1c1c1c1-0000-4000-8000-000000000005', '33333333-0000-4000-8000-0000000000a1',
+   'a1a1a1a1-0000-4000-8000-000000000002', 2,
+   '{"type":"choice","selectedIds":["b"]}'::jsonb, true,
+   now() - interval '83 minutes', now() - interval '83 minutes', 27000, 'selected'),
+
+  ('c1c1c1c1-0000-4000-8000-000000000006', '33333333-0000-4000-8000-0000000000a1',
+   'a1a1a1a1-0000-4000-8000-000000000003', 0,
+   '{"type":"choice","selectedIds":["a"]}'::jsonb, true,
+   now() - interval '80 minutes', now() - interval '80 minutes', 15000, 'selected');
+
+insert into public.attempt_responses
+  (attempt_id, attempt_item_id, revision, response, is_final, server_ts, source)
+values
+  ('33333333-0000-4000-8000-0000000000a2', 'a2a2a2a2-0000-4000-8000-000000000001',
+   0, '{"type":"choice","selectedIds":["a"]}'::jsonb, true,
+   now() - interval '80 minutes', 'selected'),
+  ('33333333-0000-4000-8000-0000000000b1', 'b1b1b1b1-0000-4000-8000-000000000001',
+   0, '{"type":"text","value":"42"}'::jsonb, true,
+   now() - interval '85 minutes', 'typed');
+
+
+-- --- Calificaciones -----------------------------------------------------------
+insert into public.attempt_gradings
+  (id, attempt_id, attempt_item_id, points_awarded, max_points, is_correct,
+   partial_ratio, graded_by, rationale, graded_at)
+values
+  ('d1d1d1d1-0000-4000-8000-000000000001', '33333333-0000-4000-8000-0000000000a1',
+   'a1a1a1a1-0000-4000-8000-000000000001', 1, 1, true, 1, 'auto',
+   'Respuesta final "a" coincide con correctIds.', now() - interval '69 minutes'),
+  ('d1d1d1d1-0000-4000-8000-000000000002', '33333333-0000-4000-8000-0000000000a1',
+   'a1a1a1a1-0000-4000-8000-000000000002', 0, 1, false, 0, 'auto',
+   'Respuesta final "b" no coincide con correctIds.', now() - interval '69 minutes'),
+  ('d1d1d1d1-0000-4000-8000-000000000003', '33333333-0000-4000-8000-0000000000a1',
+   'a1a1a1a1-0000-4000-8000-000000000003', 1, 1, true, 1, 'auto',
+   'Respuesta final "a" coincide con correctIds.', now() - interval '69 minutes'),
+  ('d2d2d2d2-0000-4000-8000-000000000001', '33333333-0000-4000-8000-0000000000a2',
+   'a2a2a2a2-0000-4000-8000-000000000001', 1, 1, true, 1, 'auto', null,
+   now() - interval '74 minutes'),
+  ('d3d3d3d3-0000-4000-8000-000000000001', '33333333-0000-4000-8000-0000000000b1',
+   'b1b1b1b1-0000-4000-8000-000000000001', 1, 1, true, 1, 'auto', null,
+   now() - interval '79 minutes');
+
+
+-- --- Telemetría y auditoría ---------------------------------------------------
+insert into public.learning_events
+  (school_id, student_id, session_id, seq, event_type, attempt_id, payload, server_ts)
+values
+  ('11111111-1111-4111-8111-111111111111', 'aaaaaaaa-0000-4000-8000-00000000003a',
+   '0e0e0e0e-0000-4000-8000-000000000001', 0, 'attempt_started',
+   '33333333-0000-4000-8000-0000000000a1', '{}'::jsonb, now() - interval '90 minutes'),
+  ('22222222-2222-4222-8222-222222222222', 'bbbbbbbb-0000-4000-8000-00000000003b',
+   '0e0e0e0e-0000-4000-8000-00000000000b', 0, 'attempt_started',
+   '33333333-0000-4000-8000-0000000000b1', '{}'::jsonb, now() - interval '90 minutes');
+
+insert into public.audit_log
+  (school_id, actor_id, actor_role, action, entity_type, entity_id)
+values
+  ('11111111-1111-4111-8111-111111111111', 'aaaaaaaa-0000-4000-8000-00000000001a',
+   'school_admin', 'student.pin_reset', 'students',
+   'aaaaaaaa-0000-4000-8000-00000000003a'),
+  ('22222222-2222-4222-8222-222222222222', 'bbbbbbbb-0000-4000-8000-00000000001b',
+   'school_admin', 'student.pin_reset', 'students',
+   'bbbbbbbb-0000-4000-8000-00000000003b');
+
+insert into public.auth_attempts (school_id, student_code, success)
+values
+  ('11111111-1111-4111-8111-111111111111', 'S1A', true),
+  ('22222222-2222-4222-8222-222222222222', 'S1B', false);
+
+insert into public.skill_mastery
+  (student_id, skill_id, school_id, mastery, confidence, attempts_count, correct_count)
+values
+  ('aaaaaaaa-0000-4000-8000-00000000003a', '99999999-0000-4000-8000-000000000001',
+   '11111111-1111-4111-8111-111111111111', 0.667, 0.5, 3, 2),
+  ('bbbbbbbb-0000-4000-8000-00000000003b', '99999999-0000-4000-8000-000000000001',
+   '22222222-2222-4222-8222-222222222222', 1.000, 0.4, 1, 1);
+
+insert into public.registration_requests
+  (school_id, full_name, requested_year_level, guardian_email)
+values
+  ('11111111-1111-4111-8111-111111111111', 'Solicitud Alfa', 6, 'r.alfa@example.com'),
+  ('22222222-2222-4222-8222-222222222222', 'Solicitud Beta', 6, 'r.beta@example.com');
+
+insert into public.media_assets
+  (school_id, storage_path, mime, bytes, alt_text, checksum)
+values
+  ('11111111-1111-4111-8111-111111111111', 'alfa/shape.png', 'image/png', 1024,
+   '{"en":"L-shape diagram"}'::jsonb, repeat('1', 64)),
+  ('22222222-2222-4222-8222-222222222222', 'beta/secret.png', 'image/png', 2048,
+   '{"en":"Beta secret diagram"}'::jsonb, repeat('2', 64));
+
+insert into public.lesson_blocks (lesson_id, ord, kind, content)
+values
+  ('ffffffff-0000-4000-8000-000000000001', 1, 'rule',
+   '{"html":{"en":"Simplify = divide top and bottom by the same number."}}'::jsonb),
+  ('ffffffff-0000-4000-8000-00000000000b', 1, 'rule',
+   '{"html":{"en":"Beta private rule."}}'::jsonb);
+
+insert into public.lesson_skills (lesson_id, skill_id, weight)
+values
+  ('ffffffff-0000-4000-8000-000000000001', '99999999-0000-4000-8000-000000000001', 1.0),
+  ('ffffffff-0000-4000-8000-00000000000b', '99999999-0000-4000-8000-00000000000b', 1.0);
+
+insert into public.school_courses (school_id, course_id, is_active)
+values
+  ('11111111-1111-4111-8111-111111111111', 'dddddddd-0000-4000-8000-000000000001', true),
+  ('22222222-2222-4222-8222-222222222222', 'dddddddd-0000-4000-8000-000000000001', true),
+  ('22222222-2222-4222-8222-222222222222', 'dddddddd-0000-4000-8000-00000000000b', true);

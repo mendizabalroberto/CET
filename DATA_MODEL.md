@@ -94,7 +94,12 @@ Todas estas tablas siguen AD-2: `school_id` **nullable** (`NULL` = global).
 
 ### `courses`
 `id`, `school_id` (null=global), `subject_id` → subjects, `name` I18nText, `year_level`,
-`locale`, `status` (`draft`/`published`/`archived`), `version` int.
+`locale`, `status` (`content_status`: `draft`/`in_review`/`published`/`retired`), `version` int.
+
+> Corrección: una versión anterior de este documento decía `archived`. El valor real es
+> **`retired`**, que es el que declara `packages/shared/src/enums.ts`. El contrato tipado manda
+> sobre la prosa, y `packages/shared/src/__tests__/enum-parity.test.ts` verifica que Postgres y
+> TypeScript coincidan miembro a miembro.
 
 ### `school_courses`
 Suscripción de un colegio a un curso global (o activación de uno propio).
@@ -377,11 +382,34 @@ create policy write_own_only on questions for all
 
 ### La clave de respuesta
 `attempt_items.answer_key` y `question_versions.answer_spec` **no se exponen jamás al rol
-`authenticated` de un alumno**. Se implementa con:
-1. `revoke select (answer_key) on attempt_items from authenticated;` (permisos por columna)
-2. Una vista `attempt_items_student` sin esas columnas, que es lo único que el cliente consulta.
+`authenticated` de un alumno**.
 
-Defensa en profundidad: aunque una política falle, el `GRANT` por columna sigue bloqueando.
+> ⚠️ **Corrección de un error de este documento.** Una versión anterior decía:
+> `revoke select (answer_key) on attempt_items from authenticated;`
+> **Eso no retira nada.** En Postgres, un `REVOKE` por columna es inútil si el rol conserva el
+> `SELECT` a nivel de tabla: el permiso de tabla lo cubre todo, columnas incluidas. Y Supabase
+> concede `SELECT` de tabla a `authenticated` por defecto sobre `public`. La clave de respuesta
+> habría sido legible por cualquier alumno autenticado, y la "defensa en profundidad" era
+> decorativa. Detectado en la revisión de la vía A (hallazgo C-1).
+
+La implementación correcta invierte el orden — primero se quita todo, después se concede lo justo:
+
+```sql
+-- 1. Retirar el permiso de TABLA, que es el que realmente cubre las columnas.
+revoke select on public.attempt_items from authenticated;
+
+-- 2. Conceder solo las columnas seguras. `answer_key` sencillamente no está.
+grant select (id, attempt_id, ord, section_ord, question_id, question_version_id,
+              rendered_body, option_order, skill_id, difficulty, max_points)
+  on public.attempt_items to authenticated;
+```
+
+3. Además, la vista `attempt_items_student` (declarada `security_invoker = true`,
+   `security_barrier = true`) es lo único que el cliente consulta. Sin `security_invoker`, una
+   vista se ejecuta con los permisos de su propietario y **saltaría la RLS por completo**.
+
+Defensa en profundidad real: aunque una política RLS falle, el `GRANT` por columna sigue
+bloqueando, y a la inversa. `supabase/tests/rls_answer_key_hidden.sql` lo verifica por las dos vías.
 
 ---
 

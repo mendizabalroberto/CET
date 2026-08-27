@@ -1,0 +1,170 @@
+/**
+ * Sesión autoritativa del lado servidor.
+ * © 2026 Roberto Mendizabal. Todos los derechos reservados.
+ *
+ * El middleware decide rápido con los claims del JWT. AQUÍ se decide de verdad,
+ * leyendo `profiles` con RLS activa. Diferencia importante:
+ *
+ *   - Un claim puede ir un ciclo de refresco por detrás: un profesor al que se
+ *     acaba de suspender seguiría teniendo `cet_role = 'teacher'` en su token
+ *     hasta una hora. RLS y esta consulta lo ven suspendido de inmediato.
+ *   - Nada que conceda acceso a datos de alumno se apoya solo en un claim.
+ */
+import "server-only";
+
+import { notFound, redirect } from "next/navigation";
+import type { ProfileStatus, UserRole } from "@cet/shared";
+
+import { homeForRole, ROUTES } from "@/lib/routes";
+import { createClient } from "@/lib/supabase/server";
+
+export interface SessionProfile {
+  readonly id: string;
+  readonly schoolId: string | null;
+  readonly role: UserRole;
+  readonly fullName: string;
+  readonly locale: string;
+  readonly status: ProfileStatus;
+}
+
+/**
+ * Estado de la sesión. Los tres casos NO son intercambiables:
+ *
+ *  - `anonymous`: no hay cookie válida. Se manda al login.
+ *  - `stale`: hay una sesión de Auth VÁLIDA, pero el perfil está `pending` o
+ *    `suspended`, o directamente no existe. Aquí NO se puede mandar al login:
+ *    la cookie sigue viva, el middleware vería claims correctos y rebotaría al
+ *    usuario de vuelta a su portada — un bucle infinito de redirecciones.
+ *    Hay que CERRAR la sesión primero (`/logout`).
+ *  - `active`: todo en orden.
+ *
+ * Distinguir `stale` de `anonymous` es lo que evita ese bucle. Es un fallo que
+ * solo aparece cuando un administrador suspende a alguien, es decir, en el peor
+ * momento posible.
+ */
+export type SessionState =
+  | { readonly kind: "anonymous" }
+  | { readonly kind: "stale" }
+  | { readonly kind: "active"; readonly profile: SessionProfile };
+
+/**
+ * `getUser()` (no `getSession()`) valida el token contra el servidor de Auth.
+ * `getSession()` se limita a decodificar una cookie, y una cookie es
+ * exactamente el dato que un atacante controla.
+ */
+export async function getSessionState(): Promise<SessionState> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) return { kind: "anonymous" };
+
+  // RLS garantiza que esta consulta solo puede devolver el propio perfil.
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, school_id, role, full_name, locale, status")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (error || !data) return { kind: "stale" };
+  if (data.status !== "active") return { kind: "stale" };
+
+  return {
+    kind: "active",
+    profile: {
+      id: data.id as string,
+      schoolId: (data.school_id as string | null) ?? null,
+      role: data.role as UserRole,
+      fullName: data.full_name as string,
+      locale: (data.locale as string) ?? "en",
+      status: data.status as ProfileStatus,
+    },
+  };
+}
+
+/** Perfil activo, o `null`. Azúcar sobre `getSessionState()`. */
+export async function getSessionProfile(): Promise<SessionProfile | null> {
+  const state = await getSessionState();
+  return state.kind === "active" ? state.profile : null;
+}
+
+/**
+ * Exige sesión con uno de los roles dados.
+ *
+ * @param opts.onDeny
+ *   - `"not-found"` (por defecto): responde 404. Se usa en áreas privilegiadas:
+ *     un 403 le confirmaría a un alumno que `/admin` existe.
+ *   - `"home"`: le manda a su propia portada.
+ */
+export async function requireRole(
+  allowed: readonly UserRole[],
+  opts: { onDeny?: "not-found" | "home" } = {},
+): Promise<SessionProfile> {
+  const state = await getSessionState();
+  const onDeny = opts.onDeny ?? "not-found";
+
+  if (state.kind === "stale") {
+    // Cookie viva pero perfil no utilizable: hay que cerrar sesión ANTES de
+    // volver al login, o el middleware devolvería al usuario aquí sin fin.
+    redirect(ROUTES.logout);
+  }
+
+  if (state.kind === "anonymous") {
+    if (onDeny === "not-found") notFound();
+    redirect(ROUTES.login);
+  }
+
+  const profile = state.profile;
+
+  if (!allowed.includes(profile.role)) {
+    if (onDeny === "not-found") notFound();
+    redirect(homeForRole(profile.role));
+  }
+
+  return profile;
+}
+
+export interface StudentSession extends SessionProfile {
+  readonly role: "student";
+  readonly schoolId: string;
+  readonly studentCode: string;
+  readonly pinMustChange: boolean;
+  readonly stage: "primary" | "secondary";
+}
+
+/**
+ * Sesión de alumno con los datos de `students` que la UI necesita.
+ *
+ * Fuerza el cambio de PIN en el primer acceso (AD-4) redirigiendo a
+ * `/account/pin`. La comprobación se hace contra la BASE DE DATOS y no contra
+ * un claim: si se leyera del JWT, el alumno seguiría viendo la pantalla de
+ * cambio de PIN después de haberlo cambiado, hasta el siguiente refresco.
+ */
+export async function requireStudent(): Promise<StudentSession> {
+  const profile = await requireRole(["student"], { onDeny: "home" });
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("students")
+    .select("student_code, pin_must_change, stage, school_id")
+    .eq("profile_id", profile.id)
+    .maybeSingle();
+
+  if (error || !data || !profile.schoolId) {
+    // Un perfil con rol `student` sin ficha en `students` es un estado
+    // imposible según DATA_MODEL §1. Si ocurre, no se adivina: se corta.
+    notFound();
+  }
+
+  return {
+    ...profile,
+    role: "student",
+    schoolId: profile.schoolId,
+    studentCode: data.student_code as string,
+    pinMustChange: Boolean(data.pin_must_change),
+    stage: data.stage as "primary" | "secondary",
+  };
+}

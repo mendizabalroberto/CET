@@ -1,0 +1,335 @@
+/*
+ * @cet/ui — design tokens.
+ * (c) 2026 Roberto Mendizabal. Todos los derechos reservados.
+ *
+ * La paleta base viene de los trainers Y6A, ya validados con alumnos reales.
+ * Todo par de color usado para texto o para el borde de un control se ha medido
+ * contra WCAG 2.1 (ver packages/ui/REVIEW.md, seccion "Contraste medido").
+ *
+ * REGLA DE USO — dos correcciones sobre la paleta Y6A original:
+ *
+ *   1. --cet-teal (#0f9b8e) y --cet-amber (#f2a71b) son DECORATIVOS.
+ *      Contra blanco dan 3.44:1 y 1.9:1 -> NO valen para texto ni para relleno
+ *      de boton con texto blanco. Para eso existen --cet-teal-text (6.03:1) y
+ *      --cet-amber-text (5.54:1).
+ *   2. --cet-line (#dfe6ee, 1.26:1) es un separador decorativo. El borde de un
+ *      control interactivo (input, checkbox, chip) usa --cet-border-strong,
+ *      que cumple el minimo 3:1 de componentes de UI.
+ *
+ * Tema oscuro: los tokens se redefinen bajo `prefers-color-scheme: dark` y bajo
+ * `[data-theme="dark"]`, y la variante de sistema se excluye bajo
+ * `[data-theme="light"]` para que la eleccion explicita gane en ambos sentidos.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* --- superficies --- */
+  --cet-bg: #f4f7fb;
+  --cet-surface: #ffffff;
+  --cet-surface-2: #f7fafd;
+  --cet-surface-3: #eef2f7;
+  --cet-overlay: rgb(9 22 38 / 55%);
+
+  /* --- texto --- */
+  --cet-ink: #12202f;
+  --cet-ink-muted: #5d7086;
+  --cet-ink-inverse: #ffffff;
+
+  /* --- bordes --- */
+  --cet-line: #dfe6ee;
+  --cet-border-strong: #7d92a8;
+
+  /* --- marca --- */
+  --cet-navy: #173a63;
+  --cet-navy-2: #0f2a49;
+  --cet-primary: #173a63;
+  --cet-primary-hover: #0f2a49;
+  --cet-on-primary: #ffffff;
+
+  /* --- acentos: variante decorativa + variante legible --- */
+  --cet-teal: #0f9b8e;
+  --cet-teal-text: #0b6f66;
+  --cet-amber: #f2a71b;
+  --cet-amber-text: #8a6100;
+  --cet-on-amber: #3a2a00;
+
+  /* --- semanticos --- */
+  --cet-green: #12805c;
+  --cet-red: #c0392b;
+  --cet-success: #12805c;
+  --cet-danger: #c0392b;
+  --cet-on-danger: #ffffff;
+
+  /* --- bloques de leccion (Y6A .rule .eg .tip .warn) --- */
+  --cet-rule-bg: #eef6fb;
+  --cet-rule-accent: #0f9b8e;
+  --cet-example-bg: #fbfcfe;
+  --cet-example-border: #c8d6e4;
+  --cet-tip-bg: #fff8e6;
+  --cet-tip-accent: #f2a71b;
+  --cet-warning-bg: #fdeeec;
+  --cet-warning-accent: #c0392b;
+
+  /* --- feedback (Y6A .fb.ok / .fb.no / .fb.hint) --- */
+  --cet-ok-bg: #e7f6ee;
+  --cet-ok-text: #0d5c42;
+  --cet-ok-accent: #12805c;
+  --cet-no-bg: #fdeeec;
+  --cet-no-text: #8e2d22;
+  --cet-no-accent: #c0392b;
+  --cet-hint-bg: #fff8e6;
+  --cet-hint-text: #6b4d05;
+  --cet-hint-accent: #f2a71b;
+
+  /* --- temporizador: urgencia sin panico --- */
+  --cet-timer-normal: #173a63;
+  --cet-timer-warn: #8a6100;
+  --cet-timer-warn-bg: #fff8e6;
+  --cet-timer-urgent: #c0392b;
+  --cet-timer-urgent-bg: #fdeeec;
+
+  /* --- foco --- */
+  --cet-focus: #173a63;
+  --cet-focus-halo: #ffffff;
+
+  /* --- forma --- */
+  --cet-radius-sm: 8px;
+  --cet-radius-md: 11px;
+  --cet-radius-lg: 16px;
+  --cet-radius-pill: 999px;
+  --cet-shadow-sm: 0 1px 3px rgb(20 40 70 / 8%);
+  --cet-shadow-md: 0 6px 20px rgb(20 40 70 / 12%);
+
+  /* --- objetivos tactiles: 44px es el minimo, no el ideal, para 10-16 anos --- */
+  --cet-touch-min: 44px;
+  --cet-touch-comfy: 52px;
+
+  /* --- movimiento (se anula bajo prefers-reduced-motion) --- */
+  --cet-motion-fast: 120ms;
+  --cet-motion-base: 200ms;
+  --cet-motion-slow: 400ms;
+  --cet-ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Tema oscuro                                                                 */
+/* -------------------------------------------------------------------------- */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --cet-bg: #0b1622;
+    --cet-surface: #12202f;
+    --cet-surface-2: #1a2c3f;
+    --cet-surface-3: #22384e;
+    --cet-overlay: rgb(3 9 16 / 72%);
+
+    --cet-ink: #e9eff6;
+    --cet-ink-muted: #a7b8c9;
+    --cet-ink-inverse: #0b1622;
+
+    --cet-line: #2b4054;
+    --cet-border-strong: #6c8298;
+
+    --cet-navy: #7cb2ea;
+    --cet-navy-2: #a8ccf2;
+    --cet-primary: #2b5f96;
+    --cet-primary-hover: #3775b6;
+    --cet-on-primary: #ffffff;
+
+    --cet-teal: #4fd1c0;
+    --cet-teal-text: #4fd1c0;
+    --cet-amber: #f6c453;
+    --cet-amber-text: #f6c453;
+    --cet-on-amber: #2b2110;
+
+    --cet-green: #5fd39f;
+    --cet-red: #ff8a80;
+    --cet-success: #5fd39f;
+    --cet-danger: #ff8a80;
+    --cet-on-danger: #0b1622;
+
+    --cet-rule-bg: #14293d;
+    --cet-rule-accent: #4fd1c0;
+    --cet-example-bg: #16273a;
+    --cet-example-border: #34506b;
+    --cet-tip-bg: #2b2110;
+    --cet-tip-accent: #f6c453;
+    --cet-warning-bg: #2b1512;
+    --cet-warning-accent: #ff8a80;
+
+    --cet-ok-bg: #102a20;
+    --cet-ok-text: #7de0b0;
+    --cet-ok-accent: #5fd39f;
+    --cet-no-bg: #2b1512;
+    --cet-no-text: #ffa39b;
+    --cet-no-accent: #ff8a80;
+    --cet-hint-bg: #2b2110;
+    --cet-hint-text: #f8d27a;
+    --cet-hint-accent: #f6c453;
+
+    --cet-timer-normal: #e9eff6;
+    --cet-timer-warn: #f8d27a;
+    --cet-timer-warn-bg: #2b2110;
+    --cet-timer-urgent: #ffa39b;
+    --cet-timer-urgent-bg: #2b1512;
+
+    --cet-focus: #7cb2ea;
+    --cet-focus-halo: #0b1622;
+
+    --cet-shadow-sm: 0 1px 3px rgb(0 0 0 / 45%);
+    --cet-shadow-md: 0 6px 20px rgb(0 0 0 / 55%);
+  }
+}
+
+/* Eleccion explicita del usuario: gana sobre la preferencia del sistema. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --cet-bg: #0b1622;
+  --cet-surface: #12202f;
+  --cet-surface-2: #1a2c3f;
+  --cet-surface-3: #22384e;
+  --cet-overlay: rgb(3 9 16 / 72%);
+
+  --cet-ink: #e9eff6;
+  --cet-ink-muted: #a7b8c9;
+  --cet-ink-inverse: #0b1622;
+
+  --cet-line: #2b4054;
+  --cet-border-strong: #6c8298;
+
+  --cet-navy: #7cb2ea;
+  --cet-navy-2: #a8ccf2;
+  --cet-primary: #2b5f96;
+  --cet-primary-hover: #3775b6;
+  --cet-on-primary: #ffffff;
+
+  --cet-teal: #4fd1c0;
+  --cet-teal-text: #4fd1c0;
+  --cet-amber: #f6c453;
+  --cet-amber-text: #f6c453;
+  --cet-on-amber: #2b2110;
+
+  --cet-green: #5fd39f;
+  --cet-red: #ff8a80;
+  --cet-success: #5fd39f;
+  --cet-danger: #ff8a80;
+  --cet-on-danger: #0b1622;
+
+  --cet-rule-bg: #14293d;
+  --cet-rule-accent: #4fd1c0;
+  --cet-example-bg: #16273a;
+  --cet-example-border: #34506b;
+  --cet-tip-bg: #2b2110;
+  --cet-tip-accent: #f6c453;
+  --cet-warning-bg: #2b1512;
+  --cet-warning-accent: #ff8a80;
+
+  --cet-ok-bg: #102a20;
+  --cet-ok-text: #7de0b0;
+  --cet-ok-accent: #5fd39f;
+  --cet-no-bg: #2b1512;
+  --cet-no-text: #ffa39b;
+  --cet-no-accent: #ff8a80;
+  --cet-hint-bg: #2b2110;
+  --cet-hint-text: #f8d27a;
+  --cet-hint-accent: #f6c453;
+
+  --cet-timer-normal: #e9eff6;
+  --cet-timer-warn: #f8d27a;
+  --cet-timer-warn-bg: #2b2110;
+  --cet-timer-urgent: #ffa39b;
+  --cet-timer-urgent-bg: #2b1512;
+
+  --cet-focus: #7cb2ea;
+  --cet-focus-halo: #0b1622;
+
+  --cet-shadow-sm: 0 1px 3px rgb(0 0 0 / 45%);
+  --cet-shadow-md: 0 6px 20px rgb(0 0 0 / 55%);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Base                                                                        */
+/* -------------------------------------------------------------------------- */
+
+body {
+  background: var(--cet-bg);
+  color: var(--cet-ink);
+}
+
+/*
+ * Foco visible SIEMPRE. Doble anillo (color + halo) para que se distinga tanto
+ * sobre superficie clara como sobre el relleno oscuro del boton primario.
+ */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--cet-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 7px var(--cet-focus-halo);
+}
+
+/* -------------------------------------------------------------------------- */
+/* prefers-reduced-motion — requisito, no cortesia                             */
+/* -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --cet-motion-fast: 1ms;
+    --cet-motion-base: 1ms;
+    --cet-motion-slow: 1ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Fracciones apiladas (portadas de `.f` / `.a` / `.b` de los trainers Y6A)     */
+/* -------------------------------------------------------------------------- */
+
+.cet-fraction {
+  display: inline-flex;
+  flex-direction: column;
+  text-align: center;
+  vertical-align: middle;
+  margin: 0 0.2em;
+  line-height: 1.12;
+  font-size: 0.95em;
+}
+
+.cet-fraction > .cet-fraction-num {
+  padding: 0 0.25em;
+}
+
+.cet-fraction > .cet-fraction-den {
+  padding: 0 0.25em;
+  border-top: 2px solid currentColor;
+}
+
+/*
+ * HTML saneado que viene de la base de datos: los trainers Y6A escriben las
+ * fracciones como <span class="f"><span class="a">3</span><span class="b">4</span></span>.
+ * El sanitizador reescribe esas clases a las de arriba y aporta el texto
+ * accesible; estos alias existen solo por si algun pack antiguo no se remapea.
+ */
+.cet-prose .f {
+  display: inline-flex;
+  flex-direction: column;
+  text-align: center;
+  vertical-align: middle;
+  margin: 0 0.2em;
+  line-height: 1.12;
+  font-size: 0.95em;
+}
+
+.cet-prose .f > .b {
+  border-top: 2px solid currentColor;
+}

@@ -1,0 +1,7301 @@
+{
+  "blueprints": [
+    {
+      "allowBack": true,
+      "code": "english.y6.mock",
+      "description": {
+        "en": "Present simple, indefinite pronouns, collocations and vocabulary. 20 minutes."
+      },
+      "durationSeconds": 1200,
+      "feedbackMode": "after_submit",
+      "id": "3f9e3cb9-83f8-5de7-aacd-61992b6d1dcf",
+      "maxAttempts": null,
+      "passThreshold": 0.6,
+      "sections": [
+        {
+          "id": "2af45340-8b3b-5b45-a356-90c14f45da85",
+          "itemCount": 9,
+          "ord": 0,
+          "pointsPerItem": 1,
+          "selection": {
+            "skillCodes": [
+              "english.grammar.present_simple"
+            ]
+          },
+          "source": "bank",
+          "title": {
+            "en": "Part 1 · Present simple"
+          }
+        },
+        {
+          "id": "73dce29d-b560-5a47-8c6a-dc85ef5e0153",
+          "itemCount": 6,
+          "ord": 1,
+          "pointsPerItem": 1,
+          "selection": {
+            "skillCodes": [
+              "english.grammar.indefinite_pronouns"
+            ]
+          },
+          "source": "bank",
+          "title": {
+            "en": "Part 2 · Indefinite pronouns"
+          }
+        },
+        {
+          "id": "c667b2cc-95e3-5670-9e1f-f2c9a88c00b4",
+          "itemCount": 5,
+          "ord": 2,
+          "pointsPerItem": 1,
+          "selection": {
+            "skillCodes": [
+              "english.vocabulary.collocations"
+            ]
+          },
+          "source": "bank",
+          "title": {
+            "en": "Part 3 · Collocations"
+          }
+        },
+        {
+          "id": "55709774-e149-5cc2-8d39-c09b27d6ffba",
+          "itemCount": 5,
+          "ord": 3,
+          "pointsPerItem": 1,
+          "selection": {
+            "skillCodes": [
+              "english.vocabulary.topics"
+            ]
+          },
+          "source": "bank",
+          "title": {
+            "en": "Part 4 · Vocabulary"
+          }
+        }
+      ],
+      "shuffleOptions": true,
+      "shuffleQuestions": false,
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "symbol": "MPARTS"
+      },
+      "title": {
+        "en": "Mock exam — 25 questions"
+      }
+    }
+  ],
+  "course": {
+    "code": "english.y6",
+    "id": "4b5cdec8-9aec-5b14-b5a7-1058a44d0e3a",
+    "locale": "en",
+    "name": {
+      "en": "English — Year 6"
+    },
+    "status": "published",
+    "version": 1,
+    "yearLevel": 6
+  },
+  "gaps": [
+    {
+      "area": "los 7 mini-juegos",
+      "reason": "cada juego trae su propio banco con un formato distinto (conjugar, ordenar palabras, cazar el error, construir preguntas). Son formatos `ordering`, `cloze` y `matching` que este pipeline aún no emite; extraerlos como mcq falsearía la actividad.",
+      "symbol": "SVERBS / DOQ / IPWORDS / IPQ / CPAIRS / ORD / MIS / QB"
+    },
+    {
+      "area": "Writing Lab y tarjetas de speaking",
+      "reason": "el corrector de escritura es heurístico (cuenta conectores, longitud, mayúsculas) y las tarjetas de speaking se evalúan en voz alta. Ambos exigen `grading_mode: manual` y una UI propia.",
+      "symbol": "WL / TOM / RC / WT / SPK / PDG / VCATS / VWORDS"
+    },
+    {
+      "area": "campos sin equivalente en el material original",
+      "reason": "los trainers Y6A no declaran dificultad, duración estimada, umbral de aprobado ni número de intentos. El pipeline los rellena con valores por defecto uniformes (difficulty 2 en banco / 3 en generadas, estimatedMinutes 20, passThreshold 0.6, maxAttempts sin límite, pointsPerItem 1) que un profesor debe revisar antes de publicar el curso. NO son datos extraídos."
+    }
+  ],
+  "integrity": "4767da01ed52bd50",
+  "modules": [
+    {
+      "description": {
+        "en": "Grammar, vocabulary and skills: reading, writing and speaking."
+      },
+      "id": "9946be1d-173d-5390-91e4-6b50256a2217",
+      "lessons": [
+        {
+          "blocks": [
+            {
+              "content": {
+                "html": {
+                  "en": "We use the <b>Present Simple</b> for things that are <b>always true</b> or that happen <b>again and again</b>: routines, habits, facts and timetables.<br> <span class=\"tsub\">She plays tennis every day. · The sun rises in the east. · The train leaves at 6:45.</span>"
+                }
+              },
+              "id": "42647662-32dd-5b31-b0c7-62de38100a53",
+              "kind": "rule",
+              "ord": 0,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>1️⃣ Affirmative — the golden rule</h3>"
+                }
+              },
+              "id": "7f0cb97a-be0d-5ec3-8a5d-05e9be3c94a9",
+              "kind": "text",
+              "ord": 1,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "en": "Subject"
+                  },
+                  {
+                    "en": "Verb"
+                  },
+                  {
+                    "en": "Example"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "en": "<b>I / You / We / They</b>"
+                    },
+                    {
+                      "en": "base verb — <b>no -s</b>"
+                    },
+                    {
+                      "en": "They <b>eat</b> apples. · We <b>go</b> to school."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>He / She / It</b>"
+                    },
+                    {
+                      "en": "verb <b>+ -s</b>"
+                    },
+                    {
+                      "en": "She <b>plays</b> tennis. · My cat <b>sleeps</b> on the bed."
+                    }
+                  ]
+                ]
+              },
+              "id": "7307e32b-5960-55d3-b18d-0bcaf749ad2c",
+              "kind": "table",
+              "ord": 2,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Memory trick:</b> <b>H</b>e, <b>S</b>he, <b>I</b>t → <b>HeSIt</b> → they all \"hesitate\" and add an <b>-s</b>."
+                }
+              },
+              "id": "695d697f-c873-5b92-98ef-54bf480a0621",
+              "kind": "tip",
+              "ord": 3,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>2️⃣ Spelling rules for the -s</h3>"
+                }
+              },
+              "id": "58c08833-ebbd-5a85-a7a8-9e4673fd2ca4",
+              "kind": "text",
+              "ord": 4,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "en": "Rule"
+                  },
+                  {
+                    "en": "Add"
+                  },
+                  {
+                    "en": "Examples"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "en": "Most verbs"
+                    },
+                    {
+                      "en": "<b>+ s</b>"
+                    },
+                    {
+                      "en": "play → play<b>s</b> · read → read<b>s</b> · run → run<b>s</b> · like → like<b>s</b>"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "Verbs ending in <b>s, ss, sh, ch, x, o</b>"
+                    },
+                    {
+                      "en": "<b>+ es</b>"
+                    },
+                    {
+                      "en": "miss → miss<b>es</b> · wash → wash<b>es</b> · watch → watch<b>es</b> · mix → mix<b>es</b> · go → go<b>es</b> · do → do<b>es</b>"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>consonant + y</b>"
+                    },
+                    {
+                      "en": "<b>y → ies</b>"
+                    },
+                    {
+                      "en": "cry → cr<b>ies</b> · fly → fl<b>ies</b> · study → stud<b>ies</b> · carry → carr<b>ies</b>"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>vowel + y</b>"
+                    },
+                    {
+                      "en": "<b>+ s</b> (keep the y!)"
+                    },
+                    {
+                      "en": "play → play<b>s</b> · buy → buy<b>s</b> · stay → stay<b>s</b> · enjoy → enjoy<b>s</b>"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "The odd one out"
+                    },
+                    {
+                      "en": "irregular"
+                    },
+                    {
+                      "en": "have → <b>has</b>"
+                    }
+                  ]
+                ]
+              },
+              "id": "6583fd45-8cda-5d5f-ab82-48ec09a9e498",
+              "kind": "table",
+              "ord": 5,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>The full spelling list from your worksheet:</b> watch–watch<b>es</b> · read–read<b>s</b> · cry–cr<b>ies</b> · dress–dress<b>es</b> · do–do<b>es</b> · wash–wash<b>es</b> · stay–stay<b>s</b> · study–stud<b>ies</b> · go–go<b>es</b> · run–run<b>s</b> · kiss–kiss<b>es</b> · jump–jump<b>s</b> · fly–fl<b>ies</b> · play–play<b>s</b> · teach–teach<b>es</b> · like–like<b>s</b> · brush–brush<b>es</b> · cook–cook<b>s</b> · buy–buy<b>s</b> · mix–mix<b>es</b>"
+                }
+              },
+              "id": "86766bc9-d9d4-502c-8387-e49b4f61a897",
+              "kind": "tip",
+              "ord": 6,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>3️⃣ Negative — don't / doesn't</h3>"
+                }
+              },
+              "id": "ef78128a-12c8-54d0-bcbc-ecd7ae76e586",
+              "kind": "text",
+              "ord": 7,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "en": "Subject"
+                  },
+                  {
+                    "en": "Negative"
+                  },
+                  {
+                    "en": "Example"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "en": "I / You / We / They"
+                    },
+                    {
+                      "en": "<b>don't</b> + base verb"
+                    },
+                    {
+                      "en": "We <b>don't live</b> in England."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "He / She / It"
+                    },
+                    {
+                      "en": "<b>doesn't</b> + base verb"
+                    },
+                    {
+                      "en": "Mary <b>doesn't do</b> sports."
+                    }
+                  ]
+                ]
+              },
+              "id": "da770195-e2f3-5690-946e-9f01f2e273b7",
+              "kind": "table",
+              "ord": 8,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>The -s jumps to the helper!</b> Once you use <b>doesn't</b>, the main verb loses its -s.<br> <span>✗ She doesn't likes pizza.</span> → <span>✓ She doesn't like pizza.</span>"
+                }
+              },
+              "id": "54c58999-3d01-53b9-8d9b-2883b221280c",
+              "kind": "warning",
+              "ord": 9,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>4️⃣ Questions — Do / Does</h3>"
+                }
+              },
+              "id": "67e1ecf0-944a-58c3-affd-6bdd06f5bbf0",
+              "kind": "text",
+              "ord": 10,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Do / Does</b> + subject + <b>base verb</b> + …?<br> <b>Do</b> you like pizza? · <b>Does</b> she read books? · <b>Does</b> your mum cook dinner?"
+                }
+              },
+              "id": "c76251ce-3cf9-572f-9487-97b90c3d07b1",
+              "kind": "rule",
+              "ord": 11,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "en": "Question"
+                  },
+                  {
+                    "en": "Short answer ✔"
+                  },
+                  {
+                    "en": "Short answer ✘"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "en": "Do you / we / they …?"
+                    },
+                    {
+                      "en": "Yes, I / we / they <b>do</b>."
+                    },
+                    {
+                      "en": "No, I / we / they <b>don't</b>."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "Does he / she / it …?"
+                    },
+                    {
+                      "en": "Yes, he / she / it <b>does</b>."
+                    },
+                    {
+                      "en": "No, he / she / it <b>doesn't</b>."
+                    }
+                  ]
+                ]
+              },
+              "id": "a3c55a5f-db0c-5454-94e6-1bb5b73ed667",
+              "kind": "table",
+              "ord": 12,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Wh- questions:</b> question word first → <b>What</b> does the sun make? · <b>Where</b> does he live? · <b>When</b> does school start? · <b>How often</b> do you play football?"
+                }
+              },
+              "id": "f164649e-cedf-5510-9eaa-6384eccb267c",
+              "kind": "tip",
+              "ord": 13,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>5️⃣ Word order</h3>"
+                }
+              },
+              "id": "b9702638-5442-540f-951b-50671a0fba56",
+              "kind": "text",
+              "ord": 14,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Subject → Verb → Object → Place → Time</b><br> <span class=\"tsub\">I  ·  watch  ·  TikTok  ·  in my room  ·  before bed.</span>"
+                }
+              },
+              "id": "48a98883-021e-5ab6-afbf-49dff6ea9444",
+              "kind": "text",
+              "ord": 15,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>6️⃣ Adverbs of frequency</h3>"
+                }
+              },
+              "id": "83ad5ebe-e0ff-5ef8-928b-f3b823b8a7bd",
+              "kind": "text",
+              "ord": 16,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "en": "Word"
+                  },
+                  {
+                    "en": "How often"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "en": "<b>always</b>"
+                    },
+                    {
+                      "en": "100%"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>usually</b>"
+                    },
+                    {
+                      "en": "~80%"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>often</b>"
+                    },
+                    {
+                      "en": "~60%"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>sometimes</b>"
+                    },
+                    {
+                      "en": "~40%"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>hardly ever / rarely</b>"
+                    },
+                    {
+                      "en": "~10%"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>never</b>"
+                    },
+                    {
+                      "en": "0%"
+                    }
+                  ]
+                ]
+              },
+              "id": "9da1cec3-95b3-531e-9f17-87ea5c239994",
+              "kind": "table",
+              "ord": 17,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "They go <b>before the main verb</b> but <b>after the verb \"be\"</b>:<br> She <b>always</b> has cereal. · He <b>never</b> goes out on weekdays. · Wendy <b>is always</b> nervous.<br> Time expressions (<b>every day, on Mondays, twice a week, in the evening</b>) go at the <b>end</b>."
+                }
+              },
+              "id": "abc97a54-6f14-5940-998f-dbb8f647a38d",
+              "kind": "rule",
+              "ord": 18,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>7️⃣ The 8 mistakes examiners love to find</h3>"
+                }
+              },
+              "id": "d0701856-7589-5725-b5d7-af870e92785b",
+              "kind": "text",
+              "ord": 19,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "en": "✗ Wrong"
+                  },
+                  {
+                    "en": "✓ Right"
+                  },
+                  {
+                    "en": "Why"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "en": "He watch YouTube."
+                    },
+                    {
+                      "en": "He <b>watches</b> YouTube."
+                    },
+                    {
+                      "en": "he/she/it needs -es"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "She don't like it."
+                    },
+                    {
+                      "en": "She <b>doesn't</b> like it."
+                    },
+                    {
+                      "en": "she → doesn't"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "Does your friends play?"
+                    },
+                    {
+                      "en": "<b>Do</b> your friends play?"
+                    },
+                    {
+                      "en": "friends = they"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "My brother study English."
+                    },
+                    {
+                      "en": "My brother <b>studies</b> English."
+                    },
+                    {
+                      "en": "consonant + y → ies"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "We doesn't use it."
+                    },
+                    {
+                      "en": "We <b>don't</b> use it."
+                    },
+                    {
+                      "en": "we → don't"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "Do she drive?"
+                    },
+                    {
+                      "en": "<b>Does</b> she drive?"
+                    },
+                    {
+                      "en": "she → does"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "The train leave at 6:45."
+                    },
+                    {
+                      "en": "The train <b>leaves</b> at 6:45."
+                    },
+                    {
+                      "en": "the train = it"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "I am know the answer."
+                    },
+                    {
+                      "en": "I <b>know</b> the answer."
+                    },
+                    {
+                      "en": "never mix <b>be</b> + main verb"
+                    }
+                  ]
+                ]
+              },
+              "id": "cd6bc8b8-624a-58c1-922d-bb190b26c355",
+              "kind": "table",
+              "ord": 20,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 0,
+                "symbol": "#learn .topic"
+              }
+            }
+          ],
+          "estimatedMinutes": 20,
+          "id": "445c0262-8252-57ce-ba07-626b5c66b018",
+          "ord": 0,
+          "skillCodes": [
+            "english.grammar.present_simple"
+          ],
+          "source": {
+            "file": "Y6A/English/Year 6 English Exam Trainer.html",
+            "index": 0,
+            "symbol": "#learn .topic"
+          },
+          "title": {
+            "en": "🔤 1 · Present Simple — play / plays"
+          }
+        },
+        {
+          "blocks": [
+            {
+              "content": {
+                "html": {
+                  "en": "An <b>indefinite pronoun</b> is a pronoun that refers to a <b>person, a place or a thing without saying exactly who, where or what</b> it is.<br> <span class=\"tsub\">I have eaten <b>everything</b> in my fridge. · I need to find <b>something</b>. · <b>Anything</b> would be okay. · I have <b>nothing</b> for breakfast.</span>"
+                }
+              },
+              "id": "5b93637c-dae5-5949-8626-e41758b42511",
+              "kind": "rule",
+              "ord": 0,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 1,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>The grid you must memorise</h3>"
+                }
+              },
+              "id": "700df389-b9e8-57a1-945f-b5105434903e",
+              "kind": "text",
+              "ord": 1,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 1,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  null,
+                  {
+                    "en": "PEOPLE 🧑"
+                  },
+                  {
+                    "en": "PLACES 📍"
+                  },
+                  {
+                    "en": "THINGS 📦"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "en": "<b>some-</b><br><span class=\"tsub\">one / a few</span>"
+                    },
+                    {
+                      "en": "someone<br>somebody"
+                    },
+                    {
+                      "en": "somewhere"
+                    },
+                    {
+                      "en": "something"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>any-</b><br><span class=\"tsub\">questions &amp; negatives</span>"
+                    },
+                    {
+                      "en": "anyone<br>anybody"
+                    },
+                    {
+                      "en": "anywhere"
+                    },
+                    {
+                      "en": "anything"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>no-</b><br><span class=\"tsub\">zero</span>"
+                    },
+                    {
+                      "en": "no one<br>nobody"
+                    },
+                    {
+                      "en": "nowhere"
+                    },
+                    {
+                      "en": "nothing"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>every-</b><br><span class=\"tsub\">all of them</span>"
+                    },
+                    {
+                      "en": "everyone<br>everybody"
+                    },
+                    {
+                      "en": "everywhere"
+                    },
+                    {
+                      "en": "everything"
+                    }
+                  ]
+                ]
+              },
+              "id": "c3579628-aa41-5585-b760-c83cc9b55c2c",
+              "kind": "table",
+              "ord": 2,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 1,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>-one</b> and <b>-body</b> mean exactly the same thing: <i>someone = somebody</i>, <i>no one = nobody</i>, <i>everyone = everybody</i>. Pick either one."
+                }
+              },
+              "id": "cc5fc7f2-a9c8-54db-b231-ea5ced4ffbae",
+              "kind": "tip",
+              "ord": 3,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 1,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>How many people is that?</h3>"
+                }
+              },
+              "id": "54c56726-3a1b-5217-bb95-93f15a0d037b",
+              "kind": "text",
+              "ord": 4,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 1,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "en": "Word"
+                  },
+                  {
+                    "en": "Picture"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "en": "<b>EVERYBODY</b>"
+                    },
+                    {
+                      "en": "👤👤👤👤  — all of them"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>SOMEBODY</b>"
+                    },
+                    {
+                      "en": "👤👤👤<b>🙋</b>  — one of them (we don't know which)"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>ANYBODY</b>"
+                    },
+                    {
+                      "en": "🙋🙋🙋🙋  — it doesn't matter which one"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>NOBODY</b>"
+                    },
+                    {
+                      "en": "❌❌❌❌  — zero people"
+                    }
+                  ]
+                ]
+              },
+              "id": "dd1edcdf-6e45-5ce9-ba5f-37e05cd8500c",
+              "kind": "table",
+              "ord": 5,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 1,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>The 4 rules</h3> <ol> <li><b>They are singular</b> → the verb takes an <b>-s</b>.<br> <span>✓ Everybody <b>needs</b> a friend.</span>   <span>✗ Everybody need a friend.</span><br> <span>✓ <b>Is</b> anybody at home?</span>   <span>✗ Are anybody at home?</span></li> <li><b>some-</b> in <b>+ affirmative</b> sentences → <i>I have <b>something</b>. There is <b>somebody</b> outside.</i></li> <li><b>any-</b> in <b>? questions</b> and <b>− negatives</b> → <i>Do you know <b>anybody</b> here? · I don't have <b>anything</b>.</i></li> <li><b>no-</b> is <b>already negative</b> — never use it with <i>not / don't</i>.<br> <span>✓ I have <b>nothing</b>.</span> = <span>✓ I <b>don't</b> have <b>anything</b>.</span>   <span>✗ I don't have nothing.</span></li> </ol>"
+                }
+              },
+              "id": "a870ab2d-276f-51fe-9d77-fcde48ad02f0",
+              "kind": "text",
+              "ord": 6,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 1,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Some / Any / No — the three-way switch</b><br> I have <b>some</b>thing. → I don't have <b>any</b>thing. → I have <b>no</b>thing.<br> There is <b>some</b>body. → There is not <b>any</b>body. → There is <b>no</b>body.<br> We will go <b>some</b>where. → We will not go <b>any</b>where. → We will go <b>no</b>where."
+                }
+              },
+              "id": "5aee2a35-7ca8-5b8d-b8bf-3dda0a26c76b",
+              "kind": "text",
+              "ord": 7,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 1,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Exception:</b> use <b>some-</b> in a question when you <b>offer</b> or <b>ask for</b> something: <i>Would you like <b>something</b> to drink? · Can <b>somebody</b> help me?</i>"
+                }
+              },
+              "id": "9a4a0f13-1dc2-5d6a-ab88-c0cee88aa86e",
+              "kind": "tip",
+              "ord": 8,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 1,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>The class worksheet — with the answers</h3>"
+                }
+              },
+              "id": "b9314377-8c72-521c-8b25-8680838ff1de",
+              "kind": "text",
+              "ord": 9,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 1,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "en": "Sentence"
+                  },
+                  {
+                    "en": "Answer"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "en": "1. I looked ______ for my cat, but I couldn't find it."
+                    },
+                    {
+                      "en": "<b>everywhere</b>"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "2. James called his friend, but ______ answered the phone."
+                    },
+                    {
+                      "en": "<b>nobody / no one</b>"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "3. I didn't go ______ on the weekend, so I was really bored."
+                    },
+                    {
+                      "en": "<b>anywhere</b>"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "4. Let's get ______ to eat after our class."
+                    },
+                    {
+                      "en": "<b>something</b>"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "5. Did you hear that? I think ______ rang the doorbell."
+                    },
+                    {
+                      "en": "<b>somebody / someone</b>"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "6. ______ was on time. No one was late."
+                    },
+                    {
+                      "en": "<b>Everybody / Everyone</b>"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "7. I didn't eat ______ for lunch, so I'm really hungry now."
+                    },
+                    {
+                      "en": "<b>anything</b>"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "8. Linda understood ______ that her teacher said."
+                    },
+                    {
+                      "en": "<b>everything</b>"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "9. I had ______ to go because all the shops were closed."
+                    },
+                    {
+                      "en": "<b>nowhere</b>"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "10. ______ came to school because it was a holiday."
+                    },
+                    {
+                      "en": "<b>Nobody / No one</b>"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "11. Fernando wants to go ______ interesting next summer."
+                    },
+                    {
+                      "en": "<b>somewhere</b>"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "12. Was ______ at home when you knocked on the door?"
+                    },
+                    {
+                      "en": "<b>anybody / anyone</b>"
+                    }
+                  ]
+                ]
+              },
+              "id": "0d4a48e0-f6a0-52b9-ba12-2a261f34e029",
+              "kind": "table",
+              "ord": 10,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 1,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Notice #11:</b> the adjective goes <b>after</b> the pronoun → <i>somewhere <b>interesting</b>, something <b>new</b>, nothing <b>special</b>.</i>"
+                }
+              },
+              "id": "90b654f0-c873-5b16-93c7-716c6bd78aeb",
+              "kind": "tip",
+              "ord": 11,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 1,
+                "symbol": "#learn .topic"
+              }
+            }
+          ],
+          "estimatedMinutes": 20,
+          "id": "90607276-c7b5-5d79-8cc3-bdac1b0e5b42",
+          "ord": 1,
+          "skillCodes": [
+            "english.grammar.indefinite_pronouns"
+          ],
+          "source": {
+            "file": "Y6A/English/Year 6 English Exam Trainer.html",
+            "index": 1,
+            "symbol": "#learn .topic"
+          },
+          "title": {
+            "en": "🙋 2 · Indefinite Pronouns — everyone, someone, anything, nowhere…"
+          }
+        },
+        {
+          "blocks": [
+            {
+              "content": {
+                "html": {
+                  "en": "A <b>collocation</b> is a pair of words that English speakers <b>always put together</b>. They are not logical — you just have to learn them as one block. <i>You <b>make</b> your bed, you don't \"do\" your bed.</i>"
+                }
+              },
+              "id": "32dcafd6-e688-5ce3-837c-05b848198c69",
+              "kind": "rule",
+              "ord": 0,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 2,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>🚌 Transport — get on / get off / get in / get out of</h3>"
+                }
+              },
+              "id": "eca64e8c-103b-584c-9508-e9ac9a5f9bfb",
+              "kind": "text",
+              "ord": 1,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 2,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "en": "Collocation"
+                  },
+                  {
+                    "en": "Use it with"
+                  },
+                  {
+                    "en": "Example"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "en": "<b>get on / get off</b>"
+                    },
+                    {
+                      "en": "a bus, a train, a plane, a bike, a boat<br><span class=\"tsub\">(big things you stand up or walk inside)</span>"
+                    },
+                    {
+                      "en": "We <b>get on</b> the bus at 7:30 and <b>get off</b> near the school."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>get in / get out of</b>"
+                    },
+                    {
+                      "en": "a car, a taxi<br><span class=\"tsub\">(small things you sit down inside)</span>"
+                    },
+                    {
+                      "en": "She <b>gets in</b> the taxi. · He <b>gets out of</b> the car."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>travel by</b>"
+                    },
+                    {
+                      "en": "bus, train, car, plane, boat, bike<br><span class=\"tsub\">no \"the\" after by!</span>"
+                    },
+                    {
+                      "en": "They <b>travel by</b> train. <span>✗ by the train</span>"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>on foot</b>"
+                    },
+                    {
+                      "en": "walking"
+                    },
+                    {
+                      "en": "I go to school <b>on foot</b>. <span>✗ by foot</span>"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>catch / miss</b>"
+                    },
+                    {
+                      "en": "a bus, a train, a plane"
+                    },
+                    {
+                      "en": "Hurry up or we'll <b>miss</b> the train! · I <b>catch</b> the bus at 8:20."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>ride</b>"
+                    },
+                    {
+                      "en": "a bike, a horse"
+                    },
+                    {
+                      "en": "He <b>rides</b> his bike to the park."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>drive</b>"
+                    },
+                    {
+                      "en": "a car, a bus"
+                    },
+                    {
+                      "en": "My father <b>drives</b> to work every day."
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>fly to</b>"
+                    },
+                    {
+                      "en": "a country / a city"
+                    },
+                    {
+                      "en": "We <b>fly to</b> Madrid in July."
+                    }
+                  ]
+                ]
+              },
+              "id": "d842217e-c13f-5f9d-a449-f2573433bc70",
+              "kind": "table",
+              "ord": 2,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 2,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>✈️ Holiday collocations</h3> <ul> <li><b>go on holiday</b> · <b>go on a trip</b> · <b>go camping</b> · <b>go sightseeing</b> · <b>go abroad</b></li> <li><b>pack</b> a suitcase · <b>book</b> a ticket / a hotel · <b>check in</b> at the airport</li> <li><b>stay at</b> a hotel / <b>stay in</b> a tent · <b>stay with</b> my grandparents</li> <li><b>take</b> photos · <b>buy</b> souvenirs · <b>send</b> a postcard · <b>visit</b> a museum</li> <li><b>have</b> a great time · <b>spend</b> two weeks in Brazil</li> </ul> <h3>🎯 play / do / go — the free-time trio</h3>"
+                }
+              },
+              "id": "c980ec51-9e4c-562f-81ce-4faeff4766ce",
+              "kind": "text",
+              "ord": 3,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 2,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "en": "Verb"
+                  },
+                  {
+                    "en": "Use it with"
+                  },
+                  {
+                    "en": "Examples"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "en": "<b>play</b>"
+                    },
+                    {
+                      "en": "ball sports + games + instruments"
+                    },
+                    {
+                      "en": "play football, play basketball, play chess, play video games, play the guitar"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>do</b>"
+                    },
+                    {
+                      "en": "activities with no ball, and jobs"
+                    },
+                    {
+                      "en": "do judo, do gymnastics, do athletics, do homework, do the washing-up"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>go</b>"
+                    },
+                    {
+                      "en": "activities ending in <b>-ing</b>"
+                    },
+                    {
+                      "en": "go swimming, go shopping, go skateboarding, go cycling, go dancing"
+                    }
+                  ]
+                ]
+              },
+              "id": "c739253d-0e30-5331-84da-3581b955c60f",
+              "kind": "table",
+              "ord": 4,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 2,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>🏠 have / make / take — the everyday three</h3>"
+                }
+              },
+              "id": "a918cca5-762b-51a5-9aad-ec882babbf1c",
+              "kind": "text",
+              "ord": 5,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 2,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "en": "Verb"
+                  },
+                  {
+                    "en": "Collocations"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "en": "<b>have</b>"
+                    },
+                    {
+                      "en": "have breakfast / lunch / dinner · have a shower · have a break · have fun · have a party"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>make</b>"
+                    },
+                    {
+                      "en": "make your bed · make friends · make a noise · make a mistake · make a cake"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>take</b>"
+                    },
+                    {
+                      "en": "take a photo · take the bus · take a shower · take an exam · take off your shoes"
+                    }
+                  ]
+                ]
+              },
+              "id": "3122c54b-9523-5088-900a-3b2825f27313",
+              "kind": "table",
+              "ord": 6,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 2,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Traps:</b> <span>✗ do a photo</span> → <span>✓ take a photo</span> · <span>✗ play judo</span> → <span>✓ do judo</span> · <span>✗ make homework</span> → <span>✓ do homework</span> · <span>✗ get on a car</span> → <span>✓ get in a car</span>"
+                }
+              },
+              "id": "80f1304d-dd57-5fe3-82db-5ead0ed23e76",
+              "kind": "warning",
+              "ord": 7,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 2,
+                "symbol": "#learn .topic"
+              }
+            }
+          ],
+          "estimatedMinutes": 20,
+          "id": "ec1203e8-0a01-556d-ba13-03d70d4e7c5d",
+          "ord": 2,
+          "skillCodes": [
+            "english.vocabulary.collocations"
+          ],
+          "source": {
+            "file": "Y6A/English/Year 6 English Exam Trainer.html",
+            "index": 2,
+            "symbol": "#learn .topic"
+          },
+          "title": {
+            "en": "🔗 3 · Collocations — Unit 7: get on/off, travel by…"
+          }
+        },
+        {
+          "blocks": [
+            {
+              "content": {
+                "html": {
+                  "en": "<p>All the words are also drilled in the <b>Vocabulary</b> tab with sorting and matching games. Read them here first.</p> <h3>🏖️ Holidays</h3>"
+                }
+              },
+              "id": "2e785002-09ed-5a77-acd8-8905501287ec",
+              "kind": "text",
+              "ord": 0,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 3,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "en": "Word"
+                  },
+                  {
+                    "en": "Meaning"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "en": "suitcase / luggage"
+                    },
+                    {
+                      "en": "the bag(s) you pack your clothes in"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "passport"
+                    },
+                    {
+                      "en": "the document you need to travel abroad"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "boarding pass"
+                    },
+                    {
+                      "en": "the ticket that lets you get on the plane"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "tourist"
+                    },
+                    {
+                      "en": "a person visiting a place on holiday"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "tour guide"
+                    },
+                    {
+                      "en": "the person who shows tourists around"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "sightseeing"
+                    },
+                    {
+                      "en": "visiting the famous places of a city"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "souvenir"
+                    },
+                    {
+                      "en": "a small thing you buy to remember a trip"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "campsite / tent"
+                    },
+                    {
+                      "en": "where you sleep when you go camping"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "seaside · beach · sand · waves"
+                    },
+                    {
+                      "en": "the coast"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "sunscreen · sunglasses · towel"
+                    },
+                    {
+                      "en": "what you take to the beach"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "journey · trip · flight"
+                    },
+                    {
+                      "en": "the travelling itself"
+                    }
+                  ]
+                ]
+              },
+              "id": "87775abd-03ce-5372-b347-a9174bfca351",
+              "kind": "table",
+              "ord": 1,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 3,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>⚽ Free time activities</h3>"
+                }
+              },
+              "id": "07fd9afc-ef39-5d34-b798-176ffb0b1bc5",
+              "kind": "text",
+              "ord": 2,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 3,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>play</b> football · basketball · volleyball · tennis · chess · video games · the piano · the guitar"
+                }
+              },
+              "id": "edf2be79-8961-559b-bac3-cbf0cbdca36e",
+              "kind": "text",
+              "ord": 3,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 3,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>go</b> swimming · shopping · cycling · skateboarding · dancing · fishing · running"
+                }
+              },
+              "id": "a1fbd173-3f5c-5bcc-a472-30191e7483fa",
+              "kind": "text",
+              "ord": 4,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 3,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>do</b> judo · karate · gymnastics · athletics · art · puzzles"
+                }
+              },
+              "id": "cc63e6f3-4247-5e35-91db-09c94fa44c21",
+              "kind": "text",
+              "ord": 5,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 3,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>others:</b> watch series · read comics · chat online · hang out with friends · collect stickers · sing in a choir · draw · bake"
+                }
+              },
+              "id": "d45e029b-ea7e-55ff-8dd6-0081fd400800",
+              "kind": "text",
+              "ord": 6,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 3,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>🛋️ Furniture and objects at home</h3>"
+                }
+              },
+              "id": "84cc07f2-01da-5b41-9e98-40f25be4753f",
+              "kind": "text",
+              "ord": 7,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 3,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "en": "Room"
+                  },
+                  {
+                    "en": "Things you find there"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "en": "<b>living room</b>"
+                    },
+                    {
+                      "en": "sofa, armchair, coffee table, cushion, rug / carpet, curtains, bookcase, lamp, TV"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>bedroom</b>"
+                    },
+                    {
+                      "en": "bed, pillow, blanket, duvet, wardrobe, chest of drawers, bedside table, mirror, desk, shelf"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>kitchen</b>"
+                    },
+                    {
+                      "en": "cooker, oven, fridge, freezer, sink, cupboard, microwave, dishwasher, bin, kettle"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>bathroom</b>"
+                    },
+                    {
+                      "en": "bath, shower, toilet, washbasin, towel, mirror"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "<b>other rooms</b>"
+                    },
+                    {
+                      "en": "hall, dining room, garage, attic, basement, garden, balcony, stairs"
+                    }
+                  ]
+                ]
+              },
+              "id": "55300ad7-9f88-5abb-a367-5b472ef9cac7",
+              "kind": "table",
+              "ord": 8,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 3,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Prepositions of place</b> (you will need them to describe a room): <b>in · on · under · next to · between · behind · in front of · above · opposite · near</b>.<br> <i>The lamp is <b>on</b> the bedside table, <b>next to</b> my bed and <b>above</b> the rug.</i>"
+                }
+              },
+              "id": "bc61f2ed-f9d9-5cfe-bcd6-e0468dc7bd58",
+              "kind": "tip",
+              "ord": 9,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 3,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>👕 Clothes</h3>"
+                }
+              },
+              "id": "372dd0d3-7c84-5e2d-8125-caf9b03f0d32",
+              "kind": "text",
+              "ord": 10,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 3,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "en": "Group"
+                  },
+                  {
+                    "en": "Words"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "en": "Tops"
+                    },
+                    {
+                      "en": "T-shirt, shirt, blouse, jumper (sweater), hoodie, jacket, coat"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "Bottoms <span class=\"tsub\">(always plural!)</span>"
+                    },
+                    {
+                      "en": "jeans, trousers, shorts, leggings, tracksuit bottoms"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "One piece"
+                    },
+                    {
+                      "en": "dress, skirt, uniform, tracksuit, swimming costume, pyjamas"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "Shoes"
+                    },
+                    {
+                      "en": "trainers, boots, sandals, flip-flops, socks"
+                    }
+                  ],
+                  [
+                    {
+                      "en": "Accessories"
+                    },
+                    {
+                      "en": "hat, cap, scarf, gloves, belt, tie, sunglasses, watch"
+                    }
+                  ]
+                ]
+              },
+              "id": "404aa814-8495-534f-bef5-d8e9e2975bc1",
+              "kind": "table",
+              "ord": 11,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 3,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Verbs with clothes:</b> <b>wear</b> (have them on) · <b>put on</b> ↔ <b>take off</b> · <b>try on</b> (in a shop) · <b>get dressed</b> ↔ <b>get undressed</b> · it <b>fits</b> (right size) · it <b>suits</b> you (looks good)."
+                }
+              },
+              "id": "d9fbfee9-413a-58d8-8388-f4f47fd37b42",
+              "kind": "rule",
+              "ord": 12,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 3,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Plural trap:</b> jeans, trousers, shorts, glasses and pyjamas are always <b>plural</b> → <i>My jeans <b>are</b> new.</i> To count them say <b>a pair of</b> jeans."
+                }
+              },
+              "id": "3311dda4-f7b3-59d4-849c-c7b322c6dab1",
+              "kind": "warning",
+              "ord": 13,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 3,
+                "symbol": "#learn .topic"
+              }
+            }
+          ],
+          "estimatedMinutes": 20,
+          "id": "3915ce7f-f9bb-59c6-b86b-7406f3285cbf",
+          "ord": 3,
+          "skillCodes": [
+            "english.vocabulary.topics"
+          ],
+          "source": {
+            "file": "Y6A/English/Year 6 English Exam Trainer.html",
+            "index": 3,
+            "symbol": "#learn .topic"
+          },
+          "title": {
+            "en": "🗂️ 4 · Vocabulary — holidays · free time · home · clothes"
+          }
+        },
+        {
+          "blocks": [
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>📖 Reading — how to get every mark</h3> <ol> <li>Read the <b>questions first</b>, then the text. You will know what to hunt for.</li> <li>Read the whole text once <b>without stopping</b> at unknown words.</li> <li><b>Underline</b> the part of the text that gives each answer, and write the line number next to the question.</li> <li><b>True / False:</b> if <b>any part</b> of the sentence is wrong, the whole answer is <b>False</b>.</li> <li>Copy names, numbers and spellings <b>exactly</b> from the text.</li> <li>Answer with a <b>full sentence</b> unless the paper says one word.</li> </ol> <h3>✍️ Writing — the 5-step routine</h3> <ol> <li><b>Read the task twice.</b> How many words? What must you include? (Usually 60–80 words and 3 content points.)</li> <li><b>Plan for 2 minutes</b> — three bullet points, one per paragraph.</li> <li><b>Write</b> with linking words: <b>and, but, because, so, also, then, after that, finally.</b></li> <li><b>Check the -s</b> on every he/she/it verb. This is where most marks are lost.</li> <li><b>Check</b> capital letters, full stops, and that you answered <b>all</b> the points.</li> </ol>"
+                }
+              },
+              "id": "69c356ec-bf19-5c2f-bb13-3102868e50ff",
+              "kind": "text",
+              "ord": 0,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 4,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Model — \"Describe your daily routine\" (68 words)</b><br> I <b>get up</b> at half past six every morning. First I <b>have</b> a shower and <b>get dressed</b>, then I <b>have</b> breakfast with my family. I <b>go</b> to school by bus at seven o'clock, <b>because</b> my school is far from my house. In the afternoon I <b>do</b> my homework and I <b>play</b> football with my friends. I never <b>go</b> to bed late <b>because</b> I am always tired!"
+                }
+              },
+              "id": "3767bf6b-2cfc-5b2a-b740-65a7af0e1eec",
+              "kind": "tip",
+              "ord": 1,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 4,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Model — \"Write an email about your holiday\" (74 words)</b><br> Hi Sam,<br> I am on holiday in Brazil with my family. We <b>travel by</b> boat every day <b>because</b> there are no roads here. My father <b>takes</b> hundreds of photos and my sister <b>goes</b> swimming every afternoon. Our hotel is small <b>but</b> the beach is amazing. Yesterday we <b>bought</b> some souvenirs and <b>everybody</b> was happy.<br> What about you? <b>Does</b> your family <b>go</b> anywhere in July?<br> Write soon,<br>Leo"
+                }
+              },
+              "id": "3f732c31-da4c-5373-aac2-386f11399220",
+              "kind": "tip",
+              "ord": 2,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 4,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<h3>🗣️ Speaking — never answer with one word</h3>"
+                }
+              },
+              "id": "9df8dfb1-851c-58fd-b141-314c55ec243e",
+              "kind": "text",
+              "ord": 3,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 4,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "headers": [
+                  {
+                    "en": "Question"
+                  },
+                  {
+                    "en": "A full answer"
+                  }
+                ],
+                "rows": [
+                  [
+                    {
+                      "en": "What do you do in your free time?"
+                    },
+                    {
+                      "en": "\"In my free time I <b>play</b> football and I <b>go</b> swimming, <b>because</b> I love sport.\""
+                    }
+                  ],
+                  [
+                    {
+                      "en": "Describe your bedroom."
+                    },
+                    {
+                      "en": "\"In my bedroom there <b>is</b> a bed, a wardrobe and a desk. My lamp <b>is on</b> the bedside table, <b>next to</b> my bed.\""
+                    }
+                  ],
+                  [
+                    {
+                      "en": "What clothes do you wear at school?"
+                    },
+                    {
+                      "en": "\"I usually <b>wear</b> a blue shirt, grey trousers and black shoes. At the weekend I <b>wear</b> jeans and a hoodie.\""
+                    }
+                  ],
+                  [
+                    {
+                      "en": "How do you travel to school?"
+                    },
+                    {
+                      "en": "\"I <b>travel by</b> bus. I <b>get on</b> at eight o'clock and I <b>get off</b> in front of the school.\""
+                    }
+                  ],
+                  [
+                    {
+                      "en": "Where do you go on holiday?"
+                    },
+                    {
+                      "en": "\"We usually <b>go on holiday</b> in July. We <b>stay at</b> a hotel and we <b>go sightseeing</b> every day.\""
+                    }
+                  ]
+                ]
+              },
+              "id": "79dae5af-3a5b-5d28-984b-f130be9f16ba",
+              "kind": "table",
+              "ord": 4,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 4,
+                "symbol": "#learn .topic"
+              }
+            },
+            {
+              "content": {
+                "html": {
+                  "en": "<b>Golden speaking rule:</b> answer + <b>because</b> + one extra detail. Two sentences is always better than one word."
+                }
+              },
+              "id": "cdd97b73-664c-57a4-a825-f4bac9d9f024",
+              "kind": "tip",
+              "ord": 5,
+              "source": {
+                "file": "Y6A/English/Year 6 English Exam Trainer.html",
+                "index": 4,
+                "symbol": "#learn .topic"
+              }
+            }
+          ],
+          "estimatedMinutes": 20,
+          "id": "332f480b-20f9-55d2-aaf2-b5bbf1c91569",
+          "ord": 4,
+          "skillCodes": [
+            "english.skills"
+          ],
+          "source": {
+            "file": "Y6A/English/Year 6 English Exam Trainer.html",
+            "index": 4,
+            "symbol": "#learn .topic"
+          },
+          "title": {
+            "en": "🗣️ 5 · The three skills — reading · writing · speaking"
+          }
+        }
+      ],
+      "ord": 0,
+      "overview": [
+        {
+          "content": {
+            "html": {
+              "en": "📘 Everything on the exam paper <p>Five topics. Open one, read it out loud, then close it and try to say the rule from memory. The exam has <b>Grammar</b>, <b>Vocabulary</b> and <b>Skills</b> (reading, writing, speaking).</p>"
+            }
+          },
+          "id": "6cb15ef0-6969-5e75-8829-76ae6b78e55c",
+          "kind": "text",
+          "ord": 0,
+          "source": {
+            "file": "Y6A/English/Year 6 English Exam Trainer.html",
+            "symbol": "#learn (fuera de .topic)"
+          }
+        },
+        {
+          "content": {
+            "headers": [
+              {
+                "en": "Grammar"
+              },
+              {
+                "en": "Vocabulary"
+              },
+              {
+                "en": "Skills"
+              }
+            ],
+            "rows": [
+              [
+                {
+                  "en": "Collocations (get on/off, travel by… · Unit 7)<br>Indefinite pronouns (everyone, someone…)<br>Present simple (play / plays)"
+                },
+                {
+                  "en": "Holidays<br>Free time activities<br>Furniture and objects at home<br>Clothes"
+                },
+                {
+                  "en": "Reading<br>Writing<br>Speaking"
+                }
+              ]
+            ]
+          },
+          "id": "8893f79a-186c-5981-b7a1-551b2e4aef2e",
+          "kind": "table",
+          "ord": 1,
+          "source": {
+            "file": "Y6A/English/Year 6 English Exam Trainer.html",
+            "symbol": "#learn (fuera de .topic)"
+          }
+        }
+      ],
+      "title": {
+        "en": "Everything on the exam paper"
+      }
+    }
+  ],
+  "packFormatVersion": 1,
+  "questions": [
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "work"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "works"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "working"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "is work"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Alan ______ at the bank."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "545c00c1-c86f-5c96-9535-f100097f13f8",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "Alan = he → verb + s → <b>works</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 0,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "washes"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "wash"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "washs"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "washes not"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "I ______ my face every morning."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "8d24e3fe-7be3-5b08-b8ec-f3283ef4ae8b",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "<b>I</b> never takes an -s → <b>wash</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 1,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "come"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "comes"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "coming"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "is come"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "My family ______ from England."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "f0549352-99b2-5ad9-b693-70cdc201d928",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "A family is <b>one</b> group = it → <b>comes</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 2,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "miss"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "misss"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "misses"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "missing"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "She often ______ her country of origin."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "1652dffb-4781-5def-9b97-56b9ff457894",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "Verbs ending in <b>-ss</b> add <b>-es</b> → <b>misses</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 3,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "have"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "haves"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "has"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "having"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "She always ______ cereal for breakfast."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "2b14cd7a-07a1-55ea-9612-74b1997cb2e0",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "<b>have</b> is irregular: he/she/it → <b>has</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 4,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "brushs"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "brushes"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "brush"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "brushies"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "She ______ her teeth every day."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "65ecfb02-5539-5cbd-8c91-1a893787cce3",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "Ends in <b>-sh</b> → add <b>-es</b> → <b>brushes</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 5,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "go"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "gos"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "goes"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "going"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "He never ______ out on weekdays."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "47c6c7bb-1786-5581-931f-f5043b3f42e2",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "Ends in <b>-o</b> → add <b>-es</b> → <b>goes</b>. Note <b>never</b> goes before the verb."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 6,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "tell"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "tells"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "telles"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "telling"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "The teacher ______ us a story every Friday."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "fce4a1d3-ef0e-5406-b390-d9962d0b5534",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "The teacher = he/she → <b>tells</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 7,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "buies"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "buys"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "buyes"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "buy"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "My mum ______ fresh bread every morning."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "e7629f12-93bb-5de7-8b12-74d0586e0b19",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "<b>vowel + y</b> (u+y) → just add <b>-s</b> → <b>buys</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 8,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "study"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "studys"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "studies"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "studyes"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "My brother ______ English online."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "901333a8-7c7a-5618-8618-468435c87e47",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "<b>consonant + y</b> (d+y) → y becomes <b>ies</b> → <b>studies</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 9,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "flies"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "fly"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "flys"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "flyes"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Birds ______ in the sky."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "c53abce7-1b70-5154-a258-4535b4ee25ff",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "Birds = they → <b>no -s</b> → <b>fly</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 10,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "cry"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "crys"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "cries"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "cryes"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "The baby ______ at night."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "36acf675-6caa-58ea-945c-20d06296e1d4",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "<b>consonant + y</b> → <b>cries</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 11,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "fixs"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "fixes"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "fixies"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "fix"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "He ______ his bike on Saturdays."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "51237f0f-0267-5cd0-abd2-3dba02020b79",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "Ends in <b>-x</b> → add <b>-es</b> → <b>fixes</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 12,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "make"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "makes"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "does make"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "is make"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "What ______ the sun shine?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "624b643d-d9f9-58e8-b88f-b7b60c83279d",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "After <b>What</b> the subject is <i>the sun</i> = it → <b>makes</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 13,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Does"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Do"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Are"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Is"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "______ you like pizza?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "491148f7-6ebb-53af-b506-3c6bdbd48d4b",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "<b>you</b> → <b>Do</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 14,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Do"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Does"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Is"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Has"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "______ she read books?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "78375798-c9e2-5ac6-808f-3b1b75233eed",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "<b>she</b> → <b>Does</b> + base verb <i>read</i>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 15,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Do"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Does"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Is"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Has"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "______ Tom have a dog?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "00ccaa67-851a-5382-b70f-a2d180e97bf3",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "Tom = he → <b>Does</b>. Careful: <i>Does Tom <b>have</b></i>, not <i>has</i>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 16,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Does"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Do"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Is"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Has"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "______ your friends play Valorant?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "8f81aa19-2005-575a-bc7f-f77c4c91526a",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "<b>your friends</b> = they → <b>Do</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 17,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "don't"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "doesn't"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "not"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "isn't"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Nick ______ draw well."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "726dd089-7b64-5b91-bd9a-cae15da3dc10",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "Nick = he → <b>doesn't</b> + base verb."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 18,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "doesn't"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "don't"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "not"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "aren't"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "We ______ live in England."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "ff5b4ade-d919-5491-9d72-65e4c1f52c55",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "<b>we</b> → <b>don't</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 19,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "don't like"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "doesn't likes"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "doesn't like"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "not like"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "She ______ energy drinks."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "c65b9805-40d6-5e91-a101-be3d611d6d65",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "<b>doesn't</b> + base verb → the -s disappears from <i>like</i>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 20,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "doesn't start"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "don't start"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "don't starts"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "not start"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "My lessons ______ at 09:00."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "990baf44-f8e8-54e8-b2b4-25fd95493a94",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "lessons = they → <b>don't</b> + base verb."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 21,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "He watch YouTube every evening."
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "He watches YouTube every evening."
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "He watchs YouTube every evening."
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "He does watch YouTube every evening."
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Which sentence is correct?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "281a4744-a4f6-51e1-ae25-69e4efadd092",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "<b>watch</b> ends in -ch → <b>watches</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 22,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Do she drive to the office?"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Does she drives to the office?"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Does she drive to the office?"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "She does drive to the office?"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Which sentence is correct?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "765bfc43-adc2-5047-aa3b-5203098611e0",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "<b>Does</b> + subject + <b>base verb</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 23,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "The train leaves at 6:45."
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "The train leaved at 6:45."
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "The train is leave at 6:45."
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "The train do leave at 6:45."
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Correct the mistake: The train leave at 6:45."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "ae7f0098-08ad-5a85-ad40-a44f10698cc6",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "The train = it → <b>leaves</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 24,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "I am knowing the answer."
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "I know the answer."
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "I am know the answer."
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "I do am know the answer."
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Correct the mistake: I am know the answer."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "9bb8df88-c091-5b38-9b1c-3317bd72230a",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "Never put <b>am/is/are</b> in front of a main verb in the present simple."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 25,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "I usually watch TikTok before bed."
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "I watch usually TikTok before bed."
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Usually I watch before bed TikTok."
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Before bed I usually TikTok watch."
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Put in order: usually / TikTok / before bed / I / watch"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "7b90ec69-99fa-5590-8a99-260d70c69763",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "Subject + <b>adverb of frequency</b> + verb + object + time."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 26,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "always / —"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "— / always"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "always at the start / —"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "— / — (both wrong)"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Where does <b>always</b> go? She ______ has cereal ______ ."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "846845d2-c381-5ba8-9153-4f77dd189c43",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "Adverbs of frequency go <b>before the main verb</b>: She <b>always has</b> cereal."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 27,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "is / goes"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "is / go"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "are / goes"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "does / go"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Wendy ______ always nervous when she ______ to the dentist."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "b2c5c3a6-07fc-578d-b2a9-41abb28c240a",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "With <b>be</b> the adverb goes <b>after</b> it (is always). And she → <b>goes</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 28,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Yes, she do."
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Yes, she does."
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Yes, she cooks."
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Yes, she is."
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Short answer: Does your mum cook dinner? —"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "832d777c-3960-5385-9263-2605853524c3",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "Question with <b>Does</b> → answer with <b>does / doesn't</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 29,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "they doesn't"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "they don't"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "they not"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "they aren't"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Short answer: Do they play football? — No, ______ ."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "421639df-4a29-55a8-8fd2-b968934a6442",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "Question with <b>Do</b> → <b>don't</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 30,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "mixs"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "mixies"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "mixes"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "mix"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Spelling: mix →"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "5505960a-5e88-57ea-a4e5-7ba4c2e296dd",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "Ends in <b>-x</b> → <b>mixes</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 31,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "staies"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "stayes"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "stays"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "staics"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Spelling: stay →"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "8c49bc71-8439-55ab-8861-762852cb641d",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "<b>vowel + y</b> → just add <b>-s</b> → <b>stays</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 32,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "teachs"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "teaches"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "teachies"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "teach"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Spelling: teach →"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "d757a305-ccae-52ff-9d29-31b6d7d109f5",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "Ends in <b>-ch</b> → <b>teaches</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 33,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "carrys"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "carryes"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "carries"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "carrs"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Spelling: carry →"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "88d65152-284b-5f11-9fc1-cee9717c55f6",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.present_simple",
+      "solution": {
+        "en": "<b>consonant + y</b> → <b>carries</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 34,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ps"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "everywhere"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "anywhere"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "nowhere"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "somewhere"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "I looked ______ for my cat, but I couldn't find it."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "23f84421-29d4-5b00-9f06-2e2cbffd0af3",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.indefinite_pronouns",
+      "solution": {
+        "en": "He looked in <b>all</b> the places → <b>everywhere</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 35,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ip"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "anybody"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "nobody"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "everybody"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "somebody"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "James called his friend, but ______ answered the phone."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "2f7a99b8-c472-5730-ac98-729794684c43",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.indefinite_pronouns",
+      "solution": {
+        "en": "Zero people answered → <b>nobody</b> (= no one)."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 36,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ip"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "somewhere"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "nowhere"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "anywhere"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "everywhere"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "I didn't go ______ on the weekend, so I was really bored."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "138254e6-323d-5cb7-8d39-8ece54beefd6",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.indefinite_pronouns",
+      "solution": {
+        "en": "After the negative <b>didn't</b> we use <b>any-</b> → <b>anywhere</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 37,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ip"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "anything"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "something"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "nothing"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "everything"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Let's get ______ to eat after our class."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "71aac732-fbda-59ce-99c2-1951f55221c1",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.indefinite_pronouns",
+      "solution": {
+        "en": "Affirmative sentence → <b>some-</b> → <b>something</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 38,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ip"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "somebody"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "anybody"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "nobody"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "everybody"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Did you hear that? I think ______ rang the doorbell."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "322d86d5-5905-5bd9-8c91-8cd5f9a4c054",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.indefinite_pronouns",
+      "solution": {
+        "en": "One person, we don't know who → <b>somebody</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 39,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ip"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Somebody"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Anybody"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Everybody"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Nobody"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "______ was on time. No one was late."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "c6a441bf-d21b-5bba-890f-20a6a34d8ffe",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.indefinite_pronouns",
+      "solution": {
+        "en": "If no one was late, then <b>all</b> were on time → <b>Everybody</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 40,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ip"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "something"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "anything"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "everything"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "nowhere"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "I didn't eat ______ for lunch, so I'm really hungry now."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "f910562c-b36b-524a-8d5d-04e7f77e2810",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.indefinite_pronouns",
+      "solution": {
+        "en": "Negative → <b>anything</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 41,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ip"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "something"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "anything"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "everything"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "nothing"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Linda understood ______ that her teacher said."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "aabf81cc-acec-5ebe-93c6-d7b963e6682b",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.indefinite_pronouns",
+      "solution": {
+        "en": "She understood <b>all</b> of it → <b>everything</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 42,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ip"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "somewhere"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "anywhere"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "nowhere"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "everywhere"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "I had ______ to go because all the shops were closed."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "dfe1c70e-b0b8-51c5-b9db-aa09ae1cc223",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.indefinite_pronouns",
+      "solution": {
+        "en": "Zero places → <b>nowhere</b> (the sentence has no <i>not</i>, so we use the negative word itself)."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 43,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ip"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Everybody"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Nobody"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Anybody"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Somebody"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "______ came to school because it was a holiday."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "533ac686-2989-5671-9788-46f179146882",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.indefinite_pronouns",
+      "solution": {
+        "en": "A holiday → zero students → <b>Nobody</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 44,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ip"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "anywhere interesting"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "somewhere"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "nowhere"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "everywhere"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Fernando wants to go ______ interesting next summer."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "9fb9c145-9ace-5b73-b0b3-4c49df86113a",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.indefinite_pronouns",
+      "solution": {
+        "en": "<b>somewhere</b> — and notice the adjective comes <b>after</b>: somewhere <i>interesting</i>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 45,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ip"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "somebody"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "anybody"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "nobody"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "everybody"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Was ______ at home when you knocked on the door?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "caffce35-cd75-5d5d-ad1e-5b8a015dc513",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.indefinite_pronouns",
+      "solution": {
+        "en": "Question → <b>any-</b> → <b>anybody</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 46,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ip"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "need"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "needs"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "are needing"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "don't need"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Everybody ______ a friend."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "83dc0acc-7e30-5203-8fd2-b684b292cac3",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.indefinite_pronouns",
+      "solution": {
+        "en": "Indefinite pronouns are <b>singular</b> → verb + s → <b>needs</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 47,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ip"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "I don't have nothing."
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "I don't have anything."
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "I not have anything."
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "I don't have no thing."
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Which sentence is correct?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "155c9465-220b-50c1-8de4-a7495419f5c3",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.indefinite_pronouns",
+      "solution": {
+        "en": "Never two negatives. <b>don't + anything</b> = <b>have nothing</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 48,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ip"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "anybody"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "somebody"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "nothing"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "everywhere"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "There is ______ in the kitchen — I can hear a noise."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "73787c2f-2a25-5e5c-9133-6ea104ddc0a8",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.indefinite_pronouns",
+      "solution": {
+        "en": "Affirmative → <b>somebody</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 49,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ip"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "anything"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "something"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "nothing"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "everything"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Would you like ______ to drink?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "f03a1c13-c252-5830-9918-d5b370c9dfc8",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.indefinite_pronouns",
+      "solution": {
+        "en": "Exception! In an <b>offer</b> we use <b>something</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 50,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ip"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "Everything"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "Anything"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "Nothing"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "Somewhere"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "______ is amazing about this holiday!"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "285afc22-7c09-5bd3-87dd-f0751c0b71be",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.indefinite_pronouns",
+      "solution": {
+        "en": "All of it is amazing → <b>Everything</b> + singular verb <b>is</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 51,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ip"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "anything"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "nothing"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "everything"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "somewhere"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "We looked for the keys but we found ______ ."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "f7d27208-975d-53fe-82e8-127c7e6efa3b",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.indefinite_pronouns",
+      "solution": {
+        "en": "The verb <i>found</i> is positive, so the negative word must be <b>nothing</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 52,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ip"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "everyone"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "everything"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "everywhere"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "everybody"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Which is the PLACE word for <b>every-</b>?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "d50a5927-584a-51d5-a1e1-db132021184d",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.indefinite_pronouns",
+      "solution": {
+        "en": "People = everyone/everybody · Things = everything · <b>Places = everywhere</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 53,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ip"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "everybody"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "everybodies"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "every body"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "all body"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Is ______ ready for the exam?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "3ecf8e7e-4d3a-53f3-96d1-e96341e3a4db",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.grammar.indefinite_pronouns",
+      "solution": {
+        "en": "<b>everybody</b>, written as one word, with a singular verb <i>is</i>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 54,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:ip"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "get in"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "get on"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "get out of"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "travel in"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "We ______ the bus in front of the school."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "efeb3586-fac1-55b5-9dd7-58ac3110857f",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.collocations",
+      "solution": {
+        "en": "Bus, train, plane, bike → <b>get on / get off</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 55,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:col"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "gets on"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "gets in"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "gets off"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "goes on"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "She ______ the taxi and gives the driver the address."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "2f5545b9-ba57-5d49-926d-897ca169f339",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.collocations",
+      "solution": {
+        "en": "Car and taxi → <b>get in / get out of</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 56,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:col"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "travel by the"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "travel with"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "travel by"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "travel in the"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "They ______ train to Santa Cruz."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "9f1475c8-13de-524e-955b-af5bf5b4121e",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.collocations",
+      "solution": {
+        "en": "<b>travel by</b> + transport, with <b>no 'the'</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 57,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:col"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "by foot"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "on foot"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "by feet"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "with foot"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "I go to school ______ ."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "109e5a8c-b975-5dc3-9a32-b3a2bf3edd9a",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.collocations",
+      "solution": {
+        "en": "Walking is the exception → <b>on foot</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 58,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:col"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "lose"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "miss"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "fail"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "take off"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Hurry up or we will ______ the train!"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "6d5439cc-1d20-597e-80e2-7b134b0fa00b",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.collocations",
+      "solution": {
+        "en": "You <b>miss</b> a bus/train/plane. (You <i>lose</i> keys, not trains.)"
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 59,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:col"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "does"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "makes"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "takes"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "gets"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "My father ______ a photo of the mountain."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "c42206ed-a798-5dbc-adee-bfeafd0655a8",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.collocations",
+      "solution": {
+        "en": "<b>take a photo</b> — never 'do' or 'make' a photo."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 60,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:col"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "do"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "make"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "take"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "have"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Every morning I ______ my bed."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "6f86b406-2a16-5780-b079-f663954ae632",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.collocations",
+      "solution": {
+        "en": "<b>make</b> your bed · but <b>do</b> your homework."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 61,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:col"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "plays"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "does"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "goes"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "makes"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "My sister ______ judo twice a week."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "5873bbaa-8d13-53a4-937d-598ca6900d84",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.collocations",
+      "solution": {
+        "en": "Sports without a ball → <b>do</b> judo, karate, gymnastics."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 62,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:col"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "play"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "do"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "go"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "make"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "We ______ swimming every Saturday."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "2db9cee6-3c5e-5212-b3b2-59883c45b31e",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.collocations",
+      "solution": {
+        "en": "Activities ending in <b>-ing</b> → <b>go</b> swimming."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 63,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:col"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "plays"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "does"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "goes"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "makes"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "He ______ the guitar in a band."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "8aadee0b-6d32-57fd-9f36-433a1fb1d5ec",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.collocations",
+      "solution": {
+        "en": "Instruments and ball sports → <b>play</b> (play <b>the</b> guitar)."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 64,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:col"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "make"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "do"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "go"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "take"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "We are going to ______ on holiday in July."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "34dd78ef-f672-5086-aa84-60533ba6f633",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.collocations",
+      "solution": {
+        "en": "<b>go on holiday</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 65,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:col"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "make"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "pack"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "do"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "put"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Before the trip I always ______ my suitcase."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "f38e42a7-9b7e-5214-a143-70fada985b0e",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.collocations",
+      "solution": {
+        "en": "<b>pack</b> a suitcase."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 66,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:col"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o1"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "stay"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "live"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "rest"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "sit"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "We ______ at a small hotel near the beach."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "ed7757e8-adc9-51c7-bb4c-06d902d58fd4",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.collocations",
+      "solution": {
+        "en": "<b>stay at</b> a hotel (for a short time). You <i>live</i> in your own house."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 67,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:col"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "do"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "make"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "have"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "put"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "I ______ a shower every morning before school."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "c0ef9406-7983-5e59-93be-8232bb261bea",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.collocations",
+      "solution": {
+        "en": "<b>have</b> a shower (or <b>take</b> a shower). Never 'make'."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 68,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:col"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o4"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "do my homework"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "make friends"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "take the bus"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "play judo"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Which one is WRONG?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "b6be3ef8-15f0-54e7-8665-819852928e50",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.collocations",
+      "solution": {
+        "en": "<b>play judo</b> is wrong → it is <b>do judo</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 69,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:col"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "boarding pass"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "passport"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "souvenir"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "luggage"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "You need this document to travel to another country:"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "f38a4bfc-8f7b-5682-bb6b-276ef9aba16f",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.topics",
+      "solution": {
+        "en": "A <b>passport</b> identifies you abroad; the <b>boarding pass</b> only gets you on the plane."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 70,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:voc"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "ticket"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "suitcase"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "souvenir"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "postcard"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "A small thing you buy to remember your trip:"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "6b4a0d39-4b80-57e3-8379-91e3d30a8cf4",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.topics",
+      "solution": {
+        "en": "<b>souvenir</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 71,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:voc"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "a hotel"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "a tent"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "a flat"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "a cabin bed"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Where do you sleep when you go camping?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "95a1f5d7-8f1e-571f-8d44-f2f054777ff3",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.topics",
+      "solution": {
+        "en": "You sleep in a <b>tent</b> at a <b>campsite</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 72,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:voc"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "cupboard"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "fridge"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "wardrobe"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "bookcase"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "You keep your clothes in it, in your bedroom:"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "96c9d740-a7a8-5876-85c0-9f5c26e965e8",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.topics",
+      "solution": {
+        "en": "<b>wardrobe</b> (a <i>cupboard</i> is usually in the kitchen)."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 73,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:voc"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o4"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "cooker"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "fridge"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "sink"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "armchair"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Which one is NOT in the kitchen?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "c94c1ae6-f78a-5627-8034-52153bff0bbf",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.topics",
+      "solution": {
+        "en": "The <b>armchair</b> is in the living room."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 74,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:voc"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "blanket"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "pillow"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "cushion"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "rug"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "You put your head on it when you sleep:"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "9d992647-03c7-5aa6-99f5-89b92ffab6dd",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.topics",
+      "solution": {
+        "en": "<b>pillow</b> — a <i>cushion</i> is for the sofa."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 75,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:voc"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "dress"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "jumper"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "jeans"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "cap"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Which item is always plural?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "cc20244d-cb1b-54ca-8bb3-c4a3db075f2b",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.topics",
+      "solution": {
+        "en": "<b>jeans</b> (also trousers, shorts, pyjamas) → <i>a pair of jeans</i>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 76,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:voc"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "boots"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "sandals"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "trainers"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "socks"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "You wear them on your feet to do sport:"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "d6d544b5-2aeb-5a46-865f-e194c532aaf1",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.topics",
+      "solution": {
+        "en": "<b>trainers</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 77,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:voc"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "swimming costume"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "scarf"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "cap"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "T-shirt"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "It is cold — you put on a ______ ."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "8ea68f31-d759-5409-a38e-56e84b97d6e2",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.topics",
+      "solution": {
+        "en": "A <b>scarf</b> keeps your neck warm."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 78,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:voc"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o3"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "put on"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "take off"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "try on"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "wear on"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "In a shop you ______ a jacket before you buy it."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "6c70080b-9f94-586d-bea0-85e66f7ac962",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.topics",
+      "solution": {
+        "en": "<b>try on</b> = test the size in the shop."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 79,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:voc"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "camping"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "sightseeing"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "shopping"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "boarding"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Visiting the famous places of a city is called:"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "b3a7b575-ab40-5930-89e6-04958f169f3a",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.topics",
+      "solution": {
+        "en": "<b>sightseeing</b> → <i>go sightseeing</i>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 80,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:voc"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "in"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "on"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "under"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "between"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "The lamp is ______ the bedside table."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "a5e56169-e9ce-50ce-8b45-4b96794ec121",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.topics",
+      "solution": {
+        "en": "On top of a surface → <b>on</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 81,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:voc"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "football"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "gymnastics"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "swimming"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "chess"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "Which is a free-time activity you DO?"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "ce32158c-3f15-5332-bed8-b049c5bb1e99",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.topics",
+      "solution": {
+        "en": "<b>do gymnastics</b> · play football · play chess · go swimming."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 82,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:voc"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "tourist"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "tour guide"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "driver"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "receptionist"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "The person who shows tourists around a city:"
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "9c872dc4-5cb9-55db-98df-6898609cd9cf",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.topics",
+      "solution": {
+        "en": "<b>tour guide</b>."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 83,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:voc"
+      ]
+    },
+    {
+      "answerSpec": {
+        "correctIds": [
+          "o2"
+        ],
+        "type": "choice"
+      },
+      "body": {
+        "options": [
+          {
+            "html": {
+              "en": "dishwasher"
+            },
+            "id": "o1"
+          },
+          {
+            "html": {
+              "en": "washing machine"
+            },
+            "id": "o2"
+          },
+          {
+            "html": {
+              "en": "microwave"
+            },
+            "id": "o3"
+          },
+          {
+            "html": {
+              "en": "freezer"
+            },
+            "id": "o4"
+          }
+        ],
+        "stem": {
+          "en": "You put your dirty clothes in the ______ ."
+        }
+      },
+      "difficulty": 2,
+      "format": "mcq_single",
+      "gradingMode": "auto",
+      "id": "4ef653a0-3400-524c-9d3e-7251f9209373",
+      "kind": "static",
+      "locale": "en",
+      "maxPoints": 1,
+      "skillCode": "english.vocabulary.topics",
+      "solution": {
+        "en": "<b>washing machine</b> (the <i>dishwasher</i> is for plates)."
+      },
+      "source": {
+        "file": "Y6A/English/Year 6 English Exam Trainer.html",
+        "index": 84,
+        "symbol": "BANK"
+      },
+      "tags": [
+        "y6a:voc"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "code": "english.grammar",
+      "id": "aebd10c5-2fd4-572a-b710-55e5d22ff93c",
+      "name": {
+        "en": "Grammar"
+      },
+      "ord": 0,
+      "parentCode": null
+    },
+    {
+      "code": "english.grammar.present_simple",
+      "id": "d86e111a-e5f4-521c-a4f1-5e17170687f3",
+      "name": {
+        "en": "Present simple"
+      },
+      "ord": 1,
+      "parentCode": "english.grammar"
+    },
+    {
+      "code": "english.grammar.indefinite_pronouns",
+      "id": "90210f8c-0945-58ca-b117-41de6c39aeb4",
+      "name": {
+        "en": "Indefinite pronouns"
+      },
+      "ord": 2,
+      "parentCode": "english.grammar"
+    },
+    {
+      "code": "english.vocabulary",
+      "id": "c27a11c5-020e-573a-8a4b-75169d4fffe5",
+      "name": {
+        "en": "Vocabulary"
+      },
+      "ord": 3,
+      "parentCode": null
+    },
+    {
+      "code": "english.vocabulary.collocations",
+      "id": "f03cc388-4036-5830-ac9a-1934a78df0dd",
+      "name": {
+        "en": "Collocations"
+      },
+      "ord": 4,
+      "parentCode": "english.vocabulary"
+    },
+    {
+      "code": "english.vocabulary.topics",
+      "id": "55a00373-3cb0-52bd-becc-8ff51b299b4d",
+      "name": {
+        "en": "Topic vocabulary"
+      },
+      "ord": 5,
+      "parentCode": "english.vocabulary"
+    },
+    {
+      "code": "english.skills",
+      "id": "7e065a2b-5756-557f-b654-c87ecaa901f5",
+      "name": {
+        "en": "Reading, writing and speaking"
+      },
+      "ord": 6,
+      "parentCode": null
+    }
+  ],
+  "studyPlan": {
+    "days": [
+      {
+        "id": "d23c73b6-c839-50eb-8566-c7f21d171976",
+        "ord": 0,
+        "tasks": [
+          {
+            "ord": 0,
+            "text": {
+              "en": "Read topic 1 in the Learn tab out loud."
+            }
+          },
+          {
+            "ord": 1,
+            "text": {
+              "en": "Play the <b>-s Machine</b> until you clear all 26 verbs."
+            }
+          },
+          {
+            "ord": 2,
+            "text": {
+              "en": "Do 15 questions of Practice → Present Simple."
+            }
+          },
+          {
+            "ord": 3,
+            "text": {
+              "en": "Fill in <b>Tom's daily routine</b> without looking."
+            }
+          }
+        ],
+        "title": {
+          "en": "Day 1 · Present simple"
+        }
+      },
+      {
+        "id": "569d6179-a87e-5f4c-82d0-aa8c0b6fba2c",
+        "ord": 1,
+        "tasks": [
+          {
+            "ord": 0,
+            "text": {
+              "en": "Reread the negative and question tables."
+            }
+          },
+          {
+            "ord": 1,
+            "text": {
+              "en": "Play <b>Do / Does</b> until you finish the pile."
+            }
+          },
+          {
+            "ord": 2,
+            "text": {
+              "en": "Play <b>Question Builder</b> — all 10."
+            }
+          },
+          {
+            "ord": 3,
+            "text": {
+              "en": "Write 5 questions about your family and check the word order."
+            }
+          }
+        ],
+        "title": {
+          "en": "Day 2 · Do / Does &amp; questions"
+        }
+      },
+      {
+        "id": "a62bf2a5-61e5-5b76-a49b-1ecde4844cb2",
+        "ord": 2,
+        "tasks": [
+          {
+            "ord": 0,
+            "text": {
+              "en": "Copy the 4 x 3 grid into your notebook from memory."
+            }
+          },
+          {
+            "ord": 1,
+            "text": {
+              "en": "Play the <b>Pronoun Grid</b> game."
+            }
+          },
+          {
+            "ord": 2,
+            "text": {
+              "en": "Do Practice → Pronouns (all 20)."
+            }
+          },
+          {
+            "ord": 3,
+            "text": {
+              "en": "Say the some / any / no switch out loud 3 times."
+            }
+          }
+        ],
+        "title": {
+          "en": "Day 3 · Indefinite pronouns"
+        }
+      },
+      {
+        "id": "c034acb7-3667-52fc-8fc2-8260209b0056",
+        "ord": 3,
+        "tasks": [
+          {
+            "ord": 0,
+            "text": {
+              "en": "Read topic 3 and topic 4."
+            }
+          },
+          {
+            "ord": 1,
+            "text": {
+              "en": "Play <b>Collocation Memory</b> twice."
+            }
+          },
+          {
+            "ord": 2,
+            "text": {
+              "en": "Clear the <b>Vocabulary Sorter</b> (40 words) and <b>play/do/go</b>."
+            }
+          },
+          {
+            "ord": 3,
+            "text": {
+              "en": "Learn 10 clothes words + 10 furniture words."
+            }
+          }
+        ],
+        "title": {
+          "en": "Day 4 · Collocations &amp; vocabulary"
+        }
+      },
+      {
+        "id": "abf0bac7-0e5c-5777-bbf2-119052fa55a4",
+        "ord": 4,
+        "tasks": [
+          {
+            "ord": 0,
+            "text": {
+              "en": "Do the reading comprehension."
+            }
+          },
+          {
+            "ord": 1,
+            "text": {
+              "en": "Write one Writing Lab task and run the checker."
+            }
+          },
+          {
+            "ord": 2,
+            "text": {
+              "en": "Answer 5 speaking cards out loud."
+            }
+          },
+          {
+            "ord": 3,
+            "text": {
+              "en": "Do the <b>Mock Exam</b> with the timer. Revise every ❌."
+            }
+          }
+        ],
+        "title": {
+          "en": "Day 5 · Skills &amp; exam"
+        }
+      }
+    ],
+    "id": "c1944f18-f27c-5c32-9f83-5238d74cc2c6",
+    "notes": [],
+    "source": {
+      "file": "Y6A/English/Year 6 English Exam Trainer.html",
+      "symbol": "PLAN"
+    },
+    "title": {
+      "en": "5-day study plan"
+    }
+  },
+  "subject": {
+    "code": "english",
+    "color": "#6b3fa0",
+    "icon": "🔤",
+    "name": {
+      "en": "English"
+    },
+    "ord": 2
+  }
+}

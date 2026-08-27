@@ -1,0 +1,199 @@
+# =============================================================================
+# CI — Cambridge Exam Trainer
+# © 2026 Roberto Mendizabal. Todos los derechos reservados.
+#
+# Orden: typecheck → lint → test unitario → build → e2e.
+# Ningún merge sin verde (MASTER_PLAN §3).
+#
+# El orden importa: lo barato y lo que falla más a menudo va primero. Un error
+# de tipos se ve en 40 segundos; arrancar Playwright para descubrirlo costaría
+# cinco minutos.
+# =============================================================================
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # Permite relanzar el CI a mano tras un fallo de infraestructura sin tener
+  # que ensuciar el historial con un commit vacío.
+  workflow_dispatch:
+
+# Un push nuevo sobre la misma rama cancela el CI anterior: no tiene sentido
+# gastar minutos en un commit ya superado.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Permisos mínimos. Por defecto GITHUB_TOKEN llega con permisos de escritura;
+# un workflow que solo lee no los necesita, y un token comprometido con menos
+# permisos hace menos daño.
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "20.11.0"
+  PNPM_VERSION: "9.12.0"
+  # Turborepo sin telemetría hacia fuera.
+  TURBO_TELEMETRY_DISABLED: "1"
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Verificación estática y unitaria. Un solo job: comparten el mismo
+  # node_modules y la misma caché de Turborepo, así que separarlos multiplicaría
+  # el tiempo de instalación por cuatro sin ganar nada.
+  # ---------------------------------------------------------------------------
+  verify:
+    name: typecheck · lint · test · build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      # Valores de relleno: el build de Next.js solo necesita que las variables
+      # EXISTAN para inlinar los `process.env.NEXT_PUBLIC_*`. No se conecta a
+      # Supabase en tiempo de build, así que aquí no hace falta ningún secreto
+      # real — y no ponerlo evita que un fork lea secretos desde un PR.
+      NEXT_PUBLIC_SUPABASE_URL: https://clcutoqjdgeggvgyreud.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Instalar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          # `cache: pnpm` cachea el store global de pnpm a partir del lockfile.
+          cache: pnpm
+
+      - name: Instalar dependencias
+        # `--frozen-lockfile` hace fallar el CI si alguien tocó package.json sin
+        # regenerar el lockfile. Sin esto, el CI instalaría versiones distintas
+        # de las que se probaron en local.
+        run: pnpm install --frozen-lockfile
+
+      - name: Caché de Turborepo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Tests unitarios
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      # El build de Next se reutiliza en el job de e2e: reconstruirlo allí
+      # tardaría lo mismo otra vez y podría dar un artefacto distinto.
+      - name: Subir el build de la web
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: |
+            apps/web/.next
+            !apps/web/.next/cache
+          retention-days: 1
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  # Extremo a extremo contra el build real.
+  # ---------------------------------------------------------------------------
+  e2e:
+    name: e2e (Playwright)
+    runs-on: ubuntu-latest
+    needs: verify
+    timeout-minutes: 25
+
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://clcutoqjdgeggvgyreud.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Recuperar el build de la web
+        uses: actions/download-artifact@v4
+        with:
+          name: web-build
+          path: apps/web/.next
+
+      - name: Instalar navegadores de Playwright
+        # Solo Chromium: los otros dos motores triplican el tiempo de descarga y
+        # hoy no aportan cobertura sobre lo que se prueba.
+        run: pnpm --filter @cet/web exec playwright install --with-deps chromium
+
+      - name: Ejecutar e2e
+        run: pnpm --filter @cet/web test:e2e
+
+      - name: Guardar el informe si algo falla
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # Red de seguridad contra secretos commiteados.
+  #
+  # `.gitignore` cubre `.env` y `secrets/`, pero un `git add -f` o un fichero con
+  # otro nombre se cuelan igual. Este job es la última barrera antes de que una
+  # service-role key acabe en el historial público de un repositorio.
+  # ---------------------------------------------------------------------------
+  secret-scan:
+    name: Búsqueda de secretos
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # gitleaks necesita el historial para revisar los commits del PR.
+          fetch-depth: 0
+
+      - name: Rechazar claves de Supabase en el árbol de trabajo
+        run: |
+          set -euo pipefail
+          # Un JWT de Supabase empieza siempre por este prefijo de cabecera.
+          # Se excluyen los `.env.example`, donde el valor es un marcador obvio.
+          if grep -rIn --exclude-dir=.git --exclude-dir=node_modules \
+               --exclude="*.example" --exclude="ENV.txt" \
+               -E 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[A-Za-z0-9_-]{20,}' . ; then
+            echo "::error::Se ha encontrado algo que parece un JWT de Supabase commiteado."
+            exit 1
+          fi
+          # `service_role` nunca debe aparecer junto a un valor.
+          if grep -rIn --exclude-dir=.git --exclude-dir=node_modules \
+               --exclude="*.example" \
+               -E 'SUPABASE_SERVICE_ROLE_KEY\s*=\s*[A-Za-z0-9._-]{20,}' . ; then
+            echo "::error::Parece haber una service-role key con valor real en el repositorio."
+            exit 1
+          fi
+          echo "Sin secretos aparentes."
