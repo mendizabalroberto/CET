@@ -55,11 +55,13 @@ export { Avatar, type AvatarProps, type AvatarSize } from "./primitives/Avatar.j
 /* --- leccion --- */
 export {
   LessonBlock,
-  isRenderableBlockKind,
   type LessonBlockProps,
   type LessonBlockContent,
   type LessonTableRow,
 } from "./learning/LessonBlock.js";
+// Sale de un modulo SIN "use client" a proposito: lo llama el mapeo de bloques,
+// que corre en el servidor. Ver la cabecera de `learning/block-kind.ts`.
+export { isRenderableBlockKind, RENDERABLE_BLOCK_KINDS } from "./learning/block-kind.js";
 export { RuleBox, type RuleBoxProps } from "./learning/RuleBox.js";
 export { ExampleBox, type ExampleBoxProps } from "./learning/ExampleBox.js";
 export { TipBox, type TipBoxProps } from "./learning/TipBox.js";

@@ -22,6 +22,13 @@
  * cuando un bloque no es renderizable, en vez de dejar un hueco en blanco en
  * mitad de una lección.
  */
+// ESTE FICHERO CORRE EN EL SERVIDOR. De `@cet/ui` solo puede importar valores
+// que vivan en módulos SIN `"use client"`: los de un módulo cliente no son
+// funciones, son referencias, y llamarlas lanza en producción. Aquí ocurrió:
+// `isRenderableBlockKind` salía de `LessonBlock.tsx` y cada carga de lección
+// reventaba ("Attempted to call isRenderableBlockKind() from the server").
+// Ahora sale de `learning/block-kind.ts`, y `lib/rsc-boundary.test.ts` vigila
+// que nadie vuelva a cruzar la frontera.
 import {
   isRenderableBlockKind,
   sanitizeHtml,

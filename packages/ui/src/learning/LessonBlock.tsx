@@ -11,7 +11,7 @@
  */
 
 import type { ReactNode } from "react";
-import type { BlockKind, I18nText } from "@cet/shared";
+import type { I18nText } from "@cet/shared";
 import { cn } from "../lib/cn.js";
 import { useI18n } from "../lib/i18n.js";
 import { parseSafeHtml } from "../lib/html-to-react.js";
@@ -211,22 +211,11 @@ export function LessonBlock({ content, className }: LessonBlockProps): ReactNode
 }
 
 /**
- * Traduce un `BlockKind` del enum de la base de datos al `kind` que entiende
- * este componente. Existe para que la aplicacion falle de forma explicita si la
- * DB devuelve un bloque cuyo contenido no encaja con su tipo.
+ * `isRenderableBlockKind` VIVIA AQUI y no puede volver.
+ *
+ * Este fichero es `"use client"`. Lo que se exporta desde un modulo con esa
+ * directiva no es una funcion para el servidor, es una referencia de cliente:
+ * el mapeo de bloques —que corre en el servidor a proposito— reventaba con
+ * "Attempted to call isRenderableBlockKind() from the server". Ahora vive en
+ * `./block-kind.ts`, sin directiva, y lo importan los dos lados.
  */
-export function isRenderableBlockKind(kind: string): kind is BlockKind {
-  return (
-    kind === "rule" ||
-    kind === "example" ||
-    kind === "tip" ||
-    kind === "warning" ||
-    kind === "steps" ||
-    kind === "table" ||
-    kind === "text" ||
-    kind === "image" ||
-    kind === "video" ||
-    kind === "interactive" ||
-    kind === "formula"
-  );
-}
