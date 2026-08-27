@@ -49,13 +49,33 @@ export function TelemetryProvider({ children }: { children: ReactNode }) {
   return <TelemetryContext.Provider value={value}>{children}</TelemetryContext.Provider>;
 }
 
+/** Mensaje único: lo comparte el `throw` de desarrollo y el aviso de producción. */
+const SIN_PROVIDER =
+  "useTelemetry() se ha llamado fuera de <TelemetryProvider>. " +
+  "Los eventos de este componente NO se registran: monta el provider por encima " +
+  "(hoy vive en el layout de alumno) o deja de emitir telemetría aquí.";
+
 /**
- * Devuelve `track`. Si no hay provider, devuelve una función vacía en lugar de
- * lanzar: perder un evento de analítica nunca debe romper una lección a mitad
- * de un examen. Es la decisión contraria a la de `useI18n()`, donde faltar el
- * provider se vería en pantalla.
+ * Devuelve `track`. **Sin provider, hace ruido.**
+ *
+ * Antes devolvía `{ track: () => {} }` en silencio, "porque perder un evento de
+ * analítica nunca debe romper una lección". El razonamiento suena bien y costó
+ * medio día: un consumidor montado fuera del provider se traga todos sus
+ * eventos y no hay forma de notarlo — ni en la pantalla, ni en la consola, ni
+ * en la base de datos. Es la regla R4 del proyecto: *ausente no es denegado, y
+ * silencioso es peor que ruidoso*.
+ *
+ * El compromiso: en DESARROLLO lanza, para que el desajuste se arregle antes de
+ * salir de la máquina de quien lo introdujo. En PRODUCCIÓN avisa por consola y
+ * degrada a no-op, porque a un niño en mitad de un examen no se le tira la
+ * pantalla por una métrica. Ruidoso en los dos lados; mortal solo en uno.
  */
 export function useTelemetry(): TelemetryContextValue {
   const ctx = useContext(TelemetryContext);
-  return ctx ?? { track: () => {}, sessionId: "", flush: () => {} };
+  if (ctx) return ctx;
+
+  if (process.env.NODE_ENV !== "production") throw new Error(SIN_PROVIDER);
+
+  console.error(`[telemetry] ${SIN_PROVIDER}`);
+  return { track: () => {}, sessionId: "", flush: () => {} };
 }

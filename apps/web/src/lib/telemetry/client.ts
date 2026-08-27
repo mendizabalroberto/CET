@@ -62,6 +62,8 @@ export class TelemetryQueue {
   private consecutiveFailures = 0;
   private sending = false;
   private disposed = false;
+  /** Evita treinta avisos idénticos al cerrar la pestaña. Se rearma en `start()`. */
+  private warnedAfterDispose = false;
 
   constructor(sessionId: string = newSessionId()) {
     this.sessionId = sessionId;
@@ -76,9 +78,24 @@ export class TelemetryQueue {
     return this.queue.length;
   }
 
+  /**
+   * Arranca (o REARRANCA) la cola.
+   *
+   * `start()` levanta el flag de `dispose()` a propósito. Antes no lo hacía y
+   * `disposed` era una puerta de un solo sentido: bastaba un ciclo
+   * montar → desmontar → montar del provider —que es lo que hace React en
+   * `StrictMode`, en CADA carga de desarrollo— para que la cola quedara muerta
+   * para siempre. `track()` seguía aceptando llamadas y devolviéndolas al vacío
+   * sin una sola señal. Medido: cero peticiones en toda la sesión.
+   *
+   * Una cola que se puede parar y no se puede volver a arrancar no es una cola:
+   * es una trampa.
+   */
   start(): void {
-    if (typeof window === "undefined" || this.timer || this.disposed) return;
+    if (typeof window === "undefined" || this.timer) return;
 
+    this.disposed = false;
+    this.warnedAfterDispose = false;
     this.timer = setInterval(() => void this.flush(), FLUSH_INTERVAL_MS);
 
     // `visibilitychange` es el único evento fiable en móvil: `beforeunload` y
@@ -109,7 +126,21 @@ export class TelemetryQueue {
   };
 
   track(input: TrackInput): void {
-    if (this.disposed) return;
+    if (this.disposed) {
+      // Se descarta —la cola está desmontada y nadie la va a vaciar— pero NO en
+      // silencio. Un evento de aprendizaje que se pierde sin dejar rastro es
+      // justo el fallo que costó un día entero de diagnóstico. Una vez por
+      // ciclo de vida: en un cierre de pestaña pueden llegar varios seguidos y
+      // treinta líneas iguales no informan más que una.
+      if (!this.warnedAfterDispose) {
+        this.warnedAfterDispose = true;
+        console.error(
+          `[telemetry] evento '${input.eventType}' descartado: la cola está desmontada. ` +
+            "Si esto ocurre fuera del cierre de la página, hay eventos perdiéndose.",
+        );
+      }
+      return;
+    }
 
     const event: ClientEvent = {
       ...input,
