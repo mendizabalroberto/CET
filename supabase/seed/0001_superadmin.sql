@@ -72,3 +72,56 @@ begin
   raise notice 'Superadmin Roberto Mendizabal listo (profile %).', v_user_id;
 end;
 $$;
+
+
+-- =============================================================================
+-- REPARACIÓN DE CUENTAS CREADAS CON `INSERT` DIRECTO EN `auth.users`
+-- =============================================================================
+-- La cabecera de este fichero ya advertía de que un INSERT manual en auth.users
+-- "funciona hoy y produce un usuario que no puede iniciar sesión mañana", y
+-- nombraba `confirmation_token`. La advertencia era exacta.
+--
+-- GoTrue está escrito en Go y lee esas columnas como `string`, no como puntero.
+-- Un NULL no equivale a cadena vacía: rompe el escaneo de la fila con
+--
+--     error finding user: Scan error on column index 3, name
+--     "confirmation_token": converting NULL to string is unsupported
+--
+-- y el endpoint de login devuelve un 500. En la pantalla eso se lee como
+-- "credenciales incorrectas", que es exactamente el diagnóstico equivocado: la
+-- contraseña está bien, GoTrue ni siquiera puede leer al usuario.
+--
+-- Además, sin fila en `auth.identities` el proveedor `email` no existe para esa
+-- cuenta y el login con contraseña no llega a intentarse.
+--
+-- LO CORRECTO es crear los usuarios con la Admin API (`auth.admin.createUser`),
+-- que rellena ambas cosas. Este bloque es la red para las cuentas que ya se
+-- crearon a mano. Es idempotente.
+-- =============================================================================
+
+update auth.users
+   set confirmation_token         = coalesce(confirmation_token, ''),
+       recovery_token             = coalesce(recovery_token, ''),
+       email_change_token_new     = coalesce(email_change_token_new, ''),
+       email_change               = coalesce(email_change, ''),
+       email_change_token_current = coalesce(email_change_token_current, ''),
+       phone_change               = coalesce(phone_change, ''),
+       phone_change_token         = coalesce(phone_change_token, ''),
+       reauthentication_token     = coalesce(reauthentication_token, '')
+ where confirmation_token is null
+    or recovery_token is null
+    or email_change_token_new is null
+    or email_change is null;
+
+insert into auth.identities (
+  id, provider_id, user_id, identity_data, provider,
+  last_sign_in_at, created_at, updated_at
+)
+select extensions.gen_random_uuid(), u.id::text, u.id,
+       jsonb_build_object('sub', u.id::text, 'email', u.email,
+                          'email_verified', true, 'phone_verified', false),
+       'email', now(), now(), now()
+from auth.users u
+where not exists (
+  select 1 from auth.identities i where i.user_id = u.id and i.provider = 'email'
+);
