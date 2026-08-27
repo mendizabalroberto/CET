@@ -12,7 +12,7 @@
 -- de examen. Es el caso que la RLS de tenant NO cubre.
 -- =============================================================================
 begin;
-select plan(21);
+select plan(24);
 
 \ir helpers/fixture.psql
 
@@ -143,13 +143,16 @@ select is(pg_temp.errcode_of(
   '42501',
   's1a no puede cambiarse su propio estado de cuenta (el guard NO es decorativo)');
 
--- El mismo fallo vivía en students_guard_update: bajarse el contador anula el
--- lockout por fuerza bruta contra el PIN.
-select is(pg_temp.errcode_of(
+-- El mismo fallo vivía en students_guard_update. Al ALUMNO, sin embargo, lo para
+-- una capa anterior: no tiene privilegio sobre `students` y la RLS no le deja
+-- ninguna fila. Se comprueba con `affected()` y no con `errcode_of()` porque la
+-- distinción importa —0 filas es "la RLS filtró", -1 sería "no hay GRANT"— y
+-- porque afirmar un 42501 aquí sería atribuirle el mérito al trigger, que en
+-- este camino ni siquiera llega a ejecutarse.
+select is(pg_temp.affected(
   $$update public.students set failed_pin_attempts = 0, locked_until = null
      where profile_id = 'aaaaaaaa-0000-4000-8000-00000000003a'$$),
-  '42501',
-  's1a no se desbloquea solo bajando failed_pin_attempts');
+  0, 's1a no se desbloquea solo: la RLS no le da ni una fila de students');
 
 -- Y en app.audit(), donde la condición va al revés: authenticated tiene EXECUTE,
 -- así que con el guard inerte cualquier alumno escribía en el audit_log. Un log
@@ -158,6 +161,40 @@ select is(pg_temp.errcode_of(
   $$select app.audit('exam.tampered', 'exam_attempts', null, null, '{"nota":10}'::jsonb)$$),
   '42501',
   's1a no puede escribir entradas en el audit_log');
+
+
+-- =============================================================================
+-- Simetría
+-- =============================================================================
+-- =============================================================================
+-- students_guard_update, ejercido por quien SÍ llega hasta él
+-- =============================================================================
+-- Al alumno lo para la RLS antes del trigger, así que probarlo con él no dice
+-- nada del guard. El school_admin sí tiene UPDATE sobre las fichas de su
+-- colegio: es su camino el que el trigger tiene que cortar. Con el guard inerte
+-- (antes de 0022), estas dos escrituras pasaban.
+select pg_temp.logout();
+select pg_temp.login_as('aaaaaaaa-0000-4000-8000-00000000001a');   -- admin_a
+
+select is(pg_temp.errcode_of(
+  $$update public.students
+       set pin_hash = '$argon2id$v=19$m=19456,t=2,p=1$b3RyYXNhbA$b3Ryb2hhc2g'
+     where profile_id = 'aaaaaaaa-0000-4000-8000-00000000003a'$$),
+  '42501',
+  'Ni el school_admin reescribe un pin_hash: solo lo escribe la Edge Function');
+
+select is(pg_temp.errcode_of(
+  $$update public.students set failed_pin_attempts = failed_pin_attempts + 5
+     where profile_id = 'aaaaaaaa-0000-4000-8000-00000000003a'$$),
+  '42501',
+  'Ni el school_admin sube el contador de intentos fallidos a mano');
+
+-- Bajarlo SÍ puede: es exactamente lo que hace "Desbloquear" en el panel.
+select is(pg_temp.errcode_of(
+  $$update public.students set failed_pin_attempts = 0, locked_until = null
+     where profile_id = 'aaaaaaaa-0000-4000-8000-00000000003a'$$),
+  null,
+  'El school_admin SÍ desbloquea a su alumno: el guard corta, no tapia');
 
 
 -- =============================================================================
