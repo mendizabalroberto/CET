@@ -466,3 +466,117 @@ mover primero las filas del default.
   obligatorias, coherencia de anchuras). La validación fina (longitudes, allowlist
   de HTML) la hace Zod en `@cet/shared`. Si se quiere JSON Schema en la DB hay que
   añadir `pg_jsonschema`. → decisión tuya.
+
+---
+
+# PASADA 4 — la primera ejecución real de pgTAP (2026-08-27)
+
+> Las 6 suites de `supabase/tests/` **nunca se habían ejecutado**. El plan de
+> verificación lo señalaba como el mayor hueco de cobertura del proyecto y tenía
+> razón: al ejecutarlas por fin salieron dos fallos que llevaban meses en el
+> esquema, uno de ellos explotable en producción.
+>
+> Estado: **178 tests · `Result: PASS`** (`DB #7`, commit `5275ea4`).
+
+## Por qué no se ejecutaban
+
+`db.yml` moría en la primera migración y los pasos de RLS y pgTAP ni se
+alcanzaban. Un job registrado, en rojo, que nadie miraba: la sensación de estar
+cubierto sin estarlo. Faltaban tres cosas que Supabase da hechas y un
+`postgres:17` desnudo no: el esquema `extensions`, los roles `anon` /
+`authenticated` / `service_role`, y el esquema `auth` con `users` y `uid()`.
+
+Detalle que conviene recordar: el paso de CI creaba `pgcrypto` y `citext` sin
+esquema, o sea en `public`, y **parecía funcionar**. `create extension if not
+exists ... with schema extensions` NO mueve una extensión que ya existe, ni
+avisa: dice "skipping". La tercera, `pg_trgm`, fue la primera que no existía
+todavía y destapó todo.
+
+## Hallazgo A — CRÍTICO · los cuatro guards eran inertes (0022)
+
+Cuatro funciones `security definer` decidían con `current_user <> 'authenticated'`.
+Dentro de una `SECURITY DEFINER`, `current_user` es el **propietario**. Medido
+contra producción:
+
+```
+DEFINER  -> current_user=postgres        role=authenticated
+INVOKER  -> current_user=authenticated   role=authenticated
+```
+
+Vale siempre `postgres`, la condición se cumple siempre, y los cuatro guards
+salían por la primera línea sin comprobar nada. Reproducido con el JWT de un
+alumno real (dentro de un bloque que termina lanzando excepción, así que se
+revirtió):
+
+```
+update public.profiles set status = 'suspended' where id = <el mismo>;
+-> 1 fila. Sin error.
+```
+
+| Guard | Lo que no impedía |
+|---|---|
+| `profiles_guard_escalation` | cambiarse rol, colegio o estado |
+| `students_guard_update` | reescribir `pin_hash`, anular el lockout del PIN |
+| `exam_attempts_guard_update` | reescribir `seed` y `blueprint_snapshot` |
+| `audit` | que un no-staff escribiera en el `audit_log` |
+
+Lo único que frenaba la escalada a superadmin era, por casualidad, la constraint
+`profiles_staff_needs_email`. Un profesor —que sí tiene email— habría pasado.
+
+**Cómo llegó ahí:** el comentario del propio trigger presume del cambio. Se
+comprobaba con `auth.uid() is null` y se pasó a `current_user` "corregido en la
+pasada 2" para tapar el caso del JWT sin claim `sub`. La corrección era razonable
+en intención y desactivó la defensa entera. Es exactamente el patrón que ya
+nombra el resumen de arriba: **código que parecía proteger y no protegía**.
+
+**Corregido:** la regla vive en `app.is_app_user()`, que lee el GUC `role` — lo
+que PostgREST fija con `SET LOCAL ROLE` y lo único que sobrevive intacto dentro
+de un `SECURITY DEFINER`. Se descartó `session_user`: bajo PostgREST vale
+`authenticator`, no `authenticated`.
+
+Verificado contra producción tras aplicar: `status=42501 rol=42501 colegio=42501
+audit=42501`.
+
+## Hallazgo B — ALTO · una CHECK con un regex que no compila (0021)
+
+`media_assets_storage_path_shape` pedía `{0,511}`. El motor de regex de Postgres
+limita las repeticiones de un bound a **255**:
+
+```
+select 'alfa/shape.png' ~ '^[A-Za-z0-9][A-Za-z0-9/._-]{0,511}$';
+ERROR: 2201B: invalid regular expression: invalid repetition count(s)
+```
+
+`ADD CHECK` no compila el patrón si la tabla está vacía, y `media_assets` tiene 0
+filas: la constraint llevaba meses con aspecto correcto y habría estallado en el
+primer insert de contenido con imágenes — como error de expresión regular, que
+manda a depurar el sitio equivocado.
+
+## Hallazgo C — deriva de esquema (0020)
+
+`app.sync_role_claims()` y su trigger existían en producción pero en ninguna
+migración. Quien reconstruyera la base desde `supabase/migrations/` obtendría un
+sistema donde ningún JWT lleva `cet_role` y la matriz de roles del middleware
+queda inerte sin que nada falle.
+
+## Tres invariantes nuevos, que es lo que de verdad queda
+
+Los tests concretos cubren estos tres casos. Los invariantes cubren la familia:
+
+- ninguna CHECK de `public`/`app` usa un bound de regex por encima de 255
+- ninguna función `security definer` decide con `current_user`
+- (ya existían) ninguna tabla sin RLS, ninguna `security definer` sin `search_path`
+
+## Riesgos aceptados / abiertos
+
+- **El audit del superadmin es invisible.** `app.audit()` escribe
+  `school_id = app.current_school_id()`, que para un superadmin es NULL, y el
+  visor filtra por `school_id`. Sus acciones sobre datos de un colegio quedan
+  registradas pero **no aparecen en el log de ese colegio**. Sin corregir.
+- **Los seeds no se ejecutan en CI**, a propósito: atan filas de `public` a
+  cuentas que ya existen en GoTrue. Se verifican contra un proyecto con Auth de
+  verdad, no aquí.
+- **`window.confirm` en el panel.** "Regenerar PIN" y "Desbloquear" son las dos
+  acciones destructivas del panel y ningún e2e puede cubrirlas: el diálogo nativo
+  bloquea toda automatización.
+- **Leaked password protection desactivada** en Supabase Auth (WARN del linter).
