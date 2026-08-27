@@ -80,6 +80,18 @@ export const learnEs: LearnDictionary = {
     liveQuestion: "Pregunta {ord}.",
     unknownTopicTitle: "No conocemos ese tema",
     unknownTopicBody: "Elige uno de la lista y empezamos enseguida.",
+    /* --- progreso persistente por grupo (viene de learning_events) --- */
+    progressLegend: "Cómo llevas cada tema",
+    nextStepTitle: "Tu siguiente paso",
+    nextStepEvidenceOne: "1 pregunta más y te digo cómo lo llevas.",
+    nextStepEvidence: "{count} preguntas más y te digo cómo lo llevas.",
+    nextStepToLevelOne: "1 acierto más y subes a {level}.",
+    nextStepToLevel: "{count} aciertos y subes a {level}.",
+    nextStepMastered: "Dominado. Pásate de vez en cuando para que siga así.",
+    notPractisedYet: "Sin practicar todavía",
+    answeredCountOne: "1 pregunta respondida",
+    answeredCount: "{count} preguntas respondidas",
+    progressUnavailable: "Ahora mismo no podemos enseñarte tu progreso. No has perdido nada.",
     topics: {
       simplify: "Simplificar",
       compare: "Comparar",

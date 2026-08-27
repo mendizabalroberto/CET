@@ -24,6 +24,13 @@ import type { I18nText } from "@cet/shared";
 import { createClient } from "@/lib/supabase/server";
 
 import { mapLessonBlocks, readI18nText, type LessonBlockRow, type MappedLessonBlock } from "./block-mapping";
+import {
+  LOOKBACK_DAYS,
+  MAX_EVENT_ROWS,
+  readAnsweredEvents,
+  summarisePracticeEvents,
+  type TopicProgress,
+} from "./practice-progress";
 
 /** Bucket de Supabase Storage donde vive la media de lección. */
 const MEDIA_BUCKET = "lesson-media";
@@ -69,8 +76,6 @@ export interface CourseSummary {
   readonly subject: I18nText | null;
   readonly modules: readonly ModuleSummary[];
   readonly lessonCount: number;
-  /** Media de `skill_mastery` del curso, 0..1. `null` si aún no ha practicado. */
-  readonly mastery: number | null;
 }
 
 export interface LessonDetail {
@@ -98,10 +103,7 @@ export interface LessonDetail {
  * lecciones es peor que no aparecer. Cinco `in (...)` sobre índices existentes
  * no son un N+1: son cinco viajes, pase lo que pase con el tamaño del catálogo.
  */
-export async function getStudentCourses(
-  schoolId: string,
-  studentId: string,
-): Promise<CourseSummary[] | null> {
+export async function getStudentCourses(schoolId: string): Promise<CourseSummary[] | null> {
   const supabase = await createClient();
   const scope = globalOrOwn(schoolId);
 
@@ -116,7 +118,16 @@ export async function getStudentCourses(
   const courseIds = (activations ?? []).map((row) => row.course_id as string);
   if (courseIds.length === 0) return [];
 
-  const [{ data: courses, error: courseError }, { data: modules }, { data: mastery }] =
+  // NO se consulta `skill_mastery`. Aquí había una tercera consulta que
+  // alimentaba un `MasteryMeter` en `/learn`, y estaba muerta: la tabla tiene
+  // CERO filas en producción porque nadie la escribe (ni función, ni trigger,
+  // ni política de insert, ni la RPC `app.recompute_skill_mastery` que promete
+  // `modules/analytics/CLAUDE.md`). El indicador llevaba desde siempre pintando
+  // vacío, y era imposible distinguir "este alumno no ha practicado" de "esta
+  // tabla no la rellena nadie". El progreso real del alumno sale de
+  // `getPracticeProgress()`, más abajo. Ver
+  // `apps/web/src/components/learn/progreso-tiene-fuente-viva.test.ts`.
+  const [{ data: courses, error: courseError }, { data: modules }] =
     await Promise.all([
       supabase
         .from("courses")
@@ -130,11 +141,6 @@ export async function getStudentCourses(
         .in("course_id", courseIds)
         .or(scope)
         .order("ord", { ascending: true }),
-      supabase
-        .from("skill_mastery")
-        .select("skill_id, mastery")
-        .eq("student_id", studentId)
-        .eq("school_id", schoolId),
     ]);
 
   if (courseError) return null;
@@ -151,7 +157,7 @@ export async function getStudentCourses(
     ...new Set(courseRows.map((row) => row.subject_id as string).filter(Boolean)),
   ];
 
-  const [{ data: lessons }, { data: subjects }, { data: skills }] = await Promise.all([
+  const [{ data: lessons }, { data: subjects }] = await Promise.all([
     moduleIds.length === 0
       ? Promise.resolve({ data: [] as Record<string, unknown>[] })
       : supabase
@@ -164,7 +170,6 @@ export async function getStudentCourses(
     subjectIds.length === 0
       ? Promise.resolve({ data: [] as Record<string, unknown>[] })
       : supabase.from("subjects").select("id, name").in("id", subjectIds).or(scope),
-    supabase.from("skills").select("id, course_id").in("course_id", visibleCourseIds).or(scope),
   ]);
 
   const subjectById = new Map<string, I18nText | null>(
@@ -184,21 +189,6 @@ export async function getStudentCourses(
       estimatedMinutes: row.estimated_minutes === null ? null : Number(row.estimated_minutes),
     });
     lessonsByModule.set(moduleId, list);
-  }
-
-  // Mastery media por curso. Solo cuentan las skills con datos: promediar
-  // incluyendo las que nunca se han practicado daría 4 % a un alumno que domina
-  // las tres cosas que ha visto, y eso desanima sin motivo.
-  const masteryBySkill = new Map<string, number>(
-    (mastery ?? []).map((row) => [row.skill_id as string, Number(row.mastery)]),
-  );
-  const masteryByCourse = new Map<string, { sum: number; count: number }>();
-  for (const row of skills ?? []) {
-    const value = masteryBySkill.get(row.id as string);
-    if (value === undefined) continue;
-    const courseId = row.course_id as string;
-    const acc = masteryByCourse.get(courseId) ?? { sum: 0, count: 0 };
-    masteryByCourse.set(courseId, { sum: acc.sum + value, count: acc.count + 1 });
   }
 
   const modulesByCourse = new Map<string, ModuleSummary[]>();
@@ -223,7 +213,6 @@ export async function getStudentCourses(
       if (title === null) return null;
       const id = row.id as string;
       const courseModules = modulesByCourse.get(id) ?? [];
-      const acc = masteryByCourse.get(id);
       return {
         id,
         title,
@@ -231,11 +220,59 @@ export async function getStudentCourses(
         subject: subjectById.get(row.subject_id as string) ?? null,
         modules: courseModules,
         lessonCount: courseModules.reduce((total, module) => total + module.lessons.length, 0),
-        mastery: acc && acc.count > 0 ? acc.sum / acc.count : null,
       };
     })
     .filter((course): course is CourseSummary => course !== null)
     .sort((a, b) => a.yearLevel - b.yearLevel);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Progreso por grupo de práctica                                             */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Cómo lleva el alumno cada grupo de práctica, a partir de sus propias
+ * respuestas registradas en `learning_events`.
+ *
+ * Por qué se agrega EN JAVASCRIPT y no con un `group by` en SQL: PostgREST no
+ * expone agregación sobre `jsonb` sin una vista o una RPC, y ninguna de las dos
+ * existe hoy. La consulta está acotada por los dos lados —`LOOKBACK_DAYS` poda
+ * particiones (`learning_events` está particionada por mes en `server_ts`) y
+ * `MAX_EVENT_ROWS` corta el tamaño— y se apoya en el índice
+ * `learning_events_student_ts_idx (student_id, server_ts desc)`, que ya existe.
+ * Con eso el coste es constante por carga de pantalla, no proporcional al
+ * histórico del alumno.
+ *
+ * Devuelve `null` si la consulta falla. La pantalla entonces NO pinta ningún
+ * indicador: prefiere no decir nada a decir cero, porque "cero" es un dato y una
+ * consulta caída no lo es. Ver `practice-progress.ts`.
+ */
+export async function getPracticeProgress(
+  schoolId: string,
+  studentId: string,
+): Promise<Map<string, TopicProgress> | null> {
+  if (!UUID_RE.test(schoolId) || !UUID_RE.test(studentId)) return null;
+
+  const since = new Date(Date.now() - LOOKBACK_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("learning_events")
+    .select("payload")
+    // La RLS ya limita a `student_id = auth.uid()`; el filtro explícito por
+    // colegio es la regla transversal 2 de `MODULES.md`.
+    .eq("student_id", studentId)
+    .eq("school_id", schoolId)
+    .eq("event_type", "practice_item_answered")
+    .gte("server_ts", since)
+    // El orden es parte del contrato de `summarisePracticeEvents`: la ventana
+    // reciente son las primeras filas de cada grupo.
+    .order("server_ts", { ascending: false })
+    .limit(MAX_EVENT_ROWS);
+
+  if (error) return null;
+
+  return summarisePracticeEvents(readAnsweredEvents(data ?? []));
 }
 
 /* -------------------------------------------------------------------------- */

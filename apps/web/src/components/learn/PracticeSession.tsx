@@ -37,6 +37,7 @@ import {
   HintPanel,
   IncorrectFeedback,
   LiveRegion,
+  MasteryLadder,
   MathStem,
   NumericInput,
   ProgressBar,
@@ -45,6 +46,7 @@ import {
   SolutionPanel,
   StatTile,
   StreakMeter,
+  type MasteryLevel,
 } from "@cet/ui";
 
 import { useTelemetry } from "@/lib/telemetry/provider";
@@ -112,9 +114,22 @@ function writeTally(tally: PracticeTally): void {
 export interface PracticeSessionProps {
   readonly topicId: string;
   readonly locale: Locale;
+  /**
+   * Nivel persistente de cada grupo, por `engineKey`, tal y como lo derivó el
+   * servidor de `learning_events`. Lo carga la página; esta isla es cliente y no
+   * puede consultar la base de datos con la RLS del alumno.
+   *
+   * `null` significa "no lo sabemos" (la consulta falló, o quien monta el
+   * componente no lo pasa: los tests, por ejemplo). Un grupo ausente del mapa, o
+   * presente con `null`, NO pinta escalera. Deliberadamente no hay un valor por
+   * defecto que dibuje algo: un indicador que aparece sin datos detrás es la
+   * barra decorativa que persigue
+   * `packages/ui/__tests__/progreso-viene-de-datos.test.tsx`.
+   */
+  readonly levels?: Readonly<Record<string, MasteryLevel | null>> | null | undefined;
 }
 
-export function PracticeSession({ topicId, locale }: PracticeSessionProps) {
+export function PracticeSession({ topicId, locale, levels }: PracticeSessionProps) {
   const dictionary = getLearnDictionary(locale);
   const t = dictionary.practice;
   const { track } = useTelemetry();
@@ -338,7 +353,7 @@ export function PracticeSession({ topicId, locale }: PracticeSessionProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <TopicChips topics={topics} activeId={topic.id} locale={locale} />
+      <TopicChips topics={topics} activeId={topic.id} locale={locale} levels={levels} />
 
       {offline ? (
         <p role="status" className="rounded-lg border border-line bg-card px-4 py-3 text-sm text-muted">
@@ -502,10 +517,12 @@ function TopicChips({
   topics,
   activeId,
   locale,
+  levels,
 }: {
   readonly topics: readonly PracticeTopic[];
   readonly activeId: string | null;
   readonly locale: Locale;
+  readonly levels?: Readonly<Record<string, MasteryLevel | null>> | null | undefined;
 }) {
   const dictionary = getLearnDictionary(locale);
   return (
@@ -527,6 +544,20 @@ function TopicChips({
                 ].join(" ")}
               >
                 {dictionary.practice.topics[topic.slug]}
+                {/* La escalera va DENTRO del chip, a la derecha del rotulo: son
+                    diez chips en una fila que hace wrap, y en movil no hay sitio
+                    para una segunda linea por chip. Cuesta 25 px de ancho y cero
+                    de alto (el chip ya es min-h-11, el objetivo tactil no se
+                    toca), y al ser cuatro peldanos discretos se compara de un
+                    vistazo entre chips de rotulo largo y corto — cosa que una
+                    barra proporcional no permite, porque cada chip mide lo que
+                    mide su texto. Sin nivel no se pinta: ver MasteryLadder. */}
+                <MasteryLadder
+                  level={levels?.[topic.id] ?? null}
+                  groupLabel={learnI18n((d) => d.practice.topics[topic.slug])}
+                  size="sm"
+                  className="ms-2"
+                />
               </Link>
             </li>
           );

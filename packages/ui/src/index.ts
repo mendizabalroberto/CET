@@ -107,7 +107,21 @@ export { StreakMeter, type StreakMeterProps } from "./feedback/StreakMeter.js";
 /* --- datos --- */
 export { StatTile, type StatTileProps } from "./data/StatTile.js";
 export { ProgressBar, type ProgressBarProps } from "./data/ProgressBar.js";
-export { MasteryMeter, masteryLevel, type MasteryMeterProps, type MasteryLevel } from "./data/MasteryMeter.js";
+export { MasteryMeter, type MasteryMeterProps } from "./data/MasteryMeter.js";
+// Sale de un modulo SIN "use client" a proposito: lo llama el calculo de
+// progreso de practica, que corre en el servidor. Mismo motivo que
+// `isRenderableBlockKind`. Ver la cabecera de `data/mastery-level.ts`.
+export { masteryLevel, type MasteryLevel } from "./data/mastery-level.js";
 export { ScoreRing, type ScoreRingProps } from "./data/ScoreRing.js";
 export { EmptyState, type EmptyStateProps } from "./data/EmptyState.js";
 export { ErrorState, type ErrorStateProps, type ErrorKind } from "./data/ErrorState.js";
+
+/* --- progreso persistente (grupos de practica) --- */
+export {
+  MasteryLadder,
+  ladderSteps,
+  ladderLevelFor,
+  MASTERY_STEPS,
+  type MasteryLadderProps,
+} from "./progress/MasteryLadder.js";
+export { EffortMeter, MAX_TARGETS, type EffortMeterProps } from "./progress/EffortMeter.js";

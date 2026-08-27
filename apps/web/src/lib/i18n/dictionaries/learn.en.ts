@@ -77,6 +77,18 @@ export const learnEn = {
     liveQuestion: "Question {ord}.",
     unknownTopicTitle: "We do not know that topic",
     unknownTopicBody: "Pick one from the list and we will start straight away.",
+    /* --- progreso persistente por grupo (viene de learning_events) --- */
+    progressLegend: "How you are doing in each topic",
+    nextStepTitle: "Your next step",
+    nextStepEvidenceOne: "1 more question and I can tell you how you are doing.",
+    nextStepEvidence: "{count} more questions and I can tell you how you are doing.",
+    nextStepToLevelOne: "1 more right answer and you move up to {level}.",
+    nextStepToLevel: "{count} right answers and you move up to {level}.",
+    nextStepMastered: "Mastered. Drop by now and then so it stays that way.",
+    notPractisedYet: "Not practised yet",
+    answeredCountOne: "1 question answered",
+    answeredCount: "{count} questions answered",
+    progressUnavailable: "We cannot show your progress right now. Nothing is lost.",
     topics: {
       simplify: "Simplifying",
       compare: "Comparing",

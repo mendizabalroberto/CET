@@ -10,8 +10,12 @@ import type { I18nText } from "@cet/shared";
 import { cn } from "../lib/cn.js";
 import { useI18n } from "../lib/i18n.js";
 import { UI_STRINGS } from "../lib/strings.js";
+// Los umbrales viven en un modulo SIN "use client": los llama tambien codigo de
+// servidor, y exportarlos desde aqui los convertiria en una referencia de
+// cliente que revienta al invocarla. Ver la cabecera de `mastery-level.ts`.
+import { masteryLevel, type MasteryLevel } from "./mastery-level.js";
 
-export type MasteryLevel = "starting" | "learning" | "solid" | "mastered";
+export type { MasteryLevel };
 
 export interface MasteryMeterProps {
   /** `skill_mastery.mastery`, de 0 a 1. */
@@ -34,14 +38,6 @@ const LEVEL_STRINGS: Readonly<Record<MasteryLevel, I18nText>> = {
   solid: UI_STRINGS.masterySolid,
   mastered: UI_STRINGS.masteryMastered,
 };
-
-/** Cuatro tramos. Deliberadamente pocos: un porcentaje al 1 % no significa nada. */
-export function masteryLevel(mastery: number): MasteryLevel {
-  if (mastery >= 0.85) return "mastered";
-  if (mastery >= 0.6) return "solid";
-  if (mastery >= 0.3) return "learning";
-  return "starting";
-}
 
 /**
  * Rellenos en la variante LEGIBLE de cada color. Medido contra la pista

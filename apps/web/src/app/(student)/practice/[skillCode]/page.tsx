@@ -2,19 +2,39 @@
  * /practice/[skillCode] — el bucle rápido.
  * © 2026 Roberto Mendizabal. Todos los derechos reservados.
  *
- * El servidor solo resuelve el tema y el idioma. Todo lo demás —generar, corregir
- * y pintar— corre en el cliente (AD-5): el feedback llega por debajo de 50 ms y
- * el bucle sigue funcionando con la red caída.
+ * El servidor resuelve el tema, el idioma y —desde hoy— el progreso persistente
+ * del alumno. Todo lo demás —generar, corregir y pintar— corre en el cliente
+ * (AD-5): el feedback llega por debajo de 50 ms y el bucle sigue funcionando con
+ * la red caída.
  *
  * `[skillCode]` acepta el `skillCode` de una skill (`math.fractions.simplify`,
  * que es lo que enlaza una lección) o el `engineKey` del generador
  * (`math.simplify`, que es lo que enlaza un chip). Ver `practice-topics.ts`.
+ *
+ * ===========================================================================
+ * POR QUÉ EL PROGRESO SE CARGA AQUÍ Y NO EN LA ISLA
+ * ===========================================================================
+ * `PracticeSession` es cliente y no puede consultar la base de datos con la RLS
+ * del alumno. Cargarlo aquí tiene además una consecuencia buena: el progreso es
+ * el que había AL ENTRAR y no se mueve mientras el alumno responde. Una escalera
+ * que sube sola mientras miras la pregunta compite con la pregunta, y el
+ * marcador de la sesión (preguntas, aciertos, racha) ya cubre el "ahora mismo".
+ * El progreso persistente se actualiza al volver a entrar, que es cuando el
+ * alumno lo mira.
  */
 import Link from "next/link";
+import { EffortMeter, MasteryLadder } from "@cet/ui";
 
-import { getLearnDictionary } from "@/components/learn/dictionary";
-import { findPracticeTopic } from "@/components/learn/practice-topics";
+import { getLearnDictionary, learnI18n } from "@/components/learn/dictionary";
+import { findPracticeTopic, MIXED_TOPIC_ID } from "@/components/learn/practice-topics";
+import {
+  answeredCountText,
+  nextStepI18n,
+  nextStepTargets,
+  nextStepText,
+} from "@/components/learn/practice-progress-text";
 import { PracticeSession } from "@/components/learn/PracticeSession";
+import { getPracticeProgress } from "@/components/learn/queries";
 import { UiLocaleProvider } from "@/components/learn/UiLocaleProvider";
 import { requireStudent } from "@/lib/auth/session";
 import { resolveLocale } from "@/lib/i18n/server";
@@ -34,6 +54,9 @@ export default async function PracticeTopicPage({
   // que no existe: así el caso de URL manipulada no carga el motor entero.
   const topic = findPracticeTopic(skillCode, dictionary);
 
+  const progress = await getPracticeProgress(student.schoolId, student.id);
+  const own = topic && topic.id !== MIXED_TOPIC_ID ? progress?.get(topic.id) : undefined;
+
   return (
     <UiLocaleProvider locale={locale}>
       <div className="flex flex-col gap-6">
@@ -50,7 +73,47 @@ export default async function PracticeTopicPage({
           {topic ? <p className="text-muted">{t.topicHints[topic.slug]}</p> : null}
         </header>
 
-        <PracticeSession topicId={topic?.id ?? skillCode} locale={locale} />
+        {/* El siguiente paso, en grande y una sola vez. Repetirlo en los diez
+            chips sería ruido; aquí es lo primero que se lee al entrar al tema. */}
+        {own && topic ? (
+          <section
+            aria-labelledby="siguiente-paso"
+            className="flex flex-col gap-2 rounded-2xl border border-line bg-card p-4"
+          >
+            <h2 id="siguiente-paso" className="text-sm font-semibold uppercase tracking-wide text-muted">
+              {t.nextStepTitle}
+            </h2>
+            <MasteryLadder
+              level={own.level}
+              groupLabel={learnI18n((d) => d.practice.topics[topic.slug])}
+              size="md"
+              showLabel
+            />
+            {nextStepTargets(own.nextStep) > 0 ? (
+              <EffortMeter
+                targets={nextStepTargets(own.nextStep)}
+                message={nextStepI18n(own.nextStep)}
+              />
+            ) : (
+              <p className="text-sm font-semibold text-ink">
+                {nextStepText(own.nextStep, dictionary, locale)}
+              </p>
+            )}
+            <p className="text-xs text-muted">{answeredCountText(own.totalAnswered, dictionary)}</p>
+          </section>
+        ) : null}
+
+        <PracticeSession
+          topicId={topic?.id ?? skillCode}
+          locale={locale}
+          levels={
+            progress === null
+              ? null
+              : Object.fromEntries(
+                  [...progress].map(([key, value]) => [key, value.level] as const),
+                )
+          }
+        />
       </div>
     </UiLocaleProvider>
   );

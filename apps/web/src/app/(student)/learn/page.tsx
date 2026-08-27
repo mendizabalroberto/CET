@@ -8,12 +8,25 @@
  *
  * La RLS ya filtra por colegio; la consulta filtra ADEMÁS por `school_id`
  * (regla transversal 2 de `MODULES.md`). Ver `queries.ts`.
+ *
+ * ===========================================================================
+ * AQUÍ HABÍA UN MEDIDOR DE DOMINIO, Y NO MEDÍA NADA
+ * ===========================================================================
+ * Cada curso llevaba un `MasteryMeter` alimentado por la media de
+ * `skill_mastery`. Esa tabla tiene CERO filas en producción y ningún escritor:
+ * ni función, ni trigger, ni política de insert. El medidor llevaba desde
+ * siempre en su rama vacía, y el alumno no podía distinguir "no has practicado"
+ * de "esto no lo rellena nadie". Se ha quitado en vez de dejarlo: un indicador
+ * que no puede medir es peor que ninguno, porque enseña a no mirar los
+ * indicadores. El progreso real, por grupo de práctica y derivado de eventos que
+ * sí se escriben, está en `/practice`. Cuando exista la proyección de
+ * `skill_mastery`, este medidor puede volver — con su fuente viva.
  */
 import Link from "next/link";
 import { resolveI18n } from "@cet/shared";
-import { EmptyState, ErrorState, MasteryMeter } from "@cet/ui";
+import { EmptyState, ErrorState } from "@cet/ui";
 
-import { getLearnDictionary, learnI18n, learnI18nWith } from "@/components/learn/dictionary";
+import { getLearnDictionary, learnI18n } from "@/components/learn/dictionary";
 import { getStudentCourses } from "@/components/learn/queries";
 import { UiLocaleProvider } from "@/components/learn/UiLocaleProvider";
 import { requireStudent } from "@/lib/auth/session";
@@ -25,7 +38,7 @@ export default async function LearnPage() {
   const locale = await resolveLocale(student.locale);
   const t = getLearnDictionary(locale).index;
 
-  const courses = await getStudentCourses(student.schoolId, student.id);
+  const courses = await getStudentCourses(student.schoolId);
 
   return (
     <UiLocaleProvider locale={locale}>
@@ -69,17 +82,6 @@ export default async function LearnPage() {
                     : interpolate(t.lessonCount, { count: course.lessonCount })}
                 </p>
               </div>
-
-              {course.mastery === null ? (
-                <p className="text-sm text-muted">{t.noProgressYet}</p>
-              ) : (
-                <MasteryMeter
-                  mastery={course.mastery}
-                  skillLabel={learnI18nWith((d) => d.index.progressValue, {
-                    percent: Math.round(course.mastery * 100),
-                  })}
-                />
-              )}
 
               {course.modules.length === 0 ? (
                 <EmptyState
