@@ -122,7 +122,12 @@ jobs:
 
     env:
       NEXT_PUBLIC_SUPABASE_URL: https://clcutoqjdgeggvgyreud.supabase.co
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+      # La clave anon NO es un secreto (su poder lo acota la RLS), pero se lee
+      # de los secretos del repositorio para poder rotarla sin tocar este
+      # fichero. El relleno mantiene el job en verde en un fork, donde los
+      # secretos no estan disponibles: los specs que dependen de datos reales
+      # ya se saltan solos comprobando si el desplegable trae colegios.
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || 'ci-placeholder-anon-key' }}
       NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
 
     steps:

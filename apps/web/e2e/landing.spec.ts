@@ -46,6 +46,7 @@ test.describe("landing pública", () => {
     // `unsafe-inline` en `script-src`.
     const csp = headers["content-security-policy"];
     expect(csp).toBeTruthy();
+    if (csp === undefined) throw new Error("sin Content-Security-Policy");
     expect(csp).toContain("'nonce-");
     expect(csp).toContain("frame-ancestors 'none'");
     expect(csp).toContain("object-src 'none'");
