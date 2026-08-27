@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { StudentLoginForm } from "@/components/auth/StudentLoginForm";
+import { redirectIfSignedIn } from "@/lib/auth/session";
 import { listActiveSchools } from "@/lib/data/schools";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { ROUTES } from "@/lib/routes";
@@ -23,6 +24,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function StudentLoginPage() {
+  // Con sesión REAL detrás (no una cookie muerta) se va a su portada.
+  await redirectIfSignedIn();
+
   const { t } = await getServerDictionary();
   const schools = await listActiveSchools();
 

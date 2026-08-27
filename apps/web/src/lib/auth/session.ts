@@ -96,6 +96,26 @@ export async function getSessionState(): Promise<SessionState> {
   };
 }
 
+/**
+ * Conveniencia para las páginas de login: a quien YA tiene sesión utilizable no
+ * se le vuelve a pedir que inicie sesión.
+ *
+ * Vivió en el middleware y hubo que traerla aquí. El borde decide con
+ * `getClaims()`, que solo comprueba la firma del JWT en local: una cookie cuya
+ * sesión ya fue revocada en Auth le sigue pareciendo válida. Con eso, el atajo
+ * expulsaba del login a quien más lo necesitaba —alguien con una cookie muerta—
+ * y lo dejaba dando vueltas hasta la portada pública sin un solo mensaje.
+ *
+ * `getSessionState()` pregunta al servidor de Auth (`getUser()`) y lee
+ * `profiles`. Solo desvía cuando hay un perfil ACTIVO detrás. Ante la duda
+ * —cookie muerta, perfil suspendido, perfil inexistente— se pinta el formulario,
+ * que es lo que permite salir del atolladero.
+ */
+export async function redirectIfSignedIn(): Promise<void> {
+  const state = await getSessionState();
+  if (state.kind === "active") redirect(homeForRole(state.profile.role));
+}
+
 /** Perfil activo, o `null`. Azúcar sobre `getSessionState()`. */
 export async function getSessionProfile(): Promise<SessionProfile | null> {
   const state = await getSessionState();

@@ -83,15 +83,27 @@ export async function middleware(request: NextRequest) {
   const area = findProtectedArea(pathname);
 
   // --- 1. Ruta pública: pasa, pero con CSP ---------------------------------
+  //
+  // AQUÍ NO SE DESVÍA EL LOGIN.
+  //
+  // Existió un atajo: "si ya tienes sesión y vas al login, te mando a tu
+  // portada". Encerró al superadmin fuera de producción. El navegador guardaba
+  // una cookie cuyo token seguía siendo válido —firma correcta, sin caducar—
+  // pero cuya sesión ya no existía en Auth (`session_not_found`). `getClaims()`
+  // solo verifica la firma en local, así que el borde veía sesión donde no la
+  // había; y como ese token era anterior al claim `cet_role`, `homeForRole(null)`
+  // devolvía `/`. Cada clic en "Iniciar sesión" acababa en la portada pública.
+  // Sin error, sin pista, y sin manera de entrar.
+  //
+  // Es el fallo del paso 4 —AUSENTE NO ES DENEGADO— cometido aquí arriba: una
+  // decisión tomada a partir de un claim que no estaba.
+  //
+  // La conveniencia vive ahora en las propias páginas de login, que llaman a
+  // `getSessionState()`: consulta al servidor de Auth y a `profiles`, y sabe
+  // distinguir una sesión viva de una cookie muerta. Un poco más lenta, pero es
+  // la única capa que puede acertar. El middleware nunca deja a nadie fuera del
+  // login: es la única puerta de vuelta.
   if (!area && isPublicPath(pathname)) {
-    // Si ya tiene sesión y va al login, se le manda a su portada. No es
-    // seguridad, es no hacerle iniciar sesión dos veces.
-    if (claims?.userId && (pathname === ROUTES.login || pathname.startsWith("/login/"))) {
-      const url = request.nextUrl.clone();
-      url.pathname = homeForRole(claims.role);
-      url.search = "";
-      return applySecurity(carryCookies(response, NextResponse.redirect(url)));
-    }
     return applySecurity(response);
   }
 

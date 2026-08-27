@@ -11,6 +11,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { redirectIfSignedIn } from "@/lib/auth/session";
 import { getServerDictionary } from "@/lib/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -19,6 +20,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function LoginRolePage() {
+  // Con sesión REAL detrás (no una cookie muerta) se va a su portada.
+  await redirectIfSignedIn();
+
   const { t } = await getServerDictionary();
   const C = t.auth.chooseRole;
 
