@@ -52,7 +52,9 @@
           "selection": {
             "engineKey": "math.fracop",
             "params": {
-              "op": "+"
+              "ops": [
+                "add"
+              ]
             },
             "skillCodes": [
               "math.fractions.operations"
@@ -71,7 +73,9 @@
           "selection": {
             "engineKey": "math.fracop",
             "params": {
-              "op": "−"
+              "ops": [
+                "sub"
+              ]
             },
             "skillCodes": [
               "math.fractions.operations"
@@ -90,7 +94,9 @@
           "selection": {
             "engineKey": "math.fracop",
             "params": {
-              "op": "×"
+              "ops": [
+                "mul"
+              ]
             },
             "skillCodes": [
               "math.fractions.operations"
@@ -109,7 +115,9 @@
           "selection": {
             "engineKey": "math.fracop",
             "params": {
-              "op": "÷"
+              "ops": [
+                "div"
+              ]
             },
             "skillCodes": [
               "math.fractions.operations"
@@ -192,7 +200,7 @@
           "selection": {
             "engineKey": "math.shape",
             "params": {
-              "want": "area"
+              "target": "area"
             },
             "skillCodes": [
               "math.geometry.compound_shapes"
@@ -211,7 +219,7 @@
           "selection": {
             "engineKey": "math.shape",
             "params": {
-              "want": "perimeter"
+              "target": "perimeter"
             },
             "skillCodes": [
               "math.geometry.compound_shapes"
@@ -282,7 +290,7 @@
       "reason": "los trainers Y6A no declaran dificultad, duración estimada, umbral de aprobado ni número de intentos. El pipeline los rellena con valores por defecto uniformes (difficulty 2 en banco / 3 en generadas, estimatedMinutes 20, passThreshold 0.6, maxAttempts sin límite, pointsPerItem 1) que un profesor debe revisar antes de publicar el curso. NO son datos extraídos."
     }
   ],
-  "integrity": "2c2525767e7694b7",
+  "integrity": "c851bcdef32dd3ed",
   "modules": [
     {
       "description": {

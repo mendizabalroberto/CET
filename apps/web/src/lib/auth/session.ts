@@ -25,6 +25,16 @@ export interface SessionProfile {
   readonly fullName: string;
   readonly locale: string;
   readonly status: ProfileStatus;
+  /**
+   * El personal creado con una contrasena inicial la cambia al primer acceso.
+   *
+   * Vive en `auth.users.raw_app_meta_data` y NO en `profiles`, y eso importa:
+   * un usuario PUEDE hacer UPDATE de su propia fila de profiles (lo permite la
+   * politica `profiles_update_own`), asi que ahi se quitaria la marca solo con
+   * la consola del navegador y sin cambiar la contrasena. `app_metadata` solo
+   * lo escribe `service_role`, y ademas viaja firmado dentro del JWT.
+   */
+  readonly mustChangePassword: boolean;
 }
 
 /**
@@ -81,6 +91,7 @@ export async function getSessionState(): Promise<SessionState> {
       fullName: data.full_name as string,
       locale: (data.locale as string) ?? "en",
       status: data.status as ProfileStatus,
+      mustChangePassword: user.app_metadata?.["must_change_password"] === true,
     },
   };
 }
@@ -101,7 +112,7 @@ export async function getSessionProfile(): Promise<SessionProfile | null> {
  */
 export async function requireRole(
   allowed: readonly UserRole[],
-  opts: { onDeny?: "not-found" | "home" } = {},
+  opts: { onDeny?: "not-found" | "home"; allowPasswordChange?: boolean } = {},
 ): Promise<SessionProfile> {
   const state = await getSessionState();
   const onDeny = opts.onDeny ?? "not-found";
@@ -122,6 +133,19 @@ export async function requireRole(
   if (!allowed.includes(profile.role)) {
     if (onDeny === "not-found") notFound();
     redirect(homeForRole(profile.role));
+  }
+
+  // Contrasena inicial sin cambiar: no se le deja pasar a NINGUNA otra pantalla.
+  //
+  // El guard va aqui y no en un layout concreto a proposito: `requireRole` es el
+  // unico punto por el que entra todo el personal, asi que no hay forma de
+  // esquivarlo escribiendo otra URL. Ponerlo en el layout de `(staff)` habria
+  // dejado `/account/...` y cualquier area futura sin cubrir.
+  //
+  // `opts.allowPasswordChange` lo usa la propia pantalla de cambio, que
+  // evidentemente no puede redirigirse a si misma.
+  if (profile.mustChangePassword && opts.allowPasswordChange !== true) {
+    redirect(ROUTES.passwordChange);
   }
 
   return profile;

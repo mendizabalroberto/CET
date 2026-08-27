@@ -24,6 +24,8 @@ export const ROUTES = {
   logout: "/logout",
   /** Cambio obligatorio de PIN en el primer acceso (AD-4). */
   pinChange: "/account/pin",
+  /** Cambio obligatorio de contrasena del personal en el primer acceso. */
+  passwordChange: "/account/password",
   studentHome: "/learn",
   staffHome: "/teach",
   adminHome: "/admin",

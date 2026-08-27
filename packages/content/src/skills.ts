@@ -71,11 +71,55 @@ export const MATH_ENGINE_KEYS: Readonly<Record<string, string>> = {
 };
 
 /** Nombre del parámetro que el `MOCK_PLAN` de Math fija en cada generador. */
-export const MATH_PARAM_NAMES: Readonly<Record<string, string>> = {
-  fracop: "op",
-  shape: "want",
-  word: "template",
+/**
+ * Traduce el parametro de un slot de `MOCK_PLAN` a los PARAMETROS QUE ESPERA EL
+ * MOTOR (`@cet/engine`), que no son los del trainer original.
+ *
+ * Esto existe porque el desajuste era invisible: el trainer escribe
+ * `{k:'fracop', op:'+'}` y el generador espera `{ ops: ["add"] }`. Zod descartaba
+ * la clave desconocida en silencio, `ops` quedaba undefined y el generador
+ * sorteaba la operacion. El blueprint prometia una pregunta de cada operacion y
+ * podia salir con cuatro multiplicaciones y ninguna division.
+ *
+ * Desde que `baseParams` es `.strict()`, un parametro mal nombrado revienta al
+ * materializar el intento. Esta tabla es lo que hace que no reviente.
+ */
+const FRACOP_GLYPHS: Readonly<Record<string, string>> = {
+  "+": "add",
+  "−": "sub", // menos tipografico, que es el que usa el trainer
+  "-": "sub",
+  "×": "mul",
+  "*": "mul",
+  "÷": "div",
+  "/": "div",
 };
+
+export function mathEngineParams(
+  generatorKey: string,
+  param: string | number | undefined,
+): Record<string, unknown> | undefined {
+  if (param === undefined) return undefined;
+
+  switch (generatorKey) {
+    case "fracop": {
+      const op = FRACOP_GLYPHS[String(param)];
+      if (op === undefined) {
+        throw new Error(`MOCK_PLAN: operacion de fracop desconocida \`${String(param)}\``);
+      }
+      // El motor acepta una LISTA de operaciones permitidas, no una sola.
+      return { ops: [op] };
+    }
+    case "shape":
+      // `want` en el trainer, `target` en el motor. Los valores si coinciden.
+      return { target: String(param) };
+    case "word":
+      // El trainer sortea la plantilla en runtime y solo manda un marcador.
+      // Fijarla aqui empobreceria el examen: se deja sin parametro.
+      return undefined;
+    default:
+      throw new Error(`MOCK_PLAN: el generador \`${generatorKey}\` no admite parametros`);
+  }
+}
 
 /* -------------------------------------------------------------------------- */
 /* Science                                                                    */

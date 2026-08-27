@@ -32,11 +32,27 @@ import { sanitizeStem, sanitizeSvg } from "../sanitize.js";
  * y `paramsSchema` encaja en `z.ZodType<TParams>` del contrato. Los valores por
  * defecto se resuelven en codigo.
  */
-export const baseParams = z.object({
-  locale: localeSchema.optional(),
-  difficulty: z.number().int().min(1).max(5).optional(),
-  maxPoints: z.number().positive().max(100).optional(),
-});
+/**
+ * `.strict()` NO es un detalle: es lo que convierte un fallo silencioso en uno
+ * ruidoso.
+ *
+ * Por defecto, zod DESCARTA las claves que no conoce. El blueprint del simulacro
+ * pedia `{ op: "+" }` y este generador espera `{ ops: ["add"] }`; con el modo
+ * permisivo, `op` se tiraba a la basura, `ops` quedaba undefined y el generador
+ * sorteaba la operacion al azar. El examen decia "una pregunta de cada
+ * operacion" y podia salir con cuatro multiplicaciones y ninguna division, sin
+ * un solo error por ningun lado.
+ *
+ * Con `.strict()`, ese blueprint falla al materializar el intento y alguien se
+ * entera el primer dia en vez de al tercer trimestre.
+ */
+export const baseParams = z
+  .object({
+    locale: localeSchema.optional(),
+    difficulty: z.number().int().min(1).max(5).optional(),
+    maxPoints: z.number().positive().max(100).optional(),
+  })
+  .strict();
 export type BaseParams = z.infer<typeof baseParams>;
 
 export const DEFAULT_LOCALE_PARAM: Locale = "en";

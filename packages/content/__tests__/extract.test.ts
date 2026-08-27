@@ -240,13 +240,16 @@ describe("blueprints", () => {
         engineKeyOf: (k) => `math.${k}`,
         skillOf: (k) => `math.${k}`,
         labelOf: (k, p) => (p === undefined ? k : `${k} (${p})`),
-        paramNameOf: () => "op",
+        // Se traduce al parametro del MOTOR, no al del trainer: `op: "+"` no
+        // existe para `@cet/engine`, que espera `ops: ["add"]`.
+        paramsFor: (_k, p) =>
+          p === undefined ? undefined : { ops: [p === "+" ? "add" : "sub"] },
       },
     );
     expect(sections.map((s) => [s.title, s.itemCount, s.params])).toEqual([
       ["metric", 3, undefined],
-      ["fracop (+)", 1, { op: "+" }],
-      ["fracop (−)", 1, { op: "−" }],
+      ["fracop (+)", 1, { ops: ["add"] }],
+      ["fracop (−)", 1, { ops: ["sub"] }],
       // No se fusiona con la primera: no es consecutiva.
       ["metric", 1, undefined],
     ]);

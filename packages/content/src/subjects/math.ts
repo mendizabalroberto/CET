@@ -29,7 +29,7 @@ import { stableId } from "../ids.ts";
 import { assemblePack } from "../pack.ts";
 import { sanitizeHtml, sanitizeToText } from "../sanitize.ts";
 import type { ContentPack, Gap, Lesson, Question } from "../schema.ts";
-import { MATH_ENGINE_KEYS, MATH_PARAM_NAMES, MATH_SKILLS, skillResolver } from "../skills.ts";
+import { MATH_ENGINE_KEYS, mathEngineParams, MATH_SKILLS, skillResolver } from "../skills.ts";
 
 export const MATH_FILE = "Y6A/Math/Grade 5 Maths Exam Trainer.html";
 
@@ -185,7 +185,7 @@ export function extractMath(html: string): ContentPack {
       const base = GENERATOR_LABELS[k] ?? k;
       return param === undefined ? base : `${base} (${param})`;
     },
-    paramNameOf: (k) => MATH_PARAM_NAMES[k] ?? "variant",
+    paramsFor: mathEngineParams,
   });
 
   const blueprint = buildBlueprint({

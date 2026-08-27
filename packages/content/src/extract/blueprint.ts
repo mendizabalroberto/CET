@@ -162,7 +162,11 @@ export function sectionsFromMockPlan(
     readonly engineKeyOf: (generatorKey: string) => string;
     readonly skillOf: (generatorKey: string) => string;
     readonly labelOf: (generatorKey: string, param: string | number | undefined) => string;
-    readonly paramNameOf: (generatorKey: string) => string;
+    /** Traduce el parametro del trainer a los que espera el motor. */
+  readonly paramsFor: (
+    generatorKey: string,
+    param: string | number | undefined,
+  ) => Record<string, unknown> | undefined;
   },
 ): SectionInput[] {
   interface Slot {
@@ -188,8 +192,7 @@ export function sectionsFromMockPlan(
   const sections: SectionInput[] = [];
   for (const slot of slots) {
     const last = sections[sections.length - 1];
-    const paramName = opts.paramNameOf(slot.key);
-    const params = slot.param === undefined ? undefined : { [paramName]: slot.param };
+    const params = opts.paramsFor(slot.key, slot.param);
     const engine = opts.engineKeyOf(slot.key);
 
     if (
