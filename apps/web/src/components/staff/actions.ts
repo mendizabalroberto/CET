@@ -27,6 +27,7 @@ import { requireRole, type SessionProfile } from "@/lib/auth/session";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
+import { ANSWER_KEY_RPC, appRpc, auditStaffAction, type AuditAction } from "./audit-rpc";
 import { effectiveGrading, type GradingRow } from "./grading-chain";
 import { isUuid } from "./queries";
 
@@ -61,64 +62,30 @@ function done(successKey: string, values?: Record<string, string | number>): Sta
 }
 
 /* ========================================================================== */
-/* RPC del esquema `app`                                                      */
+/* Auditoría                                                                  */
 /* ========================================================================== */
 
 /**
- * Los helpers de seguridad viven en el esquema `app`, no en `public`. PostgREST
- * expone `public` por defecto, y si el proyecto tiene `app` en
- * `PGRST_DB_SCHEMAS` hay que pedirlo explícitamente con `.schema("app")`.
+ * Atajo local sobre `auditStaffAction`. El helper vive en `./audit-rpc` y no
+ * aquí porque este fichero lleva `"use server"`: todo lo que exporta es un
+ * endpoint HTTP, y una función que escribe en el registro forense no debe
+ * serlo.
  *
- * Se intentan las dos formas porque la configuración de PostgREST no es
- * versionable desde `supabase/migrations/` y no puede comprobarse desde aquí:
- * `apps/web/src/lib/auth/actions.ts` ya llama a `app.change_student_pin` con
- * un `.rpc()` pelado, así que las dos convenciones conviven hoy en el repo.
- * Probar las dos cuesta un round-trip solo cuando la primera falla.
- */
-async function appRpc(
-  supabase: SupabaseClient,
-  fn: string,
-  args: Record<string, unknown>,
-): Promise<{ data: unknown; error: { message: string; code?: string } | null }> {
-  const viaSchema = await supabase.schema("app").rpc(fn, args);
-  if (viaSchema.error === null) return { data: viaSchema.data, error: null };
-
-  // PGRST202 = la función no existe en el esquema expuesto. Cualquier otro
-  // error (permisos, excepción de la propia función) es REAL y se propaga: si
-  // se reintentara, un `insufficient_privilege` se convertiría en un
-  // "no existe", que es un mensaje distinto y engañoso.
-  if (viaSchema.error.code !== "PGRST202" && viaSchema.error.code !== "42883") {
-    return { data: null, error: viaSchema.error };
-  }
-
-  const viaPublic = await supabase.rpc(fn, args);
-  return { data: viaPublic.data, error: viaPublic.error };
-}
-
-/**
- * Escribe en `audit_log`. Nunca lanza: una acción que ya se ejecutó no debe
- * reportarse como fallida porque el log fallara — pero sí debe quedar
- * constancia en los logs del servidor de que la auditoría falló, porque eso es
- * un incidente.
+ * Devuelve si el registro se escribió. Antes se tragaba el error en un
+ * `console.error` y quien llamaba no tenía forma de enterarse — que es
+ * exactamente por lo que un 406 de PostgREST estuvo perdiendo TODA la auditoría
+ * del personal sin que nadie lo notara (R4: silencioso es peor que ruidoso).
  */
 async function audit(
   supabase: SupabaseClient,
-  action: string,
+  action: AuditAction,
   entityType: string,
   entityId: string | null,
   before: unknown,
   after: unknown,
-): Promise<void> {
-  const { error } = await appRpc(supabase, "audit", {
-    p_action: action,
-    p_entity_type: entityType,
-    p_entity_id: entityId,
-    p_before: before ?? null,
-    p_after: after ?? null,
-  });
-  if (error !== null) {
-    console.error(`[cet] AUDITORÍA FALLIDA action=${action} entity=${entityType}`, error.message);
-  }
+): Promise<boolean> {
+  const { ok } = await auditStaffAction(supabase, action, entityType, entityId, before, after);
+  return ok;
 }
 
 /* ========================================================================== */
@@ -175,16 +142,28 @@ export async function revealAnswerKey(
     return { ok: false, errorKey: "denied" };
   }
 
-  const { data, error } = await appRpc(supabase, "attempt_item_answer_key", {
+  const { data, error } = await appRpc(supabase, ANSWER_KEY_RPC, {
     p_item_id: attemptItemId,
   });
 
   // Se audita ANTES de devolver, y también cuando la función deniega: un
   // intento de ver una clave ajena es justo lo que un log forense debe recoger.
-  await audit(supabase, "attempt.answer_key_viewed", "attempt_items", attemptItemId, null, {
-    attempt_id: attemptId,
-    granted: error === null,
-  });
+  const registrada = await audit(
+    supabase,
+    "attempt.answer_key_viewed",
+    "attempt_items",
+    attemptItemId,
+    null,
+    { attempt_id: attemptId, granted: error === null },
+  );
+
+  // Si no se pudo registrar, NO se revela. M12 no pide "revelar y además
+  // registrar": pide que revelar la clave de respuesta quede registrado, y una
+  // revelación sin rastro no cumple eso — es justo el estado en el que este
+  // panel llevaba meses. Ante la duda, se deniega: el profesor puede reintentar.
+  if (!registrada) {
+    return { ok: false, errorKey: "failed" };
+  }
 
   if (error !== null) {
     return { ok: false, errorKey: error.code === "42501" ? "denied" : "failed" };
