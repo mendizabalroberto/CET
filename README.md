@@ -52,9 +52,33 @@ packages/
   content/           Pipeline Y6A HTML -> content packs JSON
 supabase/            Migraciones, RLS, seed, pgTAP, Edge Functions
 modules/             13 contratos de módulo (CLAUDE.md)
-Y6A/                 Material fuente original — READ-ONLY
 secrets/             Credenciales locales — ignorado por git
+Y6A/                 Material del centro — NO versionado (ver abajo)
 ```
+
+---
+
+## Material fuente
+
+El producto nace de seis «Exam Trainers» en HTML y del material docente que los
+acompaña, en una carpeta `Y6A/`. **Esa carpeta no está en el repositorio, y es
+deliberado**: es material del centro educativo, propiedad de terceros, y
+versionarlo sería redistribuir obra ajena. El `LICENSE` ya lo decía; tenerlo
+dentro lo contradecía en la práctica.
+
+Lo que sí está versionado son los **content packs** que produce el extractor
+(`packages/content/packs/*.json`): 33 lecciones, 401 bloques, 453 preguntas y 6
+blueprints, saneados y con ids deterministas. Con ellos se puede sembrar la base
+de datos y arrancar la plataforma entera sin el material original.
+
+Para volver a ejecutar la extracción hace falta el material en `Y6A/` con la
+estructura que espera `packages/content/src/subjects/*.ts`. Sin él:
+
+- `pnpm --filter @cet/content extract` falla, y lo dice.
+- Los 17 tests que leen los trainers reales **se saltan**, con el motivo escrito
+  en la salida. No fallan: un repositorio recién clonado no debe estar roto.
+- El resto sigue probándose, incluido que los packs versionados no contengan
+  nada ejecutable y que validen contra su esquema.
 
 ---
 
