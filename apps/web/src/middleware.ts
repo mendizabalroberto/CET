@@ -123,7 +123,22 @@ export async function middleware(request: NextRequest) {
   }
 
   // --- 4. Con sesión, rol insuficiente -------------------------------------
-  if (!claims.role || !area.allow.includes(claims.role)) {
+  //
+  // AUSENTE NO ES DENEGADO.
+  //
+  // Si el JWT todavía no trae `cet_role` —un token emitido antes de que el claim
+  // existiera, un hook recién configurado, una sesión vieja— eso no significa
+  // "este usuario no tiene permiso". Significa "el borde no lo sabe".
+  //
+  // Denegar ahí costó un 404 a un superadmin en su propio panel, sin ninguna
+  // pista de por qué: el 404 es deliberadamente mudo para no confirmar que la
+  // ruta existe, así que el usuario legítimo se queda sin nada que mirar.
+  //
+  // Cuando el claim falta se deja pasar y decide el LAYOUT, que consulta
+  // `profiles` con RLS y es la autoridad de verdad. El claim sirve para denegar
+  // barato en el borde a quien SÍ sabemos que no puede pasar; nunca para
+  // conceder, y nunca para denegar por ignorancia.
+  if (claims.role !== null && claims.role !== undefined && !area.allow.includes(claims.role)) {
     if (area.onDeny === "not-found") {
       const url = request.nextUrl.clone();
       url.pathname = NOT_FOUND_REWRITE;
