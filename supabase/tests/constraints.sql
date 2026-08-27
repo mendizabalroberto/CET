@@ -10,7 +10,7 @@
 -- se prueban las CONSTRAINTS, que aplican a todos los roles por igual.
 -- =============================================================================
 begin;
-select plan(47);
+select plan(48);
 
 \ir helpers/fixture.psql
 
@@ -474,6 +474,23 @@ select is(
      )),
   0,
   'NINGUNA CHECK usa un bound de regex por encima de 255: no compilaría al evaluarse');
+
+-- La trampa de 0022, cerrada para toda la familia. Dentro de una función
+-- SECURITY DEFINER, `current_user` es el PROPIETARIO, nunca quien llama. Cuatro
+-- guards se apoyaban en eso y estaban inertes: el de escalada de privilegios,
+-- el del PIN, el de la identidad forense del intento y el del audit_log. Se leen
+-- perfectamente y no hacían nada.
+--
+-- Quien necesite saber si la petición viene de la app tiene `app.is_app_user()`.
+select is(
+  (select coalesce(string_agg(p.proname, ', ' order by p.proname), '')
+   from pg_catalog.pg_proc p
+   join pg_catalog.pg_namespace n on n.oid = p.pronamespace
+   where n.nspname in ('app', 'public')
+     and p.prosecdef
+     and pg_catalog.pg_get_functiondef(p.oid) ~ '\mcurrent_user\M'),
+  '',
+  'NINGUNA función security definer decide con current_user: ahí dentro siempre es el propietario');
 
 select * from finish();
 rollback;

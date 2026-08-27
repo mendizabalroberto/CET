@@ -12,7 +12,7 @@
 -- de examen. Es el caso que la RLS de tenant NO cubre.
 -- =============================================================================
 begin;
-select plan(18);
+select plan(21);
 
 \ir helpers/fixture.psql
 
@@ -131,6 +131,33 @@ select is(pg_temp.errcode_of(
      where id = 'aaaaaaaa-0000-4000-8000-00000000003a'$$),
   '42501',
   's1a no puede mudarse al colegio Beta editando su propio perfil');
+
+-- Regresión de 0022. ESTE es el caso que se explotó de verdad contra producción:
+-- `status` no lo protege ninguna constraint, así que cuando el guard estaba
+-- inerte el UPDATE pasaba limpio — 1 fila, sin error. Un alumno podía marcarse
+-- `suspended`; y con la misma llave, `active` cualquiera a quien hubieran
+-- suspendido.
+select is(pg_temp.errcode_of(
+  $$update public.profiles set status = 'suspended'
+     where id = 'aaaaaaaa-0000-4000-8000-00000000003a'$$),
+  '42501',
+  's1a no puede cambiarse su propio estado de cuenta (el guard NO es decorativo)');
+
+-- El mismo fallo vivía en students_guard_update: bajarse el contador anula el
+-- lockout por fuerza bruta contra el PIN.
+select is(pg_temp.errcode_of(
+  $$update public.students set failed_pin_attempts = 0, locked_until = null
+     where profile_id = 'aaaaaaaa-0000-4000-8000-00000000003a'$$),
+  '42501',
+  's1a no se desbloquea solo bajando failed_pin_attempts');
+
+-- Y en app.audit(), donde la condición va al revés: authenticated tiene EXECUTE,
+-- así que con el guard inerte cualquier alumno escribía en el audit_log. Un log
+-- en el que cualquiera puede escribir no prueba nada.
+select is(pg_temp.errcode_of(
+  $$select app.audit('exam.tampered', 'exam_attempts', null, null, '{"nota":10}'::jsonb)$$),
+  '42501',
+  's1a no puede escribir entradas en el audit_log');
 
 
 -- =============================================================================
