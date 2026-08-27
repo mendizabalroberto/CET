@@ -6,10 +6,12 @@
  */
 
 import { useCallback, useId, useRef, type KeyboardEvent, type ReactNode } from "react";
+import type { I18nText } from "@cet/shared";
 import { cn } from "../lib/cn.js";
 import { useI18n } from "../lib/i18n.js";
 import { parseSafeHtml } from "../lib/html-to-react.js";
 import { UI_STRINGS } from "../lib/strings.js";
+import { VisuallyHidden } from "../a11y/VisuallyHidden.js";
 
 export interface Choice {
   /** Id estable de la opcion; es lo que se guarda en `attempt_responses`. */
@@ -33,15 +35,81 @@ export interface ChoiceListProps {
    * Marca visual de correccion por opcion, para la revision posterior.
    * En modo examen NUNCA se pasa: la clave no sale de la base de datos.
    */
-  readonly review?: Readonly<Record<string, "correct" | "incorrect" | "missed">> | undefined;
+  readonly review?: Readonly<Record<string, ReviewState>> | undefined;
   readonly className?: string | undefined;
 }
 
-const REVIEW_STYLES = {
+type ReviewState = "correct" | "incorrect" | "missed";
+
+const REVIEW_STYLES: Readonly<Record<ReviewState, string>> = {
   correct: "border-[var(--cet-ok-accent)] bg-[var(--cet-ok-bg)]",
   incorrect: "border-[var(--cet-no-accent)] bg-[var(--cet-no-bg)]",
   missed: "border-[var(--cet-hint-accent)] bg-[var(--cet-hint-bg)]",
-} as const;
+};
+
+/** Tinta del glifo. Es la variante LEGIBLE del tono, no la decorativa. */
+const REVIEW_INK: Readonly<Record<ReviewState, string>> = {
+  correct: "text-[var(--cet-ok-text)]",
+  incorrect: "text-[var(--cet-no-text)]",
+  missed: "text-[var(--cet-hint-text)]",
+};
+
+/**
+ * Segundo canal, el que ve el ojo: una FORMA distinta por estado.
+ *
+ * Existe porque `REVIEW_STYLES` por si solo incumple WCAG 1.4.1. Bajo
+ * deuteranopia `--cet-ok-accent` y `--cet-no-accent` dan 1.10:1 entre si, y los
+ * fondos `--cet-ok-bg` / `--cet-no-bg` estan a 1.01:1 hasta para vision normal:
+ * las tres filas de una revision eran indistinguibles y el alumno no podia leer
+ * su propia correccion.
+ *
+ * Se dibuja como trazo SVG y no como letra ("OK", "?"): un literal aqui seria
+ * texto de cara al usuario escrito en el componente, y AD-7 no lo admite. Una
+ * forma no tiene idioma. El texto del estado va aparte, por `UI_STRINGS`.
+ *
+ * Las formas son las mismas que ya usan `CorrectFeedback` e `IncorrectFeedback`
+ * —check, y barra con punto— para que el alumno no aprenda dos vocabularios. El
+ * aspa roja no se usa a proposito: la barra con punto se distingue igual de bien
+ * bajo cualquier deficiencia de color y no cierra la puerta a seguir intentando.
+ */
+const REVIEW_GLYPH: Readonly<Record<ReviewState, ReactNode>> = {
+  correct: (
+    <path
+      d="M5.5 10.5 8.5 13.5 14.5 6.5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  ),
+  incorrect: (
+    <>
+      <path d="M10 5.5v5.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+      <circle cx="10" cy="14.2" r="1.1" fill="currentColor" />
+    </>
+  ),
+  missed: (
+    <>
+      <path
+        d="M7.4 8.1a2.6 2.6 0 1 1 3.4 2.5c-.6.2-.8.7-.8 1.3v.4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="10" cy="14.6" r="1.1" fill="currentColor" />
+    </>
+  ),
+};
+
+/** Tercer canal, el que oye el lector de pantalla. */
+const REVIEW_TEXT: Readonly<Record<ReviewState, I18nText>> = {
+  correct: UI_STRINGS.reviewCorrect,
+  incorrect: UI_STRINGS.reviewIncorrect,
+  missed: UI_STRINGS.reviewMissed,
+};
 
 /**
  * Lista de opciones de respuesta.
@@ -214,6 +282,18 @@ export function ChoiceList({
               ) : null}
             </span>
             <span className="cet-prose min-w-0 flex-1">{parseSafeHtml(choice.html)}</span>
+            {/* Estado de revision: forma + texto + color. Los tres, siempre.
+                El texto entra en el nombre accesible de la opcion, que es lo
+                que anuncia el lector de pantalla al recorrer el radiogroup. */}
+            {reviewState ? (
+              <span className={cn("mt-0.5 flex flex-none items-center", REVIEW_INK[reviewState])}>
+                <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false" className="h-5 w-5">
+                  <circle cx="10" cy="10" r="9" fill="none" stroke="currentColor" strokeWidth="1.8" />
+                  {REVIEW_GLYPH[reviewState]}
+                </svg>
+                <VisuallyHidden>{t(REVIEW_TEXT[reviewState])}</VisuallyHidden>
+              </span>
+            ) : null}
           </div>
         );
       })}

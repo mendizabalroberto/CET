@@ -57,6 +57,68 @@ valores hexadecimales reales de `tokens.css`. Umbrales: **4.5:1** texto normal,
 | `--cet-border-strong` #6c8298 / `--cet-surface` | **4.15** | AA (1.4.11) |
 | `--cet-focus` #7cb2ea / `--cet-bg` | **8.17** | AA/AAA |
 
+### Estados de revision de `ChoiceList` (anadido 2026-08-27)
+
+> **Antes de leer los numeros de esta seccion y de la anterior.** Hasta el
+> 2026-08-27, `tokens.css` **no se importaba en ninguna parte de `apps/web`**:
+> todo lo medido aqui describia una hoja que el navegador nunca cargaba. Ya se
+> importa (`apps/web/src/app/globals.css`, capa `cet-tokens`) y lo vigila
+> `apps/web/src/lib/css-exportado-se-importa.test.ts`. Los ratios de este
+> documento solo valen mientras ese test siga en verde.
+
+Estos pares faltaban. No es un detalle de forma: **la lista de arriba mide 19
+pares y los 19 pasan porque justo estos no estaban.** Una medicion que solo mide
+lo que ya sabe que sale bien no es una medicion. Se anaden aunque uno suspenda —
+sobre todo porque uno suspende.
+
+`ChoiceList` pinta cada opcion revisada con `<accent>` de borde sobre
+`<bg>` de relleno, dentro de una tarjeta `--cet-surface`. El glifo de estado se
+dibuja con la variante de texto del tono, que es la que ya estaba medida.
+
+| Par | Claro | Oscuro | Umbral | Veredicto |
+|---|---|---|---|---|
+| `--cet-ok-accent` / `--cet-ok-bg` | **4.41** | **8.23** | 3:1 (1.4.11) | pasa |
+| `--cet-ok-accent` / `--cet-surface` | **4.92** | **8.88** | 3:1 | pasa |
+| `--cet-no-accent` / `--cet-no-bg` | **4.82** | **7.55** | 3:1 | pasa |
+| `--cet-no-accent` / `--cet-surface` | **5.44** | **7.22** | 3:1 | pasa |
+| `--cet-hint-accent` / `--cet-hint-bg` | **1.92** | 9.75 | 3:1 | **FALLA en claro** |
+| `--cet-hint-accent` / `--cet-surface` | **2.04** | 10.16 | 3:1 | **FALLA en claro** |
+| glifo `--cet-ok-text` / `--cet-ok-bg` | 7.16 | 9.58 | 3:1 | pasa |
+| glifo `--cet-no-text` / `--cet-no-bg` | 7.30 | 9.00 | 3:1 | pasa |
+| glifo `--cet-hint-text` / `--cet-hint-bg` | 7.37 | 10.91 | 3:1 | pasa |
+
+**El fallo del ambar sigue abierto y es de paleta, no de componente.** Ningun
+color que se siga leyendo como ambar llega a 3:1 contra blanco: `#f2a71b` da
+1.90:1 y para alcanzar 3:1 hay que bajar a la zona del ocre. La correccion
+propuesta —un token nuevo `--cet-amber-ui`— vive en
+`docs/superpowers/specs/2026-08-27-sistema-color-pedagogico.md` §4.3 y **esta
+pendiente de aprobacion**. Mientras tanto, el estado `missed` no depende del
+borde para leerse: lleva glifo y texto.
+
+### El color no es el unico canal (WCAG 1.4.1)
+
+Contraste y 1.4.1 son criterios distintos y aqui se separaban mal. Los pares
+texto/fondo de acierto y error cumplen AAA (7.16 y 7.30) y aun asi los dos
+estados eran **indistinguibles entre si**:
+
+| Par de estados | Claro | Oscuro |
+|---|---|---|
+| `--cet-ok-accent` contra `--cet-no-accent` | **1.11** | **1.23** |
+| `--cet-ok-bg` contra `--cet-no-bg` | **1.01** | **1.13** |
+
+Bajo deuteranopia el verde `#12805c` se convierte en `#6e6e5e` y el rojo
+`#c0392b` en `#77771e`: el mismo color. Y 1.01:1 entre los dos fondos significa
+que ni siquiera la luminancia los separa para quien ve bien. Por eso
+`REVIEW_STYLES` no puede ser la unica senal, y por eso cada estado de revision
+lleva ahora **forma** (glifo SVG propio) y **texto** (en el nombre accesible de
+la opcion, via `UI_STRINGS`) ademas del color.
+
+Esto no se sostiene con una nota en un documento: lo sostiene
+`__tests__/estados-no-solo-color.test.tsx`, que escanea `src/**/*.tsx`, localiza
+todo mapa de clases cuyos estados solo difieran en el token de color, y exige que
+cada uno declare y **demuestre renderizando** su canal no cromatico. Un mapa
+nuevo sin declarar rompe la suite.
+
 ### Correcciones que la paleta Y6A necesitaba
 
 La paleta original no era accesible tal cual, y esto es un hallazgo, no una

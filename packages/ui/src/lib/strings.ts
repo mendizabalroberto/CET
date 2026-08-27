@@ -34,8 +34,8 @@ export const UI_STRINGS = {
   correctAnswerIs: { es: "La respuesta es", en: "The answer is" },
   hint: { es: "Pista", en: "Hint" },
   showHint: { es: "Ver una pista", en: "Show a hint" },
-  solution: { es: "Como se hace", en: "How to do it" },
-  showSolution: { es: "Ver como se hace", en: "Show how to do it" },
+  solution: { es: "Cómo se hace", en: "How to do it" },
+  showSolution: { es: "Ver cómo se hace", en: "Show how to do it" },
   hideSolution: { es: "Ocultar", en: "Hide" },
   streak: { es: "Racha", en: "Streak" },
   bestStreak: { es: "Mejor racha", en: "Best streak" },
@@ -46,7 +46,7 @@ export const UI_STRINGS = {
   blockTip: { es: "Truco", en: "Tip" },
   blockWarning: { es: "Cuidado con esto", en: "Watch out for this" },
   blockSteps: { es: "Paso a paso", en: "Step by step" },
-  blockFormula: { es: "Formula", en: "Formula" },
+  blockFormula: { es: "Fórmula", en: "Formula" },
 
   /* --- examen --- */
   question: { es: "Pregunta", en: "Question" },
@@ -62,7 +62,15 @@ export const UI_STRINGS = {
   clearAnswer: { es: "Borrar la respuesta", en: "Clear answer" },
   numerator: { es: "Numerador", en: "Numerator" },
   denominator: { es: "Denominador", en: "Denominator" },
-  chooseOne: { es: "Elige una opcion", en: "Choose one answer" },
+  /* --- revision posterior al examen ---
+     El color no puede llevar esto solo: bajo deuteranopia el verde de acierto y
+     el rojo de error son el mismo color (1.10:1). Estos textos son el canal que
+     llega al lector de pantalla; el glifo es el que llega al ojo. */
+  reviewCorrect: { es: "Correcta", en: "Correct" },
+  reviewIncorrect: { es: "Tu respuesta, incorrecta", en: "Your answer, incorrect" },
+  reviewMissed: { es: "No marcada, era correcta", en: "Not selected, was correct" },
+
+  chooseOne: { es: "Elige una opción", en: "Choose one answer" },
   chooseSeveral: { es: "Puedes elegir varias", en: "You can choose more than one" },
   orderingHelp: {
     es: "Usa las flechas arriba y abajo para cambiar el orden",
@@ -70,7 +78,7 @@ export const UI_STRINGS = {
   },
   moveUp: { es: "Subir", en: "Move up" },
   moveDown: { es: "Bajar", en: "Move down" },
-  movedToPosition: { es: "Movido a la posicion", en: "Moved to position" },
+  movedToPosition: { es: "Movido a la posición", en: "Moved to position" },
   matchingHelp: { es: "Une cada elemento con su pareja", en: "Match each item with its pair" },
   noMatch: { es: "Sin emparejar", en: "Not matched" },
 
@@ -79,7 +87,7 @@ export const UI_STRINGS = {
   timeLeftLow: { es: "Te quedan menos de 5 minutos", en: "Less than 5 minutes left" },
   timeLeftVeryLow: { es: "Te queda menos de 1 minuto", en: "Less than 1 minute left" },
   timeUp: {
-    es: "Se acabo el tiempo. Guardamos lo que llevas hecho.",
+    es: "Se acabó el tiempo. Guardamos lo que llevas hecho.",
     en: "Time is up. We saved everything you did.",
   },
   timerSyncing: { es: "Sincronizando el reloj", en: "Syncing the clock" },
@@ -88,25 +96,25 @@ export const UI_STRINGS = {
   autosaveSaved: { es: "Guardado", en: "Saved" },
   autosaveSaving: { es: "Guardando", en: "Saving" },
   autosaveOffline: {
-    es: "Sin conexion. Seguimos guardando en este dispositivo.",
+    es: "Sin conexión. Seguimos guardando en este dispositivo.",
     en: "No connection. We keep saving on this device.",
   },
   autosaveRetrying: { es: "Reintentando guardar", en: "Trying to save again" },
-  autosaveNever: { es: "Todavia no hay nada que guardar", en: "Nothing to save yet" },
+  autosaveNever: { es: "Todavía no hay nada que guardar", en: "Nothing to save yet" },
 
   /* --- entrega --- */
   submitExam: { es: "Entregar el examen", en: "Hand in the exam" },
   submitTitle: { es: "Entregar el examen", en: "Hand in the exam" },
   submitBody: {
-    es: "Cuando lo entregues no podras cambiar las respuestas.",
+    es: "Cuando lo entregues no podrás cambiar las respuestas.",
     en: "Once you hand it in you cannot change your answers.",
   },
   submitUnanswered: {
-    es: "Preguntas que aun no has respondido",
+    es: "Preguntas que aún no has respondido",
     en: "Questions you have not answered yet",
   },
   submitReview: { es: "Volver y revisarlas", en: "Go back and check them" },
-  submitConfirm: { es: "Si, entregar", en: "Yes, hand it in" },
+  submitConfirm: { es: "Sí, entregar", en: "Yes, hand it in" },
   submitting: { es: "Entregando", en: "Handing in" },
 
   /* --- datos --- */
@@ -119,9 +127,9 @@ export const UI_STRINGS = {
   score: { es: "Nota", en: "Score" },
 
   /* --- estados vacios y de error, en lenguaje de nino --- */
-  emptyTitle: { es: "Aqui todavia no hay nada", en: "Nothing here yet" },
+  emptyTitle: { es: "Aquí todavía no hay nada", en: "Nothing here yet" },
   emptyBody: {
-    es: "Cuando haya contenido aparecera en esta pagina.",
+    es: "Cuando haya contenido aparecerá en esta página.",
     en: "When there is something to show, it will appear on this page.",
   },
   errorTitle: { es: "No hemos podido cargar esto", en: "We could not load this" },
@@ -130,12 +138,12 @@ export const UI_STRINGS = {
     en: "It is not your fault and you have not lost anything. Try again in a moment.",
   },
   errorReference: {
-    es: "Si vuelve a pasar, ensena este codigo a tu profesor",
+    es: "Si vuelve a pasar, enseña este código a tu profesor",
     en: "If it happens again, show this code to your teacher",
   },
-  offlineTitle: { es: "Te has quedado sin conexion", en: "You are offline" },
+  offlineTitle: { es: "Te has quedado sin conexión", en: "You are offline" },
   offlineBody: {
-    es: "Sigue trabajando: guardamos todo y lo enviamos cuando vuelva la conexion.",
+    es: "Sigue trabajando: guardamos todo y lo enviamos cuando vuelva la conexión.",
     en: "Keep working: we save everything and send it when you are back online.",
   },
 } as const satisfies Record<string, I18nText>;

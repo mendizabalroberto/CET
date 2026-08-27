@@ -19,7 +19,34 @@
  * --color-amber) deben venir del preset y borrarse del bloque @theme.
  */
 
+/* ==========================================================================
+   Hoja del design system — @cet/ui
+   ==========================================================================
+   `packages/ui` exporta `./tokens.css` y su `index.ts` pide que el consumidor la
+   importe una vez en el layout raiz. No se hacia: las 175 variables `--cet-*` y
+   las reglas de `.cet-fraction` no llegaban al navegador, y 43 componentes de
+   `@cet/ui` se pintaban contra variables inexistentes. Sintoma que lo destapo:
+   `5/6` se leia "56" en la practica de comparar fracciones.
+
+   POR QUE ENTRA EN UNA CAPA Y NO POR `import` EN `layout.tsx`, que seria lo
+   obvio. Las variables no chocan con nada —`globals.css` no define ni un
+   `--cet-*`— pero `tokens.css` trae tres reglas SIN CAPA: `body`,
+   `:where(...):focus-visible` y el bloque de `prefers-reduced-motion`. Las
+   equivalentes de esta hoja viven dentro de `@layer base`, y en la cascada una
+   regla sin capa gana SIEMPRE a una con capa, venga antes o despues en el
+   fichero. Con un `import` normal, `tokens.css` se llevaria el fondo del `body`
+   y —esto si se ve— cambiaria el anillo de foco de teal simple a navy doble.
+
+   Ese cambio de foco es una decision de paleta, esta propuesta en
+   `docs/superpowers/specs/2026-08-27-sistema-color-pedagogico.md` §4.5 y NO esta
+   aprobada. Meterla de tapadillo al arreglar un import seria justo lo contrario
+   de lo que se pretende. Con `layer(cet-tokens)` declarada antes que `base`, la
+   hoja aporta lo que faltaba y no cambia nada de lo que hoy ya se ve.
+   ========================================================================== */
+@layer cet-tokens, theme, base, components, utilities;
+
 @import "tailwindcss";
+@import "@cet/ui/tokens.css" layer(cet-tokens);
 @config "../../tailwind.config.ts";
 
 /* ==========================================================================
@@ -170,6 +197,27 @@
   /* Los números del PIN y de las respuestas se leen mejor tabulares. */
   input[inputmode="numeric"] {
     font-variant-numeric: tabular-nums;
+  }
+
+  /*
+   * La barra de la fracción, rescatada del preflight de Tailwind.
+   *
+   * `tokens.css` dibuja el denominador con `border-top: 2px solid currentColor`,
+   * pero entra en la capa `cet-tokens`, que va ANTES de `base`, y el preflight
+   * (`*, ::before, ::after { border: 0 solid }`) vive aquí. En la cascada gana la
+   * capa, no la especificidad: sin esto el numerador y el denominador se apilan
+   * pero SIN raya, y `5/6` queda como un "5" encima de un "6" sin notación.
+   *
+   * Va aquí y no en `tokens.css` porque el que resetea es el preflight de esta
+   * app: el design system no puede ganarle desde una capa anterior. El arreglo
+   * de fondo es partir `tokens.css` en dos (variables + base y componentes),
+   * y eso es un cambio del paquete que no toca a este encargo.
+   *
+   * No hay ningún color aquí: `currentColor` hereda la tinta del texto.
+   */
+  .cet-fraction > .cet-fraction-den,
+  .cet-prose .f > .b {
+    border-top: 2px solid currentColor;
   }
 }
 
