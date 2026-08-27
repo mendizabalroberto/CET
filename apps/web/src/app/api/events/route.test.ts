@@ -32,12 +32,16 @@ const insert = vi.fn();
 const upsert = vi.fn();
 const getUser = vi.fn();
 const maybeSingle = vi.fn();
+const skillsSelect = vi.fn();
 
 const supabase = {
   auth: { getUser },
   from: vi.fn((table: string) => {
     if (table === "profiles") {
       return { select: () => ({ eq: () => ({ maybeSingle }) }) };
+    }
+    if (table === "skills") {
+      return { select: () => ({ in: skillsSelect }) };
     }
     return { insert, upsert };
   }),
@@ -55,6 +59,8 @@ vi.mock("@/lib/security/rate-limit", () => ({
 const ALUMNO = "aaaaaaaa-0000-4000-8000-00000000003a";
 const COLEGIO = "11111111-1111-4111-8111-111111111111";
 const SESION = "0e0e0e0e-0000-4000-8000-0000000000ff";
+const SKILL_ID = "22222222-2222-4222-8222-222222222222";
+const SKILL_CODE = "math.fractions.simplify";
 
 function lote(eventos: number): Request {
   const events = Array.from({ length: eventos }, (_, i) => ({
@@ -82,6 +88,7 @@ beforeEach(() => {
   });
   insert.mockResolvedValue({ error: null });
   upsert.mockResolvedValue({ error: null });
+  skillsSelect.mockResolvedValue({ data: [], error: null });
 });
 
 describe("POST /api/events · lo que le pide a la base", () => {
@@ -166,6 +173,84 @@ describe("POST /api/events · lo que le pide a la base", () => {
 
     expect(response.status).toBe(204);
     expect(insert).not.toHaveBeenCalled();
+  });
+
+  it("resuelve skill_id desde payload.skillCode cuando no llega skillId", async () => {
+    // Si se borra la resolución, este test falla: `skill_id` quedaría NULL.
+    skillsSelect.mockResolvedValue({
+      data: [{ id: SKILL_ID, code: SKILL_CODE }],
+      error: null,
+    });
+    const { POST } = await import("./route");
+    const request = lote(1);
+    const body = JSON.parse(await request.text());
+    body.events[0].payload = { skillCode: SKILL_CODE };
+    const modified = new Request(request.url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    await POST(modified);
+
+    const fila = (insert.mock.calls[0]?.[0] as Record<string, unknown>[])[0]!;
+    expect(fila["skill_id"]).toBe(SKILL_ID);
+  });
+
+  it("conserva un skillId explícito: la resolución por código no lo pisa", async () => {
+    const { POST } = await import("./route");
+    const request = lote(1);
+    const body = JSON.parse(await request.text());
+    body.events[0].skillId = SKILL_ID;
+    body.events[0].payload = { skillCode: "math.other.code" };
+    const modified = new Request(request.url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    await POST(modified);
+
+    const fila = (insert.mock.calls[0]?.[0] as Record<string, unknown>[])[0]!;
+    expect(fila["skill_id"]).toBe(SKILL_ID);
+  });
+
+  it("un skillCode desconocido deja skill_id NULL sin romper el lote", async () => {
+    skillsSelect.mockResolvedValue({ data: [], error: null });
+    const { POST } = await import("./route");
+    const request = lote(1);
+    const body = JSON.parse(await request.text());
+    body.events[0].payload = { skillCode: "math.unknown.code" };
+    const modified = new Request(request.url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    const response = await POST(modified);
+
+    expect(response.status).toBe(204);
+    const fila = (insert.mock.calls[0]?.[0] as Record<string, unknown>[])[0]!;
+    expect(fila["skill_id"]).toBeNull();
+  });
+
+  it("resuelve todos los skillCodes del lote en una sola consulta", async () => {
+    const { POST } = await import("./route");
+    const request = lote(3);
+    const body = JSON.parse(await request.text());
+    body.events[0].payload = { skillCode: "math.fractions.simplify" };
+    body.events[1].payload = { skillCode: "math.fractions.add" };
+    body.events[2].payload = { skillCode: "math.fractions.simplify" };
+    const modified = new Request(request.url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    await POST(modified);
+
+    expect(skillsSelect).toHaveBeenCalledTimes(1);
+    expect(skillsSelect.mock.calls[0]?.[1]).toEqual(["math.fractions.simplify", "math.fractions.add"]);
   });
 });
 
