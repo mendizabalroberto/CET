@@ -142,8 +142,20 @@ Los que hay, y qué familia cierra cada uno:
 
 ## 4 · El trabajo abierto, listo para repartir
 
-Ordenado para lanzarse en paralelo. **El reparto es por territorio de ficheros
-disjunto, no por tema** — ver sección 5, que explica por qué.
+**El reparto es por territorio de ficheros disjunto, no por tema** — ver sección
+5, que explica por qué. La numeración es estable; el orden de ataque es éste:
+
+| Orden | Pieza | Por qué ahí |
+|---|---|---|
+| 1 | **4.1** Red colgada en el examen | Es el único que puede costarle el examen a un niño |
+| 2 | **4.7** Teclado en pantalla | El usuario lo pidió, y de paso cierra el hueco del teclado virtual tapando el campo |
+| 3 | **4.8** Explicaciones visuales | Desbloqueado: la notación ya está |
+| 4 | **4.9** Más progreso visual | Se apoya en lo que ya entró |
+| 5 | **4.2** `skill_mastery` | Trabajo de fondo, sin resultado visible, pero desbloquea las recompensas |
+| 6 | 4.3, 4.4 | Peso y desbordamiento: acotados, sin dependencias |
+
+4.7, 4.8 y 4.9 son **territorios disjuntos entre sí** y pueden ir a la vez.
+4.1 y 4.2 también. **4.3 no**: toca el barril que usan casi todos.
 
 ### 4.1 · Red colgada en el examen — EL MÁS URGENTE
 
@@ -232,6 +244,112 @@ la telemetría hasta que vuelva la red.
   declarados. **Hay un agente ampliándolo ahora mismo** con tareas en equipo,
   recompensas de equipo y comparación entre alumnos: no lo toques hasta que
   cierre.
+
+### 4.7 · Teclado en pantalla para la práctica
+
+**Territorio:** `packages/ui/src/input/` (carpeta nueva),
+`components/learn/PracticeSession.tsx`, `components/exam-runner/`.
+
+Pedido por el usuario: *«en las prácticas debe haber teclado en pantalla para que
+sea touchscreen todo, cuando sean números que existan los dígitos y demás
+comodidades»*.
+
+**No es solo comodidad: cierra el hueco declarado en el spec de táctil** —el
+teclado virtual del sistema tapando el campo de respuesta, del que no hay ni una
+línea de `visualViewport` en el repo—. Con teclado propio, el del sistema no
+aparece y el problema deja de existir.
+
+**Lo que hay que resolver, y es la parte interesante:** las teclas dependen de lo
+que la respuesta admite, y eso ya está en el ítem. Mira `body.placeholder`,
+`body.unit` y el `answerKey` de `packages/engine/src/generators/`. Los casos
+reales que existen hoy:
+
+| Generador | Respuesta | Teclas que necesita |
+|---|---|---|
+| `math.compare` | `>` `<` `=` | tres teclas, nada más |
+| `math.decimal`, `math.metric`, `math.powten`, `math.shape` | número | dígitos y separador decimal |
+| `math.simplify`, `math.fracop` | fracción `3/4` | dígitos y barra |
+| `math.mixed` | mixto `2 1/5` | dígitos, barra y espacio |
+
+**Cuidado con cuatro cosas:**
+
+1. **El separador decimal depende del idioma.** En español es la coma. `nf()` en
+   `packages/engine/src/format.ts` ya lo respeta al mostrar, y `parseAnswer`
+   acepta las dos convenciones. El teclado tiene que ser coherente con lo que el
+   alumno ve escrito, no con lo que el parser tolera.
+2. **No rompas el teclado físico.** En escritorio se escribe con teclas y Enter
+   pasa de pregunta. El teclado en pantalla se añade, no sustituye.
+3. **Accesibilidad.** Son botones de verdad, alcanzables por tabulador y con
+   nombre accesible. Un teclado hecho de `div` con `onClick` deja fuera a quien
+   navega con teclado o con lector.
+4. **44 px mínimo**, que es el criterio que el design system ya cumple, y el
+   invariante de `estados-no-solo-color` sigue aplicando a cualquier estado
+   nuevo (tecla pulsada, tecla deshabilitada).
+
+**El invariante de familia que pediría:** que ningún generador pueda quedarse sin
+teclas para su respuesta. Es decir, recorrer el registro de generadores y exigir
+que para cada uno el teclado ofrezca todos los caracteres que su `answerKey`
+acepta. Así, el día que alguien añada un generador con una respuesta nueva, el
+test se pone rojo en vez de dejar a un niño sin poder teclear su respuesta.
+
+### 4.8 · Explicaciones visuales en las lecciones
+
+**Territorio:** `packages/ui/src/learning/` (excepto `FractionText` y
+`AnswerBlank`, ya cerrados), tipos de bloque nuevos en `block-kind.ts` y
+`block-mapping.ts`.
+
+Pedido por el usuario: *«en las lecciones matemáticas buscar formas pedagógicas y
+VISUALES de hacerles entender o mostrar lo mismo pero siempre agregando algún
+apoyo visual»* y *«hacer las explicaciones más visuales»*.
+
+**Estaba bloqueado y ya no lo está**: dependía de que la notación funcionara, y
+la notación entró hoy.
+
+Lo que se pide es apoyo visual **redundante con el texto**, no decorativo: barras
+de fracción comparadas, modelos de área, rectas numéricas, repartos. Lo mismo
+dicho por otra vía, para el niño al que el texto no le llega.
+
+**Restricción dura, decidida por el usuario:** todo en **SVG o CSS generado en
+cliente, sin imágenes pesadas**. El destino es una tableta de colegio compartida
+con conexión mala. Un modelo de área es una rejilla de rectángulos: no necesita
+un PNG.
+
+Y lo que este repo ya exige de cualquier cosa visual: **texto accesible
+equivalente** (`SafeSvg` obliga a `label` y explica por qué), **nada que dependa
+solo del color**, y pasar por el sanitizador — `packages/ui/src/lib/sanitize.ts`
+tiene una allowlist de SVG aparte, más estrecha que la de HTML.
+
+Empieza por leer `Y6A/`, que es el material fuente del colegio y es **read-only**:
+ahí está cómo se explican estos conceptos de verdad, y es mejor punto de partida
+que inventar.
+
+### 4.9 · Más progreso visual
+
+**Territorio:** `packages/ui/src/progress/`, `components/learn/PracticeTopicGrid.tsx`
+y las pantallas de `(student)/`.
+
+Pedido por el usuario: *«implementar progreso más visual»*, sobre lo que entró
+hoy. Lo que ya hay: escalera de cuatro peldaños en los chips de tema, y la frase
+del esfuerzo («2 aciertos y subes a Aprendiendo»).
+
+**Antes de añadir nada, mira lo que hay y decide si falta o si sobra.** El riesgo
+aquí no es quedarse corto: es llenar la pantalla de indicadores hasta que ninguno
+signifique nada. Un niño de once años lee **uno** de un vistazo.
+
+Direcciones que tienen sentido, a contrastar:
+- progreso **dentro de la sesión** de práctica, no solo en la parrilla de temas;
+- una vista de conjunto que responda «cómo voy en general», que hoy no existe en
+  ninguna parte;
+- que al subir de peldaño **se note** — es el único momento de recompensa que hay
+  hoy y pasa sin que nadie se entere.
+
+**Restricciones que no se negocian**, y las tres tienen test que las vigila:
+`progreso-viene-de-datos.test.tsx` (nada pintado desde una constante),
+`estados-no-solo-color.test.tsx` (nunca solo el tono), y la honestidad de estados
+que ya está implementada: sin datos no se pinta un cero, se dice que no hay
+datos. **Y sigue prohibido premiar**: el acierto lo declara el cliente
+(`isCorrect` viaja en el payload), así que sirve para pintar y no para puntuar.
+La economía de puntos es otro encargo y tiene su spec.
 
 ---
 
