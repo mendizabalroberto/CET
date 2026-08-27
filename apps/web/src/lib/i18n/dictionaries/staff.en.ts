@@ -324,6 +324,16 @@ export const staffEn = {
   admin: {
     title: "Administration",
     subtitle: "Students, access requests and the audit trail for {school}.",
+    /**
+     * A superadmin belongs to no school — the database makes that state
+     * impossible on purpose — so this panel asks which school to open.
+     */
+    schoolPicker: {
+      body: "You are a superadmin, so you belong to no single school. Pick the one whose panel you want to open.",
+      empty: "There are no active schools yet.",
+      current: "Viewing {school}",
+      change: "Switch school",
+    },
     tabs: {
       students: "Students",
       registrations: "Access requests",

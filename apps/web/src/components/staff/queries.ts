@@ -1008,9 +1008,24 @@ export interface AdminData {
 
 const AUDIT_PAGE_SIZE = 50;
 
-export async function loadAdminData(viewer: SessionProfile): Promise<AdminData | null> {
-  const schoolId = viewer.schoolId;
+/**
+ * @param schoolId Colegio a cargar, ya resuelto por `resolveAdminSchool()`.
+ *   Se pasa explícito y no se deduce de `viewer` porque un superadmin no tiene
+ *   colegio propio (`profiles_superadmin_has_no_school`) y elige el suyo por la
+ *   URL. La decisión de QUÉ colegio es de quien llama; aquí solo se carga.
+ *
+ *   Sigue en pie la regla 2 de la cabecera: todas las consultas filtran por
+ *   `school_id` a mano, además de lo que haga RLS.
+ */
+export async function loadAdminData(
+  viewer: SessionProfile,
+  schoolId: string | null = viewer.schoolId,
+): Promise<AdminData | null> {
   if (schoolId === null) return null;
+
+  // Cinturón sobre el tirante de `resolveAdminSchool`: quien no sea superadmin
+  // solo carga su propio colegio, venga de donde venga el argumento.
+  if (viewer.role !== "superadmin" && schoolId !== viewer.schoolId) return null;
 
   const supabase = await createClient();
 

@@ -324,6 +324,16 @@ export const staffEs: StaffDictionary = {
 
   admin: {
     title: "Administración",
+    /**
+     * Un superadmin no pertenece a ningún colegio —la base lo hace imposible a
+     * propósito—, así que este panel le pregunta cuál quiere abrir.
+     */
+    schoolPicker: {
+      body: "Eres superadmin, así que no perteneces a ningún colegio concreto. Elige el colegio cuyo panel quieres abrir.",
+      empty: "Todavía no hay ningún colegio activo.",
+      current: "Viendo {school}",
+      change: "Cambiar de colegio",
+    },
     subtitle: "Alumnos, solicitudes de acceso y rastro de auditoría de {school}.",
     tabs: {
       students: "Alumnos",
