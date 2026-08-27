@@ -232,10 +232,15 @@ select is(pg_temp.visible_count(
 select pg_temp.logout();
 select pg_temp.login_as('aaaaaaaa-0000-4000-8000-00000000002a');
 
-select cmp_ok(pg_temp.visible_count(
+-- Cuenta EXACTA, no `>= 5`. La fixture crea cuatro perfiles en Alfa —admin_a,
+-- teacher_a, s1a y s2a— y el superadmin no cuenta: no pertenece a ningún
+-- colegio. El `>= 5` original era un error de aritmética, y además un umbral
+-- flojo: con `>=`, una RLS que dejara ver DE MÁS pasaría el control tan
+-- contenta. La cifra exacta comprueba las dos direcciones a la vez.
+select is(pg_temp.visible_count(
   $$select count(*)::int from public.profiles
     where school_id = '11111111-1111-4111-8111-111111111111'$$),
-  '>=', 5, 'CONTROL: teacher_a SÍ ve los perfiles de su propio colegio');
+  4, 'CONTROL: teacher_a ve los 4 perfiles de su colegio, ni uno más ni uno menos');
 
 select is(pg_temp.visible_count(
   $$select count(*)::int from public.students
