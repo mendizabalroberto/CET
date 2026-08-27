@@ -10,7 +10,7 @@
 -- se prueban las CONSTRAINTS, que aplican a todos los roles por igual.
 -- =============================================================================
 begin;
-select plan(44);
+select plan(47);
 
 \ir helpers/fixture.psql
 
@@ -429,6 +429,51 @@ select is(
                      where cfg like 'search_path=%')),
   0,
   'NINGUNA función security definer se queda sin search_path fijado (DATA_MODEL §9)');
+
+-- -----------------------------------------------------------------------------
+-- Regex con bounds imposibles (regresión de 0021)
+-- -----------------------------------------------------------------------------
+-- `media_assets_storage_path_shape` pedía `{0,511}`. El motor de regex de
+-- Postgres limita las repeticiones a 255, así que el patrón NO COMPILA. La
+-- constraint se creó sin protestar —ADD CHECK sobre una tabla vacía no evalúa
+-- nada— y habría reventado en el primer insert de un recurso multimedia, con un
+-- "invalid regular expression" que manda a depurar el sitio equivocado.
+--
+-- Este test es la prueba viva de que la constraint se EVALÚA, no solo de que
+-- existe. Antes de 0021 falla; después, pasa.
+select lives_ok(
+  $$insert into public.media_assets
+      (school_id, storage_path, mime, bytes, alt_text, checksum)
+    values ('11111111-1111-4111-8111-111111111111',
+            'alfa/carpeta/con/varios/niveles/diagrama.png',
+            'image/png', 4096, '{"en":"Deep path"}'::jsonb, repeat('3', 64))$$,
+  'Un storage_path válido entra: la CHECK compila de verdad, no solo existe');
+
+select throws_ok(
+  $$insert into public.media_assets
+      (school_id, storage_path, mime, bytes, alt_text, checksum)
+    values ('11111111-1111-4111-8111-111111111111', 'alfa/../beta/robado.png',
+            'image/png', 4096, '{"en":"Traversal"}'::jsonb, repeat('4', 64))$$,
+  '23514',
+  null,
+  'La travesía de directorios sigue rechazada tras reescribir la constraint');
+
+-- El invariante que cierra la familia entera. Una constraint con un bound por
+-- encima de 255 es una bomba de relojería: pasa la revisión, pasa el despliegue,
+-- y estalla el día que alguien inserta la primera fila.
+select is(
+  (select count(*)::int
+   from pg_catalog.pg_constraint c
+   join pg_catalog.pg_namespace n on n.oid = c.connamespace
+   where c.contype = 'c'
+     and n.nspname in ('public', 'app')
+     and exists (
+       select 1
+       from regexp_matches(pg_catalog.pg_get_constraintdef(c.oid), '\{\d*,?(\d+)\}', 'g') m
+       where (m[1])::int > 255
+     )),
+  0,
+  'NINGUNA CHECK usa un bound de regex por encima de 255: no compilaría al evaluarse');
 
 select * from finish();
 rollback;
