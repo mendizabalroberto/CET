@@ -410,6 +410,10 @@ export const staffEs: StaffDictionary = {
       errors: {
         reasonRequired: "Hace falta un motivo para rechazar una solicitud.",
         alreadyReviewed: "Esa solicitud ya ha sido revisada.",
+        // El alumno SÍ existe: decir "no se ha cambiado nada" sería mentir, y
+        // quien lo leyera volvería a aprobar y crearía un segundo alumno.
+        notMarked:
+          "El alumno se ha creado, pero la solicitud no se ha podido marcar como aprobada. Compruébala en la cola antes de volver a aprobarla: hacerlo otra vez crearía un segundo alumno.",
         notFound: "Esa solicitud no pertenece a este colegio.",
         unexpected: "No se ha podido procesar la solicitud. No se ha cambiado nada.",
       },

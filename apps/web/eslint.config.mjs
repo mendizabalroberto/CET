@@ -61,6 +61,30 @@ const config = [
        * `grep createAdminClient` debe seguir cabiendo en una pantalla.
        */
       "src/components/staff/actions.ts",
+      /**
+       * SEGUNDA EXCEPCION TASADA — `submitRegistration`, el alta publica.
+       *
+       * Aqui NO hay actor cuyo rol comprobar: el tutor no tiene cuenta todavia,
+       * ese es el sentido del formulario. Escribe igualmente con service_role
+       * porque `0012_rls_policies.sql` le niega el INSERT a `anon` A PROPOSITO
+       * ("dar INSERT a `anon` sobre esta tabla seria un formulario de spam
+       * abierto a internet") y esa decision se respeta: se arregla el codigo,
+       * no la politica.
+       *
+       * POR QUE NO UNA ROUTE HANDLER, que es lo que dice el comentario de 0012
+       * y lo que esta lista preferiria: seria un SEGUNDO endpoint publico con
+       * exactamente la misma exposicion —cualquiera puede hacerle POST igual
+       * que a la Server Action— y una llamada HTTP de la app a si misma. Dos
+       * puertas en vez de una, sin ninguna comprobacion de mas. La frontera que
+       * importa no es "route handler o server action": es que el codigo sea de
+       * servidor y que lo que la RLS ya no cubre este cubierto por otra cosa.
+       *
+       * Lo que lo cubre, y esta enumerado en la propia accion: validacion Zod
+       * endurecida, colegio comprobado contra `list_active_schools()`,
+       * deduplicacion y tope por correo del tutor. Y un hueco DECLARADO: no hay
+       * captcha, que es lo unico que para a un bot distribuido.
+       */
+      "src/lib/auth/actions.ts",
     ],
     rules: {
       "no-restricted-imports": [

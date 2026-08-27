@@ -80,13 +80,60 @@ export const pinChangeSchema = z
   .refine((v) => v.newPin !== v.currentPin, { path: ["newPin"], message: "pin_too_weak" });
 export type PinChangeInput = z.infer<typeof pinChangeSchema>;
 
+/**
+ * Caracteres de control. En la nota se toleran el tabulador y los saltos de
+ * línea, que ahí son legítimos; en un nombre no se tolera ninguno.
+ *
+ * Un `full_name` con un NUL o un retorno de carro no es un nombre: es un intento
+ * de partir una línea de log —el `console.warn` de la acción escribe ese valor—
+ * o de romper la tabla de la cola del panel del administrador.
+ */
+const CONTROL_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/;
+const CONTROL_CHARS_ESTRICTO = /[\u0000-\u001F\u007F]/;
+
+/**
+ * Prefijos que Excel y Google Sheets interpretan como FÓRMULA al abrir un CSV.
+ * El panel del administrador exporta la cola de solicitudes, y un `full_name`
+ * que empiece por `=` se convierte en código ejecutable en la hoja de quien la
+ * abre (CSV injection). Se rechaza en la entrada porque es donde se sabe que el
+ * dato es un nombre de persona; escaparlo en cada consumidor es la vía por la
+ * que uno de ellos se olvida.
+ */
+const PREFIJO_FORMULA = /^[=+\-@]/;
+
+/**
+ * ENDURECIDO AL PASAR EL ALTA A SERVICE_ROLE
+ * ---------------------------------------------------------------------------
+ * Mientras la inserción la hacía el cliente de sesión, la RLS era una segunda
+ * barrera detrás de este esquema. Ya no la hay: `submitRegistration` escribe
+ * con `service_role`, así que ESTA validación es la única frontera entre un
+ * `fetch` a la Server Action y una fila en la base de datos. De ahí las tres
+ * comprobaciones nuevas sobre `fullName` y `note`, que antes eran redundantes
+ * y ahora no lo son.
+ *
+ * `schoolId` sigue siendo solo un uuid aquí a propósito: que ese colegio EXISTA
+ * y esté `active` no se puede saber sin consultar la base, y esa comprobación
+ * vive en la acción (contra `list_active_schools()`). Un esquema no consulta.
+ */
 export const registrationSchema = z.object({
   schoolId: z.string().uuid(),
-  fullName: z.string().trim().min(2).max(120),
+  fullName: z
+    .string()
+    .trim()
+    .min(2)
+    .max(120)
+    .refine((v) => !CONTROL_CHARS_ESTRICTO.test(v), { message: "invalid_chars" })
+    .refine((v) => !PREFIJO_FORMULA.test(v), { message: "invalid_chars" }),
   requestedYearLevel: z.coerce.number().int().min(1).max(13),
   guardianEmail: z.string().trim().toLowerCase().email().max(254),
   // Campo libre: se acota la longitud para que no sirva de vertedero.
-  note: z.string().trim().max(1000).optional().or(z.literal("")),
+  note: z
+    .string()
+    .trim()
+    .max(1000)
+    .refine((v) => !CONTROL_CHARS.test(v), { message: "invalid_chars" })
+    .optional()
+    .or(z.literal("")),
   // Checkbox HTML: presente = "on", ausente = undefined.
   consent: z.literal("on", { errorMap: () => ({ message: "consent_required" }) }),
 });

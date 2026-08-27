@@ -20,8 +20,10 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { listActiveSchools } from "@/lib/data/schools";
 import { homeForRole, ROUTES } from "@/lib/routes";
 import { clientKeyFromHeaders, rateLimit } from "@/lib/security/rate-limit";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
 
@@ -47,6 +49,27 @@ function fail(error: AuthErrorCode, field?: string): ActionState {
 function logInternal(context: string, detail: unknown): void {
    
   console.warn(`[auth] ${context}`, detail instanceof Error ? detail.message : detail);
+}
+
+/**
+ * Lo mismo, pero para una ESCRITURA QUE SE HA PERDIDO. Va a `console.error` y
+ * arrastra el `code` de PostgREST además del mensaje.
+ *
+ * Existe por el fallo que arregla este fichero: el alta pública fallaba con
+ * `42501 permission denied for table registration_requests` y ese código no
+ * aparecía en ninguna parte, porque `logInternal` solo registra `error.message`
+ * y `console.warn` se pierde entre el ruido. Un dato del usuario que no llega a
+ * la base y no deja rastro con su código es la definición de fallo silencioso
+ * (R4), y aquí lo perdido es la matrícula de un niño.
+ */
+function logLost(context: string, error: { code?: string; message?: string } | unknown): void {
+  const e = error as { code?: string; message?: string; details?: string } | null;
+  console.error(
+    `[auth] ESCRITURA PERDIDA · ${context} ·`,
+    `code=${e?.code ?? "?"}`,
+    `message=${e?.message ?? String(error)}`,
+    `details=${e?.details ?? "-"}`,
+  );
 }
 
 /* ========================================================================== */
@@ -330,29 +353,134 @@ export async function submitRegistration(
   const headerStore = await headers();
   // 5 solicitudes por hora y dispositivo: suficiente para una familia con
   // varios hijos, insuficiente para inundar la bandeja del administrador.
+  //
+  // Es la PRIMERA línea, no la única: vive en la memoria de una instancia
+  // serverless y se rinde ante un atacante que cambie de IP (lo dice la
+  // cabecera de `lib/security/rate-limit.ts`). Las dos defensas que sí
+  // sobreviven a eso están más abajo, contra la base de datos.
   const limited = rateLimit(`register:${clientKeyFromHeaders(headerStore)}`, 5, 3_600_000);
   if (!limited.allowed) return fail("rate_limited");
 
-  const supabase = await createClient();
-
-  // Se inserta con el cliente ANÓNIMO, no con service role: la política RLS de
-  // `registration_requests` concede INSERT a `anon` con `status = 'pending'` y
-  // nada más. Así, una solicitud jamás puede crear una cuenta ni tocar otra
-  // tabla, por mucho que se manipule el formulario.
-  const { error } = await supabase.from("registration_requests").insert({
-    school_id: parsed.data.schoolId,
-    full_name: parsed.data.fullName,
-    requested_year_level: parsed.data.requestedYearLevel,
-    guardian_email: parsed.data.guardianEmail,
-    note: parsed.data.note || null,
-    status: "pending",
-  });
-
-  if (error) {
-    logInternal("registration insert failed", error);
-    // No se distingue "ese colegio no existe" de "fallo de base de datos": lo
-    // primero permitiría enumerar los colegios dados de alta.
+  // El colegio tiene que EXISTIR y estar activo. Antes lo decidía la FK a
+  // `schools` cuando insertaba `anon`; con service_role la FK sigue ahí, pero
+  // no distingue un colegio suspendido de uno activo, y una solicitud dirigida
+  // a un colegio dado de baja no la mira nadie nunca.
+  //
+  // Se consulta con el cliente de SESIÓN, no con el de servicio: `anon` ya tiene
+  // EXECUTE sobre `list_active_schools()` (0018), que es una proyección de
+  // cuatro columnas. Escalar a service_role para leer lo que anon puede leer
+  // sería escalar por costumbre.
+  const schools = await listActiveSchools();
+  if (!schools.some((school) => school.id === parsed.data.schoolId)) {
+    logInternal("registration a colegio inexistente o inactivo", parsed.data.schoolId);
+    // Mismo código que un fallo de base de datos: distinguirlos permitiría
+    // enumerar qué colegios están dados de alta en la plataforma.
     return fail("unexpected");
+  }
+
+  /*
+   * POR QUÉ SERVICE_ROLE AQUÍ, Y QUÉ SE PONE EN SU LUGAR
+   * -------------------------------------------------------------------------
+   * Este INSERT lo hacía el cliente ANÓNIMO, y el comentario que había aquí
+   * afirmaba que existía una política de RLS que concedía INSERT a `anon`.
+   * Nunca existió, ni la política ni el GRANT. Comprobado contra producción el
+   * 27/08/2026 en una transacción revertida:
+   *
+   *   [ANON alta] 42501 :: permission denied for table registration_requests
+   *
+   * O sea: el formulario de alta pública llevaba desde siempre sin escribir una
+   * sola fila. Es el mismo patrón que la telemetría (R3): dos piezas escritas
+   * por separado, cada una declarando lo contrario de la otra.
+   *
+   * De las dos declaraciones gana la de `0012_rls_policies.sql`, que es
+   * deliberada y está razonada: «Dar INSERT a `anon` sobre esta tabla sería un
+   * formulario de spam abierto a internet». Conceder ese GRANT sería debilitar
+   * una defensa para que el código pase, que es justo lo que no se hace aquí.
+   * Se arregla el código: el alta la escribe el SERVIDOR con service_role.
+   *
+   * Lo que se pierde y hay que reponer: con `anon` la RLS era la segunda
+   * barrera. Ya no hay ninguna detrás. Las que la sustituyen son tres, y
+   * ninguna de ellas está en la base de datos:
+   *   1. La validación de `registrationSchema`, endurecida por esto mismo.
+   *   2. La comprobación del colegio activo de arriba.
+   *   3. La deduplicación y el tope por correo de abajo.
+   *
+   * Y lo que NO se hace, que importa igual:
+   *   - NO se pone un tope de solicitudes pendientes POR COLEGIO. Sería la
+   *     defensa obvia contra una inundación, y es una trampa: cualquiera podría
+   *     llenar el cupo de un colegio y dejar fuera a las familias reales.
+   *     Cambiar spam por denegación del alta es un intercambio peor.
+   *   - NO hay captcha, y es lo único que de verdad para a un bot distribuido.
+   *     `0012` lo daba por hecho («valida el slug del colegio y un captcha») y
+   *     no existe en ninguna parte del repo. Requiere una cuenta de proveedor y
+   *     un secreto en el entorno: no se puede añadir desde aquí.
+   *     ES UN HUECO ABIERTO Y DECLARADO, no un olvido.
+   */
+  const admin = createAdminClient(
+    "alta publica de registration_requests: anon no tiene GRANT ni politica de INSERT (0012, a proposito)",
+  );
+
+  // Ventana y tope por CORREO DEL TUTOR, no por IP: es lo que sigue en pie
+  // cuando el atacante rota de dirección. Cinco en 24 h cubre a una familia
+  // numerosa que se equivoca un par de veces.
+  const VENTANA_MS = 24 * 60 * 60 * 1000;
+  const MAX_POR_CORREO = 5;
+  const desde = new Date(Date.now() - VENTANA_MS).toISOString();
+
+  const { data: recientes, error: readError } = await admin
+    .from("registration_requests")
+    .select("id, school_id, full_name, status")
+    .eq("guardian_email", parsed.data.guardianEmail)
+    .gte("created_at", desde);
+
+  if (readError) {
+    // Falla CERRADO. Si esta lectura no se puede hacer, las dos defensas que
+    // dependen de ella no existen, y seguir adelante sería insertar sin
+    // ninguna: exactamente el formulario de spam que se está evitando.
+    logInternal("registration dedup read failed", `${readError.code} :: ${readError.message}`);
+    return fail("unexpected");
+  }
+
+  const filas = recientes ?? [];
+
+  // Deduplicación: la MISMA solicitud (colegio + tutor + nombre del alumno) ya
+  // está en la cola sin revisar. Se devuelve la pantalla de "enviada" sin
+  // escribir nada. Es idempotente a propósito: al tutor que ha pulsado dos
+  // veces no se le puede decir que ha hecho algo mal, y decirle "ya existe"
+  // convertiría el formulario en un oráculo de qué alumnos están apuntados.
+  const duplicada = filas.some(
+    (fila) =>
+      fila.status === "pending" &&
+      fila.school_id === parsed.data.schoolId &&
+      fila.full_name === parsed.data.fullName,
+  );
+
+  if (!duplicada && filas.length >= MAX_POR_CORREO) {
+    logInternal("registration tope por correo alcanzado", filas.length);
+    return fail("rate_limited");
+  }
+
+  if (!duplicada) {
+    const { error } = await admin.from("registration_requests").insert({
+      school_id: parsed.data.schoolId,
+      full_name: parsed.data.fullName,
+      requested_year_level: parsed.data.requestedYearLevel,
+      guardian_email: parsed.data.guardianEmail,
+      note: parsed.data.note || null,
+      // Se fija aquí y no se acepta del formulario: es la única transición que
+      // esta acción tiene derecho a hacer. Aprobar y rechazar son del panel.
+      status: "pending",
+    });
+
+    if (error) {
+      // R4: silencioso es peor que ruidoso. `console.error` y CON el código de
+      // PostgREST — el 42501 de este mismo fallo llevaba meses sin aparecer en
+      // ningún sitio porque lo que se registraba era solo `error.message`.
+      logLost("registration insert failed", error);
+      // No se distingue "ese colegio no existe" de "fallo de base de datos": lo
+      // primero permitiría enumerar los colegios dados de alta.
+      return fail("unexpected");
+    }
   }
 
   redirect(ROUTES.registerSent);

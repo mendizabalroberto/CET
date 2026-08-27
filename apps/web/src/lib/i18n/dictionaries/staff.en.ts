@@ -408,6 +408,10 @@ export const staffEn = {
       errors: {
         reasonRequired: "A reason is required to reject a request.",
         alreadyReviewed: "That request has already been reviewed.",
+        // The student DOES exist: saying "nothing was changed" would be a lie,
+        // and whoever read it would approve again and create a second student.
+        notMarked:
+          "The student was created, but the request could not be marked as approved. Check the queue before approving again: doing so would create a second student.",
         notFound: "That request does not belong to this school.",
         unexpected: "The request could not be processed. Nothing was changed.",
       },

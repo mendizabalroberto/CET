@@ -703,16 +703,45 @@ export async function approveRegistration(
   // La solicitud se marca DESPUÉS de que el alumno exista. Al revés, un fallo
   // en el alta dejaría una solicitud "aprobada" sin alumno detrás, y nadie la
   // volvería a mirar porque ya no estaría en la cola.
-  const { error } = await supabase
+  // El `.select()` no es decorativo: sin él, PostgREST devuelve 204 y `error`
+  // es null tanto si el UPDATE tocó una fila como si no tocó ninguna.
+  //
+  // Y no tocar ninguna es lo que pasaba de verdad en producción. `0012` da a
+  // `registration_requests` una política de UPDATE para el school_admin y —a
+  // diferencia de TODAS las demás tablas del fichero— ninguna para el
+  // superadmin, cuyo `app.current_school_id()` es NULL. Reproducido el
+  // 27/08/2026 contra producción en una transacción revertida:
+  //
+  //   [SUPERADMIN resolver] filas afectadas = 0, SIN error
+  //
+  // Efecto: el alumno se creaba, se auditaba "registration.approved", y la
+  // solicitud se quedaba `pending` para siempre. Al segundo clic, otro alumno.
+  // (La política que falta la añade `0025_registration_superadmin_update.sql`,
+  //  pero esta comprobación se queda: es la que hace que el día que una
+  //  política vuelva a filtrar la fila se vea en vez de adivinarse.)
+  const { data: updated, error } = await supabase
     .from("registration_requests")
     .update({ status: "approved", reviewed_by: viewer.id, reviewed_at: new Date().toISOString() })
     .eq("id", requestId)
     .eq("school_id", schoolId)
-    .eq("status", "pending");
+    .eq("status", "pending")
+    .select("id");
 
   if (error !== null) {
-    console.error("[cet] approveRegistration update", error.message);
+    console.error("[cet] approveRegistration update", error.code, error.message);
     return fail("unexpected");
+  }
+
+  if ((updated ?? []).length === 0) {
+    console.error(
+      "[cet] approveRegistration: el UPDATE no tocó ninguna fila.",
+      `request=${requestId} actor=${viewer.id} rol=${viewer.role}.`,
+      "O la revisó otro administrador entre la lectura y la escritura, o la RLS filtró la fila.",
+    );
+    // NO se devuelve "unexpected" ("no se ha cambiado nada"): el alumno ya está
+    // creado unas líneas más arriba. Ese mensaje invitaría a reintentar y a
+    // crear un segundo alumno para la misma solicitud.
+    return fail("notMarked");
   }
 
   await audit(supabase, "registration.approved", "registration_requests", requestId, {
@@ -757,7 +786,7 @@ export async function rejectRegistration(
   const row = request as Record<string, unknown>;
   if (row["status"] !== "pending") return fail("alreadyReviewed");
 
-  const { error } = await supabase
+  const { data: updated, error } = await supabase
     .from("registration_requests")
     .update({
       status: "rejected",
@@ -769,10 +798,25 @@ export async function rejectRegistration(
     .eq("school_id", schoolId)
     // Concurrencia: si otro administrador la revisó entre la lectura y esta
     // escritura, este UPDATE no toca ninguna fila en vez de pisar su decisión.
-    .eq("status", "pending");
+    .eq("status", "pending")
+    // Igual que en `approveRegistration`: sin `.select()` un UPDATE que no toca
+    // ninguna fila —porque la RLS la filtró— es indistinguible de uno que sí.
+    // Un rechazo que no se guarda y dice que se ha guardado deja la solicitud
+    // en la cola y al tutor sin respuesta.
+    .select("id");
 
   if (error !== null) {
-    console.error("[cet] rejectRegistration", error.message);
+    console.error("[cet] rejectRegistration", error.code, error.message);
+    return fail("unexpected");
+  }
+
+  if ((updated ?? []).length === 0) {
+    console.error(
+      "[cet] rejectRegistration: el UPDATE no tocó ninguna fila.",
+      `request=${parsed.data.requestId} actor=${viewer.id} rol=${viewer.role}.`,
+      "O la revisó otro administrador entre la lectura y la escritura, o la RLS filtró la fila.",
+    );
+    // Aquí "no se ha cambiado nada" sí es verdad: el rechazo no escribe nada más.
     return fail("unexpected");
   }
 
