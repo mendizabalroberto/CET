@@ -23,6 +23,8 @@ import { TipBox } from "./TipBox.js";
 import { WarningBox } from "./WarningBox.js";
 import { StepList } from "./StepList.js";
 import { Table, type TableColumn } from "../primitives/Table.js";
+import { LessonFigure } from "./LessonFigure.js";
+import type { LessonFigure as LessonFigureData } from "./lesson-figure.js";
 
 /** Fila de una tabla de leccion: celdas en HTML restringido. */
 export interface LessonTableRow {
@@ -70,6 +72,19 @@ export type LessonBlockContent =
       readonly svg: string;
       readonly alt: I18nText;
       /** Controles del lab, montados por la aplicacion. */
+      readonly controls?: ReactNode | undefined;
+    }
+  | {
+      readonly kind: "interactive";
+      /**
+       * Figura pedagogica generada en el cliente a partir de sus NUMEROS.
+       *
+       * No lleva `alt`: el texto accesible lo produce `figureAltText` de los
+       * mismos datos que el dibujo, asi que no puede desincronizarse de el.
+       * Tampoco lleva `svg`: el dibujo no viaja por la red. Ver
+       * `learning/lesson-figure.ts`.
+       */
+      readonly figure: LessonFigureData;
       readonly controls?: ReactNode | undefined;
     };
 
@@ -196,11 +211,17 @@ export function LessonBlock({ content, className }: LessonBlockProps): ReactNode
     case "interactive":
       return (
         <div className={cn("my-3 flex flex-col gap-3", className)}>
-          <SafeSvg
-            svg={content.svg}
-            label={t(content.alt)}
-            className="rounded-md border border-[var(--cet-line)] bg-[var(--cet-surface)] p-3 text-center [&_svg]:h-auto [&_svg]:max-w-full"
-          />
+          {"figure" in content ? (
+            // Figura de datos: el dibujo y su voz salen de los mismos numeros.
+            <LessonFigure figure={content.figure} />
+          ) : (
+            // Lab de Y6A: SVG guardado, que hay que sanear y etiquetar a mano.
+            <SafeSvg
+              svg={content.svg}
+              label={t(content.alt)}
+              className="rounded-md border border-[var(--cet-line)] bg-[var(--cet-surface)] p-3 text-center [&_svg]:h-auto [&_svg]:max-w-full"
+            />
+          )}
           {content.controls}
         </div>
       );

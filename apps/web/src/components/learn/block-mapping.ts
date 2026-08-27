@@ -31,6 +31,7 @@
 // que nadie vuelva a cruzar la frontera.
 import {
   isRenderableBlockKind,
+  parseLessonFigure,
   sanitizeHtml,
   sanitizeSvg,
   type LessonBlockContent,
@@ -201,8 +202,25 @@ function mapContent(
       const component = readString(raw.component);
       if (component === null) return null;
       const props = isRecord(raw.props) ? raw.props : {};
-      // Hoy el único widget soportado es la figura SVG de los "labs" de Y6A.
-      // Un `component` desconocido devuelve null en vez de un hueco mudo.
+
+      // PRIMERO las figuras pedagógicas, que son datos y no marcado.
+      //
+      // `component` llevaba desde el principio en el contrato de la tabla —el
+      // trigger de `0006_content.sql` lo exige— y este mapeo lo leía sin usarlo
+      // para nada: valía cualquier nombre mientras `props.svg` trajese el
+      // dibujo entero escrito a mano. Ahora el nombre discrimina de verdad.
+      //
+      // `parseLessonFigure` es una función PURA de un módulo sin `"use client"`.
+      // Este fichero corre en el servidor: importar aquí un valor de
+      // `LessonFigure.tsx` volvería a tumbar la página de lección, que es
+      // exactamente el fallo que `lib/rsc-boundary.test.ts` vigila.
+      const figure = parseLessonFigure(component, props);
+      // No lleva `alt`: el texto accesible se genera de los mismos números que
+      // el dibujo, así que no hay dos fuentes que puedan contradecirse.
+      if (figure !== null) return { kind: "interactive", figure };
+
+      // Camino antiguo: los "labs" de Y6A, que sí son un SVG guardado y por
+      // tanto sí pasan por el sanitizador y sí necesitan su `alt` escrito.
       const svg = readString(props.svg);
       const alt = readI18nText(props.alt);
       if (svg === null || alt === null) return null;

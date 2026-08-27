@@ -187,3 +187,103 @@ describe("mapLessonBlock — contrato C5: todo HTML de la DB se sanea", () => {
     ).toBeNull();
   });
 });
+
+/* -------------------------------------------------------------------------- */
+/* Figuras pedagógicas: `interactive` con `component` de verdad               */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * `content.component` existía en la base de datos —el trigger de `0006` lo
+ * exige— y este mapeo lo leía sin usarlo para nada: cualquier `component`
+ * servía mientras `props.svg` trajera el dibujo entero escrito a mano. Aquí se
+ * comprueba que el discriminador ya discrimina, y que el camino antiguo del SVG
+ * guardado sigue funcionando.
+ *
+ * Lo que este comentario decía antes: «hay lecciones publicadas que lo usan».
+ * No es verdad, y lo escribí yo. `select kind, count(*) from lesson_blocks`
+ * contra producción no devuelve una sola fila `interactive`: ni por el camino
+ * nuevo ni por el viejo. Es justo la clase de fallo que este repositorio existe
+ * para cazar —un comentario que describe un hecho que no existe— y queda aquí
+ * escrito en vez de borrado, porque el aviso vale más que la vergüenza.
+ *
+ * Las figuras llegan a una lección de verdad con
+ * `supabase/migrations/0026_figuras_de_leccion.sql`, que está SIN APLICAR.
+ */
+describe("mapLessonBlock — figuras generadas en cliente", () => {
+  const figura = (component: string, props: unknown): LessonBlockRow => ({
+    id: "f1",
+    ord: 1,
+    kind: "interactive",
+    content: { component, props },
+  });
+
+  it("mapea unas barras de fracción a una figura, no a un SVG", () => {
+    const mapped = mapLessonBlock(
+      figura("fraction-bars", {
+        bars: [
+          { numerator: 5, denominator: 9 },
+          { numerator: 2, denominator: 3 },
+        ],
+      }),
+      "es",
+    );
+    expect(mapped?.content).toEqual({
+      kind: "interactive",
+      figure: {
+        component: "fraction-bars",
+        bars: [
+          { numerator: 5, denominator: 9 },
+          { numerator: 2, denominator: 3 },
+        ],
+      },
+    });
+  });
+
+  it("mapea la tabla de valor posicional y la escalera de unidades", () => {
+    expect(
+      mapLessonBlock(figura("place-value-shift", { value: "0.086", factor: 1000, direction: "multiply" }), "es")
+        ?.content,
+    ).toMatchObject({ kind: "interactive", figure: { component: "place-value-shift" } });
+    expect(
+      mapLessonBlock(figura("unit-chain", { quantity: "mass", from: "g", to: "kg" }), "es")?.content,
+    ).toMatchObject({ kind: "interactive", figure: { component: "unit-chain" } });
+  });
+
+  it("descarta una figura con props inválidas en vez de pintarla a medias", () => {
+    expect(mapLessonBlock(figura("fraction-bars", { bars: [{ numerator: 7, denominator: 3 }] }), "es")).toBeNull();
+    expect(mapLessonBlock(figura("unit-chain", { quantity: "peso" }), "es")).toBeNull();
+  });
+
+  it("una figura NO lleva svg: es lo que la hace ligera y traducible", () => {
+    const contenido = mapLessonBlock(
+      figura("fraction-bars", {
+        bars: [
+          { numerator: 1, denominator: 2 },
+          { numerator: 2, denominator: 4 },
+        ],
+      }),
+      "es",
+    )?.content as Record<string, unknown>;
+    expect(contenido).not.toHaveProperty("svg");
+  });
+
+  // OJO: este camino NO lo usa hoy ninguna lección. La versión anterior de este
+  // comentario decía «hay lecciones publicadas que lo usan», y la base de datos
+  // dice que no hay ninguna: `select kind, count(*) from lesson_blocks` no
+  // devuelve una sola fila `interactive`. Era exactamente el fallo que este
+  // repositorio persigue —un comentario que describe un hecho que no existe— y
+  // estaba escrito por mí. El camino se conserva porque el CONTRATO de la tabla
+  // lo admite y borrarlo rompería cualquier lab que se cargue mañana, no porque
+  // haya contenido vivo detrás.
+  it("el lab SVG sigue funcionando por el camino de siempre", () => {
+    const mapped = mapLessonBlock(
+      figura("svg-figure", {
+        svg: '<svg viewBox="0 0 10 10"><rect width="10" height="10" /></svg>',
+        alt: { es: "Un cuadrado", en: "A square" },
+      }),
+      "es",
+    );
+    expect(mapped?.content).toMatchObject({ kind: "interactive" });
+    expect((mapped?.content as unknown as { svg: string }).svg).toContain("rect");
+  });
+});
