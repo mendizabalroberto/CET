@@ -24,7 +24,7 @@ export function gradeFraction(
   if (parsed === null) {
     return zeroResult(
       maxPoints,
-      `No se pudo interpretar "${response.value.trim()}" como fraccion, numero mixto ni decimal. ` +
+      `No se pudo interpretar "${response.value.trim()}" como fracción, número mixto ni decimal. ` +
         `Respuesta esperada: ${key.canonical}.`,
     );
   }
@@ -33,7 +33,7 @@ export function gradeFraction(
   if (!parsed.values.some((value) => feq(value, target))) {
     return zeroResult(
       maxPoints,
-      `Se leyo ${parsed.values.map((v) => `${v.n}/${v.d}`).join(" o ")} y la clave es ` +
+      `Se leyó ${parsed.values.map((v) => `${v.n}/${v.d}`).join(" o ")} y la clave es ` +
         `${target.n}/${target.d} (${key.canonical}).`,
     );
   }
@@ -44,7 +44,7 @@ export function gradeFraction(
       partialRatio: 0,
       maxPoints,
       rationale:
-        `El valor es correcto pero la fraccion no esta simplificada, y este item evalua ` +
+        `El valor es correcto pero la fracción no está simplificada, y este ítem evalúa ` +
         `precisamente eso. Respuesta esperada: ${key.canonical}.`,
     });
   }

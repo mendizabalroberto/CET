@@ -103,7 +103,7 @@ export const compareGenerator: QuestionGenerator<CompareParams> = {
           `The bigger product sits over the bigger fraction.`,
         es:
           `Multiplica en cruz: ${a.n} × ${b.d} = ${a.n * b.d} y ${b.n} × ${a.d} = ${b.n * a.d}. ` +
-          `El producto mayor corresponde a la fraccion mayor.`,
+          `El producto mayor corresponde a la fracción mayor.`,
       },
       solution: {
         en:
@@ -111,7 +111,7 @@ export const compareGenerator: QuestionGenerator<CompareParams> = {
           `${b.n}/${b.d} = ${b.n * (cd / b.d)}/${cd} → <b>${a.n}/${a.d} ${symbol} ${b.n}/${b.d}</b>` +
           (symbol === "=" ? ` (both simplify to ${simplified(a)})` : ""),
         es:
-          `Denominador comun ${cd}: ${a.n}/${a.d} = ${a.n * (cd / a.d)}/${cd} y ` +
+          `Denominador común ${cd}: ${a.n}/${a.d} = ${a.n * (cd / a.d)}/${cd} y ` +
           `${b.n}/${b.d} = ${b.n * (cd / b.d)}/${cd} → <b>${a.n}/${a.d} ${symbol} ${b.n}/${b.d}</b>` +
           (symbol === "=" ? ` (las dos se simplifican a ${simplified(a)})` : ""),
       },

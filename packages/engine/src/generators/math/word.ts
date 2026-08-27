@@ -65,7 +65,7 @@ function template1(rng: Rng, loc: Locale, name: string): Built {
             `${fh(b.n, b.d)} of the recipe. How much flour does ${name} need? <i>(simplify)</i>`,
           es:
             `Una receta necesita ${fh(a.n, a.d)} kg de harina. ${name} solo quiere hacer ` +
-            `${fh(b.n, b.d)} de la receta. ¿Cuanta harina necesita ${name}? <i>(simplifica)</i>`,
+            `${fh(b.n, b.d)} de la receta. ¿Cuánta harina necesita ${name}? <i>(simplifica)</i>`,
         },
         loc,
       ),
@@ -107,8 +107,8 @@ function template2(rng: Rng, loc: Locale, name: string): Built {
             `${name} ran ${mixh(w1, n1, d1)} km on Monday and ${mixh(w2, n2, d2)} km on Tuesday. ` +
             `How far did ${name} run altogether? <i>(give a mixed number)</i>`,
           es:
-            `${name} corrio ${mixh(w1, n1, d1)} km el lunes y ${mixh(w2, n2, d2)} km el martes. ` +
-            `¿Cuanto corrio en total? <i>(da un numero mixto)</i>`,
+            `${name} corrió ${mixh(w1, n1, d1)} km el lunes y ${mixh(w2, n2, d2)} km el martes. ` +
+            `¿Cuánto corrió en total? <i>(da un número mixto)</i>`,
         },
         loc,
       ),
@@ -123,7 +123,7 @@ function template2(rng: Rng, loc: Locale, name: string): Built {
     },
     hint: {
       en: "Turn both into improper fractions, give them a common denominator, then add.",
-      es: "Pasa los dos a fraccion impropia, ponles denominador comun y suma.",
+      es: "Pasa los dos a fracción impropia, ponles denominador común y suma.",
     },
     solution: {
       en: `${fstr(a)} + ${fstr(b)} = <b>${mixStr(result)} km</b>`,
@@ -154,8 +154,8 @@ function template3(rng: Rng, loc: Locale): Built {
             `A bottle holds ${nfScaled(capacity, loc)} L of juice. A cafe buys ${bottles} identical ` +
             `bottles. How many <b>millilitres</b> of juice is that altogether?`,
           es:
-            `Una botella contiene ${nfScaled(capacity, loc)} L de zumo. Una cafeteria compra ${bottles} ` +
-            `botellas iguales. ¿Cuantos <b>mililitros</b> de zumo son en total?`,
+            `Una botella contiene ${nfScaled(capacity, loc)} L de zumo. Una cafetería compra ${bottles} ` +
+            `botellas iguales. ¿Cuántos <b>mililitros</b> de zumo son en total?`,
         },
         loc,
       ),
@@ -169,7 +169,7 @@ function template3(rng: Rng, loc: Locale): Built {
     },
     hint: {
       en: "First multiply to get litres, then × 1,000 to change to millilitres.",
-      es: "Primero multiplica para obtener litros y despues × 1.000 para pasar a mililitros.",
+      es: "Primero multiplica para obtener litros y después × 1.000 para pasar a mililitros.",
     },
     solution: {
       en:
@@ -205,7 +205,7 @@ function template4(rng: Rng, loc: Locale): Built {
             `How long is each piece in <b>centimetres</b>?`,
           es:
             `Una cinta de ${nfScaled(total, loc)} m se corta en ${pieces} trozos iguales. ` +
-            `¿Cuanto mide cada trozo en <b>centimetros</b>?`,
+            `¿Cuánto mide cada trozo en <b>centímetros</b>?`,
         },
         loc,
       ),
@@ -219,7 +219,7 @@ function template4(rng: Rng, loc: Locale): Built {
     },
     hint: {
       en: "Divide first to get metres, then × 100 to change to centimetres.",
-      es: "Primero divide para obtener metros y despues × 100 para pasar a centimetros.",
+      es: "Primero divide para obtener metros y después × 100 para pasar a centímetros.",
     },
     solution: {
       en:
@@ -246,8 +246,8 @@ function template5(rng: Rng, loc: Locale): Built {
             `A school field is a rectangle ${long} m long and ${wide} m wide. Inside it there is a ` +
             `rectangular sandpit measuring ${pitLong} m by ${pitWide} m. What area of the field is <b>grass</b>?`,
           es:
-            `Un patio es un rectangulo de ${long} m de largo y ${wide} m de ancho. Dentro hay un ` +
-            `arenero rectangular de ${pitLong} m por ${pitWide} m. ¿Que superficie del patio es <b>cesped</b>?`,
+            `Un patio es un rectángulo de ${long} m de largo y ${wide} m de ancho. Dentro hay un ` +
+            `arenero rectangular de ${pitLong} m por ${pitWide} m. ¿Qué superficie del patio es <b>césped</b>?`,
         },
         loc,
       ),
@@ -261,7 +261,7 @@ function template5(rng: Rng, loc: Locale): Built {
     },
     hint: {
       en: "Area of the whole field minus the area of the sandpit.",
-      es: "El area del patio entero menos el area del arenero.",
+      es: "El área del patio entero menos el área del arenero.",
     },
     solution: {
       en:
@@ -299,7 +299,7 @@ function template6(rng: Rng, loc: Locale): Built {
             `What is the mass of each sack in <b>grams</b>?`,
           es:
             `Un agricultor reparte ${nfScaled(mass, loc)} kg de patatas por igual en ${sacks} sacos. ` +
-            `¿Cual es la masa de cada saco en <b>gramos</b>?`,
+            `¿Cuál es la masa de cada saco en <b>gramos</b>?`,
         },
         loc,
       ),
@@ -313,7 +313,7 @@ function template6(rng: Rng, loc: Locale): Built {
     },
     hint: {
       en: "Divide to find the kg in one sack, then × 1,000 for grams.",
-      es: "Divide para hallar los kg de un saco y despues × 1.000 para pasar a gramos.",
+      es: "Divide para hallar los kg de un saco y después × 1.000 para pasar a gramos.",
     },
     solution: {
       en:

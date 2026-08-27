@@ -77,7 +77,7 @@ export const fracopGenerator: QuestionGenerator<FracopParams> = {
               `<b>${mixStr(result)}</b>`,
       es:
         op === "add" || op === "sub"
-          ? `Denominador comun ${cd}: ${an}/${cd} ${GLYPH[op]} ${bn}/${cd} = ` +
+          ? `Denominador común ${cd}: ${an}/${cd} ${GLYPH[op]} ${bn}/${cd} = ` +
             `${op === "add" ? an + bn : an - bn}/${cd} = <b>${mixStr(result)}</b>`
           : op === "mul"
             ? `Numeradores: ${a.n} × ${b.n} = ${a.n * b.n} · Denominadores: ${a.d} × ${b.d} = ` +
@@ -97,7 +97,7 @@ export const fracopGenerator: QuestionGenerator<FracopParams> = {
       },
       mul: {
         en: "No common denominator needed — tops × tops, bottoms × bottoms.",
-        es: "No hace falta denominador comun: numerador × numerador, denominador × denominador.",
+        es: "No hace falta denominador común: numerador × numerador, denominador × denominador.",
       },
       div: {
         en: `Keep, Change, Flip: turn ${fstr(b)} upside down and multiply.`,

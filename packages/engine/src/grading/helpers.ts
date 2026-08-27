@@ -68,7 +68,7 @@ export function typeMismatch(
 ): GradingResult {
   return zeroResult(
     maxPoints,
-    `La respuesta llego como "${got}" y la clave espera "${expected}". ` +
-      `Se puntua 0 y se deja constancia en lugar de lanzar: un intento nunca se queda sin corregir.`,
+    `La respuesta llegó como "${got}" y la clave espera "${expected}". ` +
+      `Se puntúa 0 y se deja constancia en lugar de lanzar: un intento nunca se queda sin corregir.`,
   );
 }

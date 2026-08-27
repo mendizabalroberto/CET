@@ -36,7 +36,7 @@ export function gradeOrdering(
     maxPoints,
     rationale: isCorrect
       ? `Orden exacto (${total} elementos).`
-      : `${inPlace} de ${total} elementos en su posicion correcta` +
+      : `${inPlace} de ${total} elementos en su posición correcta` +
         (sameLength ? "." : ` (se recibieron ${response.order.length} elementos, se esperaban ${total}).`),
   });
 }

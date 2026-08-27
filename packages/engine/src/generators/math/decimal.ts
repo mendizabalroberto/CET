@@ -55,7 +55,7 @@ export const decimalGenerator: QuestionGenerator<DecimalParams> = {
         maxPoints: params.maxPoints ?? 1,
         body: {
           stem: `${nfScaled(a, loc)}${NBSP}×${NBSP}${nfScaled(b, loc)}${NBSP}=`,
-          placeholder: pickLocale({ en: "number only", es: "solo el numero" }, loc),
+          placeholder: pickLocale({ en: "number only", es: "solo el número" }, loc),
         },
         answerKey: {
           type: "numeric",
@@ -98,7 +98,7 @@ export const decimalGenerator: QuestionGenerator<DecimalParams> = {
       maxPoints: params.maxPoints ?? 1,
       body: {
         stem: `${nfScaled(dividend, loc)}${NBSP}÷${NBSP}${divisor}${NBSP}=`,
-        placeholder: pickLocale({ en: "number only", es: "solo el numero" }, loc),
+        placeholder: pickLocale({ en: "number only", es: "solo el número" }, loc),
       },
       answerKey: {
         type: "numeric",
@@ -108,7 +108,7 @@ export const decimalGenerator: QuestionGenerator<DecimalParams> = {
       },
       hint: {
         en: `Short division. Keep the decimal point in the answer directly above the one in ${nfScaled(dividend, loc)}.`,
-        es: `Division corta. Deja la coma del resultado justo encima de la de ${nfScaled(dividend, loc)}.`,
+        es: `División corta. Deja la coma del resultado justo encima de la de ${nfScaled(dividend, loc)}.`,
       },
       solution: {
         en:
@@ -116,7 +116,7 @@ export const decimalGenerator: QuestionGenerator<DecimalParams> = {
           `(check: ${nfScaled(quotient, loc)} × ${divisor} = ${nfScaled(dividend, loc)})`,
         es:
           `${nfScaled(dividend, loc)} ÷ ${divisor} = <b>${nfScaled(quotient, loc)}</b> ` +
-          `(comprobacion: ${nfScaled(quotient, loc)} × ${divisor} = ${nfScaled(dividend, loc)})`,
+          `(comprobación: ${nfScaled(quotient, loc)} × ${divisor} = ${nfScaled(dividend, loc)})`,
       },
     });
   },

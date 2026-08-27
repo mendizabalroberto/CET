@@ -26,7 +26,7 @@ describe("fractionToWords", () => {
     expect(fractionToWords({ numerator: 1, denominator: 2 }, "es")).toBe("un medio");
     expect(fractionToWords({ numerator: 1, denominator: 4 }, "es")).toBe("un cuarto");
     expect(fractionToWords({ numerator: 2, denominator: 3 }, "es")).toBe("dos tercios");
-    expect(fractionToWords({ numerator: 7, denominator: 10 }, "es")).toBe("siete decimos");
+    expect(fractionToWords({ numerator: 7, denominator: 10 }, "es")).toBe("siete décimos");
   });
 
   it("nombra las fracciones comunes en ingles", () => {

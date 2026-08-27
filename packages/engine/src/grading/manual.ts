@@ -24,7 +24,7 @@ export function gradeManual(
     maxPoints,
     requiresManualReview: !blank,
     rationale: blank
-      ? "Sin respuesta: 0 puntos, no hace falta revision humana."
-      : `Pendiente de correccion humana. Rubrica: ${resolveI18n(key.rubric, "es")}`,
+      ? "Sin respuesta: 0 puntos, no hace falta revisión humana."
+      : `Pendiente de corrección humana. Rúbrica: ${resolveI18n(key.rubric, "es")}`,
   });
 }

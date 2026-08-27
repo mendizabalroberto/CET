@@ -27,7 +27,7 @@ export function gradeNumeric(
   if (parsed === null) {
     return zeroResult(
       maxPoints,
-      `No se pudo interpretar "${response.value.trim()}" como numero. Respuesta esperada: ${key.canonical}.`,
+      `No se pudo interpretar "${response.value.trim()}" como número. Respuesta esperada: ${key.canonical}.`,
     );
   }
 
@@ -41,6 +41,6 @@ export function gradeNumeric(
     maxPoints,
     rationale: isCorrect
       ? `Coincide con ${key.canonical}${key.tolerance > 0 ? ` (tolerancia ±${key.tolerance})` : ""}.`
-      : `Se leyo ${values.join(" o ")} y la clave es ${key.value} (${key.canonical}).`,
+      : `Se leyó ${values.join(" o ")} y la clave es ${key.value} (${key.canonical}).`,
   });
 }

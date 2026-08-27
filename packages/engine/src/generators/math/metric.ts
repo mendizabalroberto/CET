@@ -85,7 +85,7 @@ export const metricGenerator: QuestionGenerator<MetricParams> = {
       body: {
         stem: `${nfScaled(value, loc)} ${conv.from}${NBSP}=${NBSP}______ ${conv.to}`,
         unit: conv.to,
-        placeholder: pickLocale({ en: "number only", es: "solo el numero" }, loc),
+        placeholder: pickLocale({ en: "number only", es: "solo el número" }, loc),
       },
       answerKey: {
         type: "numeric",
@@ -98,8 +98,8 @@ export const metricGenerator: QuestionGenerator<MetricParams> = {
           ? `You are going to a <b>smaller</b> unit, so <b>multiply</b> by ${nf(factor, loc)}.`
           : `You are going to a <b>bigger</b> unit, so <b>divide</b> by ${nf(factor, loc)}.`,
         es: toSmaller
-          ? `Vas a una unidad <b>menor</b>, asi que <b>multiplica</b> por ${nf(factor, loc)}.`
-          : `Vas a una unidad <b>mayor</b>, asi que <b>divide</b> entre ${nf(factor, loc)}.`,
+          ? `Vas a una unidad <b>menor</b>, así que <b>multiplica</b> por ${nf(factor, loc)}.`
+          : `Vas a una unidad <b>mayor</b>, así que <b>divide</b> entre ${nf(factor, loc)}.`,
       },
       solution: {
         en:

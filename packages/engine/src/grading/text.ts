@@ -42,6 +42,6 @@ export function gradeText(
     maxPoints,
     rationale: matched
       ? `Coincide con una de las respuestas aceptadas (${key.canonical}).`
-      : `"${response.value.trim()}" no esta entre las aceptadas. Respuesta esperada: ${key.canonical}.`,
+      : `"${response.value.trim()}" no está entre las aceptadas. Respuesta esperada: ${key.canonical}.`,
   });
 }

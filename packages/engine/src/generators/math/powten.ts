@@ -62,7 +62,7 @@ export const powtenGenerator: QuestionGenerator<PowtenParams> = {
       maxPoints: params.maxPoints ?? 1,
       body: {
         stem: `${nfScaled(value, loc)}${NBSP}${multiply ? "×" : "÷"}${NBSP}${nf(power, loc)}${NBSP}=`,
-        placeholder: pickLocale({ en: "number only", es: "solo el numero" }, loc),
+        placeholder: pickLocale({ en: "number only", es: "solo el número" }, loc),
       },
       answerKey: {
         type: "numeric",

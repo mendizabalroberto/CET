@@ -46,7 +46,7 @@ export function gradeMatching(
     rationale: isCorrect
       ? `Las ${total} parejas son correctas.`
       : `${matched} de ${total} parejas correctas` +
-        (duplicates > 0 ? `; ${duplicates} asignacion(es) duplicada(s) ignorada(s)` : "") +
+        (duplicates > 0 ? `; ${duplicates} asignación(es) duplicada(s) ignorada(s)` : "") +
         (extras > 0 ? `; ${extras} pareja(s) sobrante(s)` : "") +
         ".",
   });

@@ -37,7 +37,7 @@ export function gradeChoice(
     partialRatio: isCorrect ? 1 : ratio,
     maxPoints,
     rationale: isCorrect
-      ? `Seleccion exacta (${hits}/${total}).`
+      ? `Selección exacta (${hits}/${total}).`
       : `${hits} de ${total} correctas y ${misses} incorrecta(s) marcada(s).`,
   });
 }

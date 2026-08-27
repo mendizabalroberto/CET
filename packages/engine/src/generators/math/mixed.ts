@@ -65,7 +65,7 @@ export const mixedGenerator: QuestionGenerator<MixedParams> = {
         body: {
           stem:
             `${pickLocale({ en: "Write", es: "Escribe" }, loc)}${NBSP}${mixh(whole, n, d)}${NBSP}` +
-            `${pickLocale({ en: "as an improper fraction", es: "como fraccion impropia" }, loc)}`,
+            `${pickLocale({ en: "as an improper fraction", es: "como fracción impropia" }, loc)}`,
           placeholder: pickLocale({ en: "e.g. 7/4", es: "p. ej. 7/4" }, loc),
         },
         answerKey: {
@@ -99,7 +99,7 @@ export const mixedGenerator: QuestionGenerator<MixedParams> = {
       body: {
         stem:
           `${pickLocale({ en: "Write", es: "Escribe" }, loc)}${NBSP}${fh(improper, d)}${NBSP}` +
-          `${pickLocale({ en: "as a mixed number", es: "como numero mixto" }, loc)}`,
+          `${pickLocale({ en: "as a mixed number", es: "como número mixto" }, loc)}`,
         placeholder: pickLocale({ en: "e.g. 1 3/4", es: "p. ej. 1 3/4" }, loc),
       },
       answerKey: {

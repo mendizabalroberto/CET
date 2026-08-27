@@ -124,7 +124,7 @@ export const shapeGenerator: QuestionGenerator<ShapeParams> = {
     const hidden = new Set(["innerH", "left"]);
 
     const wantEn = target === "area" ? "area" : "perimeter";
-    const wantEs = target === "area" ? "el area" : "el perimetro";
+    const wantEs = target === "area" ? "el área" : "el perímetro";
 
     return buildItem({
       key: "math.shape",
@@ -157,12 +157,12 @@ export const shapeGenerator: QuestionGenerator<ShapeParams> = {
             `Figura en forma de L con seis lados. En el sentido de las agujas del reloj desde ` +
             `la esquina superior izquierda: lado superior ${shape.w} ${shape.unit}, lado derecho ` +
             `${shape.h} ${shape.unit}, lado inferior ${shape.w - shape.cutW} ${shape.unit}, ` +
-            `un escalon hacia arriba de ${shape.cutH} ${shape.unit}, despues un lado horizontal ` +
-            `sin rotular marcado con un signo de interrogacion y, por ultimo, un lado izquierdo ` +
-            `sin rotular marcado con un signo de interrogacion.`,
+            `un escalón hacia arriba de ${shape.cutH} ${shape.unit}, después un lado horizontal ` +
+            `sin rotular marcado con un signo de interrogación y, por último, un lado izquierdo ` +
+            `sin rotular marcado con un signo de interrogación.`,
         },
         unit,
-        placeholder: pickLocale({ en: "number only", es: "solo el numero" }, loc),
+        placeholder: pickLocale({ en: "number only", es: "solo el número" }, loc),
       },
       answerKey: {
         type: "numeric",
@@ -178,7 +178,7 @@ export const shapeGenerator: QuestionGenerator<ShapeParams> = {
               `${shape.h} − ${shape.cutH} = ${shape.h - shape.cutH}. Now add all six.`,
         es:
           target === "area"
-            ? `Rectangulo grande ${shape.w} × ${shape.h} y despues resta la esquina que falta.`
+            ? `Rectángulo grande ${shape.w} × ${shape.h} y después resta la esquina que falta.`
             : `Lados que faltan: ${shape.w} − ${shape.w - shape.cutW} = ${shape.cutW} y ` +
               `${shape.h} − ${shape.cutH} = ${shape.h - shape.cutH}. Ahora suma los seis.`,
       },
