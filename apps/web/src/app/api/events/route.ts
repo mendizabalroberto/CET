@@ -127,6 +127,34 @@ export async function POST(request: Request): Promise<NextResponse> {
   const schoolId = profile.school_id as string;
   const studentId = user.id;
 
+  // --- 3 bis. Resolución de skill_id por código -----------------------------
+  // `event.skillId` llega siempre `undefined` (ningún emisor lo rellena), pero
+  // el código de la skill viaja en `payload.skillCode`. Sin esta resolución,
+  // `skill_id` queda NULL en el 100 % de las filas y el índice parcial
+  // `learning_events_skill_ts_idx` no indexa nada.
+  //
+  // Una sola consulta para todo el lote: la misma razón que el insert masivo.
+  // Un select por evento convertiría treinta niños practicando en cientos de
+  // round-trips por minuto.
+  const skillCodes = [
+    ...new Set(
+      parsed.data.events
+        .map((event) => event.payload.skillCode)
+        .filter((code): code is string => typeof code === "string"),
+    ),
+  ];
+
+  const skillIdByCode = new Map<string, string>();
+  if (skillCodes.length > 0) {
+    const { data: skills } = await supabase
+      .from("skills")
+      .select("id, code")
+      .in("code", skillCodes);
+    for (const skill of skills ?? []) {
+      skillIdByCode.set(skill.code, skill.id);
+    }
+  }
+
   // --- 4. Insert masivo ----------------------------------------------------
   // Una sola sentencia para todo el lote. Un insert por evento convertiría
   // treinta niños practicando en cientos de round-trips por minuto.
@@ -140,7 +168,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     attempt_item_id: event.attemptItemId ?? null,
     lesson_id: event.lessonId ?? null,
     question_id: event.questionId ?? null,
-    skill_id: event.skillId ?? null,
+    skill_id: event.skillId ?? skillIdByCode.get(event.payload.skillCode as string) ?? null,
     payload: event.payload,
     client_ts: event.clientTs, // dato, no verdad
     // `server_ts` lo pone el DEFAULT de la tabla. Enviarlo desde aquí sería
