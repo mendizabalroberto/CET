@@ -1,0 +1,31 @@
+# Normaliza finales de linea: el repo guarda LF, Windows trabaja con CRLF.
+# Sin esto, un mismo fichero editado en Windows y en el CI (Linux) produce
+# diffs completos en cada commit.
+* text=auto eol=lf
+
+# Ficheros que deben conservar CRLF en el disco de Windows
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binarios: git no debe tocarlos nunca
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.docx binary
+*.pptx binary
+*.xlsx binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.mp4 binary
+*.webm binary
+
+# Generados: no cuentan como codigo en las estadisticas del repo
+packages/shared/src/database.types.ts linguist-generated=true
+pnpm-lock.yaml linguist-generated=true

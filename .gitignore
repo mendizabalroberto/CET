@@ -1,0 +1,45 @@
+# ---- Secretos: NUNCA commitear ----
+secrets/
+.env
+.env.*
+!.env.example
+*.env
+!*.env.example
+*.pem
+*.key
+service-account*.json
+
+# ---- Dependencias ----
+node_modules/
+.pnpm-store/
+
+# ---- Build / framework ----
+.next/
+out/
+dist/
+build/
+.turbo/
+*.tsbuildinfo
+
+# ---- Supabase local ----
+supabase/.temp/
+supabase/.branches/
+
+# ---- Test / cobertura ----
+coverage/
+playwright-report/
+test-results/
+.nyc_output/
+
+# ---- Editor / SO ----
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# ---- Claude ----
+.claude/settings.local.json
+.smoke/
+**/.smoke/
