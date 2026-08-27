@@ -20,6 +20,8 @@
  */
 import { MAX_EVENT_BATCH, type ClientEvent, type LearningEventType } from "@cet/shared";
 
+import { fetchConPlazo, PLAZO_TELEMETRIA_MS } from "@/lib/net/plazo";
+
 export const FLUSH_INTERVAL_MS = 5_000;
 export const FLUSH_AT_COUNT = 20;
 const ENDPOINT = "/api/events";
@@ -176,25 +178,29 @@ export class TelemetryQueue {
     this.sending = true;
 
     try {
-      const response = await fetch(ENDPOINT, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ events: batch }),
-        // La sesión va en cookie; sin credenciales el servidor no sabría de
-        // quién son los eventos y los rechazaría.
-        credentials: "same-origin",
-        keepalive: true,
-        cache: "no-store",
-      });
+      const respuesta = await fetchConPlazo(
+        ENDPOINT,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ events: batch }),
+          // La sesión va en cookie; sin credenciales el servidor no sabría de
+          // quién son los eventos y los rechazaría.
+          credentials: "same-origin",
+          keepalive: true,
+          cache: "no-store",
+        },
+        PLAZO_TELEMETRIA_MS,
+      );
 
-      if (response.status === 401 || response.status === 403) {
+      if (respuesta.status === 401 || respuesta.status === 403) {
         // Sin sesión: reintentar no arregla nada y reencolar haría crecer la
         // cola sin fin. Se descarta el lote.
         this.consecutiveFailures = 0;
         return;
       }
 
-      if (response.status === 400) {
+      if (respuesta.status === 400) {
         // Lote malformado: reintentarlo daría 400 para siempre. Se descarta y
         // se deja constancia: es un bug nuestro, no un problema de red.
          
@@ -203,7 +209,7 @@ export class TelemetryQueue {
         return;
       }
 
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
 
       this.consecutiveFailures = 0;
     } catch {

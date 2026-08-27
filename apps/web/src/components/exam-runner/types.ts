@@ -122,6 +122,14 @@ export type SubmitReason = "student" | "timer";
 export type ApiErrorKind =
   /** Sin red, DNS caído, servidor inalcanzable. NO es culpa del alumno. */
   | "offline"
+  /**
+   * La conexión se aceptó y la respuesta no llegó en el plazo. **No es lo mismo
+   * que `offline`**: aquí la petición pudo llegar al servidor y estar
+   * procesándose, así que no se puede afirmar ni que llegó ni que no. Es el
+   * caso del wifi de colegio que sigue asociado pero ya no encamina, y el del
+   * portal cautivo. Reintentable: todas las rutas del motor son idempotentes.
+   */
+  | "timeout"
   /** El deadline del servidor ya había pasado. El servidor ya entregó por timer. */
   | "deadline_passed"
   /** El intento ya no está `in_progress`. Para `/submit` significa: ya entregado. */

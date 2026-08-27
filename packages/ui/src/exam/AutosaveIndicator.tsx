@@ -12,7 +12,7 @@ import { useI18n } from "../lib/i18n.js";
 import { UI_STRINGS } from "../lib/strings.js";
 import { LiveRegion } from "../a11y/LiveRegion.js";
 
-export type AutosaveState = "idle" | "saving" | "saved" | "offline" | "retrying";
+export type AutosaveState = "idle" | "saving" | "saved" | "offline" | "timeout" | "retrying";
 
 export interface AutosaveIndicatorProps {
   readonly state: AutosaveState;
@@ -28,6 +28,9 @@ const STATE_STYLES: Readonly<Record<AutosaveState, string>> = {
   // `offline` y `retrying` NO son rojo: no ha pasado nada malo todavia y el
   // trabajo del alumno sigue a salvo. Rojo aqui provoca abandono.
   offline: "text-[var(--cet-hint-text)]",
+  // `timeout` tampoco es rojo: la respuesta esta guardada en el aparato y puede
+  // que hasta haya llegado. Lo que no puede es decir "sin conexion".
+  timeout: "text-[var(--cet-hint-text)]",
   retrying: "text-[var(--cet-hint-text)]",
 };
 
@@ -36,6 +39,7 @@ const STATE_TEXT: Readonly<Record<AutosaveState, I18nText>> = {
   saving: UI_STRINGS.autosaveSaving,
   saved: UI_STRINGS.autosaveSaved,
   offline: UI_STRINGS.autosaveOffline,
+  timeout: UI_STRINGS.autosaveTimeout,
   retrying: UI_STRINGS.autosaveRetrying,
 };
 
@@ -74,7 +78,13 @@ export function AutosaveIndicator({
           "h-2 w-2 flex-none rounded-pill",
           state === "saved" && "bg-[var(--cet-ok-accent)]",
           state === "saving" && "bg-[var(--cet-ink-muted)] animate-pulse motion-reduce:animate-none",
-          (state === "offline" || state === "retrying") && "bg-[var(--cet-hint-accent)]",
+          // `timeout` va aquí con `offline` y `retrying`: los tres son "aún no
+          // consta que llegara". Se quedó fuera al añadir el estado y el punto
+          // salía sin fondo — un hueco de 8 px donde los demás tienen un punto.
+          // No lo caza `estados-no-solo-color` porque el texto sí distingue: es
+          // de los que solo se ven en una captura.
+          (state === "offline" || state === "retrying" || state === "timeout") &&
+            "bg-[var(--cet-hint-accent)]",
           state === "idle" && "bg-[var(--cet-line)]",
         )}
       />

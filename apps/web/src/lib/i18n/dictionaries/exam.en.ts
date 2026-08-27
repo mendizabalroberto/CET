@@ -100,11 +100,28 @@ export const examEn = {
     loadErrorTitle: "We could not open your exam",
     loadErrorBody:
       "This is our problem, not yours. Try again — nothing you have done has been lost.",
+    /** The network accepts the connection and never answers. Not "no internet". */
+    saveTimeoutTitle: "The network is slow to answer",
+    saveTimeoutBody:
+      "Keep answering. Your answers are saved on this device and we keep trying to send them.",
     saveErrorTitle: "We cannot reach the internet",
     saveErrorBody: "Keep answering. Your work is safe on this device and we keep trying to send it.",
     submitErrorTitle: "We could not hand in your exam",
     submitErrorBody:
       "Your answers are safe. Press the button again. If it still will not go through, tell your teacher straight away — they can see your answers on their side.",
+    /**
+     * The network accepted the connection and never answered. It does NOT say
+     * "we could not hand it in", because we do not know that: the request may
+     * have reached the server. It says what we are sure of.
+     */
+    submitTimeoutTitle: "Handing in is taking a long time",
+    submitTimeoutBody:
+      "We cannot tell yet whether it arrived. Your answers are saved on this device. Press the button to try again.",
+    submitRetry: "Try to hand in again",
+    /** Time ran out while a hand-in was still in the air. */
+    expiredPendingTitle: "We are still trying to hand it in",
+    expiredPendingBody:
+      "Time is up and your answers are saved on this device. Press the button to try again. Your teacher can see your answers on their side.",
     lockedTitle: "This exam is open in another tab",
     lockedBody:
       "To make sure nothing gets lost, only one tab can answer at a time. Carry on in the other tab, or take over here.",

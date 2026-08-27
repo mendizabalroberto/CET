@@ -16,6 +16,7 @@
 import { redirect } from "next/navigation";
 
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
+import { fetchConPlazo, PLAZO_AUTENTICAR_MS } from "@/lib/net/plazo";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionState } from "@/lib/auth/session";
 import { ROUTES, homeForRole } from "@/lib/routes";
@@ -59,7 +60,7 @@ export async function changeStaffPassword(
 
   let result: { ok?: boolean; error?: string };
   try {
-    const response = await fetch(`${getSupabaseUrl()}/functions/v1/staff-password`, {
+    const respuesta = await fetchConPlazo(`${getSupabaseUrl()}/functions/v1/staff-password`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -68,8 +69,10 @@ export async function changeStaffPassword(
       },
       body: JSON.stringify({ op: "change", currentPassword, newPassword }),
       cache: "no-store",
-    });
-    result = (await response.json()) as { ok?: boolean; error?: string };
+    }, PLAZO_AUTENTICAR_MS);
+    // `?? {}` porque un cuerpo ilegible llega como `null` y `null.ok` reventaria
+    // FUERA del try: cae al `default` del switch, que es `unexpected`.
+    result = (respuesta.cuerpo ?? {}) as { ok?: boolean; error?: string };
   } catch (error) {
     logInternal("staff-password inalcanzable", error);
     return fail("unexpected");

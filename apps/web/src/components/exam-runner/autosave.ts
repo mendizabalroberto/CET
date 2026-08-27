@@ -36,12 +36,25 @@ import type { StudentResponse } from "@cet/shared";
 
 import { ApiError } from "./types";
 
-export type AutosaveState = "idle" | "saving" | "saved" | "offline" | "retrying";
+/**
+ * `timeout` NO es `offline`, y la diferencia es lo que se le dice al alumno.
+ * Con la red caída sabemos que no hay internet; con la red colgada la petición
+ * pudo llegar al servidor y no sabemos nada. Colapsarlos pintaría «Sin
+ * conexión» sobre un caso en el que eso no consta.
+ */
+export type AutosaveState = "idle" | "saving" | "saved" | "offline" | "timeout" | "retrying";
 
 export const DEBOUNCE_MS = 800;
 export const PERIODIC_FLUSH_MS = 20_000;
 const BASE_BACKOFF_MS = 1_000;
 const MAX_BACKOFF_MS = 15_000;
+/**
+ * Tope de vueltas de `flush()`. Cada vuelta manda todo lo pendiente, así que en
+ * la práctica bastan dos: la foto vieja y lo que el alumno escribió mientras.
+ * El tope está para que nada —ni el barrido periódico, ni un niño tecleando—
+ * pueda dejar la entrega esperando indefinidamente.
+ */
+const MAX_VUELTAS_DE_VACIADO = 10;
 
 export interface PendingAnswer {
   readonly attemptItemId: string;
@@ -83,7 +96,20 @@ export class AutosaveQueue {
   private readonly storageKey: string;
 
   private pending = new Map<string, QueueEntry>();
-  private inFlight: string | null = null;
+  /**
+   * Ciclo de vaciado en curso. Es lo que espera un `flush()` concurrente.
+   *
+   * Sustituye a un `inFlight: string | null` que decía guardar la exclusión
+   * mutua y en realidad solo hacía que el segundo `flush()` se fuera de vacío.
+   * Un campo que parece una defensa y no lo es es peor que no tenerlo.
+   */
+  private cycle: Promise<void> | null = null;
+  /**
+   * Envíos confirmados por el servidor desde que existe la cola. `flush()` lo
+   * usa para saber si un ciclo progresó: sin esto no puede distinguir «queda
+   * trabajo por hacer» de «no hay red», y la diferencia es insistir o rendirse.
+   */
+  private enviosConExito = 0;
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
   private retryTimer: ReturnType<typeof setTimeout> | null = null;
   private periodicTimer: ReturnType<typeof setInterval> | null = null;
@@ -152,9 +178,68 @@ export class AutosaveQueue {
    *
    * Secuencial a propósito: en la red de un colegio, treinta tabletas abriendo
    * veinte conexiones cada una a la vez es peor que esperar 200 ms.
+   *
+   * CUANDO DEVUELVE, LA COLA ESTÁ VACÍA — O NO SE PUEDE VACIAR.
+   *
+   * Quien de verdad necesita esta garantía es `doSubmit`, que hace
+   * `await queue.flush()` justo antes de entregar precisamente para que la
+   * última respuesta llegue. Dos versiones anteriores la incumplieron:
+   *
+   *  1. Salía por `inFlight !== null` y devolvía en vacío. Con un envío
+   *     colgado, ese `await` era un no-op.
+   *  2. Esperaba al ciclo en curso, que es mejor, pero `runCycle` fotografía
+   *     `pending` al empezar: solo enviaba la foto vieja. Con red lenta pero
+   *     VIVA —el niño responde la última pregunta mientras vuela la anterior—
+   *     la entrega salía sin esa respuesta y `clearPersisted()` la borraba del
+   *     disco justo después. Se perdía de verdad.
+   *
+   * Por eso ahora insiste hasta vaciar. Con dos frenos, porque los dos extremos
+   * son peores que el fallo:
+   *
+   *  - **Si un ciclo no consigue enviar nada, devuelve.** Insistir sería un
+   *    bucle caliente que cuelga la entrega, y ya hay un reintento con backoff
+   *    programado.
+   *  - **Y nunca más de `MAX_VUELTAS_DE_VACIADO` vueltas**, por si algo sigue
+   *    encolando. Entregar tarde es malo; no entregar nunca es peor.
+   *
+   * PERO SOLO INSISTE SI SE LO PIDEN (`hastaVaciar`), Y ESO IMPORTA.
+   * El barrido periódico y el debounce llaman a `flush()` a secas, y ahí hay
+   * que respetar el debounce: si el alumno cambió el ítem que acaba de viajar,
+   * su nueva versión NO se manda de inmediato. Insistir en ese caso escribiría
+   * una revisión en `attempt_responses` por cada vez que cambia de idea, y el
+   * análisis forense contaría cinco cambios de opinión que no existieron
+   * (garantía 2 de este módulo). Solo `doSubmit` y `dispose` piden vaciar,
+   * porque ahí ya no habrá más oportunidades.
    */
-  async flush(): Promise<void> {
-    if (this.stopped || this.inFlight !== null || this.pending.size === 0) return;
+  async flush(opciones: { readonly hastaVaciar?: boolean } = {}): Promise<void> {
+    const vueltas = opciones.hastaVaciar === true ? MAX_VUELTAS_DE_VACIADO : 1;
+    for (let vuelta = 0; vuelta < vueltas; vuelta += 1) {
+      if (this.stopped || this.pending.size === 0) return;
+
+      // Un solo ciclo a la vez: dos en paralelo mandarían la misma entrada dos
+      // veces. Quien llega segundo espera al primero y VUELVE A MIRAR — lo que
+      // el alumno escribió mientras tanto sigue pendiente y le toca a él.
+      const enCurso = this.cycle;
+      if (enCurso) {
+        await enCurso;
+        continue;
+      }
+
+      const enviadosAntes = this.enviosConExito;
+      const ciclo = this.runCycle();
+      this.cycle = ciclo;
+      try {
+        await ciclo;
+      } finally {
+        if (this.cycle === ciclo) this.cycle = null;
+      }
+
+      // El ciclo no logró colocar ni una: la red no está. Devolver el control.
+      if (this.enviosConExito === enviadosAntes) return;
+    }
+  }
+
+  private async runCycle(): Promise<void> {
     if (this.debounceTimer) {
       clearTimeout(this.debounceTimer);
       this.debounceTimer = null;
@@ -165,7 +250,6 @@ export class AutosaveQueue {
 
     for (const entry of entries) {
       if (this.stopped) return;
-      this.inFlight = entry.attemptItemId;
       try {
         const { revision } = await this.deps.send({
           attemptItemId: entry.attemptItemId,
@@ -183,11 +267,10 @@ export class AutosaveQueue {
           this.persist();
         }
         this.consecutiveFailures = 0;
+        this.enviosConExito += 1;
         this.lastSavedAt = new Date(this.deps.now?.() ?? Date.now());
         this.deps.onSaved?.(entry.attemptItemId, revision);
       } catch (error) {
-        this.inFlight = null;
-
         if (error instanceof ApiError && error.kind === "deadline_passed") {
           // El servidor ha dicho que el tiempo terminó. Insistir es inútil y
           // ruidoso: se para la cola y se avisa para que la UI entregue.
@@ -203,13 +286,14 @@ export class AutosaveQueue {
           return;
         }
 
-        // Red caída o 5xx: la entrada sigue en `pending`, ya persistida.
+        // Red caída, cuelgue o 5xx: la entrada sigue en `pending`, ya persistida.
+        const esCuelgue = error instanceof ApiError && error.kind === "timeout";
         this.consecutiveFailures += 1;
-        this.setState(this.consecutiveFailures === 1 ? "offline" : "retrying");
+        this.setState(
+          this.consecutiveFailures === 1 ? (esCuelgue ? "timeout" : "offline") : "retrying",
+        );
         this.scheduleRetry();
         return;
-      } finally {
-        if (this.inFlight === entry.attemptItemId) this.inFlight = null;
       }
     }
 
@@ -253,7 +337,7 @@ export class AutosaveQueue {
    * saldría por la primera comprobación sin enviar nada.
    */
   dispose(): void {
-    if (this.pending.size > 0) void this.flush();
+    if (this.pending.size > 0) void this.flush({ hastaVaciar: true });
     this.clearTimers();
   }
 

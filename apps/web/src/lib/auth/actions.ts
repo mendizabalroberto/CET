@@ -21,6 +21,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { listActiveSchools } from "@/lib/data/schools";
+import { fetchConPlazo, PLAZO_AUTENTICAR_MS } from "@/lib/net/plazo";
 import { homeForRole, ROUTES } from "@/lib/routes";
 import { clientKeyFromHeaders, rateLimit } from "@/lib/security/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -125,7 +126,7 @@ export async function signInStudent(
 
   let payload: AuthPinResponse;
   try {
-    const response = await fetch(`${getSupabaseUrl()}/functions/v1/auth-pin`, {
+    const respuesta = await fetchConPlazo(`${getSupabaseUrl()}/functions/v1/auth-pin`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -136,24 +137,31 @@ export async function signInStudent(
       },
       body: JSON.stringify(parsed.data),
       cache: "no-store",
-    });
+    }, PLAZO_AUTENTICAR_MS);
 
     // La Edge Function responde 401 a CUALQUIER fallo de credencial, y a
     // proposito no distingue entre "el codigo no existe", "el PIN es erroneo" y
     // "la cuenta esta bloqueada": distinguirlos permitiria enumerar alumnos.
     // Tratar ese 401 como error inesperado dejaria al alumno con un mensaje
     // generico de averia en vez de "revisa tu codigo y tu PIN".
-    if (response.status === 401) {
+    if (respuesta.status === 401) {
       return fail("bad_credentials");
     }
-    if (response.status === 429) {
+    if (respuesta.status === 429) {
       return fail("rate_limited");
     }
-    if (!response.ok) {
-      logInternal("auth-pin non-2xx", response.status);
+    if (!respuesta.ok) {
+      logInternal("auth-pin non-2xx", respuesta.status);
       return fail("unexpected");
     }
-    payload = (await response.json()) as AuthPinResponse;
+    // Un 2xx sin cuerpo legible es una averia nuestra, no una credencial mala:
+    // decirle al nino "revisa tu codigo y tu PIN" seria mandarle a buscar un
+    // error que no ha cometido.
+    if (respuesta.cuerpo === null) {
+      logInternal("auth-pin cuerpo ilegible", respuesta.status);
+      return fail("unexpected");
+    }
+    payload = respuesta.cuerpo as AuthPinResponse;
   } catch (error) {
     logInternal("auth-pin unreachable", error);
     return fail("unexpected");
@@ -284,7 +292,7 @@ export async function changePin(_prev: ActionState, formData: FormData): Promise
 
   let result: { ok?: boolean; error?: string };
   try {
-    const response = await fetch(`${getSupabaseUrl()}/functions/v1/student-pin`, {
+    const respuesta = await fetchConPlazo(`${getSupabaseUrl()}/functions/v1/student-pin`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -297,8 +305,10 @@ export async function changePin(_prev: ActionState, formData: FormData): Promise
         newPin: parsed.data.newPin,
       }),
       cache: "no-store",
-    });
-    result = (await response.json()) as { ok?: boolean; error?: string };
+    }, PLAZO_AUTENTICAR_MS);
+    // `?? {}` porque un cuerpo ilegible llega como `null` y `null.ok` reventaria
+    // FUERA del try: cae al `default` del switch, que es `unexpected`.
+    result = (respuesta.cuerpo ?? {}) as { ok?: boolean; error?: string };
   } catch (error) {
     logInternal("student-pin unreachable", error);
     return fail("unexpected");

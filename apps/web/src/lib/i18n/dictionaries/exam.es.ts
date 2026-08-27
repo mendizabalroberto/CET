@@ -95,12 +95,34 @@ export const examEs: ExamDictionary = {
       "Algo ha salido mal al prepararlo, y no es culpa tuya. Esto no cuenta en tu contra. Avisa a tu profesor, por favor.",
     loadErrorTitle: "No hemos podido abrir tu examen",
     loadErrorBody: "El problema es nuestro, no tuyo. Inténtalo otra vez: no has perdido nada.",
+    /**
+     * La red acepta la conexión y no contesta. NO es «no llegamos a internet»:
+     * eso no consta, y la respuesta pudo llegar al servidor. Lo que sí consta
+     * es que está guardada en el aparato, y eso es lo que se le dice.
+     */
+    saveTimeoutTitle: "La red está tardando en contestar",
+    saveTimeoutBody:
+      "Sigue respondiendo. Tus respuestas están guardadas en este aparato y seguimos intentando enviarlas.",
     saveErrorTitle: "No llegamos a internet",
     saveErrorBody:
       "Sigue respondiendo. Tu trabajo está a salvo en este aparato y seguimos intentando enviarlo.",
     submitErrorTitle: "No hemos podido entregar tu examen",
     submitErrorBody:
       "Tus respuestas están a salvo. Vuelve a pulsar el botón. Si sigue sin salir, avisa a tu profesor ahora mismo: él puede ver tus respuestas desde su lado.",
+    /**
+     * La red aceptó la conexión y no contestó nunca. NO dice «no hemos podido
+     * entregar», porque eso no lo sabemos: la petición pudo llegar al servidor.
+     * Dice lo único de lo que estamos seguros. Mentir aquí sería peor que
+     * callar, y callar ya era bastante malo.
+     */
+    submitTimeoutTitle: "La entrega está tardando mucho",
+    submitTimeoutBody:
+      "Todavía no sabemos si ha llegado. Tus respuestas están guardadas en este aparato. Pulsa el botón para intentarlo otra vez.",
+    submitRetry: "Intentar entregar otra vez",
+    /** Se acabó el tiempo con una entrega todavía en el aire. */
+    expiredPendingTitle: "Seguimos intentando entregarlo",
+    expiredPendingBody:
+      "Se ha acabado el tiempo y tus respuestas están guardadas en este aparato. Pulsa el botón para intentarlo otra vez. Tu profesor puede ver tus respuestas desde su lado.",
     lockedTitle: "Este examen está abierto en otra pestaña",
     lockedBody:
       "Para que no se pierda nada, solo una pestaña puede responder a la vez. Sigue en la otra, o toma el control aquí.",

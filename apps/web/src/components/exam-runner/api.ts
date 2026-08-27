@@ -19,8 +19,29 @@
  *
  * `fetch` que lanza es siempre `offline`: en ese caso el servidor no ha visto
  * la petición, así que reintentarla es seguro.
+ *
+ * TODA PETICIÓN LLEVA PLAZO
+ * Antes no lo llevaba, y con la red del colegio *colgada* —conexión aceptada,
+ * respuesta que no llega nunca— el `fetch` esperaba indefinidamente: la cola de
+ * autoguardado se bloqueaba entera y la entrega dejaba al alumno con los tres
+ * botones muertos y el cronómetro corriendo. Los plazos y su porqué viven en
+ * `@/lib/net/plazo`, que es el único módulo que llama a `fetch`.
+ *
+ * `timeout` es un `kind` propio y NO un `offline`: cuando vence el plazo la
+ * petición pudo llegar al servidor. Decirle al alumno «no llegamos a internet»
+ * sería inventarse un diagnóstico que no tenemos.
  */
 import type { StudentResponse } from "@cet/shared";
+
+import {
+  fetchConPlazo,
+  PlazoAgotadoError,
+  type RespuestaConPlazo,
+  PLAZO_ARRANCAR_MS,
+  PLAZO_ENTREGAR_MS,
+  PLAZO_GUARDAR_MS,
+  PLAZO_RESULTADO_MS,
+} from "@/lib/net/plazo";
 
 import { normalizeResult, normalizeStartResponse } from "./normalize";
 import {
@@ -44,6 +65,7 @@ async function request(
   url: string,
   body: unknown,
   method: "GET" | "POST",
+  plazoMs: number,
   signal?: AbortSignal | undefined,
 ): Promise<unknown> {
   // `exactOptionalPropertyTypes` está activo: `body: undefined` NO es lo mismo
@@ -62,45 +84,43 @@ async function request(
     ...(signal ? { signal } : {}),
   };
 
-  let response: Response;
+  let respuesta: RespuestaConPlazo;
   try {
-    response = await fetch(url, init);
+    respuesta = await fetchConPlazo(url, init, plazoMs);
   } catch (cause) {
+    // Se agotó NUESTRO plazo. No es lo mismo que «sin red»: la petición pudo
+    // salir y estar procesándose. La cola lo reintenta igual —el servidor es
+    // idempotente— pero la pantalla no dirá que no hay internet.
+    if (cause instanceof PlazoAgotadoError) {
+      throw new ApiError("timeout", 0, cause.message);
+    }
     throw new ApiError("offline", 0, cause instanceof Error ? cause.message : "network");
   }
 
-  if (response.ok) return safeJson(response);
+  // El cuerpo ya viene leído bajo el mismo plazo que las cabeceras: aquí no
+  // queda ninguna espera sin acotar.
+  if (respuesta.ok) return respuesta.cuerpo;
 
-  const payload = await safeJson(response);
+  const payload = respuesta.cuerpo;
   const code = readErrorCode(payload);
   const kind =
     code !== null
       ? (ERROR_CODE_TO_KIND[code] ?? "server")
-      : response.status === 401 || response.status === 403
+      : respuesta.status === 401 || respuesta.status === 403
         ? "unauthorized"
-        : response.status === 404
+        : respuesta.status === 404
           ? "not_found"
-          : response.status === 429
+          : respuesta.status === 429
             ? "rate_limited"
             : "server";
 
-  throw new ApiError(kind, response.status, code ?? `HTTP ${response.status}`, code, payload);
+  throw new ApiError(kind, respuesta.status, code ?? `HTTP ${respuesta.status}`, code, payload);
 }
 
 function readErrorCode(payload: unknown): string | null {
   if (typeof payload !== "object" || payload === null) return null;
   const code = (payload as { error?: unknown }).error;
   return typeof code === "string" && code.length > 0 ? code : null;
-}
-
-async function safeJson(response: Response): Promise<unknown> {
-  try {
-    return (await response.json()) as unknown;
-  } catch {
-    // Un cuerpo ilegible es un bug del servidor, no un problema de red:
-    // reintentarlo daría exactamente lo mismo.
-    return null;
-  }
 }
 
 /**
@@ -122,7 +142,13 @@ export async function startAttempt(
   options: { signal?: AbortSignal | undefined; retryOnStarting?: boolean | undefined } = {},
 ): Promise<StartAttemptResponse> {
   try {
-    const raw = await request("/api/attempts/start", { assignmentId }, "POST", options.signal);
+    const raw = await request(
+      "/api/attempts/start",
+      { assignmentId },
+      "POST",
+      PLAZO_ARRANCAR_MS,
+      options.signal,
+    );
     const parsed = normalizeStartResponse(raw);
     if (!parsed) throw new ApiError("server", 200, "respuesta de /start ilegible");
     return parsed;
@@ -149,6 +175,7 @@ export async function saveAnswer(
     `/api/attempts/${encodeURIComponent(attemptId)}/answer`,
     input,
     "POST",
+    PLAZO_GUARDAR_MS,
     options.signal,
   );
 
@@ -188,6 +215,7 @@ export async function submitAttempt(
     `/api/attempts/${encodeURIComponent(attemptId)}/submit`,
     { reason },
     "POST",
+    PLAZO_ENTREGAR_MS,
     options.signal,
   );
   const parsed = normalizeResult(raw);
@@ -203,6 +231,7 @@ export async function fetchResult(
     `/api/attempts/${encodeURIComponent(attemptId)}/result`,
     undefined,
     "GET",
+    PLAZO_RESULTADO_MS,
     options.signal,
   );
   const parsed = normalizeResult(raw);

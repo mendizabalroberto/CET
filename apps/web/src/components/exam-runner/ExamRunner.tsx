@@ -84,7 +84,13 @@ export function ExamRunner({ assignmentId, locale, resultHref }: ExamRunnerProps
   const [timeUp, setTimeUp] = useState(false);
   const [submitOpen, setSubmitOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [submitFailed, setSubmitFailed] = useState(false);
+  /**
+   * Cómo falló la entrega, no solo si falló. `timeout` (la red aceptó y no
+   * contestó) y `error` piden mensajes distintos: en el primero **no sabemos**
+   * si la entrega llegó, y decirle a un niño «no hemos podido entregar» sería
+   * afirmar algo que no consta.
+   */
+  const [submitFailed, setSubmitFailed] = useState<"timeout" | "error" | null>(null);
   const [soundOn, setSoundOn] = useState(false);
   const [blockedKind, setBlockedKind] = useState<"unavailable" | "not_found" | "not_ready" | null>(null);
 
@@ -314,13 +320,16 @@ export function ExamRunner({ assignmentId, locale, resultHref }: ExamRunnerProps
       if (guardRef.current.busy) return;
 
       setSubmitting(true);
-      setSubmitFailed(false);
+      setSubmitFailed(null);
 
       try {
         await guardRef.current.run(async () => {
           // Primero se vacía la cola: entregar con una respuesta sin enviar la
-          // perdería para siempre, y sería justo la última que escribió.
-          await queueRef.current?.flush();
+          // perdería para siempre, y sería justo la última que escribió —
+          // `clearPersisted()`, unas líneas más abajo, la borra del disco.
+          // `hastaVaciar` es obligatorio aquí: un `flush()` a secas manda solo
+          // la foto que había al empezar el ciclo en curso.
+          await queueRef.current?.flush({ hastaVaciar: true });
           await submitAttempt(id, reason);
         });
 
@@ -342,8 +351,15 @@ export function ExamRunner({ assignmentId, locale, resultHref }: ExamRunnerProps
         // Falló de verdad. El cerrojo ya se ha reabierto solo para que pueda
         // reintentar: un botón muerto con el examen sin entregar es el peor
         // final posible de esta pantalla.
+        //
+        // SE CIERRA EL DIÁLOGO. El aviso se pinta en la página, y detrás de un
+        // diálogo modal el alumno no lo ve: se quedaría mirando dos botones
+        // vivos que no explican nada. El `SubmitDialog` no admite un mensaje
+        // dentro (vive en `@cet/ui` y es de otra vía), así que se le devuelve
+        // al examen, donde el aviso y el botón de reintentar están juntos.
+        setSubmitOpen(false);
         setSubmitting(false);
-        setSubmitFailed(true);
+        setSubmitFailed(error instanceof ApiError && error.kind === "timeout" ? "timeout" : "error");
         return;
       }
     },
@@ -640,7 +656,18 @@ export function ExamRunner({ assignmentId, locale, resultHref }: ExamRunnerProps
           </Alert>
         ) : null}
 
-        {timeUp ? (
+        {timeUp && submitFailed !== null ? (
+          /* Se acabó el tiempo Y la entrega no ha llegado. El mensaje normal de
+             «estamos entregando tu examen» aquí sería mentira: no consta que se
+             entregara. Se dice lo que sí sabemos y se deja el botón vivo. */
+          <Alert
+            tone="warning"
+            title={{ en: t.run.expiredPendingTitle, es: t.run.expiredPendingTitle }}
+            toneLabel={{ en: t.run.expiredPendingTitle, es: t.run.expiredPendingTitle }}
+          >
+            {t.run.expiredPendingBody}
+          </Alert>
+        ) : timeUp ? (
           <Alert
             tone="warning"
             title={{ en: t.run.expiredTitle, es: t.run.expiredTitle }}
@@ -656,7 +683,13 @@ export function ExamRunner({ assignmentId, locale, resultHref }: ExamRunnerProps
           <Alert tone="info">{warning === "urgent" ? t.run.warn1 : t.run.warn5}</Alert>
         ) : null}
 
-        {autosaveState === "offline" || autosaveState === "retrying" ? (
+        {autosaveState === "timeout" ? (
+          /* La red contesta que sí y luego no contesta. Distinto de no tener
+             red, y por eso distinto mensaje: no se afirma lo que no consta. */
+          <Alert tone="info" title={{ en: t.run.saveTimeoutTitle, es: t.run.saveTimeoutTitle }}>
+            {t.run.saveTimeoutBody}
+          </Alert>
+        ) : autosaveState === "offline" || autosaveState === "retrying" ? (
           /* Sin conexión NO es un error, y por eso no es `danger`: el trabajo
              del alumno está a salvo y lo único que hace falta es que siga
              respondiendo. */
@@ -665,14 +698,27 @@ export function ExamRunner({ assignmentId, locale, resultHref }: ExamRunnerProps
           </Alert>
         ) : null}
 
-        {submitFailed ? (
-          <Alert
-            tone="danger"
-            title={{ en: t.run.submitErrorTitle, es: t.run.submitErrorTitle }}
-            toneLabel={{ en: t.run.submitErrorTitle, es: t.run.submitErrorTitle }}
-          >
-            {t.run.submitErrorBody}
-          </Alert>
+        {submitFailed !== null && !timeUp ? (
+          /* `timeout` no es `error`: la petición pudo llegar al servidor y estar
+             procesándose. Se le cuenta lo que sabemos —que sus respuestas están
+             en el aparato— y no lo que no sabemos. */
+          submitFailed === "timeout" ? (
+            <Alert
+              tone="warning"
+              title={{ en: t.run.submitTimeoutTitle, es: t.run.submitTimeoutTitle }}
+              toneLabel={{ en: t.run.submitTimeoutTitle, es: t.run.submitTimeoutTitle }}
+            >
+              {t.run.submitTimeoutBody}
+            </Alert>
+          ) : (
+            <Alert
+              tone="danger"
+              title={{ en: t.run.submitErrorTitle, es: t.run.submitErrorTitle }}
+              toneLabel={{ en: t.run.submitErrorTitle, es: t.run.submitErrorTitle }}
+            >
+              {t.run.submitErrorBody}
+            </Alert>
+          )
         ) : null}
 
         {allowBack ? (
@@ -716,10 +762,21 @@ export function ExamRunner({ assignmentId, locale, resultHref }: ExamRunnerProps
           <Button
             variant="primary"
             className="ml-auto"
-            onClick={() => setSubmitOpen(true)}
-            disabled={submitting || timeUp}
+            /* Con el tiempo agotado y la entrega sin llegar, el diálogo de
+               confirmación sobra: ya confirmó, y volver a preguntarle «¿seguro?»
+               a un niño cuyo reloj ya está en cero es cruel y no aporta nada. */
+            onClick={() => (timeUp && submitFailed !== null ? void doSubmit("timer") : setSubmitOpen(true))}
+            /* NUNCA deshabilitado sin salida. `timeUp` lo apagaba para siempre
+               en cuanto el cronómetro llegaba a cero, y si la entrega se había
+               colgado el alumno se quedaba sin ninguna forma de entregar. Ahora
+               solo se apaga mientras hay una entrega de verdad en vuelo. */
+            disabled={submitting || (timeUp && submitFailed === null)}
           >
-            {submitting ? t.run.submitting : t.run.submit}
+            {submitting
+              ? t.run.submitting
+              : timeUp && submitFailed !== null
+                ? t.run.submitRetry
+                : t.run.submit}
           </Button>
         </div>
 
