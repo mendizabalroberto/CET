@@ -1,4 +1,11 @@
-# PROGRESO VISIBLE, PUNTOS Y ACCESO DEL TUTOR — propuesta de diseño
+# PROGRESO VISIBLE, PUNTOS, EQUIPOS Y ACCESO DEL TUTOR — propuesta de diseño
+> **AVISO: la ampliación de equipos se interrumpió a mitad.** El documento se paró
+> deliberadamente mientras ampliaba preguntas abiertas y huecos declarados, para
+> liberar agentes. Lo escrito es válido; lo que falta es más de lo mismo, no otra
+> cosa. Quien lo retome: revisa que §9 (preguntas) y §10 (huecos) cubran todo lo
+> que el cuerpo del documento plantea, porque puede haber decisiones en el texto
+> sin su pregunta correspondiente al final.
+
 
 > © 2026 Roberto Mendizabal. Todos los derechos reservados.
 > **Estado: PROPUESTA. No implementada.** Ni una línea de código, ni una migración, ni un test se
@@ -6,6 +13,10 @@
 > medido contra producción (`clcutoqjdgeggvgyreud`, solo lectura) o leído del repositorio, y la
 > consulta o el fichero se citan al lado.
 > **Fecha:** 2026-08-27 · Continúa el encargo C de `HANDOFF.md §4`.
+> **Ampliado el mismo día** con equipos, tareas de equipo, recompensas de grupo y comparación
+> entre alumnos (§8–§12), y con el contexto de tableta compartida y red mala que fija
+> `docs/superpowers/specs/2026-08-27-tactil-y-red.md`. La ampliación **cambia dos decisiones** de
+> la primera versión; están declaradas en voz alta en §12.5.
 
 ---
 
@@ -20,17 +31,25 @@ Sus palabras, literales:
 > "el tutor es generalmente el papa pero puede ser compartido con el profesor, el puede tener
 > acceso tambien y ver si esta o no respondiendo correctamente como un feedback"
 
-Son tres cosas distintas con tres calendarios distintos, y este documento las separa a propósito:
+Y en la ampliación:
 
-| | Qué es | Necesita el rol `guardian` |
-|---|---|---|
-| **Esfuerzo visible** | "cuánto esfuerzo más" — una meta y una barra hacia ella | **No** |
-| **Puntos** | un saldo que se gana estudiando | **No** |
-| **Canje con el tutor** | un catálogo que define el padre y una promesa que cumple en casa | **Sí** |
-| **Informe al tutor** | "si está o no respondiendo correctamente" | **Sí** |
+> "Planificar y agregar funcionalidad de tareas en equipo, rewards individuales trackeable y a
+> equipos de trabajo, visualizacion cruzada para impulso mediante progreso ajeno rival"
 
-Las dos primeras se pueden construir esta semana. Las dos últimas están bloqueadas por decisiones
-de producto que no me corresponden, y que van en §9.
+Son siete cosas distintas con calendarios distintos, y este documento las separa a propósito:
+
+| | Qué es | Necesita `guardian` | Necesita equipos | Sección |
+|---|---|---|---|---|
+| **Esfuerzo visible** | "cuánto esfuerzo más" — una meta y una barra hacia ella | No | No | §4 |
+| **Puntos individuales** | un saldo que se gana estudiando | No | No | §3, §4 |
+| **Canje con el tutor** | un catálogo que define el padre, una promesa que cumple en casa | **Sí** | No | §6 |
+| **Informe al tutor** | "si está o no respondiendo correctamente" | **Sí** | No | §5 |
+| **Equipos** | 4–6 niños dentro de una clase, formados por el profesor | No | — | §8 |
+| **Tareas de equipo** | un objetivo compartido, verificable desde los datos | No | **Sí** | §9 |
+| **Comparación cruzada** | el "rival" que el usuario pide, rediseñado para no dañar | No | **Sí** (nivel 2) | §11 |
+
+Lo que no depende de nada se puede construir esta semana. El resto está bloqueado por decisiones
+de producto que no me corresponden, y que van en §14.
 
 **Lo que este documento NO decide.** Nada de lo que ya decidió el encargo C: el tutor es un rol
 real con email y contraseña, no un enlace firmado ni un PDF. Eso está cerrado y aquí se da por
@@ -78,7 +97,7 @@ rachas, ni ninguna otra cosa. Nunca.** Meter una recompensa dentro de un examen 
 cambia lo que el examen mide.
 
 Aun con las cuatro restricciones, **esto sigue siendo un riesgo asumido, no un riesgo resuelto**.
-§4.6 dice cómo se comprobaría si el riesgo se materializó, y §10 declara lo que no sabemos.
+§4.6 dice cómo se comprobaría si el riesgo se materializó, y §15 declara lo que no sabemos.
 
 ---
 
@@ -133,7 +152,7 @@ y el fallo se ve como "todavía no ha practicado" en vez de como un error.
 
 **Consecuencia para este spec:** la calibración de §4 depende de saber qué domina el alumno y qué
 no. Si eso no se construye, el sistema de puntos no puede distinguir lo fácil de lo difícil, y sin
-esa distinción **es exactamente el sistema que enseña a farmear**. Va como Fase 0 en §8.
+esa distinción **es exactamente el sistema que enseña a farmear**. Va como Fase 0 en §13.
 
 ### 2.3 La práctica se corrige en el cliente, y eso decide el diseño
 
@@ -437,7 +456,7 @@ era gratis.
 
 **Esto está bloqueado por `skill_mastery`, que hoy tiene 0 filas y nadie escribe** (§2.2). Sin ella
 todos los multiplicadores valen 1,0 y **el sistema pierde su principal defensa contra el farmeo**.
-Por eso Fase 0 en §8 no es una recomendación: es un requisito.
+Por eso Fase 0 en §13 no es una recomendación: es un requisito.
 
 **Fallback si Fase 0 se retrasa** —y hay que decidirlo explícitamente, no dejarlo pasar—: calcular
 la proporción de aciertos histórica del propio alumno en ese `skillCode` directamente desde
@@ -634,7 +653,7 @@ decisión en el rol que ya responde por los datos del colegio.
 
 **Revocación.** El `school_admin` revoca. El tutor puede desvincularse solo. El alumno **puede
 pedirlo, y su petición llega al admin, pero no revoca por sí mismo** — si pudiera, cualquier
-suspenso desactivaría la supervisión. Esto es una decisión de producto y va como **P4** en §9.
+suspenso desactivaría la supervisión. Esto es una decisión de producto y va como **P4** en §14.
 
 ### 5.4 "Compartido con el profesor": no es un permiso nuevo
 
@@ -716,7 +735,7 @@ Dos salidas:
 
 **Recomendación: (a), para la primera versión**, y se declara la limitación en voz alta. El caso de
 dos colegios no existe hoy —hay 1 colegio y 1 alumno en producción— y (b) se puede hacer más tarde
-sin migrar datos. Va como **P5** en §9.
+sin migrar datos. Va como **P5** en §14.
 
 ### 5.7 El quinto rol toca 106 políticas, y 39 no preguntan por el rol
 
@@ -803,7 +822,7 @@ promesa. Si el padre no cumple, el sistema no lo tapa — y esa visibilidad es, 
 hace que se cumpla.
 
 **Quién aprueba si hay dos tutores.** Propuesta: cualquiera de los vinculados, y queda registrado
-quién. Va como **P6** en §9.
+quién. Va como **P6** en §14.
 
 **El colegio no aprueba canjes.** No es asunto suyo lo que un padre pacte con su hijo.
 
@@ -821,9 +840,10 @@ YAGNI, y algunas de estas están además prohibidas por §1.
 
 **Prohibido siempre, no "todavía no":**
 
-- **Tabla de clasificación, ranking, o cualquier comparación entre alumnos.** Ni "vas el 3.º de tu
-  clase", ni "la media de tu clase es 7". El coste socioemocional en primaria no lo sabemos
-  evaluar, y el spec de color ya lo descartó.
+- **Ranking individual de alumnos.** Ni "vas el 3.º de tu clase", ni "la media de tu clase es 7",
+  ni con nombres, ni con apodos, ni con percentiles. **Esta línea la revisó la ampliación y se
+  mantiene** — lo que sí se abre es la liga de **equipos por mejora**, apagada por defecto, y el
+  porqué de la diferencia está en §11. El cambio está declarado en §12.5.
 - **Puntos en el examen.** Ninguno, de ninguna clase.
 - **Restar puntos.** Nunca. Ni por fallar, ni por faltar, ni por caducidad.
 - **Racha diaria que se rompe.** §4.4.
@@ -848,11 +868,466 @@ YAGNI, y algunas de estas están además prohibidas por §1.
 
 ---
 
-## 8. Orden de ejecución y dependencias
+## 8. La tableta compartida y la red mala
+
+Esta sección va antes que los equipos porque **restringe todo lo que viene después**. El destino no
+es el móvil de un niño: es una tableta de colegio que pasa de mano en mano, con una red que a
+veces no encamina. Y la regla que fija el alcance offline es:
+
+> **Solo contenido puede quedar guardado en el dispositivo. Nunca datos del niño.**
+
+En una tableta compartida, lo que se guarda lo lee el siguiente niño que la coja. Eso convierte
+una decisión de caché en una decisión de privacidad.
+
+### 8.1 Lo que ya se guarda hoy, y lo que eso significa
+
+Leído del repositorio, no supuesto:
+
+| Clave | Dónde | Qué contiene | Sobrevive a |
+|---|---|---|---|
+| `cet.exam.queue.<attemptId>` | `localStorage` — `autosave.ts:78` | **las respuestas de examen del alumno** | cerrar la pestaña, apagar la tableta, cambiar de usuario |
+| `cet:practice:tally` | `sessionStorage` — `PracticeSession.tsx:82` | preguntas hechas, aciertos, racha, mejor racha | cerrar sesión **en la misma pestaña** |
+| `cet.exam.sound` | `localStorage` — `ExamRunner.tsx:59` | preferencia de sonido | todo |
+
+Dos observaciones, y la segunda no la había visto nadie:
+
+1. **La cola de examen es datos del alumno en un disco compartido.** Existe por una razón buena y
+   medida: `2026-08-27-tactil-y-red.md §2.5.A` demuestra que es lo que salva un examen cuando cae
+   la red, y §2.5.C que sin ella se perdería trabajo. No se puede quitar sin más. Pero hoy no lleva
+   el `student_id` en la clave y nadie la purga al cambiar de usuario.
+2. **`cet:practice:tally` es una clave global, sin espacio de nombres por alumno.** En una tableta
+   compartida donde el siguiente niño usa la misma pestaña —que es lo normal: nadie cierra
+   pestañas—, hereda el marcador de práctica del anterior. Hoy es cosmético: son cuatro números
+   que se pintan en unas fichas. **En el momento en que un número de esa pantalla valga puntos,
+   deja de ser cosmético.**
+
+**Recomendación, y es barata:** toda clave de cliente pasa a llevar el identificador del alumno, y
+al iniciar sesión se purga cualquier `cet.*` / `cet:*` que pertenezca a otro. La cola de examen se
+purga **solo la de otros alumnos**, nunca la propia — borrarla por error es perder respuestas, y
+`tactil-y-red §2.5.C` mide exactamente lo que eso significa para un niño con el reloj corriendo.
+El detalle de cuándo purgar va como **P13** en §14.
+
+### 8.2 La regla que sale de aquí para todo lo social
+
+> **Lo individual funciona sin conexión. Lo social, no.**
+
+El marcador de un equipo, la liga, el progreso de un compañero: todo eso es dato derivado de otros
+niños. Si se cachea en la tableta, el siguiente que la coja lo lee. Así que:
+
+- **Nada de equipos ni de comparación se guarda en el dispositivo.** Ni en `localStorage`, ni en
+  `sessionStorage`, ni en IndexedDB, ni en la caché de un service worker.
+- Sin red, esas pantallas dicen **"esto se ve cuando haya conexión"**. No enseñan una versión
+  vieja. Un marcador de equipo de hace tres días es peor que ninguno: es una cifra creíble y falsa,
+  que es el fallo que `VERIFICATION_PLAN §2` documenta seis veces.
+- La práctica, la lección descargada y el saldo propio del niño sí funcionan sin conexión.
+
+Es una restricción y a la vez un regalo: coincide exactamente con lo que la minimización pediría de
+todas formas, así que no hay que elegir entre privacidad y producto.
+
+### 8.3 El problema serio: hoy, practicar sin conexión no acredita nada
+
+Este es el hallazgo que más afecta a los puntos, y sale de leer `apps/web/src/lib/telemetry/client.ts`:
+
+- La cola de telemetría es **`private queue: ClientEvent[]`. Vive en memoria y no se persiste**
+  en ningún sitio.
+- `MAX_QUEUE = 500`, y al desbordar **descarta los más antiguos**.
+- `MAX_RETRIES = 5`: tras cinco fallos consecutivos, deja de intentarlo.
+- Al ocultarse la pestaña hace `flush` con `navigator.sendBeacon` — que sin red tampoco llega.
+
+Traducido: **un niño que practica veinte minutos sin conexión y cierra la pestaña pierde la sesión
+entera, y nadie se lo dice.** Hoy eso es un hueco de analítica. Con puntos encima, es *"me he
+puesto a estudiar y la app me ha robado el trabajo"*, que es la forma más rápida de matar la
+confianza en una recompensa. Una recompensa en la que no se confía no motiva: molesta.
+
+**Y aquí choca con §8.1.** Arreglarlo bien significa persistir la cola de eventos en el disco de
+una tableta compartida, y esa cola es dato del niño. Las opciones honestas son tres:
+
+- **(a) Persistir la cola con el `student_id` en la clave, purgando la de otros al entrar.** Es lo
+  mismo que ya hace falta para la cola de examen (§8.1) y reutiliza la decisión. Recomendada.
+- **(b) No persistir, y decírselo al niño**: avisar antes de empezar de que sin conexión la sesión
+  no contará. Es honesto y es barato, pero deja el producto peor justo donde el usuario dijo que
+  quería que funcionara.
+- **(c) Acreditar la sesión offline sin los eventos**, desde un resumen firmado que emita el
+  cliente. Se descarta: es exactamente el dato autodeclarado que §2.3 dice que no se puede creer, y
+  con puntos delante el incentivo de falsearlo ya no es teórico.
+
+Recomiendo **(a)**, y va como **P12** en §14.
+
+---
+
+## 9. Qué es un equipo
+
+### 9.1 No es la sección, y hay una razón concreta
+
+Ya existen `sections` y `section_members`. Lo que tienen dentro, verificado hoy:
+
+```
+sections(id, school_id, name, year_level, academic_year, created_at, updated_at)
+  unique (school_id, academic_year, name)          -- "Y6A" del curso "2026-2027"
+section_members(section_id, profile_id, role_in_section, school_id, added_at)
+  primary key (section_id, profile_id)
+section_role = { student, teacher, assistant }
+```
+
+En producción hay **1 sección y 1 miembro**. Una sección es **una clase**: unos treinta niños, un
+profesor, un curso académico.
+
+**Un equipo no puede ser una sección.** Tres razones, y la primera basta:
+
+1. **`exam_assignments.section_id` apunta a `sections`.** Si un equipo fuera una fila de
+   `sections`, tarde o temprano alguien asignaría un examen a un equipo de cuatro niños desde el
+   mismo desplegable. El tipo estaría bien y el resultado estaría mal, que es la familia de fallos
+   entera de este proyecto.
+2. `sections_uniq (school_id, academic_year, name)` y `year_level` describen la estructura del
+   colegio. Un equipo tiene otro ciclo de vida: se arma y se deshace dentro de un trimestre.
+3. Todo el código y toda la RLS que ya existe asume "sección = clase". Ensanchar ese significado
+   obliga a revisar cada sitio que lo dio por hecho.
+
+### 9.2 La tabla
+
+```
+teams
+  id, school_id not null, section_id not null → sections on delete cascade,
+  name text not null,            -- lo pone el profesor, o los niños con su visto bueno
+  starts_on date not null, ends_on date not null,     -- caduca. Siempre
+  created_by → profiles (teacher | school_admin), created_at
+  check (ends_on > starts_on)
+
+team_members
+  team_id → teams on delete cascade, profile_id → profiles, school_id not null, added_at
+  primary key (team_id, profile_id)
+```
+
+`section_id` es obligatorio: **un equipo vive dentro de una clase**. Equipos entre clases distintas
+mezclan grupos que ningún profesor supervisa a la vez, y no hay quien responda por ellos.
+
+### 9.3 Quién los forma, de qué tamaño, y por qué caducan
+
+**Los forma el profesor.** Ni el sistema al azar, ni los niños eligiéndose. Que los niños se elijan
+produce el niño al que nadie elige, delante de toda la clase, y ese es el peor resultado posible de
+todo este documento — peor que cualquier cosa que la comparación de §11 pueda causar. El profesor
+conoce la dinámica del aula; el sistema no la conoce y no va a conocerla.
+
+**Tamaño 4 a 6.** El suelo importa por una razón de privacidad que se ve en §11.3: en un equipo de
+tres, "2 de 3 llegaron" identifica al tercero sin ninguna duda. El techo importa porque por encima
+de seis la aportación de cada uno se diluye hasta que da igual venir.
+
+**Caducan, y no es opcional.** `ends_on` obligatorio, con rotación por unidad o por trimestre. Un
+equipo permanente convierte una asignación desafortunada en una condena de curso entero y consolida
+la identidad de "somos el equipo malo", que es justo la etiqueta que este diseño existe para no
+crear. Al caducar, el histórico se conserva (nada se borra) pero el equipo deja de aparecer.
+
+**Un alumno está en un equipo a la vez por sección.** Sin esto, la aportación de §11.2 se reparte y
+deja de significar nada.
+
+### 9.4 Lo que hoy impide enseñar un equipo, y hay que abrir a propósito
+
+Verificado sobre `pg_policy`:
+
+```
+section_members_select : is_superadmin() OR (school_id = mío AND (is_staff()
+                          OR profile_id = auth.uid() OR app.is_member_of_section(section_id)))
+profiles_select_own    : id = auth.uid()
+profiles_select_school : school_id = mío AND is_staff()
+students_select_own    : profile_id = auth.uid()
+```
+
+O sea: **un alumno puede listar los `profile_id` de sus compañeros de clase, pero no puede leer
+la fila de `profiles` de ninguno.** Hoy un compañero es un UUID y nada más — ni nombre, ni nada.
+
+Eso significa que **enseñar el nombre de un compañero exige abrir una vía de lectura a `profiles`
+para alumnos, que hoy no existe**. Es el momento exacto en que se ceden datos de un menor a otros
+menores, y conviene verlo como lo que es: no es un detalle de implementación, es la decisión.
+
+**Recomendación:** no se abre `profiles`. Se crea una vista mínima —nombre de pila y nada más,
+`security_invoker`, `security_barrier`— limitada a los compañeros del **equipo** del alumno (no de
+toda la sección), y se concede solo esa columna. Nunca apellidos, nunca `student_code`, nunca
+email, nunca `year_level`, nunca la fila de `students`. Un niño no necesita el apellido de su
+compañero de equipo para animarle: ya se sientan juntos.
+
+Y el test de familia que lo vigila, en la línea de los que mejor han funcionado aquí: **un alumno
+no lee ni una columna de ninguna tabla sobre otro alumno, salvo el nombre de pila de los miembros
+de su equipo vigente.** Ese test caza el fallo de hoy y el que alguien introduzca en marzo.
+
+---
+
+## 10. Tareas de equipo
+
+### 10.1 Qué es una tarea, y qué no
+
+> Una tarea de equipo es **un objetivo compartido, acotado en el tiempo, que el sistema puede
+> comprobar solo con los datos que ya tiene.**
+
+Lo asigna el profesor a un equipo. Ejemplos que cumplen la definición:
+
+- que **cada miembro** alcance su objetivo semanal de días activos (§4.4) — la de por defecto;
+- entre todos, N sesiones acreditadas de un tema concreto antes del viernes;
+- que todos completen una lección determinada.
+
+**Lo que NO es una tarea de este sistema:** "haced un mural sobre fracciones". Es una tarea de
+clase excelente y el sistema **no puede saber si se hizo**. La regla dura:
+
+> **Si el cumplimiento no se deriva de `learning_events` o del ledger, no es una tarea de la app.**
+> No existe el botón "marcar como hecha".
+
+Por qué esto es una decisión y no una limitación: en el momento en que alguien puede declarar que
+una tarea está hecha y eso da puntos, los puntos son una declaración y no un hecho — el mismo
+razonamiento de §2.3 y §3.2. Y si quien declara es un niño en nombre de todo un equipo, hemos
+construido un sitio donde un niño puede cobrar por el trabajo de otro, o negárselo. Prefiero un
+sistema que hace menos cosas y no miente.
+
+### 10.2 Cómo se puntúa, y la regla que evita el desastre
+
+> **Ninguna tarea de equipo puede ser "todos o nada". Prohibido el `AND` sobre los miembros.**
+
+Toda tarea se puntúa por **proporción alcanzada**. Si llegan 4 de 5, el equipo cobra 4/5, no cero.
+
+Ésta es la decisión más importante de la sección. Un objetivo todo-o-nada convierte al miembro
+que faltó en el culpable de que otros cuatro niños pierdan algo, y esa es, literalmente, la
+mecánica que produce acoso en un aula. No es un riesgo teórico: es lo que hunde los trabajos en
+grupo de verdad. Con proporción, la ausencia de uno cuesta *su parte* y nada más — sigue siendo un
+incentivo para animarle, y deja de ser un motivo para culparle.
+
+Corolario: **una tarea de equipo nunca puede tener como objetivo un examen.** §3.1 ya dice que el
+examen no paga; con equipos delante la razón se multiplica, porque convertiría la nota de un niño
+en deuda con sus compañeros.
+
+### 10.3 Qué pasa cuando un miembro no participa
+
+Cinco defensas, y ninguna es un mensaje bonito. Todas son de diseño de datos.
+
+1. **La proporción, ya dicha.** El daño de la ausencia está acotado a su parte.
+2. **El premio individual no depende del equipo** (§11.2). Un niño que hizo lo suyo cobra lo suyo
+   pase lo que pase con los demás. Esto es lo que desactiva el resentimiento del que sí trabajó,
+   que es la otra mitad del fracaso de los trabajos en grupo.
+3. **Nadie dentro del equipo ve cuánto aportó cada uno** (§11.3). Si no se puede saber quién
+   arrastró, no se puede señalar. Es la defensa principal y no depende de la buena voluntad de
+   nadie.
+4. **Nadie puede hacer el trabajo de otro.** La aportación de cada miembro está topada en 1
+   (§11.1): el niño fuerte no puede compensar al ausente ni aunque quiera. Suena a limitación y es
+   una protección: elimina de raíz el "hazlo tú por mí" y el "déjame a mí, que tú lo estropeas".
+5. **El sistema no manda recordatorios de un niño a otro.** Nada de "avisa a tu compañero". Sería
+   un canal de presión entre menores con la app poniendo las palabras, y la app no debe poner esas
+   palabras.
+
+**Y quien sí ve el detalle es el profesor, que es el único que debe verlo.** Que un niño lleve dos
+semanas sin abrir la app es información para un adulto responsable, no para sus compañeros. Cierra
+el círculo con §5.4: el agregado es de todos, el detalle es del profesor.
+
+---
+
+## 11. Recompensas de equipo junto a las individuales
+
+### 11.1 Cómo se puntúa un equipo: cuántos llegaron a su propia meta
+
+> **La puntuación semanal de un equipo es cuántos de sus miembros alcanzaron SU PROPIO objetivo
+> semanal.** No la suma de sus puntos.
+
+Todo lo demás sale de aquí, y por eso conviene ver por qué esta métrica y no la suma:
+
+| Propiedad | Consecuencia |
+|---|---|
+| La meta de cada niño es **suya** —la pactada en §4.4— | El niño que va peor tiene una meta más baja. Llegar está a su alcance |
+| La aportación máxima de cada uno es **1** | No hay estrella que salve al equipo. No hay "hazlo tú por mí" |
+| El que va mejor y el que va peor aportan **lo mismo** | Nadie es un lastre, y nadie es la razón por la que se ganó |
+| Un miembro no puede aportar por otro | La única influencia posible sobre un compañero es animarle |
+| Se mide **llegar a la propia meta**, no acertar | Coherente con §4.2: se paga el intento honesto, no el acierto |
+
+Con la suma de puntos, en cambio, el equipo que toque al niño más rápido gana, la contribución es
+pública en cuanto alguien haga la resta, y el mensaje al niño flojo es que su equipo iría mejor sin
+él. La métrica no es un detalle: **es el mensaje**.
+
+### 11.2 Las dos monedas, y por qué no se mezclan
+
+| | Punto individual | Reconocimiento de equipo |
+|---|---|---|
+| Se gana | estudiando (§4) | llegando el equipo a su tarea (§10) |
+| Se canjea con | **el tutor**, en casa (§6) | **el profesor**, en el aula |
+| Va al ledger | sí | solo un bono pequeño y acotado |
+| Puede bajar por lo que hagan otros | **nunca** | — |
+
+**Por qué el reconocimiento de equipo NO se canjea con el tutor.** Si el punto de equipo se
+cambiara por tiempo de tablet en casa, un niño perdería algo **en su casa** por lo que hicieron o
+dejaron de hacer otros niños. Eso es inaceptable y no hay forma de redactarlo bien. Lo que gana un
+equipo lo concede el profesor, en el aula, para todo el equipo a la vez: quince minutos de juego
+matemático, elegir el tema del viernes, lo que el profesor decida — mismo mecanismo de catálogo y
+misma honestidad sobre la promesa que §6.2, y con las mismas palabras: la app registra un acuerdo,
+no un hecho, y solo el adulto lo marca cumplido.
+
+**Por qué aun así una parte pequeña sí entra en el ledger.** Si el equipo no aporta nada al saldo
+canjeable, no motiva y la mecánica es decorativa. Si aporta mucho, un niño trabajador con un equipo
+flojo pierde mucho por algo que no controla, y ahí nace el resentimiento. Un bono con techo bajo
+—propuesta: como mucho lo que se gana con un día de estudio individual— mantiene la señal sin el
+resentimiento. Es el mismo razonamiento del techo bajo de §4.2: **cuando el techo es bajo, no hace
+falta que el mecanismo sea perfecto.** Va al ledger como `reason='team_bonus'`,
+`source_kind='team_week'`, `source_id = team_id + semana ISO`, y la clave única de §3.2 lo hace
+idempotente.
+
+**Nunca hay bono de equipo negativo.** §4.1 ya lo decía para el individual y aquí importa más: un
+niño no puede perder puntos por lo que hizo otro.
+
+### 11.3 Lo que un miembro ve de su equipo, exactamente
+
+Esto es la línea de minimización dentro del equipo, y es corta a propósito:
+
+**Ve:**
+- el nombre del equipo y el nombre de pila de sus miembros (§9.4);
+- **el agregado del equipo**: "esta semana habéis llegado 4 de 5";
+- **su propia aportación**: "tú has llegado" / "te faltan 2 días";
+- la tarea vigente y cuánto le queda al equipo.
+
+**No ve:**
+- cuántos puntos tiene cada compañero;
+- cuántas sesiones, cuántos minutos ni qué temas hizo cada compañero;
+- si un compañero concreto llegó o no a su meta;
+- el objetivo semanal de un compañero — que además revelaría su nivel;
+- nada de un alumno de otro equipo.
+
+**El límite honesto de esto.** En un equipo de cinco, "4 de 5 llegaron" más lo que un niño sabe de
+sus compañeros permite adivinar quién faltó bastantes veces. **Esa inferencia no se puede
+eliminar**; solo acotar: por eso el tamaño mínimo es 4 (§9.3), por eso la interfaz **nunca la
+confirma**, y por eso el dato es semanal y se reinicia. Decirlo es más útil que fingir que el
+diseño lo resuelve. Queda como hueco H19.
+
+---
+
+## 12. La comparación cruzada — el "rival" rediseñado
+
+El usuario pide "visualización cruzada para impulso mediante progreso ajeno rival". Es lo más
+delicado del encargo y merece la respuesta completa: **una parte de lo que pide no se puede hacer
+sin daño, y hay una alternativa cercana que sí.**
+
+### 12.1 Por qué la clasificación no vale, dicho con precisión
+
+El efecto de una clasificación pública no es "motiva menos de lo que parece": es **asimétrico**.
+Empuja a los de arriba, para quienes la posición es alcanzable y favorecedora, y empuja hacia
+fuera a la mitad de abajo, para quienes la posición es estable, pública y desfavorable. La
+respuesta racional del niño que va último —y es racional, no un fallo de carácter— es dejar de
+jugar: si no puedo ganar y sí puedo quedar expuesto, lo sensato es no participar.
+
+El problema es que **la mitad de abajo son exactamente los niños que más falta les hace
+practicar**. Un mecanismo que motiva a quien ya va bien y aparta a quien va mal produce un
+resultado neto peor que no tener mecanismo, aunque la media de uso suba.
+
+Es el mismo trabajo que ya hizo §4 contra el farmeo, y la conclusión tiene la misma forma. Allí:
+si pagas el acierto, la estrategia óptima del niño es ir a lo fácil, y es culpa del diseño. Aquí:
+si publicas la posición, la estrategia óptima del que va último es marcharse, y es culpa del
+diseño. En los dos casos la salida es la misma: **cambiar lo que se mide.**
+
+### 12.2 Lo que se construye: tres niveles, y solo uno es un rival de verdad
+
+**Nivel 1 · El equipo contra sí mismo. Siempre encendido.**
+*"La semana pasada llegasteis 3 de 5. Esta semana lleváis 4."* Sin rivales, sin exposición de
+nadie, sin decisión que tomar. Aquí vive la mayor parte del beneficio y nada del daño. Si solo se
+construyera esto, el encargo estaría en gran medida servido.
+
+**Nivel 2 · El rival espejo. Siempre encendido, y es individual.**
+El niño compite contra **su propia semana pasada**, presentada como un rival: *"la semana pasada
+por estas horas llevabas 5 sesiones; ahora llevas 3."* Es literalmente impulso mediante progreso
+rival, con el rival siendo uno mismo. Motiva sin exponer a nadie, no se puede perder de forma
+humillante, funciona igual de bien para el que va primero y para el que va último, y **encaja con
+la decisión de §4.2 de premiar la mejora y no el nivel**. Es mi recomendación como mecánica
+principal de "rival", y soy consciente de que no es literalmente lo que el usuario pidió.
+
+**Nivel 3 · La liga de equipos de la clase. Apagada por defecto, la enciende el profesor.**
+Los equipos de una misma sección, ordenados por **cuántos miembros llegaron a su propia meta esa
+semana** (§11.1). Cuatro propiedades que la hacen distinta de un ranking:
+
+- **Se compara la mejora, no el nivel.** Como cada meta es personal, un equipo de niños que van
+  flojos puede ganar la semana. No es un consuelo retórico: con esta métrica **tienen más
+  recorrido**, porque mejorar desde abajo es más fácil que desde arriba.
+- **Se reinicia cada lunes.** Sin acumulado y sin histórico visible. Un acumulado convierte una
+  mala racha de octubre en una posición irrecuperable en mayo, y ahí es exactamente donde el de
+  abajo se retira. Con reinicio, el lunes todos están a cero.
+- **Nunca hay una fila con el nombre de un niño.** La unidad comparada es el equipo.
+- **Solo el agregado.** "Los Delfines: 4 de 5". Nunca el desglose.
+
+### 12.3 Lo que NO se construye, y la alternativa que ofrezco a cambio
+
+**No se construye el ranking individual de alumnos.** Ni con nombres, ni con apodos, ni con
+percentiles, ni "vas mejor que el 70 % de tu clase", ni un podio semanal de niños. Es la lectura
+más literal de "progreso ajeno rival" y es la que no se puede hacer sin daño: pone a un niño de
+once años en una posición pública y estable que no puede cambiar en una semana, delante de la
+gente con la que come.
+
+**La alternativa más cercana que sí se puede hacer** son los niveles 1, 2 y 3 juntos: el rival
+espejo da el "rival" individual, la liga de equipos da la rivalidad social, y el equipo contra sí
+mismo da la sensación de avance. Entre los tres cubren el mecanismo que el usuario busca sin la
+parte que hace daño. **El usuario decide** — pero que decida sabiendo que el ranking individual y
+la liga de equipos por mejora no son dos versiones de lo mismo con distinta intensidad: son dos
+mecanismos con efectos contrarios sobre la mitad de la clase que más nos importa.
+
+### 12.4 Quién lo apaga, y qué se apaga
+
+| Nivel | Por defecto | Quién lo cambia |
+|---|---|---|
+| 1 · equipo contra sí mismo | encendido | nadie. No expone a nadie |
+| 2 · rival espejo | encendido | el propio alumno puede ocultarlo. Es suyo |
+| 3 · liga de equipos | **apagado** | **el profesor, por sección** |
+
+**Por qué apagado por defecto el nivel 3.** El daño es asimétrico: encenderlo donde no procede
+hace daño, no encenderlo solo deja de motivar. Ante un riesgo asimétrico, el valor por defecto es
+el lado que no hace daño. Y la decisión es de clima de aula: la toma quien conoce el aula.
+
+**¿Puede un niño salirse de la liga?** No hace falta, porque no está expuesto individualmente: no
+hay de qué salirse. Pero **el profesor o el tutor pueden pedir que un alumno concreto quede fuera
+de toda comparación** — y entonces ese alumno no cuenta para la métrica de su equipo ni a favor ni
+en contra: baja el denominador. Es una exclusión invisible, sin coste para el equipo y sin
+etiqueta para el niño. Va como **P11** en §14, porque decidir si el niño puede pedirlo él mismo no
+me corresponde.
+
+**Y una regla de datos que lo sostiene todo:** cuando el nivel 3 está apagado, la vista de liga no
+existe para nadie de esa sección — ni oculta en el cliente, ni devuelta por la API y escondida con
+CSS. Lo que no se debe ver no se envía. Es la misma regla que `attempt_items.answer_key`.
+
+### 12.5 Qué cambia de las decisiones ya tomadas
+
+La ampliación no rehace nada, pero toca tres cosas y hay que decirlo con todas las letras.
+
+**Cambio 1 · §7 prohibía "cualquier comparación entre alumnos". Se matiza.**
+Sigue prohibido el **ranking individual**, por la razón original y por §12.1. Se abre la **liga de
+equipos por mejora**, apagada por defecto. La razón por la que aquella prohibición se escribió —el
+coste socioemocional de exponer a un niño— **se conserva entera**, porque en la liga nunca aparece
+una fila con el nombre de un niño. Y la advertencia que la acompañaba, que no estamos cualificados
+para evaluar ese coste en primaria, sigue siendo verdad: por eso va apagada por defecto, por eso
+la enciende un profesor y no un ajuste global, y por eso se puede apagar.
+
+**Cambio 2 · §4.4 daba por hecho que el objetivo semanal lo pacta el tutor. Ya no puede.**
+La métrica de equipo de §11.1 se apoya en el objetivo semanal de cada niño. Si ese objetivo
+dependiera del tutor, **los equipos quedarían bloqueados por la Fase 3 entera** — y hoy hay 0
+guardians y 0 `guardian_email` poblados. Así que: el objetivo semanal existe siempre; lo pone el
+sistema por defecto, lo puede ajustar el profesor dentro del rango 3–5 días, y **cuando hay tutor,
+lo pacta el tutor** con prioridad. Esto desbloquea los equipos sin esperar al rol `guardian`, y es
+la razón por la que el orden de ejecución de §13 cambia.
+
+**Cambio 3 · §7 decía "sin notificaciones". Se refuerza en vez de relajarse.**
+Con equipos delante, la tentación de "recuérdale a tu compañero" es evidente. Se prohíbe
+explícitamente (§10.3, defensa 5): **ningún mensaje del sistema de un niño a otro niño.**
+
+**Lo que NO cambia**, y conviene que quede claro: el examen sigue sin dar puntos de ninguna clase
+(§3.1), nada resta nunca (§4.1), no hay racha diaria que se rompa (§4.4), el detalle sigue siendo
+del profesor y no del tutor ni de los compañeros (§5.1), y el ledger sigue siendo append-only con
+saldo derivado (§3.2).
+
+---
+## 13. Orden de ejecución y dependencias
 
 **No dupliques al agente B.** Está implementando ahora mismo el progreso visible por grupo. Todo lo
 de la Fase 1 se apoya en lo que él deje, no lo reescribe. Antes de tocar una pantalla de progreso,
 lee lo suyo.
+
+Con la ampliación hay dos caminos que avanzan en paralelo y se cruzan una sola vez:
+
+```
+Fase 0  skill_mastery ─────────┐
+Fase 1  esfuerzo visible ──────┼──> Fase 2  ledger individual ──┬──> Fase 5  equipos
+Fase 1b higiene del cliente ───┘                                │    Fase 6  tareas + liga
+                                                                └──> Fase 3  guardian
+                                                                     Fase 4  canje con el tutor
+```
+
+El único punto donde se cruzan es el **objetivo semanal**: lo necesitan la Fase 2 y la Fase 5, y
+por el cambio 2 de §12.5 **ya no depende del tutor**, así que los equipos no esperan a la Fase 3.
 
 ### Fase 0 — Alguien tiene que escribir `skill_mastery` · **BLOQUEANTE, y no es de este spec**
 
@@ -868,11 +1343,25 @@ barato que resolver `skills.code → id` en cada lectura, para siempre.
 
 ### Fase 1 — Esfuerzo visible, sin puntos · **se puede hacer ya**
 
-No necesita guardian, ni ledger, ni Fase 0. Es literalmente "mostrar visualmente cuánto esfuerzo
-más": una meta y una barra hacia ella, calculada desde `learning_events` con `server_ts`. Y aquí es
-donde hay que **tomar la línea base de §4.6 antes de encender nada más**.
+No necesita guardian, ni ledger, ni equipos, ni Fase 0. Es literalmente "mostrar visualmente cuánto
+esfuerzo más": una meta y una barra hacia ella, calculada desde `learning_events` con `server_ts`.
+Aquí entra también el **rival espejo** de §12.2 nivel 2, que solo compara al niño con su propia
+semana anterior y no toca dato de nadie más. Y aquí es donde hay que **tomar la línea base de §4.6
+antes de encender nada más**.
 
-### Fase 2 — El ledger y la acreditación · depende de Fase 0 para calibrar
+### Fase 1b — Higiene del cliente en tableta compartida · **se puede hacer ya, y es barata**
+
+Va emparejada con la Fase 1 porque es la que hace legal todo lo demás:
+
+1. Espacio de nombres por alumno en toda clave de `localStorage` / `sessionStorage`, y purga de las
+   de otros alumnos al iniciar sesión (§8.1). Empieza por `cet:practice:tally`, que hoy es global.
+2. Decidir P12: persistir o no la cola de telemetría, y qué se le dice al niño que practica sin
+   conexión (§8.3). **Sin esto, la Fase 2 acredita puntos que a veces desaparecen**, que es peor
+   que no tener puntos.
+
+No depende de nada y desbloquea la confianza en todo el sistema de recompensas.
+
+### Fase 2 — El ledger y la acreditación individual · depende de Fase 0 para calibrar
 
 En este orden, que importa:
 
@@ -881,11 +1370,14 @@ En este orden, que importa:
 2. `reward_ledger`, `reward_accounts`, trigger de inmutabilidad, trigger de cadena, y el test de
    concurrencia.
 3. El acreditador del servidor, idempotente.
-4. La pantalla del niño: saldo, y el porqué de cada punto.
+4. **El objetivo semanal como dato de primera clase** (cambio 2 de §12.5): existe siempre, por
+   defecto del sistema, ajustable por el profesor, y por el tutor cuando lo haya. Lo necesitan la
+   Fase 2 y la Fase 5.
+5. La pantalla del niño: saldo, y el porqué de cada punto.
 
-No necesita el rol guardian. El niño acumula puntos y los ve; el canje llega después.
+No necesita el rol guardian ni equipos. El niño acumula puntos y los ve; el canje llega después.
 
-### Fase 3 — El rol `guardian` · **BLOQUEADA por las preguntas de §9**
+### Fase 3 — El rol `guardian` · **BLOQUEADA por las preguntas de §14**
 
 Enum, `guardian_links`, RLS nueva, matriz de rutas, alta con verificación de email, recuperación de
 contraseña, `public.audit_guardian_action`, el endurecimiento de `app.can_read_content()`, el test
@@ -893,7 +1385,30 @@ de familia de §5.7, y el informe como función única compartida con `/teach` (
 
 Es, con diferencia, la fase más cara. Antes de empezarla hay que tener contestadas P1–P6.
 
-### Fase 4 — Catálogo y canje · depende de 2 y 3
+### Fase 4 — Catálogo y canje con el tutor · depende de 2 y 3
+
+### Fase 5 — Equipos · depende de 2, **no de 3**
+
+`teams`, `team_members`, la RLS, la vista mínima de nombre de pila de §9.4 con su test de familia,
+y la pantalla del equipo con el agregado y solo el agregado (§11.3). El profesor forma los equipos
+desde `/teach`.
+
+Depende de la Fase 2 porque sin objetivo semanal no hay métrica de equipo, y de la Fase 1b porque
+la pantalla de equipo no se puede cachear en una tableta compartida (§8.2).
+
+Antes de empezarla hacen falta **P9 y P10**.
+
+### Fase 6 — Tareas de equipo, bono de grupo y liga · depende de 5
+
+1. Tareas derivadas de datos, puntuadas por proporción (§10.2). La tarea por defecto —"que cada uno
+   llegue a su meta"— no necesita interfaz de creación y es la que hay que hacer primero.
+2. El bono de equipo al ledger con su techo bajo (§11.2).
+3. El catálogo del profesor y el canje de equipo en el aula, con la misma honestidad de §6.2.
+4. La liga de equipos (§12.2, nivel 3), **apagada por defecto**, con el interruptor por sección
+   en `/teach` y la exclusión individual de §12.4.
+
+La liga va la última a propósito: es la pieza con más riesgo y la que más se beneficia de que ya
+haya semanas de datos reales con las que ver si la métrica de §11.1 se comporta como dice.
 
 ### Tareas sueltas que salen de aquí y que convendría no perder
 
@@ -902,10 +1417,12 @@ Es, con diferencia, la fase más cara. Antes de empezarla hay que tener contesta
 - La dificultad del ítem generado no viaja en el evento de práctica (§2.4).
 - Un profesor lee la telemetría de alumnos a los que no da clase; `app.teaches_student()` existe y
   está sin usar (§5.4).
+- `cet:practice:tally` es una clave global sin espacio de nombres por alumno (§8.1).
+- La cola de telemetría se rinde tras `MAX_RETRIES = 5` y descarta en silencio (§8.3). Es R4 otra
+  vez: silencioso es peor que ruidoso.
 
 ---
-
-## 9. Preguntas al usuario
+## 14. Preguntas al usuario
 
 Decisiones de producto que no me corresponden. Cada una con mi recomendación.
 
@@ -944,19 +1461,61 @@ cuando uno está de viaje, y eso hace que el sistema deje de cumplirse, que es l
 verdadera de que fracase.
 
 **P7 · ¿Cuál es el objetivo semanal por defecto y el tope diario de puntos?**
-*Recomiendo: objetivo por defecto 4 días, ajustable por el tutor entre 3 y 5; y un tope diario que
-un niño alcance en unos 20–25 minutos de estudio honesto.* Los números concretos no los puedo fijar
-con lo que hay (§10, H3): salen de los simuladores de §4.6 y de una semana de datos reales de un
-niño de verdad.
+*Recomiendo: objetivo por defecto 4 días, ajustable entre 3 y 5; y un tope diario que un niño
+alcance en unos 20–25 minutos de estudio honesto.* Los números concretos no los puedo fijar con lo
+que hay (§15, H3): salen de los simuladores de §4.6 y de una semana de datos reales de un niño de
+verdad. **Ojo:** por el cambio 2 de §12.5, quien ajusta el objetivo ya no es solo el tutor — es el
+sistema por defecto, el profesor si quiere, y el tutor con prioridad cuando exista.
 
 **P8 · ¿Se lanzan los puntos a la vez que la barra de esfuerzo, o después?**
 *Recomiendo: después, y con al menos dos semanas de separación.* Es lo que produce la línea base de
 §4.6. Sin línea base no se podrá demostrar nunca si los puntos ayudaron o si desviaron al niño hacia
 lo fácil, y esa es la única pregunta que de verdad importa aquí.
 
+### Las que trae la ampliación
+
+**P9 · La decisión grande: ¿se construye el ranking individual de alumnos?**
+*Recomiendo: no, y ofrezco a cambio los tres niveles de §12.2 — rival espejo, equipo contra sí
+mismo y liga de equipos por mejora.* Es la única parte del encargo donde digo que no. El motivo
+está en §12.1 y no es delicadeza: una clasificación pública empuja a los de arriba y aparta a la
+mitad de abajo, que son justo los niños que más necesitan practicar. **Si el usuario decide que sí
+quiere el ranking individual**, lo mínimo que pediría es que sea por mejora semanal y no por nivel,
+que se reinicie cada lunes, que enseñe solo los primeros puestos y nunca los últimos, y que un
+alumno pueda salirse sin que se note. Aun así seguiría sin recomendarlo.
+
+**P10 · ¿Quién forma los equipos, y pueden los niños elegirse?**
+*Recomiendo: los forma el profesor, siempre, y los niños no se eligen entre ellos.* Dejar que se
+elijan produce el niño al que nadie elige, en público. Si se quiere dar voz a los niños, la forma
+segura es que **pongan el nombre del equipo** una vez formado: participación sin exposición.
+
+**P11 · ¿Puede un alumno pedir quedar fuera de toda comparación, o solo un adulto?**
+*Recomiendo: que lo pida un adulto —profesor o tutor— y que el alumno pueda solicitarlo.* Que un
+niño se apague a sí mismo con un botón visible es una etiqueta; que lo haga un adulto tras
+hablarlo, no. Pero es una decisión de producto con dos lados legítimos.
+
+**P12 · Sin conexión, ¿se persiste la cola de telemetría en la tableta compartida?**
+*Recomiendo: sí, con el `student_id` en la clave y purgando la de otros alumnos al entrar.* Hoy la
+cola vive en memoria y una sesión offline se pierde entera y en silencio (§8.3). Con puntos encima
+eso es "la app me robó el trabajo". La alternativa honesta —no persistir y avisar al niño antes de
+empezar— es aceptable, pero deja el producto peor justo donde el usuario dijo que quería que
+funcionase.
+
+**P13 · ¿Cuándo se purga la cola de examen de `localStorage` en una tableta compartida?**
+*Recomiendo: al iniciar sesión un alumno, se purga la de cualquier OTRO alumno, nunca la propia.*
+Es la única clave de cliente donde purgar de más significa perder respuestas de un examen, y
+`tactil-y-red §2.5` mide lo que eso significa para un niño con el reloj corriendo. Hay que decidirlo
+con esa medición delante.
+
+**P14 · ¿Qué gana un equipo, y quién lo concede?**
+*Recomiendo: lo concede el profesor, en el aula, para todo el equipo, con un catálogo que él define
+— y NO se canjea con el tutor en casa.* El motivo está en §11.2: si el premio de equipo se cobrase
+en casa, un niño perdería algo en su casa por lo que hicieron otros niños. Falta saber si el
+profesor está dispuesto a llevar ese catálogo, porque si no lo lleva, la moneda de equipo no vale
+nada y es mejor no tenerla.
+
 ---
 
-## 10. HUECOS
+## 15. HUECOS
 
 Lo que este documento no ha podido determinar. Un hueco declarado vale más que una recomendación
 inventada.
@@ -1018,3 +1577,50 @@ inventada.
     nuevos, pero sí convierte `learning_events` en la fuente de un cálculo con dinero simbólico
     dentro. Una tabla que solo alimentaba analítica pasa a alimentar un saldo, y eso sube el listón
     de lo que significa perder un evento.
+
+**Sobre los equipos, la comparación y la tableta compartida (la ampliación)**
+
+16. **No sé si la métrica "cuántos llegaron a su propia meta" (§11.1) se comporta como digo.** El
+    argumento es sólido sobre el papel —aportación topada en 1, el flojo aporta igual que el
+    fuerte— y no está probado con niños. Es la pieza de la que cuelga toda la sección de equipos y
+    la que más me gustaría ver fallar pronto si va a fallar.
+17. **La liga de equipos podría reproducir el daño que evita, un nivel más arriba.** El niño no
+    queda expuesto, pero **el equipo sí**, y un equipo que va último cuatro semanas seguidas puede
+    generar exactamente la misma retirada, repartida entre cinco. La mitigación —métrica por mejora,
+    reinicio semanal, rotación de equipos— la creo suficiente. No lo sé.
+18. **No sé si el "rival espejo" motiva a un niño de once años.** Es mi recomendación principal como
+    mecánica de rivalidad (§12.2) y no tengo ninguna evidencia de que a esta edad competir contra
+    uno mismo se sienta como competir. Puede resultar sencillamente aburrido, y entonces el usuario
+    tendría razón en querer un rival de verdad.
+19. **La inferencia de "quién faltó" en un equipo pequeño no se puede eliminar.** §11.3 la acota con
+    el tamaño mínimo de 4 y con no confirmarla nunca en la interfaz. Sigue siendo posible, y en un
+    aula real un niño lo sabe sin necesidad de la app.
+20. **No he mirado qué pasa con un equipo que se queda en dos miembros** por bajas, cambios de
+    clase o un alumno excluido de la comparación (§12.4). Los denominadores se vuelven raros y la
+    inferencia de H19 se vuelve trivial. No lo he resuelto.
+21. **No sé quién forma los equipos cuando no hay profesor asignado a la sección.** Hay 1 sección y
+    1 `section_member` en producción; no he podido comprobar cómo se ve una clase real con su
+    profesor dentro.
+22. **`teams` y `team_members` no existen y no he verificado que la RLS que propongo sea escribible
+    sin recursión.** `app.is_member_of_section()` existe **precisamente** porque
+    `section_members_select` provocaba "infinite recursion detected in policy" (comentario de
+    `0004_app_helpers.sql:315`). Una política de `team_members` que consulte `team_members` va a
+    tropezar con lo mismo y va a necesitar su propio helper.
+23. **No he medido nada del coste de la liga.** Ordenar equipos por miembros que llegaron a su meta
+    semanal implica recorrer los eventos de toda una sección cada vez que un niño abre la pantalla.
+    Con 1 alumno no se nota. Con 30 y una tableta en una red mala, puede ser la pantalla más cara
+    del producto.
+24. **No sé cuánto contenido cabe realmente en una tableta de colegio compartida.** El alcance
+    offline dice "lecciones descargadas"; `tactil-y-red §2.6` mide el peso del *bundle*, no el del
+    contenido. Cuántas lecciones caben, y qué se hace cuando no caben, no lo he mirado.
+25. **No he comprobado si el `sendBeacon` del cierre de pestaña llega en la red del colegio.** El
+    código lo usa porque es lo único que sobrevive al cierre (`client.ts:101`), pero con la red
+    colgada —el caso B de `tactil-y-red §2.5`, que es el habitual en un colegio— un beacon tampoco
+    se entrega, y nadie se entera. No lo he medido.
+26. **La purga de claves de cliente al cambiar de usuario no está diseñada, solo recomendada.**
+    Quién la dispara, qué pasa si el niño anterior no cerró sesión sino que cerró la tapa, y cómo se
+    distingue "otro alumno" cuando no hay sesión activa, son tres preguntas sin respuesta en §8.1.
+27. **No he mirado el efecto de todo esto en el informe del tutor.** Si un tutor ve el equipo de su
+    hijo, ve datos agregados de otros menores cuyos padres no han consentido nada. Mi inclinación
+    es que **el tutor no ve nada del equipo**, ni siquiera el agregado, y que si quiere saberlo se
+    lo cuenta su hijo. No lo he desarrollado y debería estar en §5.1.
