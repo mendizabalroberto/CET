@@ -20,7 +20,7 @@
  * En producción las calcula la Edge Function `student-pin`. Este script existe
  * para el arranque: sembrar las cuentas de demostración ANTES de que los
  * secretos estén dados de alta en Supabase, usando el mismo secreto que ya está
- * generado en `secrets/edge-secrets.env`.
+ * generado en `secrets/supabase-edge.env`.
  *
  * IMPRIME HASHES, NUNCA EL SECRETO. El PIN en claro se imprime a propósito
  * —es un PIN de demostración que hay que poder entregar en mano— y por eso este
@@ -46,10 +46,10 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const ARGON = { parallelism: 1, iterations: 2, memorySize: 19456, hashLength: 32 };
 
 function readSecret() {
-  const raw = readFileSync(join(root, "secrets", "edge-secrets.env"), "utf8");
+  const raw = readFileSync(join(root, "secrets", "supabase-edge.env"), "utf8");
   const match = /CET_STUDENT_PASSWORD_SECRET\s*=\s*(\S+)/.exec(raw);
   if (!match?.[1]) {
-    throw new Error("Falta CET_STUDENT_PASSWORD_SECRET en secrets/edge-secrets.env");
+    throw new Error("Falta CET_STUDENT_PASSWORD_SECRET en secrets/supabase-edge.env");
   }
   return match[1];
 }

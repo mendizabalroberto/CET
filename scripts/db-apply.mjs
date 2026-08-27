@@ -14,7 +14,7 @@
  *   node scripts/db-apply.mjs seed             # aplica supabase/seed/*.sql
  *   node scripts/db-apply.mjs migrations --dry # solo lista lo que haría
  *
- * La contraseña se lee de PGPASSWORD o de secrets/ENV.txt. Nunca se imprime.
+ * La contraseña se lee de PGPASSWORD o de secrets/database.env. Nunca se imprime.
  */
 
 import { readFileSync, readdirSync } from "node:fs";
@@ -27,9 +27,9 @@ const PROJECT_REF = "clcutoqjdgeggvgyreud";
 
 function readPassword() {
   if (process.env.PGPASSWORD) return process.env.PGPASSWORD;
-  const raw = readFileSync(join(root, "secrets", "ENV.txt"), "utf8");
-  const match = /SUPABASE_KEY\s*=\s*(\S+)/.exec(raw);
-  if (!match?.[1]) throw new Error("No se encontró la contraseña en secrets/ENV.txt");
+  const raw = readFileSync(join(root, "secrets", "database.env"), "utf8");
+  const match = /SUPABASE_DB_PASSWORD\s*=\s*(\S+)/.exec(raw);
+  if (!match?.[1]) throw new Error("No se encontró SUPABASE_DB_PASSWORD en secrets/database.env");
   return match[1];
 }
 

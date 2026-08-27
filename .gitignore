@@ -49,3 +49,6 @@ Thumbs.db
 .claude/settings.local.json
 .smoke/
 **/.smoke/
+
+.vercel
+.env*

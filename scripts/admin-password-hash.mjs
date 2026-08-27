@@ -27,11 +27,11 @@ import { bcrypt } from "hash-wasm";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
-const raw = readFileSync(join(root, "secrets", "edge-secrets.env"), "utf8");
+const raw = readFileSync(join(root, "secrets", "accounts.env"), "utf8");
 const match = /^ADMIN_PASSWORD\s*=\s*(.+)$/m.exec(raw);
 
 if (!match?.[1]) {
-  console.error("Falta ADMIN_PASSWORD en secrets/edge-secrets.env");
+  console.error("Falta ADMIN_PASSWORD en secrets/accounts.env");
   process.exit(1);
 }
 

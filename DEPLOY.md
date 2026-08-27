@@ -11,7 +11,8 @@ secretos de las Edge Functions, ningún alumno puede iniciar sesión.
 
 **Panel de Supabase → Project Settings → Edge Functions → Secrets.**
 
-Los valores están en `secrets/edge-secrets.env`, que no se versiona.
+Los valores están en `secrets/supabase-edge.env`, que no se versiona. Ese fichero
+contiene EXACTAMENTE los dos que van aquí y ninguno más.
 
 | Secreto | Qué hace | Si cambia |
 |---|---|---|
