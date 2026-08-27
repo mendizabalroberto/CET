@@ -31,6 +31,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react"
 import Link from "next/link";
 import { resolveI18n, type Locale } from "@cet/shared";
 import {
+  AnswerKeypad,
   Button,
   CorrectFeedback,
   ErrorState,
@@ -46,6 +47,7 @@ import {
   SolutionPanel,
   StatTile,
   StreakMeter,
+  keypadLayoutFor,
   type MasteryLevel,
 } from "@cet/ui";
 
@@ -351,6 +353,27 @@ export function PracticeSession({ topicId, locale, levels }: PracticeSessionProp
   const accuracy = accuracyPercent(state);
   const answered = state.phase === "answered";
 
+  /**
+   * El teclado en pantalla de ESTA pregunta.
+   *
+   * Las teclas salen del ítem, no de una constante: `math.compare` recibe tres
+   * símbolos y ni un dígito, y `math.mixed` recibe barra y espacio. La
+   * derivación vive en `@cet/ui` (`keypadLayoutFor`) y hay un invariante que
+   * recorre el registro entero de generadores exigiendo que ninguno se quede sin
+   * teclas para su respuesta: `teclado-cubre-generadores.test.ts`.
+   *
+   * `null` significa "esta respuesta no se teclea con un teclado acotado". No es
+   * un fallo: el campo se queda con `inputMode="decimal"` y el alumno usa el
+   * teclado del sistema, que es exactamente lo que había antes.
+   */
+  const keypad =
+    item === null
+      ? null
+      : keypadLayoutFor(
+          { answerType: item.answerKey.type, placeholder: item.body.placeholder },
+          locale,
+        );
+
   return (
     <div className="flex flex-col gap-6">
       <TopicChips topics={topics} activeId={topic.id} locale={locale} levels={levels} />
@@ -362,17 +385,16 @@ export function PracticeSession({ topicId, locale, levels }: PracticeSessionProp
       ) : null}
 
       <section aria-label={t.title} className="flex flex-col gap-4">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {/* DOS indicadores, no cuatro. Había seis en total y dos parejas medían
+            exactamente el mismo número: el StatTile «Acierto» decía lo mismo que
+            la ProgressBar de acierto, y el StatTile «Mejor» lo mismo que el
+            «Mejor racha: N» del StreakMeter. Un indicador que repite al de al
+            lado no aporta ni un bit y sí resta: un niño de once años lee UNO de
+            un vistazo, y con seis no lee ninguno. Quedan los dos recuentos
+            crudos, que no los da nadie más. */}
+        <div className="grid grid-cols-2 gap-3">
           <StatTile value={String(state.asked)} label={learnI18n((d) => d.practice.asked)} />
           <StatTile value={String(state.correct)} label={learnI18n((d) => d.practice.right)} />
-          <StatTile
-            value={accuracy === null ? t.noneYet : `${accuracy}%`}
-            // "—" no se puede leer en voz alta. Sin este texto, un lector de
-            // pantalla anuncia "Acierto, raya".
-            valueText={accuracy === null ? t.notMeasuredYet : undefined}
-            label={learnI18n((d) => d.practice.accuracy)}
-          />
-          <StatTile value={String(state.bestStreak)} label={learnI18n((d) => d.practice.best)} />
         </div>
 
         <ProgressBar
@@ -435,7 +457,29 @@ export function PracticeSession({ topicId, locale, levels }: PracticeSessionProp
               label={learnI18n((d) => d.practice.answerLabel)}
               placeholder={item.body.placeholder ?? t.answerPlaceholder}
               unit={item.body.unit}
+              // Con teclado propio, el del sistema no debe levantarse: es lo que
+              // tapaba el campo de respuesta en tableta (hueco declarado en
+              // `2026-08-27-tactil-y-red.md`; no hay una sola línea de
+              // `visualViewport` en el repo). Sin teclado propio se deja el de
+              // siempre, o el alumno se quedaría sin poder escribir.
+              inputMode={keypad ? "none" : "decimal"}
             />
+
+            {/* El teclado va PEGADO al campo y ANTES de los botones: es parte
+                de la caja de escribir, no una acción. Y así «Comprobar» queda
+                abajo del todo, que en una tableta es donde está el pulgar. */}
+            {keypad ? (
+              <AnswerKeypad
+                layout={keypad}
+                value={state.answer}
+                onChange={(value) => {
+                  noteActivity();
+                  dispatch({ type: "answer_changed", value, now: Date.now() });
+                }}
+                targetRef={answerRef}
+                disabled={answered}
+              />
+            ) : null}
 
             {state.notice === "blank-answer" ? (
               <p role="alert" className="text-sm font-semibold text-ink">

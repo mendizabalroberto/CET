@@ -23,6 +23,20 @@ export interface NumericInputProps {
   /** Se invoca al pulsar Enter: en practica, comprobar la respuesta. */
   readonly onSubmit?: (() => void) | undefined;
   readonly className?: string | undefined;
+  /**
+   * `"none"` cuando quien monta el campo YA le esta dando al alumno un teclado
+   * en pantalla propio (`AnswerKeypad`). Es lo que impide que el teclado del
+   * sistema se levante y tape el campo de respuesta en una tableta.
+   *
+   * NO es `readOnly`: el campo sigue enfocable y sigue aceptando el teclado
+   * fisico, que es como se escribe en escritorio. Y por defecto sigue siendo
+   * `"decimal"`, asi que quien no monte teclado propio no cambia de conducta:
+   * un campo con `inputMode="none"` y sin teclado propio seria un campo en el
+   * que un nino con tableta no puede escribir nada.
+   *
+   * @default "decimal"
+   */
+  readonly inputMode?: "decimal" | "none" | "text" | undefined;
 }
 
 /**
@@ -41,7 +55,7 @@ export interface NumericInputProps {
  *    sugiriendo respuestas anteriores en un examen es un problema de integridad.
  */
 export const NumericInput = forwardRef<HTMLInputElement, NumericInputProps>(function NumericInput(
-  { value, onChange, label, unit, placeholder, disabled = false, onSubmit, className },
+  { value, onChange, label, unit, placeholder, disabled = false, onSubmit, className, inputMode = "decimal" },
   ref,
 ): ReactNode {
   const t = useI18n();
@@ -52,7 +66,7 @@ export const NumericInput = forwardRef<HTMLInputElement, NumericInputProps>(func
       <input
         ref={ref}
         type="text"
-        inputMode="decimal"
+        inputMode={inputMode}
         autoComplete="off"
         autoCorrect="off"
         spellCheck={false}

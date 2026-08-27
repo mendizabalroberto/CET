@@ -99,6 +99,12 @@ export const UI_STRINGS = {
     es: "Sin conexión. Seguimos guardando en este dispositivo.",
     en: "No connection. We keep saving on this device.",
   },
+  // La red acepto la conexion y no contesto. NO dice "sin conexion": eso no
+  // consta, y la peticion pudo llegar al servidor.
+  autosaveTimeout: {
+    es: "Sin respuesta todavía. Seguimos intentándolo",
+    en: "No answer yet. We keep trying",
+  },
   autosaveRetrying: { es: "Reintentando guardar", en: "Trying to save again" },
   autosaveNever: { es: "Todavía no hay nada que guardar", en: "Nothing to save yet" },
 
@@ -146,6 +152,25 @@ export const UI_STRINGS = {
     es: "Sigue trabajando: guardamos todo y lo enviamos cuando vuelva la conexión.",
     en: "Keep working: we save everything and send it when you are back online.",
   },
+
+  /* --- teclado en pantalla (práctica táctil) ---
+     Los dígitos NO están aquí: su nombre accesible es el propio dígito y es el
+     mismo en las dos lenguas. Lo que sí necesita nombre es todo lo que un lector
+     de pantalla no puede leer solo: una barra, un espacio o un símbolo de
+     comparación se anuncian como "barra", "espacio" o nada en absoluto. */
+  keypadLabel: { es: "Teclado de respuesta", en: "Answer keypad" },
+  keypadHelp: {
+    es: "Usa las flechas para moverte por las teclas.",
+    en: "Use the arrow keys to move between the keys.",
+  },
+  keypadDecimalComma: { es: "Coma decimal", en: "Decimal comma" },
+  keypadDecimalPoint: { es: "Punto decimal", en: "Decimal point" },
+  keypadSlash: { es: "Barra de fracción", en: "Fraction slash" },
+  keypadSpace: { es: "Espacio", en: "Space" },
+  keypadBackspace: { es: "Borrar el último carácter", en: "Delete the last character" },
+  keypadGreater: { es: "Mayor que", en: "Greater than" },
+  keypadLess: { es: "Menor que", en: "Less than" },
+  keypadEqual: { es: "Igual a", en: "Equal to" },
 } as const satisfies Record<string, I18nText>;
 
 export type UiStringKey = keyof typeof UI_STRINGS;

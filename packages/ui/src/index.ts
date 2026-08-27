@@ -69,6 +69,22 @@ export { WarningBox, type WarningBoxProps } from "./learning/WarningBox.js";
 export { StepList, type StepListProps, type Step } from "./learning/StepList.js";
 export { FractionText, type FractionTextProps } from "./learning/FractionText.js";
 export { MathStem, type MathStemProps } from "./learning/MathStem.js";
+// La figura y sus datos van por separado a proposito: `lesson-figure.js` no
+// lleva `"use client"` y el mapeo del servidor importa de ahi.
+export { LessonFigure, type LessonFigureProps } from "./learning/LessonFigure.js";
+export {
+  LESSON_FIGURE_COMPONENTS,
+  chainConversion,
+  chainSteps,
+  chainUnits,
+  stepFactor,
+  figureAltText,
+  parseLessonFigure,
+  type ChainQuantity,
+  type ChainStep,
+  type FractionBar,
+  type LessonFigure as LessonFigureData,
+} from "./learning/lesson-figure.js";
 
 /* --- examen --- */
 export { QuestionCard, type QuestionCardProps } from "./exam/QuestionCard.js";
@@ -125,3 +141,19 @@ export {
   type MasteryLadderProps,
 } from "./progress/MasteryLadder.js";
 export { EffortMeter, MAX_TARGETS, type EffortMeterProps } from "./progress/EffortMeter.js";
+
+/* --- teclado en pantalla (practica tactil) --- */
+export { AnswerKeypad, type AnswerKeypadProps } from "./input/AnswerKeypad.js";
+// Sale de un modulo SIN "use client" a proposito: lo recorre un invariante que
+// corre en Node contra el registro de generadores. Mismo motivo que
+// `isRenderableBlockKind`. Ver la cabecera de `input/keypad-layout.ts`.
+export {
+  keypadLayoutFor,
+  keypadKeys,
+  keypadCharacters,
+  type KeypadKey,
+  type KeypadKind,
+  type KeypadLayout,
+  type KeypadSpec,
+} from "./input/keypad-layout.js";
+export { MasteryOverview, type MasteryOverviewProps } from "./progress/MasteryOverview.js";
