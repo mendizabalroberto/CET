@@ -97,16 +97,108 @@ jobs:
           docker exec "$CONTAINER" bash -lc "apt-get update -qq && apt-get install -y -qq postgresql-17-pgtap"
           psql -v ON_ERROR_STOP=1 -c "create extension if not exists pgtap;"
 
-      - name: Extensiones que asume el esquema
+      - name: Lo que Supabase provee y un postgres:17 desnudo no
         run: |
           set -euo pipefail
-          # Las mismas que trae Supabase por defecto. Si una migración usa una
-          # extensión que no está aquí, es que asume algo del entorno gestionado
-          # que no está declarado — y eso hay que verlo en CI, no en producción.
+          # EL ESQUEMA `extensions` ES LO QUE FALTABA, y por eso este workflow
+          # no había pasado nunca: moría en la primera migración con
+          #
+          #   0001_extensions.sql:25: ERROR: schema "extensions" does not exist
+          #
+          # dejando sin ejecutar los pasos de RLS y de pgTAP. Un CI en rojo que
+          # nadie mira es peor que no tener CI: da la sensación de estar cubierto.
+          #
+          # Antes este paso creaba pgcrypto y citext SIN esquema, es decir en
+          # `public`. Las dos primeras líneas de 0001 parecían pasar por eso
+          # mismo: `create extension if not exists ... with schema extensions`
+          # NO mueve una extensión que ya existe, ni avisa — solo dice "skipping".
+          # La tercera, pg_trgm, era la primera que no existía todavía, y fue la
+          # que destapó el problema. De haber pasado, habría reventado más tarde
+          # y peor: `app.sha256_hex()` llama a `extensions.digest()`, que con
+          # pgcrypto en `public` no existe.
+          #
+          # Así que aquí se crea SOLO lo que el entorno gestionado ya trae, y en
+          # el esquema donde Supabase lo pone. Las extensiones que el esquema
+          # necesita las declaran las migraciones, que es donde deben estar.
           psql -v ON_ERROR_STOP=1 <<'SQL'
-          create extension if not exists "pgcrypto";
-          create extension if not exists "citext";
-          create extension if not exists "uuid-ossp";
+          create schema if not exists extensions;
+          grant usage on schema extensions to public;
+          -- uuid-ossp viene con el proyecto de Supabase y ninguna migración la
+          -- declara. Si algún día una la necesita, que la declare ella.
+          create extension if not exists "uuid-ossp" with schema extensions;
+          SQL
+
+      - name: El esquema `extensions` está donde debe
+        run: |
+          set -euo pipefail
+          # Comprobación explícita ANTES de las migraciones. Sin ella, el fallo
+          # aparece a mitad de un volcado de 20 ficheros y cuesta leerlo.
+          psql -v ON_ERROR_STOP=1 -t -A -c "
+            select case
+              when exists (select 1 from pg_namespace where nspname = 'extensions')
+              then 'ok'
+              else 'FALTA el esquema extensions'
+            end" | grep -qx ok
+
+      - name: Sustituto mínimo de GoTrue (`auth`) y los roles de PostgREST
+        run: |
+          set -euo pipefail
+          # Las migraciones asumen tres cosas del entorno gestionado que un
+          # postgres:17 no trae: los roles anon/authenticated/service_role, el
+          # esquema `auth` con su tabla `users`, y `auth.uid()`.
+          #
+          # Se reproduce lo MÍNIMO y de forma fiel. "Fiel" importa más que
+          # "completo": si `auth.uid()` leyera el sub de otro sitio que no fuera
+          # `request.jwt.claims`, los tests de RLS pasarían aquí y las políticas
+          # seguirían rotas en producción. Sería un verde falso, que es lo único
+          # peor que un rojo.
+          #
+          # No se inventa nada más. Si mañana una migración necesita
+          # `auth.jwt()` o `storage`, que falle aquí y se añada a conciencia:
+          # este fichero debe declarar todo lo que el esquema da por supuesto.
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          do $$
+          begin
+            if not exists (select 1 from pg_roles where rolname = 'anon') then
+              create role anon nologin noinherit;
+            end if;
+            if not exists (select 1 from pg_roles where rolname = 'authenticated') then
+              create role authenticated nologin noinherit;
+            end if;
+            if not exists (select 1 from pg_roles where rolname = 'service_role') then
+              -- bypassrls, igual que en Supabase: es el rol del backend.
+              create role service_role nologin noinherit bypassrls;
+            end if;
+          end $$;
+
+          create schema if not exists auth;
+
+          -- Solo las columnas que el esquema y los seeds tocan de verdad.
+          -- `raw_app_meta_data` la escribe app.sync_role_claims() (0020).
+          create table if not exists auth.users (
+            id                 uuid primary key,
+            email              text,
+            encrypted_password text,
+            raw_app_meta_data  jsonb not null default '{}'::jsonb,
+            raw_user_meta_data jsonb not null default '{}'::jsonb,
+            created_at         timestamptz not null default now()
+          );
+
+          -- EL corazón de todas las políticas RLS. Lee exactamente de donde lee
+          -- la de Supabase: el GUC que fija PostgREST con los claims del JWT.
+          create or replace function auth.uid()
+          returns uuid
+          language sql
+          stable
+          as $fn$
+            select nullif(
+              current_setting('request.jwt.claims', true)::jsonb ->> 'sub', ''
+            )::uuid
+          $fn$;
+
+          grant usage on schema auth to anon, authenticated, service_role;
+          grant execute on function auth.uid() to anon, authenticated, service_role;
+          grant select on auth.users to service_role;
           SQL
 
       - name: Aplicar migraciones en orden estricto
@@ -147,14 +239,21 @@ jobs:
           fi
           echo "Todas las tablas de public tienen RLS habilitada."
 
-      - name: Sembrar datos de prueba
-        run: |
-          set -euo pipefail
-          shopt -s nullglob
-          for file in supabase/seed/*.sql; do
-            echo "── sembrando $file"
-            psql -v ON_ERROR_STOP=1 -f "$file"
-          done
+      # LOS SEEDS NO SE EJECUTAN AQUÍ, Y ES DELIBERADO.
+      #
+      # `supabase/seed/*.sql` no siembra un esquema: ATA filas de `public` a
+      # cuentas que ya existen en GoTrue. `0001_superadmin.sql` aborta a
+      # propósito si no encuentra su usuario en `auth.users`, y
+      # `0004_demo_students.sql` exige fichas con un `pin_hash` Argon2id que solo
+      # produce un script fuera de Postgres.
+      #
+      # Inventar aquí esas filas para que el paso saliera verde no demostraría
+      # nada de los seeds: demostraría que sé escribir INSERTs. Los seeds se
+      # verifican donde tienen sentido, contra un proyecto con Auth de verdad.
+      #
+      # Los tests pgTAP no los necesitan: traen su propio mundo en
+      # `helpers/fixture.psql`, que se crea y se deshace dentro de cada
+      # transacción.
 
       - name: Ejecutar pgTAP
         run: |
