@@ -28,8 +28,17 @@ insert into auth.users (id, email) values
 -- asimetria es una decision del modelo, no un descuido.
 insert into public.profiles (id, school_id, role, full_name, email, status) values
   ('00000000-0000-0000-0000-000000000011'::uuid, '00000000-0000-0000-0000-000000000001'::uuid, 'teacher', 'Profe A', 'teacher.informes.a@cet.test', 'active'),
-  ('00000000-0000-0000-0000-000000000012'::uuid, '00000000-0000-0000-0000-000000000001'::uuid, 'student', 'Alumno Informes', null, 'active'),
+  ('00000000-0000-0000-0000-000000000012'::uuid, null, 'student', 'Alumno Informes', null, 'active'),
   ('00000000-0000-0000-0000-000000000013'::uuid, '00000000-0000-0000-0000-000000000002'::uuid, 'teacher', 'Profe B', 'teacher.informes.b@cet.test', 'active');
+
+-- La matricula del alumno vive en student_school_memberships; sin ella un teacher
+-- del colegio A no puede ver al alumno aunque los eventos antiguos lleven school_id.
+insert into public.student_school_memberships
+  (student_id, school_id, starts_on, status, approved_at)
+values
+  ('00000000-0000-0000-0000-000000000012'::uuid,
+   '00000000-0000-0000-0000-000000000001'::uuid,
+   '2026-01-01', 'activa', now());
 
 -- `skills.course_id` es NOT NULL con clave foránea, y `name` es I18nText, no
 -- texto suelto: hay que montar la cadena materia -> curso -> skill entera.
