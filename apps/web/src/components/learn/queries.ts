@@ -23,6 +23,11 @@ import type { I18nText } from "@cet/shared";
 
 import { createClient } from "@/lib/supabase/server";
 
+import {
+  readLessonEvents,
+  summariseLessonEvents,
+  type LessonState,
+} from "./lesson-progress";
 import { mapLessonBlocks, readI18nText, type LessonBlockRow, type MappedLessonBlock } from "./block-mapping";
 import {
   LOOKBACK_DAYS,
@@ -74,6 +79,16 @@ export interface CourseSummary {
   readonly title: I18nText;
   readonly yearLevel: number;
   readonly subject: I18nText | null;
+  /**
+   * `subjects.code` (`math`, `ict`, …). Es la identidad de la materia para la
+   * interfaz: de él salen el icono, el color y el sitio fijo en la rejilla, y
+   * es lo que va en la URL de `/learn/materia/[code]`.
+   *
+   * `null` cuando el curso apunta a una materia que la RLS no deja ver o que se
+   * ha borrado. La pantalla lo trata como una materia desconocida —icono
+   * neutro— en vez de esconder el curso: las lecciones existen igual.
+   */
+  readonly subjectCode: string | null;
   readonly modules: readonly ModuleSummary[];
   readonly lessonCount: number;
 }
@@ -169,11 +184,17 @@ export async function getStudentCourses(schoolId: string): Promise<CourseSummary
           .order("ord", { ascending: true }),
     subjectIds.length === 0
       ? Promise.resolve({ data: [] as Record<string, unknown>[] })
-      : supabase.from("subjects").select("id, name").in("id", subjectIds).or(scope),
+      : supabase.from("subjects").select("id, code, name").in("id", subjectIds).or(scope),
   ]);
 
-  const subjectById = new Map<string, I18nText | null>(
-    (subjects ?? []).map((row) => [row.id as string, readI18nText(row.name)]),
+  const subjectById = new Map<string, { name: I18nText | null; code: string | null }>(
+    (subjects ?? []).map((row) => [
+      row.id as string,
+      {
+        name: readI18nText(row.name),
+        code: typeof row.code === "string" ? row.code : null,
+      },
+    ]),
   );
 
   const lessonsByModule = new Map<string, LessonSummary[]>();
@@ -217,7 +238,8 @@ export async function getStudentCourses(schoolId: string): Promise<CourseSummary
         id,
         title,
         yearLevel: Number(row.year_level),
-        subject: subjectById.get(row.subject_id as string) ?? null,
+        subject: subjectById.get(row.subject_id as string)?.name ?? null,
+        subjectCode: subjectById.get(row.subject_id as string)?.code ?? null,
         modules: courseModules,
         lessonCount: courseModules.reduce((total, module) => total + module.lessons.length, 0),
       };
@@ -401,4 +423,54 @@ export async function getLesson(
     blocks: mapLessonBlocks(rows, locale),
     skillCodes,
   };
+}
+
+/* -------------------------------------------------------------------------- */
+/* Avance por lección                                                          */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Qué lecciones ha empezado y cuáles ha terminado el alumno.
+ *
+ * Misma disciplina y MISMA VENTANA que `getPracticeProgress()`: son las mismas
+ * `LOOKBACK_DAYS` y `MAX_EVENT_ROWS` de `practice-progress`, no una copia. Dos
+ * ventanas distintas para el mismo alumno en la misma pantalla serían un bug
+ * silencioso — la tarjeta de materia y el chip de práctica dirían cosas
+ * distintas del mismo día.
+ *
+ * Se piden sólo las dos columnas que se usan (`lesson_id`, `event_type`) y no la
+ * fila entera: el `payload` de una lección larga trae el `dwellMs` de cada
+ * bloque, y aquí no se mira. Es la diferencia entre traer kilobytes y traer
+ * bytes por evento.
+ *
+ * Devuelve `null` si la consulta falla, y la pantalla entonces NO pinta ninguna
+ * cifra. "Cero" es un dato; una consulta caída no lo es.
+ */
+export async function getLessonProgress(
+  schoolId: string,
+  studentId: string,
+): Promise<Map<string, LessonState> | null> {
+  if (!UUID_RE.test(schoolId) || !UUID_RE.test(studentId)) return null;
+
+  const since = new Date(Date.now() - LOOKBACK_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("learning_events")
+    .select("lesson_id, event_type")
+    // La RLS ya limita a `student_id = auth.uid()`; el filtro explícito por
+    // colegio es la regla transversal 2 de `MODULES.md`.
+    .eq("student_id", studentId)
+    .eq("school_id", schoolId)
+    .in("event_type", ["lesson_opened", "lesson_completed"])
+    .gte("server_ts", since)
+    .order("server_ts", { ascending: false })
+    .limit(MAX_EVENT_ROWS);
+
+  if (error) return null;
+
+  // `summariseLessonEvents` no depende del orden de llegada —`completed` gana
+  // siempre— así que el `order` de arriba sólo sirve para que el recorte a
+  // MAX_EVENT_ROWS se quede con lo reciente, no con lo primero que hubo.
+  return summariseLessonEvents(readLessonEvents(data ?? []));
 }

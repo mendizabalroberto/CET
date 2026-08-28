@@ -30,6 +30,37 @@ export const learnEn = {
     practiceCtaBody: "Endless questions with instant feedback. Nothing is marked — it is just practice.",
     openCourse: "Open",
   },
+  /**
+   * The subject grid and the subject screen.
+   *
+   * `progressUnavailable` is not an empty state and must never read like one:
+   * it is what a pupil sees when the query behind the numbers failed. Telling
+   * them "0 of 12" when we simply do not know would be a lie about their own
+   * work, so the wording says we cannot show it, not that there is nothing.
+   */
+  subject: {
+    openSubject: "Open {subject}",
+    /*
+     * The card builds its line from pieces — "3 of 12 finished · 2 on the go" —
+     * because the numbers come from the component, not from here. Whole
+     * sentences with placeholders would force the component to interpolate, and
+     * interpolation inside @cet/ui is where a locale bug hides best.
+     */
+    of: "of",
+    finished: "finished",
+    onTheGo: "on the go",
+    notStarted: "Not started yet",
+    allDone: "All finished",
+    progressUnknown: "We cannot show your progress",
+    progressLabel: "Lessons finished",
+    progressUnavailable: "We cannot show how you are doing right now. Your lessons still work.",
+    emptyModule: "This unit has no lessons yet.",
+    notFoundTitle: "We could not find that subject",
+    notFoundBody: "It may have been switched off for your school.",
+    stateNotStarted: "Not started",
+    stateStarted: "Started",
+    stateCompleted: "Finished",
+  },
   lesson: {
     backToIndex: "Back to your lessons",
     trailLabel: "Path",

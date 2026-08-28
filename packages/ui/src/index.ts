@@ -163,3 +163,22 @@ export {
   type KeypadSpec,
 } from "./input/keypad-layout.js";
 export { MasteryOverview, type MasteryOverviewProps } from "./progress/MasteryOverview.js";
+
+/* --- navegacion por materias --- */
+// `subject-identity` sale de un modulo SIN "use client": es una funcion pura y
+// la recorren pruebas que corren en Node. El icono y las tarjetas si son
+// componentes, pero no llevan estado ni efectos: son de cliente unicamente por
+// el puente de idioma `useI18n`, igual que `ProgressBar`.
+export {
+  SUBJECT_CODES,
+  UNKNOWN_SUBJECT,
+  subjectIdentity,
+  type SubjectCode,
+  type SubjectIdentity,
+  type SubjectIdentityCode,
+} from "./navigation/subject-identity.js";
+export { SubjectIcon, type SubjectIconProps } from "./navigation/SubjectIcon.js";
+export { SubjectCard, type SubjectCardProps } from "./navigation/SubjectCard.js";
+export { SubjectGrid, type SubjectGridProps } from "./navigation/SubjectGrid.js";
+export { LessonTile, type LessonTileProps, type LessonState } from "./navigation/LessonTile.js";
+export { ModuleSection, type ModuleSectionProps } from "./navigation/ModuleSection.js";

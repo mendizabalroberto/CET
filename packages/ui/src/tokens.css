@@ -151,6 +151,55 @@
   --cet-timer-urgent: #c0392b;
   --cet-timer-urgent-bg: #fdeeec;
 
+  /* ------------------------------------------------------------------ *
+   * MATERIAS — el color que NO identifica a la materia
+   * ------------------------------------------------------------------
+   *
+   * Seis materias, dos tokens cada una. Y una advertencia que va antes que los
+   * valores, porque es lo que decide como se usan.
+   *
+   * ESTOS SEIS COLORES SON EL MISMO COLOR PARA UNO DE CADA DOCE NINOS. Medido,
+   * no supuesto: convertidos a deuteranopia (Vienot 1999), los ratios entre
+   * pares son 1.02 a 1.34 —indistinguibles—, y en escala de grises los seis
+   * rellenos caen entre #666666 y #717171. Es el mismo limite que ya obliga a
+   * `--cet-ok-vivid` / `--cet-no-vivid` a no ser nunca el unico canal.
+   *
+   * CONSECUENCIA, Y NO ES NEGOCIABLE: una materia se reconoce por su ICONO y
+   * por su NOMBRE. El color es refuerzo. Quitada la capa de color, la pantalla
+   * de `/learn` sigue siendo navegable; si deja de serlo, el fallo esta en el
+   * componente, no aqui.
+   *
+   * COMO SE USA CADA TOKEN:
+   *   --cet-materia-*        RELLENA (rail, medallon, barra de avance). Encima
+   *                          solo va blanco, y esta medido: >= 4.5:1 en los
+   *                          seis. NUNCA tinta oscura, NUNCA texto de parrafo.
+   *   --cet-materia-*-suave  es el CUERPO de la tarjeta. Encima va --cet-ink,
+   *                          con >= 14:1 en claro y >= 11:1 en oscuro.
+   *
+   * Lo mide `__tests__/contraste-materias.test.ts` en los dos temas. La tabla
+   * de la spec puede quedarse vieja; el test no.
+   */
+  --cet-materia-math: #2a76c7;
+  --cet-materia-math-suave: #eaf1f9;
+  --cet-materia-science: #1d8648;
+  --cet-materia-science-suave: #e8f3ed;
+  --cet-materia-english: #c64d44;
+  --cet-materia-english-suave: #f9edec;
+  --cet-materia-spanish: #a9660f;
+  --cet-materia-spanish-suave: #f6f0e7;
+  --cet-materia-socials: #8164c2;
+  --cet-materia-socials-suave: #f2f0f9;
+  --cet-materia-ict: #12828a;
+  --cet-materia-ict-suave: #e7f3f3;
+  /*
+   * La materia que no esta en la lista. `subjects.code` lo pone el colegio y
+   * puede ser cualquier cosa que pase el check del formato: sin este par, una
+   * materia nueva saldria con `var(--cet-materia-undefined)`, que en CSS es
+   * transparente — una tarjeta invisible. Gris de marca, no color de nadie.
+   */
+  --cet-materia-otra: #5d7086;
+  --cet-materia-otra-suave: #eef1f5;
+
   /* --- foco --- */
   --cet-focus: #173a63;
   --cet-focus-halo: #ffffff;
@@ -257,6 +306,29 @@
      * fallo que el 1.57:1 de la app, un tono mas arriba. #8dbcee lo sube a
      * 3.32:1 y no cambia nada mas: sigue siendo el mismo azul de marca.
      */
+    /*
+     * Materias en oscuro. Los rellenos se aclaran hasta que la tinta oscura
+     * (#0b1622) que va encima del medallon vuelve a pasar 4.5:1; los `-suave`
+     * son un tinte del 18 % sobre la superficie, suficiente para verse
+     * (>= 1.20:1 contra --cet-surface) y lejos de estorbar a la tinta
+     * (>= 11:1). Ver la nota larga del bloque claro: el color sigue sin ser el
+     * canal que identifica la materia.
+     */
+    --cet-materia-math: #3c82cc;
+    --cet-materia-math-suave: #1a324b;
+    --cet-materia-science: #239151;
+    --cet-materia-science-suave: #153435;
+    --cet-materia-english: #cb5d54;
+    --cet-materia-english-suave: #332b36;
+    --cet-materia-spanish: #b3701a;
+    --cet-materia-spanish-suave: #2f2e2b;
+    --cet-materia-socials: #8c71c7;
+    --cet-materia-socials-suave: #282f4a;
+    --cet-materia-ict: #238b93;
+    --cet-materia-ict-suave: #153341;
+    --cet-materia-otra: #8fa3b8;
+    --cet-materia-otra-suave: #24323f;
+
     --cet-focus: #8dbcee;
     --cet-focus-halo: #0b1622;
 
@@ -331,6 +403,22 @@
   --cet-timer-warn-bg: #2b2110;
   --cet-timer-urgent: #ffa39b;
   --cet-timer-urgent-bg: #2b1512;
+
+  /* Materias en oscuro: ver la nota larga del bloque claro. */
+  --cet-materia-math: #3c82cc;
+  --cet-materia-math-suave: #1a324b;
+  --cet-materia-science: #239151;
+  --cet-materia-science-suave: #153435;
+  --cet-materia-english: #cb5d54;
+  --cet-materia-english-suave: #332b36;
+  --cet-materia-spanish: #b3701a;
+  --cet-materia-spanish-suave: #2f2e2b;
+  --cet-materia-socials: #8c71c7;
+  --cet-materia-socials-suave: #282f4a;
+  --cet-materia-ict: #238b93;
+  --cet-materia-ict-suave: #153341;
+  --cet-materia-otra: #8fa3b8;
+  --cet-materia-otra-suave: #24323f;
 
   /*
    * #7cb2ea daba 2.96:1 contra el relleno del boton primario (#2b5f96) y el halo

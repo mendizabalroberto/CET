@@ -32,6 +32,40 @@ export const learnEs: LearnDictionary = {
       "Preguntas infinitas con respuesta inmediata. No puntúa: es solo práctica.",
     openCourse: "Abrir",
   },
+  /**
+   * La rejilla de materias y la pantalla de una materia.
+   *
+   * `progressUnavailable` NO es un estado vacío y no puede sonar como tal: es
+   * lo que ve el alumno cuando la consulta que alimenta las cifras ha fallado.
+   * Decirle "0 de 12" cuando sencillamente no lo sabemos sería mentirle sobre
+   * su propio trabajo, así que el texto dice que no podemos enseñarlo, no que
+   * no haya nada. Y añade que las lecciones siguen funcionando, para que no
+   * cierre la pestaña.
+   */
+  subject: {
+    openSubject: "Abrir {subject}",
+    /*
+     * La tarjeta compone su línea con piezas —«3 de 12 terminadas · 2 en
+     * marcha»— porque las cifras las pone el componente, no este diccionario.
+     * Una frase entera con marcadores obligaría a interpolar dentro de
+     * `@cet/ui`, que es donde mejor se esconde un fallo de idioma.
+     */
+    of: "de",
+    finished: "terminadas",
+    onTheGo: "en marcha",
+    notStarted: "Aún sin empezar",
+    allDone: "Todas terminadas",
+    progressUnknown: "No podemos enseñarte tu avance",
+    progressLabel: "Lecciones terminadas",
+    progressUnavailable:
+      "Ahora mismo no podemos enseñarte cómo lo llevas. Tus lecciones siguen funcionando.",
+    emptyModule: "Esta unidad todavía no tiene lecciones.",
+    notFoundTitle: "No hemos encontrado esa materia",
+    notFoundBody: "Puede que tu colegio la haya desactivado.",
+    stateNotStarted: "Sin empezar",
+    stateStarted: "Empezada",
+    stateCompleted: "Terminada",
+  },
   lesson: {
     backToIndex: "Volver a tus lecciones",
     /** Nombre accesible de las migas de pan, y raiz de la ruta. */
