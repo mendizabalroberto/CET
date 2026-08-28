@@ -405,8 +405,22 @@ select enum_has_labels('public', 'question_format',
 select is(
   (select count(*)::int from pg_enum e
    join pg_type t on t.oid = e.enumtypid where t.typname = 'learning_event_type'),
-  31,
-  'public.learning_event_type tiene los 31 miembros de learningEventType (events.ts)');
+  34,
+  'public.learning_event_type tiene los 34 miembros de learningEventType (events.ts)');
+
+-- Los tres de interfaz (0051) van AL FINAL y en este orden. No se comprueba solo
+-- que estén: se comprueba su POSICIÓN. El orden de un enum de Postgres es su
+-- orden de comparación, así que reordenarlos cambiaría en silencio el resultado
+-- de cualquier `order by event_type` de los informes de conducta.
+select is(
+  (select array_agg(e.enumlabel::text order by e.enumsortorder)
+   from pg_enum e join pg_type t on t.oid = e.enumtypid
+   where t.typname = 'learning_event_type' and e.enumsortorder > (
+     select max(e2.enumsortorder) - 3
+     from pg_enum e2 join pg_type t2 on t2.oid = e2.enumtypid
+     where t2.typname = 'learning_event_type')),
+  array['session_context', 'ui_interaction', 'nav_route_changed'],
+  'los tres miembros de interfaz cierran el enum, en el orden de events.ts');
 
 
 -- =============================================================================
