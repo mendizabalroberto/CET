@@ -45,6 +45,7 @@ import "server-only";
 
 import { createClient as createSupabaseClient, type SupabaseClient } from "@supabase/supabase-js";
 
+import { aAscii } from "./ascii";
 import { getSupabaseUrl } from "./env";
 
 function assertServer(): void {
@@ -97,7 +98,23 @@ export function createAdminClient(reason: string): SupabaseClient {
       headers: {
         // Marca las peticiones en los logs de Postgres para poder auditar el
         // uso de service role después del hecho.
-        "x-cet-admin-reason": reason.slice(0, 120),
+        //
+        // ASCII OBLIGATORIO, y no es cosmética. Una cabecera HTTP no admite
+        // caracteres fuera de ASCII: `fetch` rechaza la petición ENTERA y
+        // `supabase-js` la devuelve como `{"message":"Something went wrong"}`
+        // sin código de error, así que el motivo real no aparece por ningún
+        // lado. El 28 de agosto de 2026 eso dejó a todos los alumnos sin poder
+        // empezar un examen: el motivo de esta misma escalada dice
+        // «corrección», y la «ó» caía dentro del recorte de 120. El fallo se
+        // veía como un 500 en `/api/attempts/start` y en el log como
+        // «findInProgressAttempt falló: ? Something went wrong».
+        //
+        // Se limpia AQUÍ y no en el texto de cada llamante: los motivos se
+        // escriben en español —así lo pide el repositorio— y ninguno debería
+        // tener que acordarse de esto. Los acentos se pliegan a su letra base
+        // (corrección -> correccion) para que el motivo siga siendo legible en
+        // el log; lo que no se pueda plegar, se cae.
+        "x-cet-admin-reason": aAscii(reason).slice(0, 120),
       },
     },
   });
