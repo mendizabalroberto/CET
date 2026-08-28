@@ -252,22 +252,37 @@ export function practiceReducer(state: PracticeState, action: PracticeAction): P
         changeCount,
         notice: "none",
       };
-      return {
-        state: next,
-        effects: [
-          {
-            eventType: "answer_changed",
-            payload: {
-              ...questionContext(next),
-              // En práctica no hay revisiones persistidas: la revisión es el
-              // número de cambios, y el contrato exige el campo igualmente.
-              revision: changeCount,
-              changeCount,
-              timeOnItemMs: timeOnItem(state, action.now),
-            },
+      const efectos: PracticeEffect[] = [
+        {
+          eventType: "answer_changed",
+          payload: {
+            ...questionContext(next),
+            // En práctica no hay revisiones persistidas: la revisión es el
+            // número de cambios, y el contrato exige el campo igualmente.
+            revision: changeCount,
+            changeCount,
+            timeOnItemMs: timeOnItem(state, action.now),
           },
-        ],
-      };
+        },
+      ];
+
+      // Borrar lo escrito no es «cambiar de opinión»: es abandonar una respuesta
+      // que ya existía. `answer_cleared` lleva en el contrato desde el principio
+      // y no lo emitía nadie, así que las dos conductas —tantear entre dos
+      // respuestas y borrarlo todo y quedarse en blanco— llegaban al análisis
+      // como la misma cosa. La segunda es la que suele preceder a un abandono.
+      if (action.value.trim() === "" && state.answer.trim() !== "") {
+        efectos.push({
+          eventType: "answer_cleared",
+          payload: {
+            ...questionContext(next),
+            changeCount,
+            timeOnItemMs: timeOnItem(state, action.now),
+          },
+        });
+      }
+
+      return { state: next, effects: efectos };
     }
 
     case "submit": {

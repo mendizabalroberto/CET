@@ -137,8 +137,35 @@ if (!plan) {
 // Toda consulta que devuelve datos de un alumno tiene que demostrar que un
 // profesor de OTRO colegio no ve nada. Es el invariante de tenancy del proyecto
 // y no se da por supuesto: `rls_tenant_isolation.sql` existe por algo.
-if (!/is_empty|results_eq[\s\S]{0,400}?0|otro colegio|tenant/i.test(codigoTest)) {
-  fallo('Las pruebas no demuestran que un profesor de otro colegio no ve nada.');
+// Se acepta cualquiera de las DOS formas de demostrarlo, porque significan
+// cosas distintas y las dos son legitimas segun lo que proteja la funcion:
+//   · `throws_ok` con `insufficient_privilege` — la funcion DENIEGA. Es lo que
+//     corresponde a una `security definer` que trae su propia guarda.
+//   · `is_empty` / cero filas — la funcion devuelve, y no hay nada que devolver.
+//     Es lo que corresponde a una consulta que se apoya en la RLS.
+//
+// La primera version de esta comprobacion solo aceptaba la segunda forma y, de
+// propina, exigia la cadena literal «otro colegio». Rechazo un fichero de
+// pruebas que hacia exactamente lo que su contrato le pedia. Un criterio de
+// aceptacion que no coincide con el encargo no filtra trabajo malo: filtra
+// trabajo bueno, y ademas manda a depurar el sitio equivocado.
+//   · un `is(count(*), 0)` ejecutado BAJO OTRA IDENTIDAD — la RLS filtra. Esta
+//     forma solo cuenta si la prueba se ha puesto de verdad en la piel de otro
+//     (`set role authenticated` mas los claims del JWT): un `count(*) = 0`
+//     corriendo como propietario de las tablas no demuestra nada, porque el
+//     propietario se salta la RLS y el cero vendria de que no hay datos.
+const deniega = /throws_ok[\s\S]{0,600}?(insufficient_privilege|42501)/i.test(codigoTest);
+const vacio = /\bis_empty\s*\(/i.test(codigoTest);
+const suplanta =
+  /set\s+role\s+authenticated/i.test(codigoTest) &&
+  /request\.jwt\.claim/i.test(codigoTest) &&
+  /\bis\s*\([\s\S]{0,300}?count\s*\([\s\S]{0,200}?,\s*0\s*,/i.test(codigoTest);
+if (!deniega && !vacio && !suplanta) {
+  fallo(
+    'Las pruebas no demuestran el aislamiento entre colegios: hace falta un ' +
+      '`throws_ok` con insufficient_privilege (la funcion deniega) o un `is_empty` ' +
+      '(la funcion no encuentra nada).',
+  );
 }
 
 // -- salida -------------------------------------------------------------------

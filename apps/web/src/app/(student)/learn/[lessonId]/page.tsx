@@ -131,7 +131,11 @@ export default async function LessonPage({
             // con el mismo `Button` que todo lo demas. El icono entra DENTRO
             // del enlace gracias al `Slottable` de `Button`.
             <Button asChild icon="practicar">
-              <Link href={`/practice/${encodeURIComponent(practiceTopic.id)}`}>
+              <Link
+                href={`/practice/${encodeURIComponent(practiceTopic.id)}`}
+                data-cet-id="leccion.practicar"
+                data-cet-value={practiceTopic.id}
+              >
                 {t.practiceThis}
               </Link>
             </Button>

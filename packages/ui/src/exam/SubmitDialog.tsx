@@ -67,10 +67,15 @@ export function SubmitDialog({
       className={className}
       footer={
         <>
-          <Button variant="secondary" onClick={() => onReview()} disabled={submitting}>
+          <Button
+            variant="secondary"
+            onClick={() => onReview()}
+            disabled={submitting}
+            data-cet-id="examen.dialogo.revisar"
+          >
             {t(UI_STRINGS.submitReview)}
           </Button>
-          <Button variant="primary" onClick={onSubmit} loading={submitting}>
+          <Button variant="primary" onClick={onSubmit} loading={submitting} data-cet-id="examen.dialogo.entregar">
             {t(submitting ? UI_STRINGS.submitting : UI_STRINGS.submitConfirm)}
           </Button>
         </>

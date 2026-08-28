@@ -73,6 +73,13 @@ export function QuestionNavigator({
               <button
                 type="button"
                 onClick={() => onNavigate(entry.ordinal)}
+                // UN control con el numero de pregunta como VALOR, y no treinta
+                // controles distintos. Con `examen.navegador.p7` como id, cada
+                // examen inventaria identificadores nuevos y la pregunta «cuanto
+                // salta el alumno por el navegador» habria que responderla
+                // sumando a mano una lista que cambia con cada examen.
+                data-cet-id="examen.navegador"
+                data-cet-value={String(entry.ordinal)}
                 aria-current={isCurrent ? "true" : undefined}
                 aria-label={`${t(UI_STRINGS.question)} ${entry.ordinal}, ${stateLabel(entry.state)}`}
                 className={cn(

@@ -750,13 +750,25 @@ export function ExamRunner({ assignmentId, locale, resultHref }: ExamRunnerProps
           />
         </QuestionCard>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3" data-cet-surface="exam">
           {allowBack ? (
-            <Button variant="secondary" onClick={() => goTo(current - 1)} disabled={current <= 1} icon="anterior">
+            <Button
+              variant="secondary"
+              onClick={() => goTo(current - 1)}
+              disabled={current <= 1}
+              icon="anterior"
+              data-cet-id="examen.anterior"
+            >
               {t.run.previous}
             </Button>
           ) : null}
-          <Button variant="secondary" onClick={() => goTo(current + 1)} disabled={current >= total} icon="siguiente">
+          <Button
+            variant="secondary"
+            onClick={() => goTo(current + 1)}
+            disabled={current >= total}
+            icon="siguiente"
+            data-cet-id="examen.siguiente"
+          >
             {t.run.next}
           </Button>
           <Button
@@ -775,6 +787,11 @@ export function ExamRunner({ assignmentId, locale, resultHref }: ExamRunnerProps
                vuelta atras. Un mismo dibujo para los dos le diria al alumno que
                no ha pasado nada cuando si ha pasado. */
             icon={timeUp && submitFailed !== null ? "reintentar" : "entregar"}
+            // Entregar y reintentar-la-entrega son dos actos con significados
+            // opuestos para el analisis: el segundo solo existe cuando algo ha
+            // fallado. Bajo un mismo id, las entregas fallidas quedarian
+            // contadas como entregas normales.
+            data-cet-id={timeUp && submitFailed !== null ? "examen.reintentar" : "examen.entregar"}
           >
             {submitting
               ? t.run.submitting

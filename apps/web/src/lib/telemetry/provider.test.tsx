@@ -63,17 +63,25 @@ describe("la cola sobrevive a un ciclo de vida completo", () => {
     vi.restoreAllMocks();
   });
 
+  // Los dos tests que siguen miran el INCREMENTO de la cola, no su tamaño.
+  // Antes comparaban contra un número exacto y eso los ataba a que
+  // `lesson_opened` fuese el único evento que podía haber ahí dentro. En cuanto
+  // la cola empezó a emitir `session_context` al arrancar —un evento que nadie
+  // pide y que tiene que estar— los dos se pusieron rojos sin que nada se
+  // hubiera roto. Lo que estos tests protegen es si el evento ENTRA o se traga,
+  // y eso se mide restando.
   it("una cola dispuesta y vuelta a arrancar NO traga eventos en silencio", () => {
     const cola = new TelemetryQueue("11111111-2222-3333-4444-555555555555");
     cola.start();
     cola.dispose();
     cola.start();
 
+    const antes = cola.pending;
     cola.track({ eventType: "lesson_opened", payload: {} });
 
-    // Antes esto valía 0 y nadie se enteraba: `disposed` era una puerta de un
+    // Antes esto no crecía y nadie se enteraba: `disposed` era una puerta de un
     // solo sentido.
-    expect(cola.pending).toBe(1);
+    expect(cola.pending).toBe(antes + 1);
   });
 
   it("si la cola sigue desmontada, el evento descartado deja rastro en la consola", () => {
@@ -82,9 +90,10 @@ describe("la cola sobrevive a un ciclo de vida completo", () => {
     cola.start();
     cola.dispose();
 
+    const antes = cola.pending;
     cola.track({ eventType: "lesson_opened", payload: {} });
 
-    expect(cola.pending).toBe(0);
+    expect(cola.pending).toBe(antes);
     expect(error).toHaveBeenCalledOnce();
     expect(String(error.mock.calls[0]?.[0])).toContain("descartado");
   });

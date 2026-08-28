@@ -79,6 +79,8 @@ export function PracticeTopicGrid({
             <li key={topic.id}>
               <Link
                 href={`/practice/${encodeURIComponent(topic.id)}`}
+                data-cet-id="practica.elegir-tema"
+                data-cet-value={topic.id}
                 className="flex min-h-11 flex-col justify-center gap-1 rounded-2xl border-2 border-line bg-card px-4 py-3 text-ink hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2"
               >
                 <span className="flex items-center justify-between gap-3">

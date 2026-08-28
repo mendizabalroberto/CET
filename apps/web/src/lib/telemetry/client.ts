@@ -55,6 +55,66 @@ function newSessionId(): string {
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
+/** Con qué está usando el aparato el alumno AHORA, no de qué es capaz. */
+export type Modality = "touch" | "mouse" | "keyboard" | "pen" | "unknown";
+
+/** Lo que rellena quien emite un acto de interfaz. El resto lo pone la cola. */
+export interface UiInput {
+  readonly control: string;
+  readonly surface: string;
+  readonly action: "click" | "keydown" | "change" | "toggle" | "open" | "close";
+  readonly value?: string | number | boolean | undefined;
+}
+
+/**
+ * Las condiciones de la sesión, recogidas DEFENSIVAMENTE.
+ *
+ * Cada `try` de aquí protege lo mismo: que una API ausente no impida arrancar la
+ * cola. `matchMedia` no existe en jsdom, `navigator.connection` no existe en
+ * Safari ni en Firefox, y `Intl.DateTimeFormat().resolvedOptions()` puede lanzar
+ * en entornos empotrados. Una excepción aquí no dejaría un campo a `unknown`:
+ * dejaría la sesión entera sin telemetría, que es infinitamente peor.
+ */
+function contextoDeSesion(): Record<string, unknown> {
+  const medio = (consulta: string): boolean => {
+    try {
+      return typeof window.matchMedia === "function" && window.matchMedia(consulta).matches;
+    } catch {
+      return false;
+    }
+  };
+
+  let timezone = "UTC";
+  try {
+    timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  } catch {
+    /* se queda en UTC */
+  }
+
+  const conexion = (navigator as { connection?: { effectiveType?: string } }).connection;
+  const efectiva = conexion?.effectiveType;
+  const conocidas = ["slow-2g", "2g", "3g", "4g"];
+
+  return {
+    viewportW: Math.max(1, window.innerWidth),
+    viewportH: Math.max(1, window.innerHeight),
+    dpr: window.devicePixelRatio || 1,
+    pointer: medio("(pointer: coarse)") ? "coarse" : medio("(pointer: fine)") ? "fine" : "none",
+    // Al arrancar todavía no ha tocado nada: la modalidad real la traerá cada
+    // `ui_interaction`. Decir aquí "touch" porque el aparato es táctil sería
+    // afirmar algo que no ha ocurrido.
+    modality: "unknown",
+    theme: medio("(prefers-color-scheme: dark)") ? "dark" : "light",
+    locale: navigator.language || "en",
+    timezone,
+    reducedMotion: medio("(prefers-reduced-motion: reduce)"),
+    connection: efectiva && conocidas.includes(efectiva) ? efectiva : "unknown",
+    ...(process.env.NEXT_PUBLIC_APP_VERSION
+      ? { appVersion: process.env.NEXT_PUBLIC_APP_VERSION }
+      : {}),
+  };
+}
+
 export class TelemetryQueue {
   private readonly sessionId: string;
   private seq = 0;
@@ -66,6 +126,14 @@ export class TelemetryQueue {
   private disposed = false;
   /** Evita treinta avisos idénticos al cerrar la pestaña. Se rearma en `start()`. */
   private warnedAfterDispose = false;
+
+  /** El contexto de sesión se emite UNA vez por instancia, y no se rearma. */
+  private contextoEmitido = false;
+  /** Cuenta solo actos de interfaz. NO es `seq`: ver `trackUi`. */
+  private uiOrdinal = 0;
+  private ultimoActoMs: number | null = null;
+  private ultimaNavegacionMs: number | null = null;
+  private modalidad: Modality = "unknown";
 
   constructor(sessionId: string = newSessionId()) {
     this.sessionId = sessionId;
@@ -104,6 +172,15 @@ export class TelemetryQueue {
     // `unload` no se disparan cuando iOS descarta una pestaña en segundo plano.
     document.addEventListener("visibilitychange", this.onVisibilityChange);
     window.addEventListener("pagehide", this.onPageHide);
+
+    // La modalidad se OBSERVA. `matchMedia('(pointer: coarse)')` diría de qué es
+    // capaz el aparato, no con qué lo está usando el niño: un portátil con
+    // pantalla táctil da `coarse` mientras teclea, y la mitad del análisis de
+    // ritmo se apoyaría en una etiqueta falsa.
+    document.addEventListener("pointerdown", this.onPointerDown, true);
+    document.addEventListener("keydown", this.onKeyDown, true);
+
+    this.emitirContexto();
   }
 
   dispose(): void {
@@ -115,6 +192,8 @@ export class TelemetryQueue {
     if (typeof window !== "undefined") {
       document.removeEventListener("visibilitychange", this.onVisibilityChange);
       window.removeEventListener("pagehide", this.onPageHide);
+      document.removeEventListener("pointerdown", this.onPointerDown, true);
+      document.removeEventListener("keydown", this.onKeyDown, true);
     }
     this.flushWithBeacon();
   }
@@ -127,7 +206,39 @@ export class TelemetryQueue {
     this.flushWithBeacon();
   };
 
+  private readonly onPointerDown = (event: Event): void => {
+    const tipo = (event as PointerEvent).pointerType;
+    this.modalidad = tipo === "touch" || tipo === "pen" || tipo === "mouse" ? tipo : "unknown";
+  };
+
+  private readonly onKeyDown = (): void => {
+    this.modalidad = "keyboard";
+  };
+
+  /**
+   * Emite `session_context` una sola vez, y lo hace en `seq` 0.
+   *
+   * Se llama desde `start()` Y desde `track()`, y las dos llamadas hacen falta.
+   * En React los efectos de los HIJOS corren antes que el del padre: un
+   * componente que emita en su `useEffect` se adelantaría al `start()` del
+   * provider y se llevaría el `seq` 0. El contexto dejaría de ser el primer
+   * evento de la sesión justo en las pantallas que más eventos emiten.
+   *
+   * Ser idempotente es lo que permite llamarlo desde los dos sitios sin pensar.
+   */
+  private emitirContexto(): void {
+    if (this.contextoEmitido || typeof window === "undefined") return;
+    // Se marca ANTES de emitir: `track()` vuelve a llamar aquí, y sin la marca
+    // previa serían dos llamadas mutuamente recursivas.
+    this.contextoEmitido = true;
+    this.track({ eventType: "session_context", payload: contextoDeSesion() });
+  }
+
   track(input: TrackInput): void {
+    // Antes que nada, y antes de la guarda de `disposed`: si el primer evento de
+    // la sesión llega antes de `start()`, el contexto tiene que ir delante.
+    if (input.eventType !== "session_context") this.emitirContexto();
+
     if (this.disposed) {
       // Se descarta —la cola está desmontada y nadie la va a vaciar— pero NO en
       // silencio. Un evento de aprendizaje que se pierde sin dejar rastro es
@@ -165,6 +276,61 @@ export class TelemetryQueue {
     }
 
     if (this.queue.length >= FLUSH_AT_COUNT) void this.flush();
+  }
+
+  /**
+   * Un acto sobre un control de la interfaz.
+   *
+   * `ordinal` es un contador PROPIO y no `seq`. Son dos cosas distintas y
+   * confundirlas cuesta el único dato de pérdida que tiene el análisis: `seq`
+   * cuenta todos los eventos de la sesión, así que un hueco en él puede ser un
+   * `idle_start` cualquiera. Un hueco en `ordinal` solo puede significar una
+   * cosa: se perdió un acto de interfaz.
+   */
+  trackUi(entrada: UiInput): void {
+    const ahora = this.ahoraMs();
+    const desdeElUltimo = this.ultimoActoMs === null ? 0 : Math.max(0, ahora - this.ultimoActoMs);
+    this.ultimoActoMs = ahora;
+
+    this.track({
+      eventType: "ui_interaction",
+      payload: {
+        control: entrada.control,
+        surface: entrada.surface,
+        action: entrada.action,
+        ...(entrada.value === undefined ? {} : { value: entrada.value }),
+        ordinal: this.uiOrdinal++,
+        sinceLastMs: Math.round(desdeElUltimo),
+        modality: this.modalidad,
+      },
+    });
+  }
+
+  /** Cambio de pantalla, con lo que duró la anterior. */
+  trackNav(desde: string, hacia: string): void {
+    const ahora = this.ahoraMs();
+    const permanencia =
+      this.ultimaNavegacionMs === null ? 0 : Math.max(0, ahora - this.ultimaNavegacionMs);
+    this.ultimaNavegacionMs = ahora;
+
+    this.track({
+      eventType: "nav_route_changed",
+      payload: { from: desde, to: hacia, dwellMs: Math.round(permanencia) },
+    });
+  }
+
+  /**
+   * Reloj MONÓTONO. `Date.now()` salta cuando el sistema ajusta la hora —o
+   * cuando un niño le cambia la hora a la tableta— y un salto hacia atrás daría
+   * un `sinceLastMs` negativo. El esquema Zod lo declara `nonnegative`, así que
+   * el servidor rechazaría el lote ENTERO con un 400 y se perderían también los
+   * eventos buenos que viajaban con él.
+   */
+  private ahoraMs(): number {
+    if (typeof performance !== "undefined" && typeof performance.now === "function") {
+      return performance.now();
+    }
+    return Date.now();
   }
 
   /**

@@ -121,6 +121,9 @@ export function StudentNav({ t }: StudentNavProps) {
             <li key={destino.href} className="flex-1">
               <Link
                 href={destino.href}
+                // El identificador sale del DESTINO, no de la etiqueta: la
+                // etiqueta es el idioma del alumno y cambia; `/practice` no.
+                data-cet-id={`nav${destino.href.replace(/\//g, ".")}`}
                 // `aria-current` es lo que un lector de pantalla anuncia. El
                 // color y el grosor son para quien ve; esto es para quien no.
                 {...(activo ? { "aria-current": "page" as const } : {})}

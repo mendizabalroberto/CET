@@ -83,12 +83,12 @@ const FUENTES: Readonly<Record<string, readonly Fuente[]>> = {
     {
       indicador: "Panel de profesor: las destrezas más flojas del colegio",
       fichero: "apps/web/src/components/staff/queries.ts :: weakestSkills",
-      huecoDeclarado:
-        "Mismo fallo que el `MasteryMeter` que se ha quitado de /learn, en territorio del panel " +
-        "de personal. NO se toca desde aquí (un agente por módulo, regla 7 del plan). Queda " +
-        "declarado para que conste medido: la tabla tiene 0 filas y ningún escritor, así que la " +
-        "lista de «destrezas más flojas» sale siempre vacía. Se cierra cuando exista la " +
-        "proyección de skill_mastery; entonces el test de abajo obliga a borrar este marcador.",
+      // El hueco declarado se ha BORRADO, y lo obligó este mismo fichero: la
+      // tabla ya tiene escritor —`app.rebuild_skill_mastery`, en
+      // `0052_mastery_job.sql`, programada por pg_cron cada diez minutos— y el
+      // test de abajo trata un marcador que sobrevive a su arreglo como un
+      // fallo. Con razón: un marcador caducado dice que el problema sigue ahí y
+      // manda a nadie a arreglar lo que ya está arreglado.
     },
   ],
 };

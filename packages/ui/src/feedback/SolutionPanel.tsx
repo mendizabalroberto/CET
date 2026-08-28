@@ -62,6 +62,13 @@ export function SolutionPanel({
         type="button"
         variant="secondary"
         size="md"
+        // El valor es el estado RESULTANTE, `!open`, no el actual: abrir la
+        // pista y cerrarla son el mismo boton y no el mismo acto, y el atributo
+        // del DOM en el momento del clic todavia lleva el estado de antes. Sin
+        // esta negacion, el analisis contaria el doble de pistas pedidas de las
+        // que se pidieron.
+        data-cet-id="ayuda.solucion"
+        data-cet-value={String(!open)}
         /* `w-fit` es el ancho por defecto —el disparador entero no debe
            estirarse cuando va suelto—, pero lo decide quien llama: dentro de la
            rejilla de acciones tiene que ocupar su celda, o queda un boton

@@ -24,6 +24,7 @@ import { LocaleProvider } from "@/lib/i18n/provider";
 import { resolveLocale } from "@/lib/i18n/server";
 import { ROUTES } from "@/lib/routes";
 import { TelemetryProvider } from "@/lib/telemetry/provider";
+import { UiInteractionScope } from "@/components/telemetry/UiInteractionScope";
 
 export default async function StudentLayout({ children }: { children: React.ReactNode }) {
   const student = await requireStudent();
@@ -41,6 +42,11 @@ export default async function StudentLayout({ children }: { children: React.Reac
           páginas legales no generan eventos de aprendizaje y no deben cargar
           este JavaScript. */}
       <TelemetryProvider>
+        {/* Dentro del provider y por encima de TODO lo demás: recoge los actos
+            de interfaz de cualquier control marcado con `data-cet-id`, incluidos
+            los de los diálogos, que React monta en un portal fuera de este
+            árbol del DOM. */}
+        <UiInteractionScope>
         <div className="flex min-h-dvh flex-col">
           <header className="border-b border-line bg-card">
             <div className="mx-auto flex max-w-5xl items-center gap-4 px-4 py-3">
@@ -49,6 +55,7 @@ export default async function StudentLayout({ children }: { children: React.Reac
                   `/account` no existía: cualquier enlace ahí daba un 404 mudo. */}
               <Link
                 href="/account"
+                data-cet-id="cabecera.cuenta"
                 className="ml-auto rounded-lg px-2 py-1 text-sm font-semibold text-muted underline-offset-4 hover:text-ink hover:underline"
               >
                 {student.fullName}
@@ -57,6 +64,7 @@ export default async function StudentLayout({ children }: { children: React.Reac
               <form action={signOut}>
                 <button
                   type="submit"
+                  data-cet-id="cabecera.salir"
                   className="rounded-lg border border-line px-3 py-1.5 text-sm font-semibold text-ink"
                 >
                   {t.common.signOut}
@@ -86,6 +94,7 @@ export default async function StudentLayout({ children }: { children: React.Reac
               donde toca. */}
           <StudentNav t={t} />
         </div>
+        </UiInteractionScope>
       </TelemetryProvider>
     </LocaleProvider>
   );

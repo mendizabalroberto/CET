@@ -1,44 +1,96 @@
 /**
- * /learn — índice del alumno.
+ * /learn — el índice del alumno, ahora una rejilla de materias.
  * © 2026 Roberto Mendizabal. Todos los derechos reservados.
  *
  * Server Component puro: no hay ni una interacción en esta pantalla, así que no
  * lleva un solo byte de JavaScript propio. Lo único que se hidrata es el puente
  * de idioma de `@cet/ui`, que es un contexto sin marcado.
  *
- * La RLS ya filtra por colegio; la consulta filtra ADEMÁS por `school_id`
+ * La RLS ya filtra por colegio; las consultas filtran ADEMÁS por `school_id`
  * (regla transversal 2 de `MODULES.md`). Ver `queries.ts`.
  *
  * ===========================================================================
- * AQUÍ HABÍA UN MEDIDOR DE DOMINIO, Y NO MEDÍA NADA
+ * QUÉ HABÍA AQUÍ, Y POR QUÉ YA NO
  * ===========================================================================
- * Cada curso llevaba un `MasteryMeter` alimentado por la media de
- * `skill_mastery`. Esa tabla tiene CERO filas en producción y ningún escritor:
- * ni función, ni trigger, ni política de insert. El medidor llevaba desde
- * siempre en su rama vacía, y el alumno no podía distinguir "no has practicado"
- * de "esto no lo rellena nadie". Se ha quitado en vez de dejarlo: un indicador
- * que no puede medir es peor que ninguno, porque enseña a no mirar los
- * indicadores. El progreso real, por grupo de práctica y derivado de eventos que
- * sí se escriben, está en `/practice`. Cuando exista la proyección de
- * `skill_mastery`, este medidor puede volver — con su fuente viva.
+ * Una lista anidada: `<section>` por curso, `<ol>` de módulos, `<ul>` de
+ * lecciones. Todo el catálogo del colegio abierto de golpe, sin color, sin
+ * avance, y con el título de cada lección como único sitio pulsable. Un alumno
+ * de once años en una tableta no sabía por dónde iba ni cuánto le quedaba, y
+ * tenía que leer para saber qué materia estaba mirando.
+ *
+ * Ahora se entra por materia. Cada tarjeta resume su avance y lleva a
+ * `/learn/materia/[key]`, donde están sus módulos y sus lecciones.
+ *
+ * ===========================================================================
+ * DE DÓNDE SALEN LAS CIFRAS, Y QUÉ PASA CUANDO NO SALEN
+ * ===========================================================================
+ * De `learning_events` (`lesson_opened` / `lesson_completed`), que son eventos
+ * que la aplicación EMITE de verdad hoy. No de `skill_mastery`, que tiene cero
+ * filas en producción y ningún escritor: aquí hubo un `MasteryMeter` colgado de
+ * esa tabla, llevaba desde siempre pintando vacío, y era imposible distinguir
+ * "no has practicado" de "esto no lo rellena nadie".
+ *
+ * Si la consulta de avance falla, `progress` es `null` y las tarjetas se pintan
+ * SIN cifras, con un aviso. "Cero" es un dato; una consulta caída no lo es, y
+ * decirle a un alumno que no ha terminado nada cuando no lo sabemos es mentirle
+ * sobre su propio trabajo.
  */
-import Link from "next/link";
 import { resolveI18n } from "@cet/shared";
-import { EmptyState, ErrorState } from "@cet/ui";
+import { EmptyState, ErrorState, SubjectGrid, type SubjectCardProps } from "@cet/ui";
+import Link from "next/link";
 
 import { getLearnDictionary, learnI18n } from "@/components/learn/dictionary";
-import { getStudentCourses } from "@/components/learn/queries";
+import { countLessons } from "@/components/learn/lesson-progress";
+import { getLessonProgress, getStudentCourses } from "@/components/learn/queries";
+import { groupCoursesBySubject } from "@/components/learn/subject-grouping";
 import { UiLocaleProvider } from "@/components/learn/UiLocaleProvider";
 import { requireStudent } from "@/lib/auth/session";
 import { resolveLocale } from "@/lib/i18n/server";
-import { interpolate } from "@/lib/i18n";
+
+/**
+ * Los seis rótulos que la tarjeta espera de la aplicación.
+ *
+ * AD-7: `@cet/ui` no escribe ni un literal de cara al usuario, así que los
+ * textos viajan como `I18nText` desde el diccionario de la app. Se construyen
+ * una vez, fuera del componente: son constantes, no dependen de la petición.
+ */
+const CARD_TEXT = {
+  ofText: learnI18n((d) => d.subject.of),
+  completedText: learnI18n((d) => d.subject.finished),
+  startedText: learnI18n((d) => d.subject.onTheGo),
+  notStartedText: learnI18n((d) => d.subject.notStarted),
+  doneText: learnI18n((d) => d.subject.allDone),
+  unavailableText: learnI18n((d) => d.subject.progressUnknown),
+} as const;
 
 export default async function LearnPage() {
   const student = await requireStudent();
   const locale = await resolveLocale(student.locale);
   const t = getLearnDictionary(locale).index;
+  const s = getLearnDictionary(locale).subject;
 
-  const courses = await getStudentCourses(student.schoolId);
+  // En paralelo: el catálogo y el avance son independientes, y que el avance
+  // falle no puede retrasar ni impedir que se vean las lecciones.
+  const [courses, progress] = await Promise.all([
+    getStudentCourses(student.schoolId),
+    getLessonProgress(student.schoolId, student.id),
+  ]);
+
+  const subjects: readonly SubjectCardProps[] =
+    courses === null
+      ? []
+      : groupCoursesBySubject(courses, locale).map((group) => {
+          const counted = progress === null ? null : countLessons(group.lessonIds, progress);
+          return {
+            code: group.code,
+            name: resolveI18n(group.name, locale),
+            href: `/learn/materia/${encodeURIComponent(group.key)}`,
+            total: group.lessonIds.length,
+            completed: counted?.completed ?? null,
+            started: counted?.started ?? null,
+            ...CARD_TEXT,
+          };
+        });
 
   return (
     <UiLocaleProvider locale={locale}>
@@ -59,71 +111,30 @@ export default async function LearnPage() {
           </Link>
         </section>
 
+        {/* El aviso va ANTES de la rejilla y no dentro de cada tarjeta: es una
+            sola cosa que ha fallado, no seis. Repetirlo seis veces convertiría
+            un aviso en ruido. */}
+        {courses !== null && courses.length > 0 && progress === null ? (
+          <p
+            role="status"
+            className="rounded-lg border border-line bg-card px-4 py-3 text-sm text-muted"
+          >
+            {s.progressUnavailable}
+          </p>
+        ) : null}
+
         {courses === null ? (
           <ErrorState
             title={learnI18n((d) => d.index.errorTitle)}
             body={learnI18n((d) => d.index.errorBody)}
           />
-        ) : courses.length === 0 ? (
+        ) : subjects.length === 0 ? (
           <EmptyState
             title={learnI18n((d) => d.index.emptyTitle)}
             body={learnI18n((d) => d.index.emptyBody)}
           />
         ) : (
-          courses.map((course) => (
-            <section key={course.id} className="flex flex-col gap-4">
-              <div className="flex flex-wrap items-baseline justify-between gap-3">
-                <h2 className="text-xl font-bold text-ink">
-                  {resolveI18n(course.title, locale)}
-                </h2>
-                <p className="text-sm text-muted">
-                  {course.lessonCount === 1
-                    ? t.lessonCountOne
-                    : interpolate(t.lessonCount, { count: course.lessonCount })}
-                </p>
-              </div>
-
-              {course.modules.length === 0 ? (
-                <EmptyState
-                  title={learnI18n((d) => d.index.emptyTitle)}
-                  body={learnI18n((d) => d.index.emptyBody)}
-                />
-              ) : (
-                <ol className="flex flex-col gap-4">
-                  {course.modules.map((module) => (
-                    <li key={module.id} className="rounded-2xl border border-line bg-card p-4">
-                      <h3 className="text-xs font-bold uppercase tracking-wide text-muted">
-                        {interpolate(t.moduleLabel, { ord: module.ord })}
-                      </h3>
-                      <p className="mt-1 font-semibold text-ink">
-                        {resolveI18n(module.title, locale)}
-                      </p>
-
-                      <ul className="mt-3 flex flex-col gap-1">
-                        {module.lessons.map((lesson) => (
-                          <li key={lesson.id}>
-                            <Link
-                              href={`/learn/${lesson.id}`}
-                              className="flex min-h-11 items-center justify-between gap-3 rounded-lg px-3 text-ink hover:bg-bg focus-visible:outline-2 focus-visible:outline-offset-2"
-                            >
-                              <span>
-                                {resolveI18n(lesson.title, locale)}
-                              </span>
-                              {lesson.estimatedMinutes === null ? null : (
-                                <span className="shrink-0 text-xs text-muted">
-                                  {interpolate(t.minutes, { count: lesson.estimatedMinutes })}
-                                </span>
-                              )}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </li>
-                  ))}
-                </ol>
-              )}
-            </section>
-          ))
+          <SubjectGrid subjects={subjects} />
         )}
       </div>
     </UiLocaleProvider>

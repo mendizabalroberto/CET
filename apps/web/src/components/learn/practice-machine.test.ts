@@ -336,3 +336,40 @@ describe("accuracyPercent", () => {
     expect(accuracyPercent(initialPracticeState("mix"))).toBeNull();
   });
 });
+
+describe("borrar la respuesta no es cambiarla", () => {
+  /** Una pregunta en pantalla y en fase de respuesta: el punto de partida. */
+  function enPantalla(): PracticeState {
+    return practiceReducer(initialPracticeState("math.simplify"), {
+      type: "question_shown",
+      question: makeQuestion(1),
+      now: 1_000,
+    }).state;
+  }
+
+  it("emite answer_cleared al vaciar una respuesta escrita", () => {
+    const conRespuesta = practiceReducer(enPantalla(), {
+      type: "answer_changed",
+      value: "3/4",
+      now: 1_500,
+    }).state;
+
+    const { effects } = practiceReducer(conRespuesta, {
+      type: "answer_changed",
+      value: "",
+      now: 2_000,
+    });
+
+    expect(effects.map((e) => e.eventType)).toEqual(["answer_changed", "answer_cleared"]);
+  });
+
+  it("no lo emite si no habia nada escrito", () => {
+    const { effects } = practiceReducer(enPantalla(), {
+      type: "answer_changed",
+      value: "  ",
+      now: 1_500,
+    });
+
+    expect(effects.map((e) => e.eventType)).toEqual(["answer_changed"]);
+  });
+});

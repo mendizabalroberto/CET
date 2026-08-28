@@ -10,10 +10,14 @@
 
 import { createContext, useContext, useEffect, useMemo, useRef, type ReactNode } from "react";
 
-import { TelemetryQueue, type TrackInput } from "./client";
+import { TelemetryQueue, type TrackInput, type UiInput } from "./client";
 
 interface TelemetryContextValue {
   readonly track: (input: TrackInput) => void;
+  /** Un acto sobre un control marcado con `data-cet-id`. */
+  readonly trackUi: (entrada: UiInput) => void;
+  /** Un cambio de pantalla, con lo que duró la anterior. */
+  readonly trackNav: (desde: string, hacia: string) => void;
   readonly sessionId: string;
   readonly flush: () => void;
 }
@@ -41,6 +45,8 @@ export function TelemetryProvider({ children }: { children: ReactNode }) {
     const queue = queueRef.current;
     return {
       track: (input) => queue?.track(input),
+      trackUi: (entrada) => queue?.trackUi(entrada),
+      trackNav: (desde, hacia) => queue?.trackNav(desde, hacia),
       sessionId: queue?.getSessionId() ?? "",
       flush: () => void queue?.flush(),
     };
@@ -77,5 +83,8 @@ export function useTelemetry(): TelemetryContextValue {
   if (process.env.NODE_ENV !== "production") throw new Error(SIN_PROVIDER);
 
   console.error(`[telemetry] ${SIN_PROVIDER}`);
-  return { track: () => {}, sessionId: "", flush: () => {} };
+  // Los cinco campos, no tres. Un no-op incompleto no degrada: revienta con
+  // «trackUi is not a function» en el primer clic, y en producción, que es
+  // exactamente el accidente que este no-op existe para impedir.
+  return { track: () => {}, trackUi: () => {}, trackNav: () => {}, sessionId: "", flush: () => {} };
 }

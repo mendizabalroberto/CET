@@ -260,6 +260,11 @@ export function AnswerKeypad({
       disabled={disabled}
       tabIndex={key.id === activeId ? 0 : -1}
       aria-label={t(key.label)}
+      // El id del control es el teclado; la tecla concreta va como valor. Es lo
+      // que permite preguntar «cuanto usa el teclado en pantalla» y «que teclas»
+      // con la misma consulta, en vez de con una por tecla.
+      data-cet-id="teclado"
+      data-cet-value={key.id}
       // Impide que el boton robe el foco del campo: sin esto cada pulsacion
       // pierde el cursor. Es la linea que hace que el teclado sea usable.
       onMouseDown={(event) => event.preventDefault()}

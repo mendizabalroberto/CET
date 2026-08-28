@@ -496,12 +496,23 @@ export function PracticeSession({ topicId, locale, levels }: PracticeSessionProp
                 después lo que la esquiva, después las dos ayudas de menor a
                 mayor. Los cuerpos desplegables van DETRÁS de los botones, no
                 intercalados. */}
-            <div role="group" aria-label={t.actionsLabel} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div
+              role="group"
+              aria-label={t.actionsLabel}
+              data-cet-surface="practice"
+              className="grid grid-cols-1 gap-3 sm:grid-cols-2"
+            >
               <Button
                 type="button"
                 ref={actionRef}
                 onClick={submit}
                 fullWidth
+                // DOS identificadores para UN botón, y es lo correcto: comprobar
+                // y seguir son actos distintos con ritmos distintos. Bajo un solo
+                // id, el tiempo medio de «practica.accion» mezclaría los segundos
+                // que tarda en decidir una respuesta con el cuarto de segundo que
+                // tarda en pasar de pantalla, y no significaría nada.
+                data-cet-id={answered ? "practica.siguiente" : "practica.comprobar"}
                 // El icono cambia con el texto: comprobar es una marca, seguir
                 // es una flecha. Si los dos fuesen la marca, el boton diria
                 // «has acertado» cuando solo quiere decir «sigue».
@@ -509,7 +520,15 @@ export function PracticeSession({ topicId, locale, levels }: PracticeSessionProp
               >
                 {answered ? t.nextQuestion : t.check}
               </Button>
-              <Button type="button" variant="secondary" onClick={skip} disabled={answered} fullWidth icon="saltar">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={skip}
+                disabled={answered}
+                fullWidth
+                icon="saltar"
+                data-cet-id="practica.saltar"
+              >
                 {t.skip}
               </Button>
               {item.hint ? (
