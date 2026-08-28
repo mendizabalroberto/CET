@@ -61,6 +61,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html
       lang={locale}
       // `system` no pinta atributo: así manda `prefers-color-scheme` desde CSS.
+      // Sin cookie no se llega aquí con `system`, sino con `light`: el tema del
+      // dispositivo no decide con qué contraste estudia un niño (ver `getTheme`).
       {...(theme === "system" ? {} : { "data-theme": theme })}
       suppressHydrationWarning
     >

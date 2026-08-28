@@ -20,13 +20,23 @@ export function isTheme(value: unknown): value is Theme {
 }
 
 /**
- * Tema efectivo. `system` devuelve `null` a propósito: sin atributo
- * `data-theme`, manda `prefers-color-scheme` desde CSS puro.
+ * Tema efectivo.
+ *
+ * SIN COOKIE, EL TEMA ES CLARO — no `system`, y es deliberado.
+ *
+ * Quien decide aquí no es el dueño del dispositivo: es un niño que abre la app
+ * en el móvil que le han dejado, con los ajustes que trajera. `system` hacía
+ * que el modo oscuro del teléfono de su padre decidiera con qué contraste
+ * estudia. La lección se diseñó, se midió y se mira sobre fondo claro, así que
+ * ése es el suelo; el oscuro es una elección, no una herencia.
+ *
+ * `system` sigue existiendo y el selector lo ofrece: quien lo elige, lo elige.
+ * Sólo deja de ser lo que pasa cuando nadie ha elegido nada.
  */
 export async function getTheme(): Promise<Theme> {
   const store = await cookies();
   const value = store.get(THEME_COOKIE)?.value;
-  return isTheme(value) ? value : "system";
+  return isTheme(value) ? value : "light";
 }
 
 /** Cookies de preferencia: 1 año, sin datos personales, no httpOnly (el toggle no las necesita, pero tampoco daña). */
