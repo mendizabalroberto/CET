@@ -429,7 +429,18 @@ async function execute(c, key) {
     const v = run(c.verify, wt);
     lastOut = v.out;
     if (v.code === 0) {
-      const patch = run('git diff', wt).out;
+      // El fichero de trabajo del motor no es parte del encargo, y a partir de
+      // aqui se indexa todo: si sigue en el arbol, entra en el parche.
+      rmSync(join(wt, '.deepseek.patch'), { force: true });
+
+      // `git diff` a secas NO VE un fichero nuevo sin indexar. La contraprueba
+      // de abajo SI lo borra, asi que sin indexar antes de medir el parche sale
+      // VACIO y el fichero se pierde para siempre: `obs2-migas-de-pan` salio
+      // verde, la rama se quedo con el test y sin el componente que probaba, y
+      // el motor lo dio por bueno. Se indexa, se mide contra el indice, y asi
+      // el parche contiene tambien los ficheros nuevos.
+      run('git add -A', wt);
+      const patch = run('git diff --cached', wt).out;
 
       // CONTRAPRUEBA POR MUTACION - «verifica el verificador».
       // Un verde no vale por ser verde. Se revierte lo que NO es test y se
@@ -449,11 +460,23 @@ async function execute(c, key) {
         else rmSync(join(wt, f), { force: true });
       }
       const mut = run(c.verify, wt);
+      // `reset --hard` limpia lo indexado; `clean` se lleva lo que la ronda
+      // dejo sin indexar. Solo despues de dejar el arbol como HEAD se vuelve a
+      // aplicar el parche, que ahora si trae los ficheros nuevos.
       run('git reset --hard HEAD', wt);
-      run('git apply --whitespace=nowarn ".deepseek.verde.patch"', wt);
+      run('git clean -fdq -e .deepseek.verde.patch', wt);
+      const restaurado = run('git apply --whitespace=nowarn ".deepseek.verde.patch"', wt);
+      if (restaurado.code !== 0) {
+        fatal(
+          `${c.id}: la contraprueba no se pudo deshacer (git apply salio ${restaurado.code}).\n` +
+            `El arbol de ${wt} quedo sin el parche verde. No se consolida nada a medias.\n` +
+            restaurado.out.slice(0, 2000),
+        );
+      }
       if (mut.code === 0) {
         console.log('    x FALSO VERDE: revertido el codigo, la verificacion sigue verde');
         run('git reset --hard HEAD', wt);
+        run('git clean -fdq', wt);
         messages.push({
           role: 'user',
           content:
@@ -470,8 +493,6 @@ async function execute(c, key) {
       }
       console.log(`    contraprueba: revertido el codigo, la verificacion cae en rojo (${mut.code}). El verde vale.`);
       rmSync(join(wt, '.deepseek.verde.patch'), { force: true });
-      // El fichero de trabajo del motor no es parte del encargo.
-      rmSync(join(wt, '.deepseek.patch'), { force: true });
       run('git add -A', wt);
       run(`git commit -q -m "deepseek(${c.id}): parche verificado en verde"`, wt);
       writeResult(c, {

@@ -13,19 +13,27 @@ import { useI18n } from "../lib/i18n.js";
 import { parseSafeHtml } from "../lib/html-to-react.js";
 import { UI_STRINGS } from "../lib/strings.js";
 
-export interface HintPanelProps {
+export interface HintPanelBaseProps {
   /** Texto de la pista, ya resuelto a HTML. Se sanea. */
   readonly html: string;
   readonly open: boolean;
   readonly onOpenChange: (open: boolean) => void;
   readonly label?: I18nText | undefined;
   readonly className?: string | undefined;
-  readonly part?: "all" | "trigger" | "panel" | undefined;
-  readonly id?: string | undefined;
 }
 
+/**
+ * Partido en dos: el disparador va en la zona de acciones y el cuerpo debajo.
+ * `id` deja de ser opcional, y no es capricho de tipos: cada mitad es un montaje
+ * distinto, con su propio `useId`, asi que el `aria-controls` del disparador
+ * apuntaria a un identificador que el cuerpo nunca genera. Un lector de pantalla
+ * anunciaria contenido asociado y no habria ninguno.
+ */
 type Partido = { readonly part: "trigger" | "panel"; readonly id: string };
+/** Entero, como siempre: disparador y cuerpo juntos, y el `id` se genera solo. */
 type Entero = { readonly part?: "all" | undefined; readonly id?: string | undefined };
+
+export type HintPanelProps = HintPanelBaseProps & (Partido | Entero);
 
 /**
  * Pista bajo demanda. El `.fb.hint` de los trainers Y6A.

@@ -14,7 +14,7 @@ import { parseSafeHtml } from "../lib/html-to-react.js";
 import { UI_STRINGS } from "../lib/strings.js";
 import { StepList } from "../learning/StepList.js";
 
-export interface SolutionPanelProps {
+export interface SolutionPanelBaseProps {
   /** Explicacion completa en HTML (el `sol:` de los trainers Y6A). Se sanea. */
   readonly html?: string | undefined;
   /** Alternativa estructurada: pasos numerados. */
@@ -23,12 +23,13 @@ export interface SolutionPanelProps {
   readonly onOpenChange: (open: boolean) => void;
   readonly label?: I18nText | undefined;
   readonly className?: string | undefined;
-  readonly part?: "all" | "trigger" | "panel" | undefined;
-  readonly id?: string | undefined;
 }
 
+/** Ver la nota de `HintPanel`: partido, el `id` lo tiene que dar el llamante. */
 type Partido = { readonly part: "trigger" | "panel"; readonly id: string };
 type Entero = { readonly part?: "all" | undefined; readonly id?: string | undefined };
+
+export type SolutionPanelProps = SolutionPanelBaseProps & (Partido | Entero);
 
 /**
  * Explicacion paso a paso de la respuesta.
