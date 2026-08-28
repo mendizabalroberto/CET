@@ -161,7 +161,6 @@ function pintar(aciertos: number, fallos: number): HTMLElement {
       <PracticeTopicGrid
         topics={topics}
         dictionary={dictionary}
-        locale={locale}
         progress={progresoDe(aciertos, fallos)}
       />
     </UiLocaleProvider>,

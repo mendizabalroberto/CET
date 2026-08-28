@@ -117,7 +117,6 @@ export default async function PracticePreviewPage() {
         <PracticeTopicGrid
           topics={topics}
           dictionary={dictionary}
-          locale={locale}
           progress={progress}
         />
 

@@ -135,7 +135,7 @@ export const learnEn = {
       metric: "Metric units",
       shape: "Compound shapes",
       word: "Word problems",
-      mix: "🎲 Mixed",
+      mix: "Mixed",
     },
     topicHints: {
       simplify: "Divide top and bottom by the same number.",

@@ -12,6 +12,21 @@
  * No lleva "use client": son enlaces y SVG, cero interacción.
  *
  * ===========================================================================
+ * QUÉ HABÍA AQUÍ, Y POR QUÉ YA NO
+ * ===========================================================================
+ * El marcado de la tarjeta, escrito a mano en la aplicación: primero píldoras,
+ * después una caja parecida a la de `/learn`. Las dos veces era la APP quien
+ * decidía cómo se ve una tarjeta, mientras la de materias la decidía el design
+ * system. Así es como dos pantallas hermanas del mismo alumno se separan sin
+ * que ningún test lo vea.
+ *
+ * Ahora este fichero no dibuja: TRADUCE. Coge lo que la aplicación sabe —los
+ * temas del registro de generadores, el diccionario del alumno y su progreso— y
+ * lo convierte en las props que `TopicGrid` espera. El dibujo entero vive en
+ * `@cet/ui`, junto al de `/learn` y compartiendo con él la misma caja
+ * (`card-chrome.ts`).
+ *
+ * ===========================================================================
  * QUÉ PROGRESO SE PINTA Y CUÁNDO NO SE PINTA NADA
  * ===========================================================================
  * Tres estados, y los tres se ven distintos a propósito:
@@ -23,73 +38,34 @@
  * demás. Sus respuestas se acreditan al grupo real. Ver `practice-progress.ts`.
  *
  * ===========================================================================
- * LA MISMA LIBRERÍA VISUAL QUE /learn (2026-08-28)
+ * LA SILUETA DICE EL TEMA; EL COLOR, LA MATERIA
  * ===========================================================================
- * Hasta hoy esta parrilla tenía su propio aspecto —píldoras de esquina muy
- * redonda, borde doble gris, dos columnas fijas, cuerpo a 12 px— mientras
- * `/learn` estrenaba las tarjetas del design system. Dos pantallas hermanas del
- * mismo alumno con dos lenguajes visuales distintos, y la de práctica con el
- * texto más pequeño de todo el producto. Ahora las dos hablan el mismo:
+ * `topic` es la clave del dibujo (`simplify`, `compare`, ...) y `subjectCode`
+ * la materia de la que sale el color. Son dos cosas distintas a propósito: las
+ * diez tarjetas comparten tono porque son todas de Matemáticas, y lo único que
+ * distingue un tema de otro sin leer es el medallón. `mix` no pertenece a
+ * ninguna materia —es un cruce— y por eso se queda con la identidad neutra.
  *
- *   - **El rail de color** (`border-s-4` con `--cet-materia-*`) y el resto de la
- *     caja —`rounded-md`, `shadow-card`, elevación al pasar por encima— salen de
- *     `SubjectCard`. Es la misma decisión de dibujo, no una copia parecida: los
- *     colores llegan por `subjectIdentity()`, que es la única fuente de la
- *     paleta de materias, y aquí no se escribe ni un hexadecimal.
- *   - **El cuerpo se queda en `bg-card`**, y esto es deliberado: `SubjectCard`
- *     usa el lavado `--cet-materia-*-suave` porque encima solo lleva
- *     `--cet-ink`. Aquí encima va además texto atenuado —la pista, el recuento y
- *     la palabra del nivel que escribe `MasteryLadder`— y `--cet-ink-muted`
- *     sobre ese lavado mide de 4.45:1 a 4.51:1: por debajo del 4.5 que pide WCAG
- *     1.4.3 en tres de los siete tonos. El lavado se gana un cuerpo de texto
- *     entero o no se usa; sobre `--cet-surface` esos pares ya están medidos.
- *   - **La escala tipográfica del preset**: `text-body-lg` para el nombre y
- *     `text-body-sm` para lo demás. El `text-xs` que había son 12 px, y la
- *     escala de esta casa no baja de 14.5 px porque el lector tiene once años.
- *   - **La rejilla**: una columna, dos desde `sm` y tres desde `lg`, igual que
- *     `SubjectGrid`. Con diez temas, dos columnas fijas dejaban media pantalla
- *     vacía en el portátil del colegio.
- *
- * Lo que NO se copia de `SubjectCard` es el medallón. El icono de materia es el
- * canal que IDENTIFICA la materia, y aquí las diez tarjetas son de la misma:
- * diez cruces azules idénticas no distinguirían nada, se comerían el ancho que
- * en un móvil de 360 px necesita el nombre del tema, y le enseñarían al alumno
- * que ese dibujo no significa nada. Lo que distingue un tema de otro es su
- * nombre y su pista, y los dos van escritos.
+ * `trackedValue` viaja aparte de `topic` y NO se deriva de él: la analítica
+ * lleva guardando la clave del generador (`math.compare`) desde el primer día,
+ * y fundirla con la clave de la silueta rompería la serie histórica el día que
+ * dejen de coincidir.
  */
-import Link from "next/link";
-import type { Locale } from "@cet/shared";
-import { EffortMeter, MasteryLadder, MasteryOverview, subjectIdentity } from "@cet/ui";
+import { MasteryOverview, TopicGrid, type TopicCardProps } from "@cet/ui";
 
 import { learnI18n, type LearnDictionary } from "./dictionary";
 import { MIXED_TOPIC_ID, topicSubjectCode, type PracticeTopic } from "./practice-topics";
 import {
-  answeredCountText,
+  answeredCountI18n,
   nextStepI18n,
   nextStepTargets,
-  nextStepText,
   overviewSummaryI18n,
 } from "./practice-progress-text";
 import { overviewLevels, type TopicProgress } from "./practice-progress";
 
-/**
- * La caja de la tarjeta, en una constante y no repartida por el JSX: es UNA
- * decisión de diseño —la de `SubjectCard`— y quien la cambie tiene que verla
- * entera. El único color que no está aquí es el del rail, que depende de la
- * materia y viaja por `style`.
- */
-const CARD_CLASS = [
-  "flex h-full min-h-touch w-full flex-col gap-2",
-  "rounded-md border border-line border-s-4 bg-card px-4 py-4",
-  "text-ink no-underline shadow-card hover:shadow-pop",
-  "transition-shadow duration-slow ease-cet motion-reduce:transition-none",
-  "focus-visible:outline-2 focus-visible:outline-offset-2",
-].join(" ");
-
 export interface PracticeTopicGridProps {
   readonly topics: readonly PracticeTopic[];
   readonly dictionary: LearnDictionary;
-  readonly locale: Locale;
   /**
    * Progreso por `engineKey`. **`null` significa "no lo sabemos"** —la consulta
    * falló—, y entonces no se pinta ni un indicador: una consulta caída no es un
@@ -101,7 +77,6 @@ export interface PracticeTopicGridProps {
 export function PracticeTopicGrid({
   topics,
   dictionary,
-  locale,
   progress,
 }: PracticeTopicGridProps) {
   const t = dictionary.practice;
@@ -117,6 +92,40 @@ export function PracticeTopicGrid({
     progress ?? null,
   );
 
+  const cards: readonly TopicCardProps[] = topics.map((topic) => {
+    // `mix` no es un grupo: es un sorteo entre los demás, y sus respuestas se
+    // acreditan al grupo real. Ver `practice-progress.ts`.
+    const own = topic.id === MIXED_TOPIC_ID ? undefined : progress?.get(topic.id);
+
+    // "Sin practicar todavía" es un DATO —el alumno no ha respondido nada—, así
+    // que solo se escribe cuando la consulta ha respondido. Con `progress` a
+    // `null` la tarjeta se queda sin ninguna fila de progreso, que es lo
+    // honesto: no lo sabemos.
+    const evidenceText =
+      own !== undefined
+        ? answeredCountI18n(own.totalAnswered)
+        : progress !== null && topic.id !== MIXED_TOPIC_ID
+          ? learnI18n((d) => d.practice.notPractisedYet)
+          : undefined;
+
+    return {
+      topic: topic.slug,
+      subjectCode: topicSubjectCode(topic),
+      name: t.topics[topic.slug],
+      hint: t.topicHints[topic.slug],
+      href: `/practice/${encodeURIComponent(topic.id)}`,
+      trackedValue: topic.id,
+      level: own?.level ?? null,
+      groupLabel: learnI18n((d) => d.practice.topics[topic.slug]),
+      evidenceText,
+      // El objetivo y la frase salen del MISMO `nextStep`: si el texto promete
+      // tres aciertos y el dibujo enseña cinco círculos, el dibujo es decoración
+      // y el alumno aprende a no mirarlo.
+      targets: own === undefined ? undefined : nextStepTargets(own.nextStep),
+      nextStepText: own === undefined ? undefined : nextStepI18n(own.nextStep),
+    };
+  });
+
   return (
     <nav aria-label={t.topicLegend}>
       <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
@@ -131,71 +140,7 @@ export function PracticeTopicGrid({
           todavía» diez veces y un resumen a cero sería una medida inventada. */}
       <MasteryOverview levels={overview} summary={overviewSummaryI18n(overview)} className="mt-3" />
 
-      {/* Lista y no divs en rejilla, por lo mismo que `SubjectGrid`: el lector
-          anuncia «lista de 10 elementos» antes de entrar. El aspecto de rejilla
-          lo pone CSS, que no toca el árbol de accesibilidad. */}
-      <ul className="m-0 mt-4 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
-        {topics.map((topic) => {
-          // `mix` no es un grupo: es un sorteo entre los demás, y sus respuestas
-          // se acreditan al grupo real. Ver `practice-progress.ts`.
-          const own = topic.id === MIXED_TOPIC_ID ? undefined : progress?.get(topic.id);
-          const identity = subjectIdentity(topicSubjectCode(topic));
-          return (
-            <li key={topic.id} className="m-0 flex">
-              <Link
-                href={`/practice/${encodeURIComponent(topic.id)}`}
-                data-cet-id="practica.elegir-tema"
-                data-cet-value={topic.id}
-                data-subject={identity.code}
-                className={CARD_CLASS}
-                style={{ borderInlineStartColor: identity.fill }}
-              >
-                <span className="flex items-center justify-between gap-3">
-                  <span className="text-body-lg font-bold leading-tight">
-                    {t.topics[topic.slug]}
-                  </span>
-                  {own ? (
-                    <MasteryLadder
-                      level={own.level}
-                      groupLabel={learnI18n((d) => d.practice.topics[topic.slug])}
-                      size="sm"
-                      showLabel
-                    />
-                  ) : null}
-                </span>
-
-                <span className="text-body-sm text-muted">{t.topicHints[topic.slug]}</span>
-
-                {/* La cifra de la que sale todo lo demás. Sin ella el nivel es
-                    un oráculo; con ella el alumno puede comprobarlo. */}
-                {own ? (
-                  <span className="text-body-sm text-muted">
-                    {answeredCountText(own.totalAnswered, dictionary)}
-                  </span>
-                ) : progress !== null && topic.id !== MIXED_TOPIC_ID ? (
-                  <span className="text-body-sm text-muted">{t.notPractisedYet}</span>
-                ) : null}
-
-                {/* Con objetivo pendiente, el medidor. Ya dominado, la frase
-                    sola: `EffortMeter` no pinta cero circulos (cero no es
-                    ausencia), y dejar la tarjeta muda haria que el unico grupo
-                    que el alumno ha terminado fuese el que menos le dice. */}
-                {own === undefined ? null : nextStepTargets(own.nextStep) > 0 ? (
-                  <EffortMeter
-                    targets={nextStepTargets(own.nextStep)}
-                    message={nextStepI18n(own.nextStep)}
-                    className="mt-0.5"
-                  />
-                ) : (
-                  <span className="mt-0.5 text-body-sm font-semibold text-ink">
-                    {nextStepText(own.nextStep, dictionary, locale)}
-                  </span>
-                )}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+      <TopicGrid topics={cards} className="mt-4" />
     </nav>
   );
 }

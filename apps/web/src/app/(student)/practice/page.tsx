@@ -62,7 +62,6 @@ export default async function PracticeIndexPage() {
         <PracticeTopicGrid
           topics={topics}
           dictionary={dictionary}
-          locale={locale}
           progress={progress}
         />
       </div>

@@ -12,31 +12,31 @@
  * y veía dos productos. Ese día el coste no lo pagó ningún test, porque cada
  * pantalla, por separado, estaba bien.
  *
- * Aquí no se comprueba una captura ni un píxel. Se comprueba que las decisiones
- * de caja de la tarjeta de práctica sean LAS MISMAS que las de `SubjectCard`,
- * leyéndolas del componente real y no de una lista escrita a mano: si mañana
- * `SubjectCard` cambia de radio o de sombra y la práctica no la sigue, esto se
- * pone rojo. Es lo que convierte "usamos el design system" en algo que se puede
- * verificar por código de salida.
+ * Aquí no se comprueba una captura ni un píxel. Se comprueba que la tarjeta que
+ * pinta `/practice` lleve **la caja del design system**, y la caja se lee de
+ * `CARD_CHROME` —la constante que `SubjectCard` también usa—, no de una lista de
+ * clases escrita a mano en este fichero. Si mañana el design system cambia de
+ * radio o de sombra, las dos pantallas cambian juntas o esto se pone rojo. Es lo
+ * que convierte "usamos el design system" en algo verificable por código de
+ * salida.
+ *
+ * Este test vive en la APP y no en `@cet/ui` a propósito: lo que vigila no es
+ * que el componente sea correcto —de eso se ocupa `tarjeta-de-tema.test.tsx`—
+ * sino que la PANTALLA lo monte. Una tarjeta impecable que la pantalla no usa no
+ * arregla nada, y era exactamente la situación de ayer.
  *
  * ===========================================================================
- * LAS DOS DIFERENCIAS QUE SÍ SE PERMITEN, Y POR QUÉ
+ * QUÉ SE COMPRUEBA ADEMÁS DE LA CAJA
  * ===========================================================================
- *  - **El lavado del cuerpo** (`--cet-materia-*-suave`). `SubjectCard` lo usa
- *    porque encima solo lleva `--cet-ink`; la tarjeta de práctica lleva además
- *    texto atenuado, y `--cet-ink-muted` sobre ese lavado no llega al 4.5:1 de
- *    WCAG 1.4.3 en tres de los siete tonos. Se queda en `bg-card`.
- *  - **El medallón.** Identifica la MATERIA, y los diez temas son de la misma:
- *    diez iconos idénticos no distinguen nada y se comen el ancho del nombre.
- *
- * Las dos están escritas en la cabecera de `PracticeTopicGrid.tsx`. Si alguien
- * las cambia, que sea a la vista.
+ * Las cuatro cosas que en esta pantalla se pueden perder sin que se note: que
+ * el rail y el lavado salgan de la paleta de materias y nunca de un
+ * hexadecimal, que `mix` no se disfrace de materia —es un cruce, le toca la
+ * identidad neutra—, que cada tarjeta siga diciéndole a la analítica qué tema
+ * es, y que ningún texto baje de la escala tipográfica de la casa.
  */
 import { describe, expect, it } from "vitest";
 import { cleanup, render } from "@testing-library/react";
-import { readFileSync } from "node:fs";
-import { createRequire } from "node:module";
-import { dirname, resolve } from "node:path";
+import { CARD_CHROME } from "@cet/ui";
 
 import { getLearnDictionary } from "./dictionary";
 import { practiceTopics, topicSubjectCode, MIXED_TOPIC_ID } from "./practice-topics";
@@ -49,27 +49,13 @@ const dictionary = getLearnDictionary(locale);
 const topics = practiceTopics(dictionary);
 
 /**
- * El fuente de `card-chrome.ts`, que es la referencia.
+ * Las clases de la caja, tal y como las declara el design system.
  *
- * Es LA definición de la caja: `SubjectCard` (materias) y la tarjeta de tema la
- * importan las dos, así que comprobar contra este fichero es comprobar contra lo
- * que de verdad se pinta en `/learn`. Antes este test leía `SubjectCard.tsx`, y
- * dejó de valer el día que la caja salió de allí: la referencia tiene que ser el
- * sitio donde vive la decisión, no el primero que la usó.
- *
- * Se localiza desde el punto de entrada de `@cet/ui` que resuelve Node —el
- * `src/index.ts` del paquete—, no con un `../../../..` a pelo: así el test sigue
- * valiendo si el paquete se mueve dentro del monorepo.
+ * Se parten de la constante y no se copian: una lista escrita aquí se quedaría
+ * atrás en cuanto alguien tocase `card-chrome.ts`, y este test empezaría a
+ * aprobar justo la deriva que existe para impedir.
  */
-function fuenteDeLaCaja(): string {
-  const require = createRequire(import.meta.url);
-  const entrada = require.resolve("@cet/ui");
-  const ruta = resolve(dirname(entrada), "navigation/card-chrome.ts");
-  return readFileSync(ruta, "utf8");
-}
-
-/** Las clases de caja que definen el lenguaje de la tarjeta. */
-const CAJA = ["rounded-md", "border-s-4", "shadow-card", "hover:shadow-pop", "duration-slow"];
+const CAJA = CARD_CHROME.split(/\s+/).filter(Boolean);
 
 function pintar(): HTMLElement {
   // Un escenario con evidencia en todos los grupos: así las tarjetas montan
@@ -83,7 +69,6 @@ function pintar(): HTMLElement {
       <PracticeTopicGrid
         topics={topics}
         dictionary={dictionary}
-        locale={locale}
         progress={summarisePracticeEvents(eventos)}
       />
     </UiLocaleProvider>,
@@ -96,22 +81,19 @@ function tarjetas(container: HTMLElement): HTMLAnchorElement[] {
 }
 
 describe("invariante — práctica y materias comparten librería visual", () => {
-  it("la caja de la tarjeta usa las mismas clases que SubjectCard", () => {
-    const referencia = fuenteDeLaCaja();
+  it("la tarjeta de práctica lleva la caja del design system, entera", () => {
+    expect(CAJA.length, "CARD_CHROME está vacío: este test pasaría en vacío").toBeGreaterThan(5);
+
     const container = pintar();
-    const primera = tarjetas(container)[0];
-    expect(primera, "la parrilla no ha pintado ninguna tarjeta").toBeDefined();
+    const tarjeta = tarjetas(container)[0];
+    expect(tarjeta, "la parrilla no ha pintado ninguna tarjeta").toBeDefined();
 
     for (const clase of CAJA) {
       expect(
-        referencia.includes(clase),
-        `\`${clase}\` ya no está en card-chrome.ts: la referencia de este test ha cambiado y hay ` +
-          "que decidir a la vez qué hace la tarjeta de práctica.",
-      ).toBe(true);
-      expect(
-        (primera as HTMLAnchorElement).className,
-        `La tarjeta de práctica no usa \`${clase}\`, que sí usa la caja del design system. Dos ` +
-          "pantallas del mismo alumno con dos lenguajes visuales es lo que esta prueba impide.",
+        (tarjeta as HTMLAnchorElement).className,
+        `La tarjeta de práctica no lleva \`${clase}\`, que sí declara la caja del design ` +
+          "system. Dos pantallas del mismo alumno con dos lenguajes visuales es lo que esta " +
+          "prueba impide.",
       ).toContain(clase);
     }
     cleanup();
@@ -120,7 +102,9 @@ describe("invariante — práctica y materias comparten librería visual", () =>
   it("el objetivo pulsable es la tarjeta entera y llega al mínimo táctil", () => {
     const container = pintar();
     for (const tarjeta of tarjetas(container)) {
-      expect(tarjeta.className).toContain("min-h-touch");
+      // El mínimo táctil se declara con el token, no con un número: es una
+      // decisión del design system, y aquí se lee, no se vuelve a tomar.
+      expect(tarjeta.className).toContain("min-h-[var(--cet-touch-min)]");
       // El enlace ENVUELVE el contenido: el nombre del tema está dentro, no al
       // revés. Un `<a>` alrededor del solo título deja un objetivo de 18 px.
       expect(tarjeta.querySelector("span")).not.toBeNull();
@@ -128,15 +112,19 @@ describe("invariante — práctica y materias comparten librería visual", () =>
     cleanup();
   });
 
-  it("el rail toma su color de la paleta de materias, y nunca un hexadecimal", () => {
+  it("el rail y el lavado salen de la paleta de materias, nunca de un hexadecimal", () => {
     const container = pintar();
     for (const tarjeta of tarjetas(container)) {
-      const color = tarjeta.style.borderInlineStartColor;
-      expect(
-        /^var\(--cet-materia-[a-z]+\)$/.test(color),
-        `El rail de una tarjeta vale \`${color}\`. Tiene que ser un token de materia: la paleta ` +
-          "vive en tokens.css y en ningún otro sitio.",
-      ).toBe(true);
+      for (const [nombre, valor] of [
+        ["rail", tarjeta.style.borderInlineStartColor],
+        ["lavado", tarjeta.style.backgroundColor],
+      ] as const) {
+        expect(
+          /^var\(--cet-materia-[a-z]+(-suave)?\)$/.test(valor),
+          `El ${nombre} de una tarjeta vale \`${valor}\`. Tiene que ser un token de materia: la ` +
+            "paleta vive en tokens.css y en ningún otro sitio.",
+        ).toBe(true);
+      }
     }
     cleanup();
   });
@@ -153,6 +141,20 @@ describe("invariante — práctica y materias comparten librería visual", () =>
       (a) => a.getAttribute("data-cet-value") === MIXED_TOPIC_ID,
     );
     expect(tarjetaMix?.getAttribute("data-subject")).toBe("otra");
+    cleanup();
+  });
+
+  it("cada tarjeta le sigue diciendo a la analítica qué tema es", () => {
+    // El valor que la analítica guarda es la clave del GENERADOR, no la de la
+    // silueta. Si alguien las funde, la serie histórica se rompe el día que
+    // dejen de coincidir.
+    const container = pintar();
+    expect(tarjetas(container).map((a) => a.getAttribute("data-cet-value"))).toEqual(
+      topics.map((topic) => topic.id),
+    );
+    for (const tarjeta of tarjetas(container)) {
+      expect(tarjeta.getAttribute("data-cet-id")).toBe("practica.elegir-tema");
+    }
     cleanup();
   });
 

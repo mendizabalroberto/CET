@@ -144,7 +144,7 @@ export const learnEs: LearnDictionary = {
       metric: "Unidades métricas",
       shape: "Figuras compuestas",
       word: "Problemas de enunciado",
-      mix: "🎲 Mezcla",
+      mix: "Mezcla",
     },
     topicHints: {
       simplify: "Divide arriba y abajo por el mismo número.",

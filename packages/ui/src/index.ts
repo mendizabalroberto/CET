@@ -200,3 +200,5 @@ export {
   type TopicIdentityCode,
 } from "./navigation/topic-identity.js";
 export { TopicIcon, type TopicIconProps } from "./navigation/TopicIcon.js";
+export { TopicCard, type TopicCardProps } from "./navigation/TopicCard.js";
+export { TopicGrid, type TopicGridProps } from "./navigation/TopicGrid.js";

@@ -115,6 +115,23 @@ export function answeredCountText(total: number, dictionary: LearnDictionary): s
 }
 
 /**
+ * La misma evidencia, en los dos idiomas.
+ *
+ * `TopicCard` recibe `I18nText` y lo resuelve con el proveedor de idioma del
+ * paquete, igual que hace con la frase del siguiente paso. Pasarle una cadena ya
+ * resuelta obligaría a la tarjeta a fiarse de que la app y el proveedor están de
+ * acuerdo sobre el idioma, que es justo lo que `I18nText` existe para evitar.
+ * Mismo patrón que `nextStepI18n()`, y por el mismo motivo: la frase lleva una
+ * cifra interpolada, así que no es una clave del diccionario.
+ */
+export function answeredCountI18n(total: number): I18nText {
+  return {
+    es: answeredCountText(total, getLearnDictionary("es")),
+    en: answeredCountText(total, getLearnDictionary("en")),
+  };
+}
+
+/**
  * El resumen de la vista de conjunto, en los dos idiomas.
  *
  * ===========================================================================
