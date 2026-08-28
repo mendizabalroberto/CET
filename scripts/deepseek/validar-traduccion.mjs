@@ -106,7 +106,22 @@ const etiquetas = (s) => {
 // Un dato plausible no es un dato correcto: 4.7 no puede convertirse en 4.8.
 const numeros = (s) => (s.match(/\d+(?:[.,]\d+)*/g) ?? []).sort().join(',');
 
+// Un bloque puede quedar identico al ingles con toda la razon: «bit -> byte ->
+// kilobyte» se escribe igual en los dos idiomas. Pero eso tiene que ser una
+// DECISION DECLARADA, no un descuido que se cuela. El traductor lo declara con
+// una linea de comentario por bloque:
+//
+//   -- IDENTICO 1:13 — unidades internacionales, iguales en ambos idiomas
+//
+// Y la declaracion no sirve para hacer trampa: declarar un bloque que SI se
+// tradujo tambien es un fallo, porque significa que la lista no dice la verdad.
+const declaradosIdenticos = new Set(
+  [...sql.matchAll(/--\s*IDENTICO\s+(\d+):(\d+)/gi)].map((d) => `${d[1]}:${d[2]}`),
+);
+
 let sinCambio = 0;
+const identicosNoDeclarados = [];
+const declaradosQueSiCambiaron = [];
 for (const e of esperados) {
   const es = traducciones.get(e.clave);
   if (es === undefined) continue;
@@ -132,10 +147,26 @@ for (const e of esperados) {
   // Un bloque que solo son cifras y simbolos puede quedar igual; uno con
   // palabras, no: seria ingles disfrazado de traduccion.
   const tieneLetras = /[a-zA-Z]{3,}/.test(e.en.replace(/<[^>]*>/g, ''));
-  if (tieneLetras && es === e.en) sinCambio += 1;
+  const identico = es === e.en;
+  if (tieneLetras && identico && !declaradosIdenticos.has(e.clave)) {
+    sinCambio += 1;
+    identicosNoDeclarados.push(e.clave);
+  }
+  if (declaradosIdenticos.has(e.clave) && !identico) declaradosQueSiCambiaron.push(e.clave);
 }
 if (sinCambio > 0) {
-  fallo(`${sinCambio} bloque(s) con palabras quedaron IDENTICOS al ingles. Eso no es una traduccion.`);
+  fallo(
+    `${sinCambio} bloque(s) con palabras quedaron IDENTICOS al ingles sin declararlo: ` +
+      `${identicosNoDeclarados.join(', ')}.\n` +
+      `      Si de verdad se escriben igual en ambos idiomas, declaralo con una linea\n` +
+      `      \`-- IDENTICO leccion:bloque — motivo\` y quedara aceptado. Si no, traducelo.`,
+  );
+}
+if (declaradosQueSiCambiaron.length) {
+  fallo(
+    `Declarados como IDENTICO pero SI cambian: ${declaradosQueSiCambiaron.join(', ')}. ` +
+      `La lista de declarados tiene que decir la verdad.`,
+  );
 }
 
 // -- 8. La materia y el rango son los suyos ------------------------------------
