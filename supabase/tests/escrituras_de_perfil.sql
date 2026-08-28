@@ -44,6 +44,16 @@ select plan(3);
 -- =============================================================================
 -- A. El alta de un alumno, con la forma que escribe `staff/actions.ts`
 -- =============================================================================
+-- `profiles.id` lleva FK contra `auth.users`, asi que el alta empieza ahi — es
+-- lo que hace la aplicacion (crea el usuario y despues su perfil) y lo que hace
+-- el propio fixture. La primera version de este fichero se salto este paso y
+-- fallaba con 23503 `profiles_id_fkey`: un rojo legitimo, pero de la prueba y no
+-- del producto. No es un detalle de fontaneria: si se omite, este fichero
+-- estaria diciendo «no se puede dar de alta un alumno» por un motivo que no es
+-- el que persigue, y taparia el dia que el motivo de verdad volviera.
+insert into auth.users (id, email)
+values ('aaaaaaaa-0000-4000-8000-0000000000f1', 's.F1@alfa.students.cet.invalid'),
+       ('aaaaaaaa-0000-4000-8000-0000000000f2', 'profesor.sin.correo@alfa.test');
 select lives_ok(
   $$insert into public.profiles (id, school_id, role, full_name, email, locale, status)
     values ('aaaaaaaa-0000-4000-8000-0000000000f1',
