@@ -77,6 +77,23 @@ while ((m = tupla.exec(sql)) !== null) {
   traducciones.set(clave, texto);
 }
 
+// Cuando el lote es de UNA SOLA leccion, escribir la leccion en cada tupla es
+// redundante y el SQL natural es `(bloque_ord, 'texto')` con la leccion fijada
+// en el WHERE. Eso es legitimo y hay que leerlo: la version anterior daba
+// «0 traducidos encontrados» sobre una migracion perfectamente correcta.
+// Solo se admite con una leccion: con dos o mas, la tupla corta seria ambigua.
+const ordsDeLaFuente = [...new Set(fuente.lecciones.map((l) => l.leccion_ord))];
+if (traducciones.size === 0 && ordsDeLaFuente.length === 1) {
+  const unica = ordsDeLaFuente[0];
+  const corta = /\(\s*(\d+)\s*,\s*'((?:[^']|'')*)'\s*\)/g;
+  while ((m = corta.exec(sql)) !== null) {
+    const clave = `${unica}:${m[1]}`;
+    const texto = m[2].replace(/''/g, "'");
+    if (traducciones.has(clave)) fallo(`El bloque ${clave} aparece dos veces en los VALUES.`);
+    traducciones.set(clave, texto);
+  }
+}
+
 // -- 5. Cobertura: ni uno menos ------------------------------------------------
 const esperados = [];
 for (const leccion of fuente.lecciones) {
