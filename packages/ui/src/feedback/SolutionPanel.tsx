@@ -8,6 +8,7 @@
 import { useId, type ReactNode } from "react";
 import type { I18nText } from "@cet/shared";
 import { cn } from "../lib/cn.js";
+import { Button } from "../primitives/Button.js";
 import { useI18n } from "../lib/i18n.js";
 import { parseSafeHtml } from "../lib/html-to-react.js";
 import { UI_STRINGS } from "../lib/strings.js";
@@ -22,7 +23,12 @@ export interface SolutionPanelProps {
   readonly onOpenChange: (open: boolean) => void;
   readonly label?: I18nText | undefined;
   readonly className?: string | undefined;
+  readonly part?: "all" | "trigger" | "panel" | undefined;
+  readonly id?: string | undefined;
 }
+
+type Partido = { readonly part: "trigger" | "panel"; readonly id: string };
+type Entero = { readonly part?: "all" | undefined; readonly id?: string | undefined };
 
 /**
  * Explicacion paso a paso de la respuesta.
@@ -41,27 +47,62 @@ export function SolutionPanel({
   onOpenChange,
   label,
   className,
+  part = "all",
+  id,
 }: SolutionPanelProps): ReactNode {
   const t = useI18n();
-  const id = useId();
-  const panelId = `${id}-solution`;
+  const generatedId = useId();
+  const panelId = `${id ?? generatedId}-solution`;
 
-  return (
-    <div className={cn("flex flex-col gap-2", className)}>
-      <button
+  if (part === "trigger") {
+    return (
+      <Button
         type="button"
+        variant="secondary"
+        size="md"
+        className="w-fit"
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => onOpenChange(!open)}
-        className={cn(
-          "inline-flex min-h-touch w-fit items-center gap-2 rounded-sm px-4 font-semibold",
-          "border-2 border-[var(--cet-border-strong)] bg-[var(--cet-surface)] text-[var(--cet-ink)]",
-          "hover:bg-[var(--cet-surface-2)]",
-          "transition-colors duration-fast ease-cet motion-reduce:transition-none",
-        )}
       >
         {t(label, open ? UI_STRINGS.hideSolution : UI_STRINGS.showSolution)}
-      </button>
+      </Button>
+    );
+  }
+
+  if (part === "panel") {
+    return (
+      <div id={panelId} hidden={!open}>
+        {steps && steps.length > 0 ? (
+          <StepList steps={steps.map((stepHtml) => ({ html: stepHtml }))} label={UI_STRINGS.solution} />
+        ) : null}
+        {html ? (
+          <div
+            className={cn(
+              "cet-prose rounded-md border border-[var(--cet-line)] bg-[var(--cet-surface-2)] px-4 py-3",
+              "text-body text-[var(--cet-ink)]",
+            )}
+          >
+            {parseSafeHtml(html)}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn("flex flex-col gap-2", className)}>
+      <Button
+        type="button"
+        variant="secondary"
+        size="md"
+        className="w-fit"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => onOpenChange(!open)}
+      >
+        {t(label, open ? UI_STRINGS.hideSolution : UI_STRINGS.showSolution)}
+      </Button>
 
       <div id={panelId} hidden={!open}>
         {steps && steps.length > 0 ? (
