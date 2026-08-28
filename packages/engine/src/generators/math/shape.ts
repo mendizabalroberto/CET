@@ -9,12 +9,22 @@
  *     que la figura persistida es verificable: aplicar el area de Gauss a los
  *     puntos devuelve el area real. Los tests lo usan como comprobacion independiente.
  *   - `figureAlt` es obligatorio (lector de pantalla).
+ *   - Las cotas van sobre su propia tarjeta opaca (`svgLabel` de `@cet/shared`),
+ *     y el grosor del trazo se divide por la escala en vez de confiar en
+ *     `vector-effect`. Las dos cosas salen de `obs/obs002.png`; el porque
+ *     completo esta en la cabecera de `packages/shared/src/svg-label.ts`.
  *
  * (c) 2026 Roberto Mendizabal. Todos los derechos reservados.
  */
 
 import { z } from "zod";
-import type { QuestionGenerator, Seed } from "@cet/shared";
+import {
+  svgLabel,
+  svgLabelWidth,
+  type LabelAnchor,
+  type QuestionGenerator,
+  type Seed,
+} from "@cet/shared";
 import { createRng, type Rng } from "../../rng.js";
 import { nf } from "../../format.js";
 import { baseParams, buildItem, resolveLocale, pickLocale } from "../common.js";
@@ -73,35 +83,72 @@ export function shapeOutline(shape: LShape): readonly (readonly [number, number]
   ];
 }
 
+/** Grosor del contorno EN PIXELES de pantalla, no en unidades del modelo. */
+const STROKE_PX = 2.2;
+
 function renderSvg(shape: LShape, hidden: ReadonlySet<string>): string {
   const { w, h, cutW, cutH, unit } = shape;
   const s = Math.min(26, Math.floor(360 / Math.max(w, h)));
-  const width = w * s + 2 * PAD;
-  const height = h * s + 2 * PAD + 8;
   const points = shapeOutline(shape)
     .map(([x, y]) => `${x},${y}`)
     .join(" ");
 
-  const label = (x: number, y: number, key: string, value: number, anchor: string): string => {
-    const text = hidden.has(key) ? "?" : `${value} ${unit}`;
-    const cls = hidden.has(key) ? "dimq" : "dim";
-    return `<text x="${x * s + PAD}" y="${y * s + PAD}" text-anchor="${anchor}" class="${cls}">${text}</text>`;
-  };
+  const texto = (key: string, value: number): string =>
+    hidden.has(key) ? "?" : `${value} ${unit}`;
+
+  // El margen lateral se CALCULA a partir de las cotas que van a los lados, no
+  // se fija a ojo. Con un margen constante, "12 cm" en el lado derecho se salia
+  // dos pixeles del `viewBox` y el navegador le cortaba el filo a la tarjeta:
+  // un SVG en linea recorta a su vista por defecto. Preguntarle su ancho a la
+  // misma funcion que las dibuja es lo unico que no se desincroniza.
+  const padX = Math.max(
+    PAD,
+    Math.ceil(
+      0.3 * s + Math.max(svgLabelWidth(texto("right", h)), svgLabelWidth(texto("left", h - cutH))) + 4,
+    ),
+  );
+  const width = w * s + 2 * padX;
+  const height = h * s + 2 * PAD + 8;
+
+  // Las cotas van con `svgLabel`, es decir CADA UNA SOBRE SU PROPIA TARJETA
+  // OPACA. Antes eran `<text>` pelados sin `fill`: heredaban el negro del
+  // navegador y quedaban sobre el dibujo, que es el fallo de `obs/obs002.png`.
+  // Ahora el contraste no depende de por donde pase la cota.
+  const label = (x: number, y: number, key: string, value: number, anchor: LabelAnchor): string =>
+    svgLabel({
+      x: x * s + padX,
+      y: y * s + PAD,
+      text: texto(key, value),
+      anchor,
+      tone: hidden.has(key) ? "unknown" : "neutral",
+    });
 
   const labels =
     label(w / 2, -0.45, "top", w, "middle") +
     label(w + 0.3, h / 2, "right", h, "start") +
     label((cutW + w) / 2, h + 0.95, "bottom", w - cutW, "middle") +
-    label(cutW - 0.3, h - cutH / 2 + 0.25, "innerV", cutH, "end") +
+    label(cutW - 0.3, h - cutH / 2, "innerV", cutH, "end") +
     label(cutW / 2, h - cutH - 0.4, "innerH", cutW, "middle") +
-    label(-0.3, (h - cutH) / 2 + 0.25, "left", h - cutH, "end");
+    label(-0.3, (h - cutH) / 2, "left", h - cutH, "end");
 
   return (
-    `<svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" data-scale="${s}">` +
-    `<g transform="translate(${PAD} ${PAD}) scale(${s})">` +
-    `<polygon points="${points}" fill="#eef4fb" stroke="#173a63" stroke-width="2.2" vector-effect="non-scaling-stroke"/>` +
+    `<svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img">` +
+    `<g transform="translate(${padX} ${PAD}) scale(${s})">` +
+    // El poligono se dibuja en unidades del modelo dentro de un `scale(s)`, asi
+    // que el `scale` multiplica TAMBIEN el grosor del trazo. La version
+    // anterior lo compensaba con `vector-effect="non-scaling-stroke"`, y ese
+    // atributo no estaba en la allowlist de `@cet/ui`: al pintar se caia, el
+    // trazo de 2,2 se volvia de 2,2 x 26 = 57 px y la figura se convertia en un
+    // marco azul marino que se tragaba las cotas (`obs/obs002.png`).
+    //
+    // Dividir aqui por la escala da el mismo grosor en pantalla SIN depender de
+    // ningun atributo que un sanitizador pueda quitar. Un dibujo no debe
+    // apoyarse en que dos allowlists de dos paquetes sigan de acuerdo.
+    `<polygon points="${points}" fill="#eef4fb" stroke="#173a63" stroke-width="${
+      Math.round((STROKE_PX / s) * 1000) / 1000
+    }"/>` +
     `</g>` +
-    `<g class="dims">${labels}</g>` +
+    `<g>${labels}</g>` +
     `</svg>`
   );
 }

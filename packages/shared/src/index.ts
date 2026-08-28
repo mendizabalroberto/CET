@@ -7,4 +7,5 @@ export * from "./enums.js";
 export * from "./i18n.js";
 export * from "./events.js";
 export * from "./skills.js";
+export * from "./svg-label.js";
 export * from "./engine-contract.js";
