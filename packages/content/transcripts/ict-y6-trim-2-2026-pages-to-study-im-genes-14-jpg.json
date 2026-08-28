@@ -1,0 +1,28 @@
+{
+  "path": "Y6A/ICT/Y6 - TRIM 2 2026 PAGES TO STUDY-im├ígenes-14.jpg",
+  "checksum": "382d278c0b0f268a6f7081c449514eee4cb10a893e5e673bfe8b333dad7578cc",
+  "locale": "en",
+  "pages": 1,
+  "transcribedBy": "claude-vision",
+  "gaps": [
+    "Tres ilustraciones sin pie de foto en la columna derecha: una doctora con estetoscopio sosteniendo una tableta con la ficha de un paciente; una mano sujetando un movil que muestra un icono de persona andando; y dos investigadores en un laboratorio ante una pantalla con graficas de constantes vitales.",
+    "En la tableta de la primera ilustracion se intuye la palabra 'Patient' y en la pantalla del movil 'Steps 4000', pero son parte del dibujo.",
+    "En el margen izquierdo inferior hay texto manuscrito girado 90 grados, ilegible."
+  ],
+  "spans": [
+    {"page": 1, "kind": "heading", "text": "Unit 7: Be a data architect"},
+    {"page": 1, "kind": "heading", "text": "Data"},
+    {"page": 1, "kind": "heading", "text": "Industries"},
+    {"page": 1, "kind": "heading", "text": "Learn"},
+    {"page": 1, "kind": "paragraph", "text": "Industries use data every day to solve problems. Data helps to make informed decisions and monitor processes in industries and organisations. Some industries that use data are health, manufacturing and sales."},
+    {"page": 1, "kind": "heading", "text": "Health"},
+    {"page": 1, "kind": "paragraph", "text": "The health industry produces a lot of data. Some major areas of data collection in the health industry are:"},
+    {"page": 1, "kind": "list_item", "text": "Patient Record Keeping – Data such as patient contact, treatment and diagnosis are stored in a database. This helps doctors to keep track of each patients’ medical history and status."},
+    {"page": 1, "kind": "paragraph", "text": "Easy access to this type of data is essential, especially in cases of emergencies where the patient may need treatment immediately."},
+    {"page": 1, "kind": "list_item", "text": "Health Tracking – Patients can easily track their own vital signs, such as heart rate and blood pressure, using wearable technology. They can also record their physical activities, for example distance walked, using fitness trackers, smartwatches and smartphones."},
+    {"page": 1, "kind": "paragraph", "text": "The continuous collection of this type of data can help to save the lives of ‘at risk’ patients and improve their health."},
+    {"page": 1, "kind": "paragraph", "text": "For example, if one of the vital signs’ readings are not normal on a given day, the patient can seek medical attention or advice from their doctor."},
+    {"page": 1, "kind": "list_item", "text": "Medical Research – Data can help doctors and scientists find a cure for diseases or treatment for patients. Medical researchers can test new drugs on patients and collect data in a study to determine if the medication is working."},
+    {"page": 1, "kind": "paragraph", "text": "100"}
+  ]
+}

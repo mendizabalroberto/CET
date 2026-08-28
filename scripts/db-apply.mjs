@@ -33,11 +33,14 @@ function readPassword() {
   return match[1];
 }
 
-const folder = process.argv[2] ?? "migrations";
-const dryRun = process.argv.includes("--dry");
+const args = process.argv.slice(2);
+const folder = args.find((a) => !a.startsWith("--")) ?? "migrations";
+const prefix = args.filter((a) => !a.startsWith("--"))[1] ?? null;
+const dryRun = args.includes("--dry");
 const dir = join(root, "supabase", folder);
 const files = readdirSync(dir)
   .filter((f) => f.endsWith(".sql"))
+  .filter((f) => prefix === null || f.startsWith(prefix))
   .sort();
 
 if (files.length === 0) {
@@ -52,23 +55,49 @@ if (dryRun) {
   process.exit(0);
 }
 
-// El pooler de Supabase (puerto 6543) no admite algunas sentencias DDL; se usa
-// la conexión directa al puerto 5432.
-const client = new pg.Client({
-  host: `db.${PROJECT_REF}.supabase.co`,
-  port: 5432,
-  database: "postgres",
-  user: "postgres",
-  password: readPassword(),
-  ssl: { rejectUnauthorized: false },
-  statement_timeout: 120_000,
-});
+// DOS VIAS, en este orden:
+//   1. directa  db.<ref>.supabase.co:5432, usuario `postgres`
+//   2. pooler   aws-0-us-east-1.pooler.supabase.com:5432 en modo SESION
+//
+// La directa solo resuelve a IPv6 desde agosto de 2026: en una red sin IPv6 no
+// da un error de credenciales, da un ETIMEDOUT de 30 s que lo parece. El pooler
+// en modo SESION (5432) SI admite DDL; el de modo transaccion (6543) no, y por
+// eso no se usa el 6543 aqui.
+const ROUTES = [
+  { label: "directa", host: `db.${PROJECT_REF}.supabase.co`, user: "postgres" },
+  { label: "pooler", host: "aws-0-us-east-1.pooler.supabase.com", user: `postgres.${PROJECT_REF}` },
+];
+
+async function connectAny() {
+  const password = readPassword();
+  const problems = [];
+  for (const route of ROUTES) {
+    const candidate = new pg.Client({
+      host: route.host,
+      port: 5432,
+      database: "postgres",
+      user: route.user,
+      password,
+      ssl: { rejectUnauthorized: false },
+      statement_timeout: 120_000,
+      connectionTimeoutMillis: 8_000,
+    });
+    try {
+      await candidate.connect();
+      console.log(`\nConectado (via ${route.label}).\n`);
+      return candidate;
+    } catch (error) {
+      problems.push(`${route.label}: ${error instanceof Error ? error.message : String(error)}`);
+      await candidate.end().catch(() => undefined);
+    }
+  }
+  throw new Error(`No se pudo conectar por ninguna via.\n  ${problems.join("\n  ")}`);
+}
 
 let applied = 0;
-try {
-  await client.connect();
-  console.log("\nConectado.\n");
+const client = await connectAny();
 
+try {
   for (const file of files) {
     const sql = readFileSync(join(dir, file), "utf8");
     process.stdout.write(`  ${file} ... `);

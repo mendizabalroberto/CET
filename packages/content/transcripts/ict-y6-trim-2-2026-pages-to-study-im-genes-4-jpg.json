@@ -1,0 +1,35 @@
+{
+  "path": "Y6A/ICT/Y6 - TRIM 2 2026 PAGES TO STUDY-im├ígenes-4.jpg",
+  "checksum": "309e628f7ecb383f6a2e9b630cf679d455d53d0f929baaad46111d0c6b68e411",
+  "locale": "en",
+  "pages": 1,
+  "transcribedBy": "claude-vision",
+  "gaps": [
+    "el número de página impreso en la esquina inferior izquierda es 70; no se transcribe como span",
+    "hay una ilustración de una chica con un móvil, un bocadillo con una carita sonriente y un dibujo de servidor conectado a ella; no lleva texto",
+    "hay cuatro fotografías con pie: sobres de correo saliendo de un portátil, documentos flotando sobre un portátil, una pared de vídeos con un mando a distancia, y un móvil con un reproductor de podcast; en la del podcast se lee la palabra PODCAST dentro de la pantalla",
+    "en el margen izquierdo hay una anotación manuscrita a lápiz, girada 90 grados y demasiado tenue para leerse",
+    "buena parte del texto está resaltada con rotulador amarillo, verde y rosa; el resaltado no se refleja en los spans"
+  ],
+  "spans": [
+    {"page": 1, "kind": "heading", "text": "Unit 5: Digital content"},
+    {"page": 1, "kind": "heading", "text": "Digital content"},
+    {"page": 1, "kind": "heading", "text": "Streaming digital content"},
+    {"page": 1, "kind": "heading", "text": "Learn"},
+    {"page": 1, "kind": "paragraph", "text": "Digital content is anything that can be stored or sent digitally. This can include content such as text, audio, video files, graphics, animations and images."},
+    {"page": 1, "kind": "paragraph", "text": "A server is a computer that provides services on a network."},
+    {"page": 1, "kind": "paragraph", "text": "Servers can store many different types of digital content. Here are some examples:"},
+    {"page": 1, "kind": "list_item", "text": "Photographs and images are stored on servers. People can share pictures or photo albums with other people."},
+    {"page": 1, "kind": "list_item", "text": "Servers are also responsible for storing and sending messages from one device to another over a network. Messages are mainly text-based but can include images and emojis too. Messenger apps are common on mobile devices."},
+    {"page": 1, "kind": "list_item", "text": "Files and data for websites are stored on servers."},
+    {"page": 1, "kind": "list_item", "text": "Email providers like Gmail, Hotmail and Yahoo! Mail store email messages on servers. Users can access their emails from computers and other devices connected to the internet."},
+    {"page": 1, "kind": "list_item", "text": "Online software is stored on servers and used remotely by users. Software such as Google Docs™ allows users to create and edit documents, that are stored on Google’s servers."},
+    {"page": 1, "kind": "list_item", "text": "All online games are stored on servers. Each game generally has its own server."},
+    {"page": 1, "kind": "list_item", "text": "Video content is stored on servers and includes movies, TV shows and music videos."},
+    {"page": 1, "kind": "list_item", "text": "Audio content is stored on servers and includes music, podcasts and audio books. Music is the most popular form of audio."},
+    {"page": 1, "kind": "figure_caption", "text": "messages"},
+    {"page": 1, "kind": "figure_caption", "text": "online software"},
+    {"page": 1, "kind": "figure_caption", "text": "video content"},
+    {"page": 1, "kind": "figure_caption", "text": "audio content"}
+  ]
+}

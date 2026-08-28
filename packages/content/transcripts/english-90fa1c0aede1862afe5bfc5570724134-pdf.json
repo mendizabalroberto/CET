@@ -1,0 +1,54 @@
+{
+  "path": "Y6A/English/90fa1c0aede1862afe5bfc5570724134.pdf",
+  "checksum": "32f1e37eadfb0221db2fd98706ed2e18949f7cdc3f6e63295ef663de5b775799",
+  "locale": "en",
+  "pages": 1,
+  "transcribedBy": "claude-vision",
+  "gaps": [
+    "ejercicio sin resolver: no contiene las respuestas",
+    "PDF escaneado de una sola pagina: es una imagen, no hay capa de texto. Transcrito mirando la imagen incrustada.",
+    "los huecos de la tarea 2 son rayas cortas y los de la tarea 4 rayas largas; el numero exacto de guiones bajos no se puede contar y se transcriben como '____' y '_______' respectivamente, de forma uniforme",
+    "en la tarea 3 las palabras vienen en fichas de colores sueltas y debajo hay una raya en blanco para escribir la frase; las fichas se transcriben separadas por ' | ' y la raya en blanco como un span aparte",
+    "la hoja lleva dibujos (nino leyendo, raqueta y pelota, porcion de pizza, balon de futbol, bicicleta, gato dormido, cepillo de dientes, notas musicales, despertador, mochila, libro y lapiz) sin texto"
+  ],
+  "spans": [
+    { "page": 1, "kind": "paragraph", "text": "Name: ____________" },
+    { "page": 1, "kind": "paragraph", "text": "Date: ____________" },
+    { "page": 1, "kind": "heading", "text": "PRESENT SIMPLE TENSE" },
+    { "page": 1, "kind": "paragraph", "text": "Complete the tasks." },
+
+    { "page": 1, "kind": "heading", "text": "1. Circle the correct word." },
+    { "page": 1, "kind": "question", "text": "1)  She (play / plays) tennis." },
+    { "page": 1, "kind": "question", "text": "2)  They (eat / eats) apples." },
+    { "page": 1, "kind": "question", "text": "3)  He (ride / rides) a bike." },
+    { "page": 1, "kind": "question", "text": "4)  We (go / goes) to school." },
+    { "page": 1, "kind": "question", "text": "5)  My cat (sleep / sleeps) on the bed." },
+    { "page": 1, "kind": "question", "text": "6)  I (like / likes) milk." },
+
+    { "page": 1, "kind": "heading", "text": "2. Write do or does." },
+    { "page": 1, "kind": "question", "text": "1)  ____ you like pizza?" },
+    { "page": 1, "kind": "question", "text": "2)  ____ she read books?" },
+    { "page": 1, "kind": "question", "text": "3)  ____ they play football?" },
+    { "page": 1, "kind": "question", "text": "4)  ____ Tom have a dog?" },
+    { "page": 1, "kind": "question", "text": "5)  ____ we go to school on Monday?" },
+    { "page": 1, "kind": "question", "text": "6)  ____ your mum cook dinner?" },
+
+    { "page": 1, "kind": "heading", "text": "3. Make sentences." },
+    { "page": 1, "kind": "question", "text": "1)  I | brush | my teeth | every day" },
+    { "page": 1, "kind": "question", "text": "____________________" },
+    { "page": 1, "kind": "question", "text": "2)  Anna | likes | music" },
+    { "page": 1, "kind": "question", "text": "____________________" },
+    { "page": 1, "kind": "question", "text": "3)  they | play | football | after school" },
+    { "page": 1, "kind": "question", "text": "____________________" },
+    { "page": 1, "kind": "question", "text": "4)  he | gets up | early" },
+    { "page": 1, "kind": "question", "text": "____________________" },
+
+    { "page": 1, "kind": "heading", "text": "4. Write the verbs in Present Simple." },
+    { "page": 1, "kind": "question", "text": "1)  My sister _______ (wash) her hands." },
+    { "page": 1, "kind": "question", "text": "2)  Birds _______ (fly) in the sky." },
+    { "page": 1, "kind": "question", "text": "3)  Dad _______ (drive) a car." },
+    { "page": 1, "kind": "question", "text": "4)  I _______ (do) my homework." },
+    { "page": 1, "kind": "question", "text": "5)  Ben _______ (watch) TV in the evening." },
+    { "page": 1, "kind": "question", "text": "6)  We _______ (have) lunch at school." }
+  ]
+}

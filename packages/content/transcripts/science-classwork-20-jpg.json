@@ -1,0 +1,24 @@
+{
+  "path": "Y6A/Science/Classwork 20.jpg",
+  "checksum": "cd6cba2592cd58995dfe279a55fb35e1bc0ffc9a7cd4fbef7dab1d695a5b8b9a",
+  "locale": "en",
+  "pages": 1,
+  "transcribedBy": "claude-vision",
+  "gaps": [
+    "examen sin resolver: no contiene las respuestas",
+    "las preguntas 1, 2 y 4 tienen lineas de respuesta en blanco; la pregunta 3 tiene un recuadro grande vacio para dibujar la cadena alimentaria",
+    "en la esquina superior derecha se transparenta texto de la pagina de detras, invertido e ilegible",
+    "el numero de pagina aparece girado 180 grados en el margen inferior izquierdo y se lee 22"
+  ],
+  "spans": [
+    { "page": 1, "kind": "heading", "text": "Exercise 2.7  Acid rain" },
+    { "page": 1, "kind": "paragraph", "text": "In this exercise, you will apply what you know about acid rain and food chains to a freshwater habitat." },
+    { "page": 1, "kind": "paragraph", "text": "A freshwater lake is a habitat for plants and animals. They depend on one another. Acid rain has a bad effect on this habitat. The plants begin to die. The eggs of fish and amphibians, like frogs and toads, become damaged and may not hatch. Animals such as freshwater shrimps have a tough shell formed of calcium. The acid wears away the calcium and the animal dies." },
+    { "page": 1, "kind": "paragraph", "text": "When one living thing is killed by the acidity in the water, others are affected. For example, fish eat shrimps and herons eat fish. So, if the shrimps die, there will be no food for the fish and they will also die. Then there will be no food for the herons, so they will die." },
+    { "page": 1, "kind": "question", "text": "1  What is acid rain?" },
+    { "page": 1, "kind": "question", "text": "2  How are frogs affected by acid rain?" },
+    { "page": 1, "kind": "question", "text": "3  Draw one food chain for this habitat before it was polluted by acid rain." },
+    { "page": 1, "kind": "question", "text": "4  Explain how acid rain pollution will affect the food chain." },
+    { "page": 1, "kind": "paragraph", "text": "22" }
+  ]
+}

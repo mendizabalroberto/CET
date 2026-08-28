@@ -1,0 +1,29 @@
+{
+  "path": "Y6A/English/present-simple-exercises.jpg",
+  "checksum": "532b12747024849c64d8335803ae92d810baa671ddd7638cafd4c2a17b23794a",
+  "locale": "en",
+  "pages": 1,
+  "transcribedBy": "claude-vision",
+  "gaps": [
+    "ejercicio sin resolver: no contiene las respuestas",
+    "los huecos son series de puntos suspensivos impresos; el numero exacto de puntos no se puede contar en la imagen, se transcriben como '...........' (once puntos) de forma uniforme"
+  ],
+  "spans": [
+    { "page": 1, "kind": "heading", "text": "PRESENT SIMPLE TENSE" },
+    { "page": 1, "kind": "paragraph", "text": "Fill in the blanks with the correct form of the verbs." },
+    { "page": 1, "kind": "question", "text": "1.What ........... (make) the sun shine?" },
+    { "page": 1, "kind": "question", "text": "2.Alan ........... (work) at the Bank." },
+    { "page": 1, "kind": "question", "text": "3.I ........... (wash) my face every morning." },
+    { "page": 1, "kind": "question", "text": "4.Wendy ........... (be) always nervous when she ........... (go) to the dentist." },
+    { "page": 1, "kind": "question", "text": "5.My family ........... (come) from England." },
+    { "page": 1, "kind": "question", "text": "6.Do you ........... (feel) guilty when your child ........... (watch) TV?" },
+    { "page": 1, "kind": "question", "text": "7.She often ........... (miss) her country of origin." },
+    { "page": 1, "kind": "question", "text": "8.She always ........... (have) cereal for breakfast." },
+    { "page": 1, "kind": "question", "text": "9.She ........... (brush) her teeth every day." },
+    { "page": 1, "kind": "question", "text": "10.He never ........... (go) out on weekdays." },
+    { "page": 1, "kind": "question", "text": "11.We ........... (make) our beds every morning." },
+    { "page": 1, "kind": "question", "text": "12.The teacher ........... (tell) us a story every Friday." },
+    { "page": 1, "kind": "question", "text": "13.My mum ........... (buy) fresh bread every morning." },
+    { "page": 1, "kind": "question", "text": "14.They always ........... (get) up early and ........... (practise) the piano." }
+  ]
+}

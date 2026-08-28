@@ -1,0 +1,34 @@
+{
+  "path": "Y6A/ICT/Y6 - TRIM 2 2026 PAGES TO STUDY-im├ígenes-8.jpg",
+  "checksum": "83930d01632acffdccc9a0270678e34e23e9dd3eeaace02f74c8fb0d8c4c1559",
+  "locale": "en",
+  "pages": 1,
+  "transcribedBy": "claude-vision",
+  "gaps": [
+    "el número de página impreso en la esquina inferior izquierda es 74; no se transcribe como span",
+    "hay una ilustración de dos manos sujetando mangueras: una fina que suelta un chorro estrecho de agua y otra gruesa que suelta un chorro ancho, para comparar poco y mucho ancho de banda; solo se transcriben sus dos etiquetas",
+    "en el margen izquierdo hay una anotación manuscrita a lápiz, girada 90 grados y demasiado tenue para leerse",
+    "el texto lleva resaltado verde y amarillo, y hay una marca redonda de rotulador verde suelta en el margen izquierdo, sin texto",
+    "los apóstrofos y comillas simples del texto impreso se han transcrito con los glifos tipográficos curvos"
+  ],
+  "spans": [
+    {"page": 1, "kind": "heading", "text": "Unit 5: Digital content"},
+    {"page": 1, "kind": "heading", "text": "Bandwidth"},
+    {"page": 1, "kind": "heading", "text": "Bandwidth and network performance"},
+    {"page": 1, "kind": "heading", "text": "Learn"},
+    {"page": 1, "kind": "paragraph", "text": "Bandwidth is the amount of data that can be sent and received in a fixed amount of time. Bandwidth is given in kilobits per second (Kbps), megabits per second (Mbps), or gigabits per second (Gbps). This describes how many bits can be delivered or received in one second."},
+    {"page": 1, "kind": "paragraph", "text": "Bandwidth is one of several factors that can affect the performance of a network. The more bandwidth a network has, the more data that devices connected to it can send and receive at one time."},
+    {"page": 1, "kind": "paragraph", "text": "You can think of bandwidth as a water pipe bringing water to your home. Increasing the diameter of the pipe is like increasing the bandwidth. As the diameter of the pipe increases, the more water can flow through it per second."},
+    {"page": 1, "kind": "paragraph", "text": "Network bandwidth works on the same principle. The higher the bandwidth of the network, the more data can flow through it per second."},
+    {"page": 1, "kind": "paragraph", "text": "Bandwidth is measured for both wired networks (cables) and wireless networks (using radio waves). Each network has a different bandwidth but here are some typical bandwidths."},
+    {"page": 1, "kind": "table_row", "text": "Medium | Typical bandwidth"},
+    {"page": 1, "kind": "table_row", "text": "Fibre-optic cable | Over 40 terabits per second (Tbps)"},
+    {"page": 1, "kind": "table_row", "text": "Twisted copper wire | Up to 1 gigabit per second (Gbps)"},
+    {"page": 1, "kind": "table_row", "text": "Wi-Fi (home networks) | 54 megabits per second (Mbps)"},
+    {"page": 1, "kind": "paragraph", "text": "Network bandwidth has to be shared among all the devices connected to that network. More users or devices on a network reduces the available bandwidth for each device. This results in reduced performance."},
+    {"page": 1, "kind": "paragraph", "text": "For example, a home Wi-Fi network with one connected device would allocate around 54 Mbps to that device. If a second device connects to the network, the bandwidth would be split between the two, giving 27 Mbps to each. With three devices, each device would have 18 Mbps, and so on."},
+    {"page": 1, "kind": "paragraph", "text": "Households with multiple connected devices will have decreased internet speed during ‘internet rush hour’, which is usually at night when everyone is back home from work or school."},
+    {"page": 1, "kind": "figure_caption", "text": "low bandwidth"},
+    {"page": 1, "kind": "figure_caption", "text": "high bandwidth"}
+  ]
+}

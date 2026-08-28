@@ -1,0 +1,30 @@
+{
+  "path": "Y6A/Socials/Types of Mountains.png",
+  "checksum": "0f5fea5356afd62c361fd05aac41b8cde10b3b3966460322730253a273b11588",
+  "locale": "en",
+  "pages": 1,
+  "transcribedBy": "claude-vision",
+  "gaps": [
+    "infografia: todo el contenido son cinco diagramas en corte con etiquetas; no hay texto corrido",
+    "diagrama 'Fold Mountains': bloque en corte con la superficie verde ondulada y dos flechas blancas horizontales que apuntan una hacia la otra",
+    "diagrama 'Plateau Mountains': dos bloques rocosos naranjas de cima plana con lineas de estratos, sin flechas",
+    "diagrama 'Volcanic Mountains': cono gris en erupcion sobre un conducto naranja vertical y flechas blancas que suben desde el fondo",
+    "diagrama 'Dome Mountains': bloque en corte con una columna central empujada hacia arriba por una flecha blanca y dos flechas laterales que apuntan al centro",
+    "diagrama 'Fault-Block Mountains': dos bloques desplazados, uno con flecha blanca hacia arriba y otro con flecha blanca hacia abajo",
+    "no se transcribe que muestra cada dibujo mas alla de sus rotulos"
+  ],
+  "spans": [
+    { "page": 1, "kind": "heading", "text": "Types of Mountains" },
+    { "page": 1, "kind": "heading", "text": "Fold Mountains" },
+    { "page": 1, "kind": "figure_caption", "text": "Form by compression at convergent plate boundaries" },
+    { "page": 1, "kind": "heading", "text": "Plateau Mountains" },
+    { "page": 1, "kind": "figure_caption", "text": "Eroded from uplifted plateaus" },
+    { "page": 1, "kind": "heading", "text": "Volcanic Mountains" },
+    { "page": 1, "kind": "figure_caption", "text": "Built up by lava and ash from eruptions" },
+    { "page": 1, "kind": "heading", "text": "Dome Mountains" },
+    { "page": 1, "kind": "figure_caption", "text": "Uplifted by magma beneath the crust" },
+    { "page": 1, "kind": "heading", "text": "Fault-Block Mountains" },
+    { "page": 1, "kind": "figure_caption", "text": "Form by tension and movement along faults" },
+    { "page": 1, "kind": "figure_caption", "text": "sciencenotes.org" }
+  ]
+}

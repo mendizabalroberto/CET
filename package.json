@@ -16,6 +16,7 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
+    "corpus": "pnpm --filter @cet/content exec tsx ../../scripts/corpus/main.ts",
     "db:types": "supabase gen types typescript --project-id clcutoqjdgeggvgyreud --schema public > packages/shared/src/database.types.ts",
     "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm build",
     "format": "prettier --write ."

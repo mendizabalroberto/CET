@@ -1,0 +1,19 @@
+{
+  "path": "Y6A/Math/Mass.png",
+  "checksum": "036edcfaeb148a1c6d7bcd44ce40b706679efc9b8c09272cfa3d525b68931974",
+  "locale": "en",
+  "pages": 1,
+  "transcribedBy": "claude-vision",
+  "gaps": [
+    "el diagrama es una fila de cuatro unidades (tonne, kg, g, mg) unidas por arcos: los arcos rojos de arriba van de izquierda a derecha y llevan la etiqueta 'x 1000'; los arcos azules de abajo van de derecha a izquierda y llevan '÷ 1000'. El sentido de las flechas no se puede poner en texto y se describe aqui.",
+    "no hay ejercicio ni preguntas en esta lamina: es una lamina de referencia"
+  ],
+  "spans": [
+    { "page": 1, "kind": "heading", "text": "Converting MASS Units" },
+    { "page": 1, "kind": "paragraph", "text": "The Mass for weighing objects in Metric Units is similar to Capacity for Volumes." },
+    { "page": 1, "kind": "paragraph", "text": "In the Metric System, Mass is based on the Gram or “g” unit." },
+    { "page": 1, "kind": "table_row", "text": "x 1000 | x 1000 | x 1000" },
+    { "page": 1, "kind": "table_row", "text": "tonne | kg | g | mg" },
+    { "page": 1, "kind": "table_row", "text": "÷ 1000 | ÷ 1000 | ÷ 1000" }
+  ]
+}

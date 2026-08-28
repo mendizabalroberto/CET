@@ -1,0 +1,19 @@
+{
+  "path": "Y6A/Math/Length.png",
+  "checksum": "43d0b85053debbcf57e93e71b7ccf3637a0b00419f51ddf288c02b4b9d917233",
+  "locale": "en",
+  "pages": 1,
+  "transcribedBy": "claude-vision",
+  "gaps": [
+    "el diagrama es una fila de cuatro unidades (Km, m, cm, mm) unidas por arcos: los arcos rojos de arriba van de izquierda a derecha y llevan las etiquetas 'x 1000', 'x 100' y 'x 10'; los arcos azules de abajo van de derecha a izquierda y llevan '÷ 1000', '÷ 100' y '÷ 10'. El sentido de las flechas no se puede poner en texto y se describe aqui.",
+    "en el margen inferior derecho asoma una marca o numero cortado por el borde de la imagen: ilegible",
+    "no hay ejercicio ni preguntas en esta lamina: es una lamina de referencia"
+  ],
+  "spans": [
+    { "page": 1, "kind": "heading", "text": "Converting LENGTH Units" },
+    { "page": 1, "kind": "paragraph", "text": "It is easiest to use a conversion look-up diagram like the one below." },
+    { "page": 1, "kind": "table_row", "text": "x 1000 | x 100 | x 10" },
+    { "page": 1, "kind": "table_row", "text": "Km | m | cm | mm" },
+    { "page": 1, "kind": "table_row", "text": "÷ 1000 | ÷ 100 | ÷ 10" }
+  ]
+}

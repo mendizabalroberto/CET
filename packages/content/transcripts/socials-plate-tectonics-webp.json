@@ -1,0 +1,30 @@
+{
+  "path": "Y6A/Socials/plate_tectonics.webp",
+  "checksum": "21dc94cce7732ac0e2d2027c3748af7fb04fecd0fa94c18e1fa9d2caf2561fb8",
+  "locale": "en",
+  "pages": 1,
+  "transcribedBy": "claude-vision",
+  "gaps": [
+    "mapamundi de las placas tectonicas: no tiene titulo ni texto corrido, solo los nombres de las placas",
+    "el dibujo muestra los continentes en beige sobre oceano azul y unas lineas negras gruesas que recorren el mapa marcando los limites entre placas; esas lineas no llevan rotulo",
+    "cuatro rotulos ('JUAN DE FUCA PLATE', 'CARIBBEAN PLATE', 'COCOS PLATE', 'PHLIPPINE PLATE') estan fuera de su placa y se conectan con ella por una flecha",
+    "el rotulo de la placa filipina se lee 'PHLIPPINE PLATE', sin la primera i; se transcribe tal cual aparece",
+    "no hay leyenda, escala ni indicacion de direccion de movimiento"
+  ],
+  "spans": [
+    { "page": 1, "kind": "figure_caption", "text": "JUAN DE FUCA PLATE" },
+    { "page": 1, "kind": "figure_caption", "text": "NORTH AMERICAN PLATE" },
+    { "page": 1, "kind": "figure_caption", "text": "CARIBBEAN PLATE" },
+    { "page": 1, "kind": "figure_caption", "text": "PACIFIC PLATE" },
+    { "page": 1, "kind": "figure_caption", "text": "COCOS PLATE" },
+    { "page": 1, "kind": "figure_caption", "text": "NAZCA PLATE" },
+    { "page": 1, "kind": "figure_caption", "text": "SOUTH AMERICAN PLATE" },
+    { "page": 1, "kind": "figure_caption", "text": "AFRICAN PLATE" },
+    { "page": 1, "kind": "figure_caption", "text": "EURASIAN PLATE" },
+    { "page": 1, "kind": "figure_caption", "text": "ARABIAN PLATE" },
+    { "page": 1, "kind": "figure_caption", "text": "INDIAN PLATE" },
+    { "page": 1, "kind": "figure_caption", "text": "PHLIPPINE PLATE" },
+    { "page": 1, "kind": "figure_caption", "text": "AUSTRALIAN PLATE" },
+    { "page": 1, "kind": "figure_caption", "text": "ANTARCTIC PLATE" }
+  ]
+}

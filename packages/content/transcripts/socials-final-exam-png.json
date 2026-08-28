@@ -1,0 +1,38 @@
+{
+  "path": "Y6A/Socials/FINAL EXAM.png",
+  "checksum": "fb2846e99e4e039e2cc5093b7c195c60dfd62f9d4778bcf367dd340839eff539",
+  "locale": "en",
+  "pages": 1,
+  "transcribedBy": "claude-vision",
+  "gaps": [
+    "examen sin resolver: no contiene las respuestas",
+    "el fichero no es un examen con preguntas: es un cartel de anuncio del examen final que lista seis temas a repasar, numerados del 1 al 6, cada uno en su tarjeta con una ilustracion",
+    "ilustraciones decorativas sin texto: un globo terraqueo sobre dos libros rotulados 'SOCIAL STUDIES', una rosa de los vientos con las letras N, S, E, W sobre un mapamundi en marca de agua, y una pila de libros con un bote de lapices",
+    "las seis vinetas muestran, en este orden, un rio serpenteando por la selva, una tuberia que vierte en un rio con basura, una cordillera nevada con un rio, un volcan en corte, una ciudad con rascacielos y una grua, y un globo terraqueo"
+  ],
+  "spans": [
+    { "page": 1, "kind": "heading", "text": "YEAR 6" },
+    { "page": 1, "kind": "heading", "text": "SOCIAL STUDIES" },
+    { "page": 1, "kind": "heading", "text": "FINAL EXAM" },
+    { "page": 1, "kind": "paragraph", "text": "Get ready for your final exam by reviewing the following topics:" },
+    { "page": 1, "kind": "list_item", "text": "1" },
+    { "page": 1, "kind": "list_item", "text": "Amazon River" },
+    { "page": 1, "kind": "list_item", "text": "2" },
+    { "page": 1, "kind": "list_item", "text": "River Pollution" },
+    { "page": 1, "kind": "list_item", "text": "3" },
+    { "page": 1, "kind": "list_item", "text": "Mountains, Rivers and Hills" },
+    { "page": 1, "kind": "list_item", "text": "4" },
+    { "page": 1, "kind": "list_item", "text": "How Are Mountains Formed" },
+    { "page": 1, "kind": "list_item", "text": "5" },
+    { "page": 1, "kind": "list_item", "text": "The Growth of Cities" },
+    { "page": 1, "kind": "list_item", "text": "6" },
+    { "page": 1, "kind": "list_item", "text": "Capital Cities of the World" },
+    { "page": 1, "kind": "paragraph", "text": "Study with focus, do your best" },
+    { "page": 1, "kind": "paragraph", "text": "and show everything you’ve learned!" },
+    { "page": 1, "kind": "figure_caption", "text": "SOCIAL STUDIES" },
+    { "page": 1, "kind": "figure_caption", "text": "N" },
+    { "page": 1, "kind": "figure_caption", "text": "W" },
+    { "page": 1, "kind": "figure_caption", "text": "E" },
+    { "page": 1, "kind": "figure_caption", "text": "S" }
+  ]
+}

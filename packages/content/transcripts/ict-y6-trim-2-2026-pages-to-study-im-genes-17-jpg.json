@@ -1,0 +1,42 @@
+{
+  "path": "Y6A/ICT/Y6 - TRIM 2 2026 PAGES TO STUDY-im├ígenes-17.jpg",
+  "checksum": "13dc566fc59b79be27182c43cbe13b22884bc52e3080087700baa3493f50ada0",
+  "locale": "en",
+  "pages": 1,
+  "transcribedBy": "claude-vision",
+  "gaps": [
+    "En la tabla de operadores, la columna 'Symbol' contiene los signos +, −, × y / impresos como simbolos; se transcriben tal cual.",
+    "Los dos diagramas de flujo son dibujos: cada uno es una cadena vertical de figuras unidas por flechas hacia abajo — un ovalo verde 'Start', dos paralelogramos azules de entrada, un rectangulo morado con la operacion, un paralelogramo gris oscuro 'Show Result' y un ovalo rojo 'Stop'. Solo se transcriben las etiquetas de las figuras.",
+    "En el margen izquierdo inferior hay texto manuscrito girado 90 grados, ilegible."
+  ],
+  "spans": [
+    {"page": 1, "kind": "heading", "text": "Unit 8: Be an innovator"},
+    {"page": 1, "kind": "heading", "text": "Algorithm to code"},
+    {"page": 1, "kind": "heading", "text": "Arithmetic operators"},
+    {"page": 1, "kind": "heading", "text": "Learn"},
+    {"page": 1, "kind": "paragraph", "text": "What is an arithmetic operator?"},
+    {"page": 1, "kind": "paragraph", "text": "We will look at four arithmetic operators for number calculations. They include:"},
+    {"page": 1, "kind": "table_row", "text": "Name | Symbol | Meaning"},
+    {"page": 1, "kind": "table_row", "text": "Addition | + | The combination of two or more numbers to find the total"},
+    {"page": 1, "kind": "table_row", "text": "Subtraction | − | The difference between two numbers"},
+    {"page": 1, "kind": "table_row", "text": "Multiplication | × | The product of repeated addition of a number"},
+    {"page": 1, "kind": "table_row", "text": "Division | / | The separation of a number into equal parts"},
+    {"page": 1, "kind": "heading", "text": "Algorithms with arithmetic operators"},
+    {"page": 1, "kind": "paragraph", "text": "Look at the following examples for using each arithmetic operator in an algorithm."},
+    {"page": 1, "kind": "figure_caption", "text": "Algorithm 1"},
+    {"page": 1, "kind": "figure_caption", "text": "Start"},
+    {"page": 1, "kind": "figure_caption", "text": "User enters the number 2"},
+    {"page": 1, "kind": "figure_caption", "text": "User enters the number 10"},
+    {"page": 1, "kind": "figure_caption", "text": "Result = 2 + 10"},
+    {"page": 1, "kind": "figure_caption", "text": "Show Result"},
+    {"page": 1, "kind": "figure_caption", "text": "Stop"},
+    {"page": 1, "kind": "figure_caption", "text": "Algorithm 2"},
+    {"page": 1, "kind": "figure_caption", "text": "Start"},
+    {"page": 1, "kind": "figure_caption", "text": "User enters the number 25"},
+    {"page": 1, "kind": "figure_caption", "text": "User enters the number 12"},
+    {"page": 1, "kind": "figure_caption", "text": "Result = 25 – 12"},
+    {"page": 1, "kind": "figure_caption", "text": "Show Result"},
+    {"page": 1, "kind": "figure_caption", "text": "Stop"},
+    {"page": 1, "kind": "paragraph", "text": "108"}
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "path": "Y6A/English/b08fe934b43dc0ebf1f056a8a1e38c33.pdf",
+  "checksum": "ffaa9021f95fed06acd415f06fd1009fe0ce870f38a3df5e47cb36de79ab0d11",
+  "locale": "en",
+  "pages": 1,
+  "transcribedBy": "claude-vision",
+  "gaps": [
+    "ejercicio sin resolver: no contiene las respuestas",
+    "PDF escaneado de una sola pagina: es una imagen, no hay capa de texto. Transcrito mirando la imagen incrustada.",
+    "los huecos son rayas horizontales de longitud variable; el numero exacto de guiones bajos no se puede contar y se transcriben como '___________' (once) de forma uniforme",
+    "los numeros de item van dentro de circulos de colores; se transcriben como '1.', '2.', etc.",
+    "la columna derecha lleva dibujos (nina escribiendo, nino cepillandose los dientes, ninos comiendo, nino yendo al colegio, bebe llorando, nino arreglando una bicicleta, ninos jugando al baloncesto, gato con leche, cesta de picnic) sin texto"
+  ],
+  "spans": [
+    { "page": 1, "kind": "heading", "text": "PRESENT SIMPLE -" },
+    { "page": 1, "kind": "heading", "text": "AFFIRMATIVE (SET 2)" },
+    { "page": 1, "kind": "question", "text": "1. She ___________ (write) stories in her notebook." },
+    { "page": 1, "kind": "question", "text": "2. Ahmed ___________ (brush) his teeth twice a day." },
+    { "page": 1, "kind": "question", "text": "3. My sister ___________ (sing) very well." },
+    { "page": 1, "kind": "question", "text": "4. They ___________ (eat) lunch at school." },
+    { "page": 1, "kind": "question", "text": "5. I ___________ (walk) to school every morning." },
+    { "page": 1, "kind": "question", "text": "6. The baby ___________ (cry) at night." },
+    { "page": 1, "kind": "question", "text": "7. He ___________ (fix) his bike." },
+    { "page": 1, "kind": "question", "text": "8. We ___________ (play) basketball after school." },
+    { "page": 1, "kind": "question", "text": "9. Sara ___________ (visit) her aunt every weekend." },
+    { "page": 1, "kind": "question", "text": "10. The teacher ___________ (explain) the lesson clearly." },
+    { "page": 1, "kind": "question", "text": "11. My father ___________ (read) the newspaper every day." },
+    { "page": 1, "kind": "question", "text": "12. The cat ___________ (drink) milk." },
+    { "page": 1, "kind": "question", "text": "13. Birds ___________ (build) nests in trees." },
+    { "page": 1, "kind": "question", "text": "14. She ___________ (wear) a blue dress today." },
+    { "page": 1, "kind": "question", "text": "15. I ___________ (open) the window in the morning." },
+    { "page": 1, "kind": "question", "text": "16. He ___________ (buy) new shoes." },
+    { "page": 1, "kind": "question", "text": "17. We ___________ (clean) the kitchen together." },
+    { "page": 1, "kind": "question", "text": "18. Mona ___________ (take) photos with her phone." },
+    { "page": 1, "kind": "question", "text": "19. The children ___________ (jump) on the bed." },
+    { "page": 1, "kind": "question", "text": "20. I ___________ (listen) to music every evening." },
+    { "page": 1, "kind": "question", "text": "21. They ___________ (run) in the park." },
+    { "page": 1, "kind": "question", "text": "22. My brother ___________ (draw) cartoons." },
+    { "page": 1, "kind": "question", "text": "23. She ___________ (carry) her school bag." },
+    { "page": 1, "kind": "question", "text": "24. The dog ___________ (eat) its food quickly." },
+    { "page": 1, "kind": "question", "text": "25. We ___________ (have) a picnic on Fridays." }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "path": "Y6A/Socials/Mountains formation.jpg",
+  "checksum": "d07ac6974242c27c055ad8044bf604fe64dc36add0ec451a024d9b0345879511",
+  "locale": "en",
+  "pages": 1,
+  "transcribedBy": "claude-vision",
+  "gaps": [
+    "infografia sin texto corrido: un titulo y tres bloques en corte con un rotulo cada uno",
+    "diagrama 'Fold mountain': bloque en corte con la superficie verde plegada en un arco y dos flechas blancas horizontales enfrentadas bajo la cima",
+    "diagrama 'Block mountain': tres bloques, el central empujado hacia arriba por una flecha blanca y los dos laterales con flechas blancas hacia abajo",
+    "diagrama 'Volcanic mountain': cono con lava sobre un conducto rojo y tres flechas blancas que ascienden desde una bolsa incandescente",
+    "la imagen lleva marcas de agua repetidas 'alamy' y, al pie, 'Stock Photo' con un identificador y 'www.alamy.com'; el identificador se lee '2WJERAT' pero el escaneo no permite confirmarlo con seguridad",
+    "no se transcribe lo que muestra cada dibujo mas alla de sus rotulos"
+  ],
+  "spans": [
+    { "page": 1, "kind": "heading", "text": "MOUNTAIN FORMATION" },
+    { "page": 1, "kind": "figure_caption", "text": "Fold mountain" },
+    { "page": 1, "kind": "figure_caption", "text": "Block mountain" },
+    { "page": 1, "kind": "figure_caption", "text": "Volcanic mountain" }
+  ]
+}

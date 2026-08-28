@@ -1,0 +1,32 @@
+{
+  "path": "Y6A/ICT/Y6 - TRIM 2 2026 PAGES TO STUDY-im├ígenes-6.jpg",
+  "checksum": "cb557c8712c5bdfd664785f0b2b5596f086c403d7c5a0962389e1274385d473f",
+  "locale": "en",
+  "pages": 1,
+  "transcribedBy": "claude-vision",
+  "gaps": [
+    "el número de página impreso en la esquina inferior izquierda es 72; no se transcribe como span",
+    "hay una ilustración de un router inalámbrico naranja con dos antenas y un icono de ondas; su pie sí se transcribe",
+    "la fotografía central muestra a una chica sentada en un sillón en una habitación con muchos iconos de Wi-Fi dibujados encima y un router sobre una mesita; cada icono lleva la palabra WiFi repetida y no se transcribe una por una",
+    "la última ilustración es un portátil con un icono grande de Wi-Fi en la pantalla; su pie sí se transcribe",
+    "en el margen izquierdo hay una anotación manuscrita a lápiz, girada 90 grados y demasiado tenue para leerse",
+    "el texto lleva resaltado amarillo y verde; el resaltado no se refleja en los spans"
+  ],
+  "spans": [
+    {"page": 1, "kind": "heading", "text": "Unit 5: Digital content"},
+    {"page": 1, "kind": "heading", "text": "Data transfer"},
+    {"page": 1, "kind": "heading", "text": "Radio waves and cellular networks"},
+    {"page": 1, "kind": "heading", "text": "Learn"},
+    {"page": 1, "kind": "paragraph", "text": "Any network that is not connected using wires sends and receives data using radio waves."},
+    {"page": 1, "kind": "paragraph", "text": "Radio waves are just like light waves. However, while we can see light waves, we are unable to see radio waves. Despite that, there are radio waves all around us all the time."},
+    {"page": 1, "kind": "paragraph", "text": "A wireless router receives data from the internet through wires. It converts that data into radio waves, which it transmits via its antenna."},
+    {"page": 1, "kind": "paragraph", "text": "These radio waves are sent in all directions through the air, and are picked up by a receiver. Radio waves used for Wi-Fi can travel long distances. To be able to access Wi-Fi signals, every device connected to Wi-Fi must have an adapter that acts as a transmitter and a receiver."},
+    {"page": 1, "kind": "figure_caption", "text": "A wireless router sends out radio waves"},
+    {"page": 1, "kind": "figure_caption", "text": "A wireless router uses radio waves for Wi-Fi"},
+    {"page": 1, "kind": "figure_caption", "text": "WiFi"},
+    {"page": 1, "kind": "paragraph", "text": "Computers, tablets, smartphones and other devices that can connect to a wireless network, contain adapters inside them."},
+    {"page": 1, "kind": "paragraph", "text": "The adapters can convert radio waves back into the original data. Software makes sense of the data. This data could be anything – music, videos, text or anything else."},
+    {"page": 1, "kind": "paragraph", "text": "Cellular networks use exactly the same principle – they just use a different type of radio wave. These radio waves carry data between a smartphone and a nearby base station. Each base station is connected to the internet by wires."},
+    {"page": 1, "kind": "figure_caption", "text": "A laptop has a built-in transmitter and receiver for Wi-Fi"}
+  ]
+}

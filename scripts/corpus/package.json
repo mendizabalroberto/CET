@@ -1,0 +1,5 @@
+{
+  "name": "@cet/corpus-scripts",
+  "private": true,
+  "type": "module"
+}

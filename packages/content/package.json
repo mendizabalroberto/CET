@@ -28,6 +28,7 @@
   "devDependencies": {
     "@cet/engine": "workspace:^",
     "@types/node": "^22.10.0",
+    "pdfjs-dist": "^6.2.108",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"

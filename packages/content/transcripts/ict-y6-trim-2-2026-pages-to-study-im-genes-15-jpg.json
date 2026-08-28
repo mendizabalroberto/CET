@@ -1,0 +1,31 @@
+{
+  "path": "Y6A/ICT/Y6 - TRIM 2 2026 PAGES TO STUDY-im├ígenes-15.jpg",
+  "checksum": "120628351f093920f943b795de871b7e98cfc7f3150143af2e858e8c1e9f981e",
+  "locale": "en",
+  "pages": 1,
+  "transcribedBy": "claude-vision",
+  "gaps": [
+    "Ilustracion sin pie en la seccion Sales: un puesto de tienda con toldo y una mano sosteniendo un movil con un boton 'Buy', rodeado de ropa, un anillo y un zapato.",
+    "Ilustracion sin pie en la seccion Manufacturing: dos brazos roboticos en una linea de montaje de una fabrica.",
+    "En el margen izquierdo inferior hay texto manuscrito girado 90 grados, ilegible."
+  ],
+  "spans": [
+    {"page": 1, "kind": "heading", "text": "Unit 7: Be a data architect"},
+    {"page": 1, "kind": "heading", "text": "Sales"},
+    {"page": 1, "kind": "paragraph", "text": "Clothes, food, toys and books are just some of the products we can buy over the internet. Data such as product details, the amount sold and customer information are collected and stored in a database. The data can be used for stock control and to understand customer trends and choices better."},
+    {"page": 1, "kind": "list_item", "text": "Stock control and advertisements – Supermarkets and retail stores can use data to determine the number of each product sold. This information can then be used to reorder stock for the supermarket. They can also use this data to advertise the products that are most often bought by customers (for example, a brand of canned tuna or a particular colour shirt)."},
+    {"page": 1, "kind": "list_item", "text": "Customer service – Getting customer’s feedback on products and services (for example, quality of the product sold and delivery time) can help retail stores determine how customers feel and then improve in these areas."},
+    {"page": 1, "kind": "heading", "text": "Manufacturing"},
+    {"page": 1, "kind": "paragraph", "text": "Companies that manufacture products such as toys, electronics and cars use data for various operations."},
+    {"page": 1, "kind": "list_item", "text": "Control of machinery – Most factories are automated. They may use robotic arms like the one in the picture to assemble a product. Automated machines and robots use data (for example, colour, size of the product being manufactured) to ensure that all the products are made in the same way."},
+    {"page": 1, "kind": "paragraph", "text": "Data on the operations of the machinery are also collected. This can include the amount of noise the machine makes, the heat from the machines, or how much the machine vibrates. This helps to determine when the machines may need maintenance so that they do not break down. This allows factories to produce their products daily without machine failure."},
+    {"page": 1, "kind": "list_item", "text": "Customer satisfaction – These industries also use data to determine what their customers want them to make. This lets them gain more sales."},
+    {"page": 1, "kind": "paragraph", "text": "For example, a car manufacturer might collect data on car colour to determine which car colour is most popular amongst its customers. In this way, more cars will be painted in that colour when being manufactured."},
+    {"page": 1, "kind": "heading", "text": "Keywords"},
+    {"page": 1, "kind": "list_item", "text": "stock control: keeping track of the products so that they are available for sale"},
+    {"page": 1, "kind": "list_item", "text": "manufacture: to make things"},
+    {"page": 1, "kind": "list_item", "text": "automated: humans do not need to help"},
+    {"page": 1, "kind": "list_item", "text": "assemble: to build or bring together"},
+    {"page": 1, "kind": "paragraph", "text": "101"}
+  ]
+}

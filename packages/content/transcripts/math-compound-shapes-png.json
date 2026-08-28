@@ -1,0 +1,36 @@
+{
+  "path": "Y6A/Math/Compound shapes.png",
+  "checksum": "6293e4c8aa1ef9e9371042713dd230fd5b34d94b08d41362a52c68caecebc125",
+  "locale": "en",
+  "pages": 1,
+  "transcribedBy": "claude-vision",
+  "gaps": [
+    "ejercicio sin resolver: no contiene las respuestas",
+    "la lamina no numera ni etiqueta las figuras: los identificadores 'figura arriba a la izquierda', 'figura arriba a la derecha', etc. son posiciones descritas por el transcriptor, no texto del material",
+    "figura arriba a la izquierda: un hexagono en forma de L tumbada. Solo se leen las cotas 10cm (lado izquierdo), 7cm (tramo horizontal interior), 5cm (lado derecho) y 10cm (base). Los otros dos lados no llevan cota.",
+    "figura arriba a la derecha: un poligono escalonado con un saliente arriba. Solo se leen las cotas 10cm (arriba), 2cm (escalon a la izquierda), 15cm (lado derecho) y 8cm (lado izquierdo). Los demas lados no llevan cota.",
+    "figura abajo a la izquierda: un rectangulo con una muesca recortada en la esquina inferior izquierda. Solo se leen las cotas 5cm (lado izquierdo), 3cm (lado derecho), 6cm (tramo inferior) y 2cm (base de la muesca). El lado superior no lleva cota.",
+    "figura abajo a la derecha: una forma en U con una muesca rectangular recortada en el centro de la base. Solo se leen las cotas 11cm (arriba), 9cm (lado derecho), 5cm (altura interior de la muesca), 5cm (altura del brazo izquierdo) y 3cm (base del brazo derecho). Los demas lados no llevan cota.",
+    "no se puede leer en la imagen que area o perimetro corresponde a cada figura: no viene dado"
+  ],
+  "spans": [
+    { "page": 1, "kind": "heading", "text": "To calculate the area/perimeter of compound shapes." },
+    { "page": 1, "kind": "figure_caption", "text": "10cm" },
+    { "page": 1, "kind": "figure_caption", "text": "7cm" },
+    { "page": 1, "kind": "figure_caption", "text": "5cm" },
+    { "page": 1, "kind": "figure_caption", "text": "10cm" },
+    { "page": 1, "kind": "figure_caption", "text": "10cm" },
+    { "page": 1, "kind": "figure_caption", "text": "2cm" },
+    { "page": 1, "kind": "figure_caption", "text": "15cm" },
+    { "page": 1, "kind": "figure_caption", "text": "8cm" },
+    { "page": 1, "kind": "figure_caption", "text": "5cm" },
+    { "page": 1, "kind": "figure_caption", "text": "3cm" },
+    { "page": 1, "kind": "figure_caption", "text": "6cm" },
+    { "page": 1, "kind": "figure_caption", "text": "2cm" },
+    { "page": 1, "kind": "figure_caption", "text": "11cm" },
+    { "page": 1, "kind": "figure_caption", "text": "9cm" },
+    { "page": 1, "kind": "figure_caption", "text": "5cm" },
+    { "page": 1, "kind": "figure_caption", "text": "5cm" },
+    { "page": 1, "kind": "figure_caption", "text": "3cm" }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "path": "Y6A/Math/Capacity.png",
+  "checksum": "2d026f967366fc5a04e2b0e1e134003081986a47f7161660a196f24864d4007e",
+  "locale": "en",
+  "pages": 1,
+  "transcribedBy": "claude-vision",
+  "gaps": [
+    "el diagrama es una fila de cuatro unidades (ML, kL, L, mL) unidas por arcos: los arcos rojos de arriba van de izquierda a derecha y llevan la etiqueta 'x 1000'; los arcos azules de abajo van de derecha a izquierda y llevan la etiqueta '÷ 1000'. El sentido de las flechas no se puede poner en texto y se describe aqui.",
+    "no hay ejercicio ni preguntas en esta lamina: es una lamina de referencia"
+  ],
+  "spans": [
+    { "page": 1, "kind": "heading", "text": "Converting CAPACITY Units" },
+    { "page": 1, "kind": "paragraph", "text": "The Volume of Liquids and Solids is usually measured as a “Capacity”." },
+    { "page": 1, "kind": "paragraph", "text": "In the Metric System, Capacity is based on the Litre or “L” unit." },
+    { "page": 1, "kind": "table_row", "text": "x 1000 | x 1000 | x 1000" },
+    { "page": 1, "kind": "table_row", "text": "ML | kL | L | mL" },
+    { "page": 1, "kind": "table_row", "text": "÷ 1000 | ÷ 1000 | ÷ 1000" }
+  ]
+}
