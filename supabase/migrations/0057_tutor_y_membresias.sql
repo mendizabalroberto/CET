@@ -68,3 +68,24 @@ create table public.student_access_links (
 );
 alter table public.student_access_links enable row level security;
 create index enlaces_alumno_idx on public.student_access_links (student_id);
+
+-- =============================================================================
+-- PERMISOS — sin esto, las politicas que citan estas tablas tumban a TODOS
+-- =============================================================================
+-- Postgres evalua la subconsulta de una politica con los privilegios de QUIEN
+-- PREGUNTA. `profiles_select_school` cita `student_school_memberships`, asi que
+-- sin este `grant` cualquier lectura de `profiles` por un usuario autenticado
+-- muere con «permission denied for table student_school_memberships» — incluida
+-- la de su propia fila, que otra politica si le concede.
+--
+-- Paso en produccion el 28 de agosto de 2026: el alumno metia su PIN, la sesion
+-- se abria, y la aplicacion le devolvia a la pantalla de ingreso sin un mensaje,
+-- porque `requireRole()` no distingue «fallo la consulta» de «no hay perfil».
+--
+-- El permiso NO abre ningun dato: las tres tablas tienen RLS activo y todavia
+-- ninguna politica, y RLS sin politica no deja ver ni una fila. Lo que devuelve
+-- es la capacidad de EVALUAR la politica, que es lo que Postgres exige.
+-- Lo comprueba `supabase/tests/permisos_de_politica.sql`.
+grant select on public.guardian_students          to authenticated;
+grant select on public.student_school_memberships to authenticated;
+grant select on public.student_access_links       to authenticated;
