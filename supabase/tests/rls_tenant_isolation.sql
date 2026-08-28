@@ -10,7 +10,7 @@
 -- RLS rota que bloqueara absolutamente todo pasaría el test con sobresaliente.
 -- =============================================================================
 begin;
-select plan(46);
+select plan(47);
 
 \ir helpers/fixture.psql
 
@@ -290,5 +290,19 @@ select ok(
   'app.is_staff() devuelve false cuando el colegio está suspendido');
 
 select pg_temp.logout();
+
+-- Ninguna politica de datos de alumno puede haber quedado con la forma vieja.
+-- Es el patron que 0025 documenta como fuente de NULL silencioso.
+select is_empty(
+  $$select p.polname
+      from pg_policy p
+      join pg_class c on c.oid = p.polrelid
+     where c.relname in ('students','learning_events','skill_mastery',
+                         'exam_attempts','attempt_items','attempt_responses',
+                         'attempt_gradings')
+       and pg_get_expr(p.polqual, p.polrelid) like '%current_school_id%'
+       and pg_get_expr(p.polqual, p.polrelid) not like '%puede_ver_alumno%'$$,
+  'ninguna politica de datos de alumno compara colegios a mano');
+
 select * from finish();
 rollback;

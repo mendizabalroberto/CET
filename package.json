@@ -18,7 +18,8 @@
     "test:e2e": "turbo run test:e2e",
     "corpus": "pnpm --filter @cet/content exec tsx ../../scripts/corpus/main.ts",
     "db:types": "supabase gen types typescript --project-id clcutoqjdgeggvgyreud --schema public > packages/shared/src/database.types.ts",
-    "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm build",
+    "test:scripts": "vitest run --config scripts/vitest.config.mjs",
+    "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm test:scripts && pnpm build",
     "format": "prettier --write ."
   },
   "devDependencies": {
@@ -34,6 +35,7 @@
     "prettier-plugin-tailwindcss": "^0.6.9",
     "turbo": "^2.3.3",
     "typescript": "^5.7.2",
-    "typescript-eslint": "^8.18.1"
+    "typescript-eslint": "^8.18.1",
+    "vitest": "^2.1.8"
   }
 }

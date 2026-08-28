@@ -1,0 +1,43 @@
+-- =============================================================================
+-- 0060_quitar_alcance_por_rol.sql — se retira la constraint de 0056
+-- Cambridge Exam Trainer · © 2026 Roberto Mendizabal.
+-- =============================================================================
+-- 0056 declaro que un alumno NO tiene `school_id`, porque su matricula pasa a
+-- vivir en `student_school_memberships`. El modelo es correcto. El problema es
+-- que se aplico a una base cuyo CODIGO sigue siendo el de antes.
+--
+-- `NOT VALID` solo salta el escaneo de las filas existentes: la comprobacion se
+-- sigue aplicando en cada INSERT y en cada UPDATE. Como la aplicacion da de alta
+-- al alumno con `school_id` (`components/staff/actions.ts`) y actualiza su fila
+-- para guardar el idioma (`lib/preferences-actions.ts`), en produccion quedo asi:
+--
+--   - el colegio no podia dar de alta ni un alumno: 23514 y un error generico;
+--   - el alumno pulsaba «Espanol» y le salia un error.
+--
+-- Y no se arregla vaciando el `school_id`: `api/attempts/_context.ts` y
+-- `lib/auth/session.ts` cortan con `if (!profile.schoolId) -> forbidden`. Un
+-- alumno sin colegio no puede examinarse. Vaciarlo cambia «no puedo dar de alta»
+-- por «403 a mitad de examen», que es peor.
+--
+-- POR QUE RETIRARLA Y NO VALIDARLA
+--
+-- La constraint no protege nada hoy: la migracion 0061 que iba a validar a los
+-- alumnos existentes no se escribio, asi que la unica fila de alumno de
+-- produccion ya la viola y ahi sigue. Es decir, cuesta caminos legitimos y no
+-- compra ninguna garantia. Se retira.
+--
+-- ESTO NO CIERRA LA DECISION, LA DEVUELVE
+--
+-- Sigue pendiente decidir si el alumno pertenece a un colegio por
+-- `profiles.school_id` o por membresia. Cuando se decida por la membresia, esta
+-- constraint vuelve — pero EN LA MISMA TANDA que la migracion de los datos y que
+-- el codigo que los lee, no antes. `supabase/tests/escrituras_de_perfil.sql` es
+-- quien obliga a que vayan juntos: mientras la aplicacion escriba `school_id`,
+-- ese fichero exige que la base lo acepte.
+--
+-- Lo que 0056 SI deja en pie y no se toca: `profiles_staff_needs_email`, que
+-- sigue prohibiendo personal sin correo. Ver el control positivo del test.
+-- =============================================================================
+
+alter table public.profiles
+  drop constraint if exists profiles_alcance_por_rol;
