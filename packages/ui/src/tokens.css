@@ -16,6 +16,17 @@
  *      control interactivo (input, checkbox, chip) usa --cet-border-strong,
  *      que cumple el minimo 3:1 de componentes de UI.
  *
+ * ESTA ES LA UNICA PALETA DEL PRODUCTO. Hasta el 2026-08-28 `apps/web` mantenia
+ * un juego paralelo (--brand, --teal, --surface, --ink, --ring...) con valores
+ * propios que en tema oscuro divergian por completo, y era ESE el que se
+ * ejecutaba: el anillo de foco de la app daba 1.57:1 sobre el relleno de marca y
+ * un alumno navegando con teclado no veia donde estaba. Ahora `globals.css` no
+ * declara ni un valor de color: sus nombres siguen vivos como ALIAS de estos
+ * tokens. Lo vigila `__tests__/una-sola-paleta.test.ts`, que pone rojo cualquier
+ * hoja del monorepo que vuelva a inventarse un color.
+ *
+ * CAPA DE ACENTO (--cet-*-vivid): ver la seccion "acento vivo" mas abajo.
+ *
  * Tema oscuro: los tokens se redefinen bajo `prefers-color-scheme: dark` y bajo
  * `[data-theme="dark"]`, y la variante de sistema se excluye bajo
  * `[data-theme="light"]` para que la eleccion explicita gane en ambos sentidos.
@@ -45,6 +56,12 @@
   --cet-navy-2: #0f2a49;
   --cet-primary: #173a63;
   --cet-primary-hover: #0f2a49;
+  /*
+   * Extremo claro del degradado de marca (hero). Blanco encima da 7.29:1, asi
+   * que el texto del hero sigue siendo legible en el punto mas claro del
+   * degradado, que es donde estos fallan siempre.
+   */
+  --cet-primary-bright: #1d5a8a;
   --cet-on-primary: #ffffff;
 
   /* --- acentos: variante decorativa + variante legible --- */
@@ -53,6 +70,51 @@
   --cet-amber: #f2a71b;
   --cet-amber-text: #8a6100;
   --cet-on-amber: #3a2a00;
+
+  /* ------------------------------------------------------------------ *
+   * ACENTO VIVO — la capa de color saturado de los ejercicios
+   * ------------------------------------------------------------------
+   *
+   * De donde salen: los cuatro colores base de Mario Bros. Se eligen por
+   * saturacion, no por nostalgia: un bloque saturado con tinta oscura encima es
+   * la forma en que ese lenguaje visual funciona, y es la unica que sobrevive a
+   * la medicion. Con la tinta --cet-on-vivid (#12202f) encima:
+   *
+   *     verde    #43b047 -> 5.92 ✓      azul  #049cd8 -> 5.30 ✓
+   *     amarillo #fbd000 -> 11.09 ✓     rojo  #e52521 -> 3.63 ✗
+   *
+   * Y COMO TEXTO SOBRE FONDO CLARO NO SIRVE NINGUNO (2.59, 2.89, 1.38, 4.23).
+   * Por eso cada acento trae su variante `-text` oscurecida, igual que
+   * --cet-teal / --cet-teal-text. Regla identica: el token pelado RELLENA, el
+   * token `-text` ESCRIBE. Nunca al reves.
+   *
+   * EL ROJO NO ES UN BLOQUE. 3.63:1 no llega a 4.5 para texto normal encima, asi
+   * que --cet-no-vivid solo se usa como trazo (4.23:1 sobre el fondo de pagina,
+   * por encima del 3:1 de 1.4.11) y su texto va siempre en --cet-no-vivid-text.
+   *
+   * QUE SIGNIFICA CADA UNO. El mapa color -> significado del sistema ya existe y
+   * este no lo contradice, lo refuerza con mas saturacion: verde = acierto (ok),
+   * rojo = error (no), amarillo = pista (hint). El azul cubre el hueco que no
+   * tenia version saturada: la tarea EN LA QUE ESTAS, que es la familia del
+   * navy de foco. Un quinto significado nuevo seria ruido con aspecto de sistema.
+   *
+   * Y EL LIMITE QUE MANDA SOBRE TODO: en deuteranopia (Vienot 1999) el rojo y el
+   * verde de esta paleta son el mismo color —#878700 y #9a9a4c, 1.29:1 entre
+   * ellos—. Uno de cada doce ninos varones no los distingue. Por eso ningun
+   * estado se senala solo con estos tokens: las clases `.cet-acento--*` de mas
+   * abajo llevan cada una su trama y su geometria, y los componentes ponen ademas
+   * el glifo y el texto. Lo vigila `__tests__/estados-no-solo-color.test.tsx`.
+   */
+  --cet-ok-vivid: #43b047;
+  --cet-ok-vivid-text: #318034;
+  --cet-no-vivid: #e52521;
+  --cet-no-vivid-text: #dc2420;
+  --cet-hint-vivid: #fbd000;
+  --cet-hint-vivid-text: #856e00;
+  --cet-step-vivid: #049cd8;
+  --cet-step-vivid-text: #0378a6;
+  /* Tinta y contorno de todo bloque vivo. Es la misma tinta de la pagina. */
+  --cet-on-vivid: #12202f;
 
   /* --- semanticos --- */
   --cet-green: #12805c;
@@ -137,6 +199,7 @@
     --cet-navy-2: #a8ccf2;
     --cet-primary: #2b5f96;
     --cet-primary-hover: #3775b6;
+    --cet-primary-bright: #2f6ea8;
     --cet-on-primary: #ffffff;
 
     --cet-teal: #4fd1c0;
@@ -144,6 +207,17 @@
     --cet-amber: #f6c453;
     --cet-amber-text: #f6c453;
     --cet-on-amber: #2b2110;
+
+    /*
+     * Acento vivo en oscuro. Los RELLENOS no cambian: un bloque vivo es una
+     * pegatina, se recorta sobre el fondo oscuro (6.54, 5.86, 12.26 contra
+     * --cet-bg) y sigue llevando su tinta oscura encima. Lo que si tiene que
+     * cambiar es el TEXTO: #318034 sobre #0b1622 daria 2.3:1.
+     */
+    --cet-ok-vivid-text: #63d766;
+    --cet-no-vivid-text: #ff8a80;
+    --cet-hint-vivid-text: #fbd000;
+    --cet-step-vivid-text: #5ec8f5;
 
     --cet-green: #5fd39f;
     --cet-red: #ff8a80;
@@ -176,7 +250,14 @@
     --cet-timer-urgent: #ffa39b;
     --cet-timer-urgent-bg: #2b1512;
 
-    --cet-focus: #7cb2ea;
+    /*
+     * #7cb2ea daba 2.96:1 contra el relleno del boton primario (#2b5f96) y el
+     * halo #0b1622 daba 2.76:1: los DOS anillos por debajo de 3:1 a la vez, asi
+     * que en tema oscuro el foco sobre un boton primario no se veia. Es el mismo
+     * fallo que el 1.57:1 de la app, un tono mas arriba. #8dbcee lo sube a
+     * 3.32:1 y no cambia nada mas: sigue siendo el mismo azul de marca.
+     */
+    --cet-focus: #8dbcee;
     --cet-focus-halo: #0b1622;
 
     --cet-shadow-sm: 0 1px 3px rgb(0 0 0 / 45%);
@@ -205,6 +286,7 @@
   --cet-navy-2: #a8ccf2;
   --cet-primary: #2b5f96;
   --cet-primary-hover: #3775b6;
+  --cet-primary-bright: #2f6ea8;
   --cet-on-primary: #ffffff;
 
   --cet-teal: #4fd1c0;
@@ -212,6 +294,12 @@
   --cet-amber: #f6c453;
   --cet-amber-text: #f6c453;
   --cet-on-amber: #2b2110;
+
+  /* Mismo criterio que en la variante de sistema: rellenos igual, textos mas claros. */
+  --cet-ok-vivid-text: #63d766;
+  --cet-no-vivid-text: #ff8a80;
+  --cet-hint-vivid-text: #fbd000;
+  --cet-step-vivid-text: #5ec8f5;
 
   --cet-green: #5fd39f;
   --cet-red: #ff8a80;
@@ -244,7 +332,14 @@
   --cet-timer-urgent: #ffa39b;
   --cet-timer-urgent-bg: #2b1512;
 
-  --cet-focus: #7cb2ea;
+  /*
+   * #7cb2ea daba 2.96:1 contra el relleno del boton primario (#2b5f96) y el halo
+   * #0b1622 daba 2.76:1: los DOS anillos por debajo de 3:1 a la vez, asi que en
+   * tema oscuro el foco sobre un boton primario no se veia. Es el mismo fallo
+   * que el 1.57:1 de la app, un tono mas arriba. #8dbcee lo sube a 3.32:1 y no
+   * cambia nada mas: sigue siendo el mismo azul de marca.
+   */
+  --cet-focus: #8dbcee;
   --cet-focus-halo: #0b1622;
 
   --cet-shadow-sm: 0 1px 3px rgb(0 0 0 / 45%);
@@ -449,4 +544,92 @@ body {
 
 .cet-prose .f > .b {
   border-top: 2px solid currentColor;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Bloques de acento vivo                                                      */
+/* -------------------------------------------------------------------------- */
+
+/*
+ * La capa de color de los ejercicios, hecha bloque.
+ *
+ * POR QUE ESTAS CLASES Y NO SOLO LOS TOKENS. Los tokens de la seccion "acento
+ * vivo" son cuatro colores, y cuatro colores sueltos es justo lo que produce el
+ * fallo que este fichero intenta cerrar: en deuteranopia el verde y el rojo de
+ * esta paleta son EL MISMO COLOR (1.29:1 entre ellos simulados). Un bloque que
+ * solo se distinga por su relleno no informa a uno de cada doce ninos varones.
+ *
+ * Por eso cada modificador cambia TRES cosas a la vez, y solo una es el color:
+ *
+ *   modificador   relleno            trama            geometria
+ *   --paso        azul liso          ninguna          anillo GRUESO (4px)
+ *   --logro       verde              rayas diagonales anillo fino, esquina media
+ *   --pista       amarillo           puntos           pildora
+ *   --revisar     SIN relleno        ninguna          barra izquierda de 6px
+ *
+ * Con el color apagado quedan cuatro texturas y cuatro siluetas distintas. Esa
+ * es la segunda senal, y esta aqui —en el sistema— para que no dependa de que
+ * cada componente se acuerde de ponerla. El tercer canal, el texto, lo pone el
+ * componente: estas clases NO dicen que estado son.
+ *
+ * `--revisar` no tiene relleno a proposito: el rojo vivo da 3.63:1 con la tinta
+ * encima y no llega al 4.5 de texto normal. Como trazo si vale (4.23:1 sobre el
+ * fondo de pagina, umbral 3:1), y su texto va en la variante `-text`.
+ *
+ * Sin un solo `border`: el preflight de Tailwind (`*{border:0 solid}`) vive en
+ * una capa posterior y lo borraria. Contornos por `box-shadow`, como el resto
+ * de este fichero.
+ */
+
+.cet-acento {
+  --cet-acento-fondo: var(--cet-surface-2);
+  --cet-acento-tinta: var(--cet-ink);
+  --cet-acento-trazo: var(--cet-on-vivid);
+  --cet-acento-trama: none;
+  --cet-acento-trama-tam: auto;
+  --cet-acento-forma: var(--cet-radius-md);
+  --cet-acento-relieve: inset 0 0 0 2px var(--cet-acento-trazo);
+
+  display: block;
+  padding: 0.7em 0.9em;
+  border-radius: var(--cet-acento-forma);
+  background-color: var(--cet-acento-fondo);
+  background-image: var(--cet-acento-trama);
+  background-size: var(--cet-acento-trama-tam);
+  color: var(--cet-acento-tinta);
+  box-shadow: var(--cet-acento-relieve);
+}
+
+/* Donde estas: la tarea actual. Liso, y el anillo es el doble de grueso. */
+.cet-acento--paso {
+  --cet-acento-fondo: var(--cet-step-vivid);
+  --cet-acento-forma: var(--cet-radius-lg);
+  --cet-acento-relieve: inset 0 0 0 4px var(--cet-acento-trazo);
+}
+
+/* Logro / comprobado. Rayas diagonales. */
+.cet-acento--logro {
+  --cet-acento-fondo: var(--cet-ok-vivid);
+  --cet-acento-trama: repeating-linear-gradient(
+    135deg,
+    rgb(18 32 47 / 16%) 0 5px,
+    rgb(18 32 47 / 0%) 5px 11px
+  );
+}
+
+/* Pista. Puntos, y silueta de pildora. */
+.cet-acento--pista {
+  --cet-acento-fondo: var(--cet-hint-vivid);
+  --cet-acento-forma: var(--cet-radius-pill);
+  --cet-acento-trama: radial-gradient(rgb(18 32 47 / 22%) 1.5px, rgb(18 32 47 / 0%) 1.6px);
+  --cet-acento-trama-tam: 9px 9px;
+}
+
+/* A revisar. Sin relleno —el rojo no pasa como bloque— y barra a la izquierda. */
+.cet-acento--revisar {
+  --cet-acento-fondo: transparent;
+  --cet-acento-tinta: var(--cet-no-vivid-text);
+  --cet-acento-trazo: var(--cet-no-vivid);
+  --cet-acento-forma: var(--cet-radius-sm);
+  --cet-acento-relieve: inset 6px 0 0 0 var(--cet-acento-trazo);
 }

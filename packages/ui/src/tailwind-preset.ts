@@ -58,7 +58,12 @@ export const cetPreset: TailwindPreset = {
         line: color("line"),
         "border-strong": color("border-strong"),
         navy: { DEFAULT: color("navy"), 2: color("navy-2") },
-        primary: { DEFAULT: color("primary"), hover: color("primary-hover"), on: color("on-primary") },
+        primary: {
+          DEFAULT: color("primary"),
+          hover: color("primary-hover"),
+          bright: color("primary-bright"),
+          on: color("on-primary"),
+        },
         teal: { DEFAULT: color("teal"), text: color("teal-text") },
         amber: { DEFAULT: color("amber"), text: color("amber-text"), on: color("on-amber") },
         success: color("success"),
@@ -67,9 +72,17 @@ export const cetPreset: TailwindPreset = {
         example: { bg: color("example-bg"), border: color("example-border") },
         tip: { bg: color("tip-bg"), accent: color("tip-accent") },
         warning: { bg: color("warning-bg"), accent: color("warning-accent") },
-        ok: { bg: color("ok-bg"), text: color("ok-text"), accent: color("ok-accent") },
-        no: { bg: color("no-bg"), text: color("no-text"), accent: color("no-accent") },
-        hint: { bg: color("hint-bg"), text: color("hint-text"), accent: color("hint-accent") },
+        /*
+         * `vivid` es la capa de acento saturada. Igual que `teal`/`teal-text`,
+         * el token pelado RELLENA y el `-text` ESCRIBE: `bg-ok-vivid` con
+         * `text-on-vivid` encima, nunca `text-ok-vivid` sobre fondo claro.
+         * `no-vivid` no tiene relleno legible (3.63:1) y solo vale como trazo.
+         */
+        ok: { bg: color("ok-bg"), text: color("ok-text"), accent: color("ok-accent"), vivid: color("ok-vivid"), "vivid-text": color("ok-vivid-text") },
+        no: { bg: color("no-bg"), text: color("no-text"), accent: color("no-accent"), vivid: color("no-vivid"), "vivid-text": color("no-vivid-text") },
+        hint: { bg: color("hint-bg"), text: color("hint-text"), accent: color("hint-accent"), vivid: color("hint-vivid"), "vivid-text": color("hint-vivid-text") },
+        step: { vivid: color("step-vivid"), "vivid-text": color("step-vivid-text") },
+        "on-vivid": color("on-vivid"),
         timer: {
           normal: color("timer-normal"),
           warn: color("timer-warn"),
@@ -151,6 +164,15 @@ export const cetThemeLayer = `@theme {
   --color-amber-text: var(--cet-amber-text);
   --color-success: var(--cet-success);
   --color-danger: var(--cet-danger);
+  --color-ok-vivid: var(--cet-ok-vivid);
+  --color-ok-vivid-text: var(--cet-ok-vivid-text);
+  --color-no-vivid: var(--cet-no-vivid);
+  --color-no-vivid-text: var(--cet-no-vivid-text);
+  --color-hint-vivid: var(--cet-hint-vivid);
+  --color-hint-vivid-text: var(--cet-hint-vivid-text);
+  --color-step-vivid: var(--cet-step-vivid);
+  --color-step-vivid-text: var(--cet-step-vivid-text);
+  --color-on-vivid: var(--cet-on-vivid);
   --color-focus: var(--cet-focus);
   --radius-sm: var(--cet-radius-sm);
   --radius-md: var(--cet-radius-md);

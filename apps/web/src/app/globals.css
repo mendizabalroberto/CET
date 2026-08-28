@@ -7,16 +7,32 @@
  * lista de ficheros escaneados y los tokens del design system convivan.
  *
  * ---------------------------------------------------------------------------
- * NOTA DE INTEGRACIÓN — leer antes de tocar los colores
+ * PALETA — esta hoja ya NO define ningún color. Léelo antes de añadir uno.
  * ---------------------------------------------------------------------------
- * La paleta que hay aquí abajo es la de los trainers Y6A (navy #173a63,
- * teal #0f9b8e, amber #f2a71b) y es la MISMA que debe exponer el preset de
- * @cet/ui. Se declara también aquí por dos motivos:
- *   1. La app tiene que renderizar correctamente antes de que exista @cet/ui.
- *   2. Los tokens SEMÁNTICOS (--surface, --ink, --line…) son los que cambian
- *      con el tema, y esa mecánica pertenece a la app, no al preset.
- * Al integrar @cet/ui, los tokens de MARCA (--color-brand, --color-teal,
- * --color-amber) deben venir del preset y borrarse del bloque @theme.
+ * Hasta el 2026-08-28 aquí vivía un juego COMPLETO de tokens de color propio
+ * (--brand, --teal, --amber, --surface, --card, --ink, --muted, --line, --ring)
+ * con sus propios valores y su propio bloque de tema oscuro. `@cet/ui` tenía
+ * otro (--cet-*). No eran el mismo color: en oscuro divergían del todo
+ * (superficie #0b141f frente a #0b1622, marca #4a8fce frente a #7cb2ea, éxito
+ * #2fb782 frente a #5fd39f). En `/learn/[lessonId]` convivían los dos sistemas
+ * en la MISMA pantalla, porque la página usa `text-muted`/`bg-ink` y los
+ * componentes de @cet/ui que monta usan `--cet-*`.
+ *
+ * Y no era solo incoherencia visual: el anillo de foco `--ring` (#34c3b4) sobre
+ * el relleno de marca `--brand` (#4a8fce) daba **1.57:1** contra un umbral de
+ * 3:1. En tema oscuro, un alumno navegando con el tabulador no veía dónde
+ * estaba. Ese fallo era una consecuencia directa de tener dos paletas: la app
+ * eligió un anillo teal que @cet/ui nunca eligió.
+ *
+ * LO QUE SE HIZO. Los nombres de la app siguen vivos —hay componentes que
+ * escriben `var(--teal)` o `text-muted` y reescribirlos era otro encargo— pero
+ * ahora son ALIAS: cada uno apunta a un token de `@cet/ui` y ninguno tiene
+ * valor propio. Una sola fuente de verdad, un solo bloque de tema oscuro (el de
+ * `tokens.css`), y por tanto un solo color por concepto.
+ *
+ * NO VUELVAS A ESCRIBIR UN HEXADECIMAL EN ESTA HOJA. El color nuevo va en
+ * `packages/ui/src/tokens.css` y aquí, si acaso, su alias. Lo vigila
+ * `packages/ui/__tests__/una-sola-paleta.test.ts`.
  */
 
 /* ==========================================================================
@@ -58,71 +74,52 @@
    con una CSP que prohíbe scripts sin nonce.
    ========================================================================== */
 
+/*
+ * Los nombres de la app, uno a uno, apuntando a `@cet/ui`. Ni un valor propio:
+ * si un concepto tiene que cambiar de color, cambia en `tokens.css` y cambia
+ * aquí solo. Tampoco hay bloque de tema oscuro — no hace falta: los `--cet-*`
+ * ya se redefinen solos bajo `prefers-color-scheme: dark` y `[data-theme]`, y
+ * un alias sigue a su origen. Un segundo bloque de tema aquí sería justo la
+ * puerta por la que volverían a divergir las dos paletas.
+ *
+ * `color-scheme` tampoco se declara: lo pone `tokens.css` en los mismos dos
+ * ejes. Declararlo aquí era la tercera copia de la misma decisión.
+ */
 :root {
-  /* Marca — constantes en ambos temas. */
-  --brand: #173a63;
-  --brand-deep: #0f2a49;
-  --brand-bright: #1d5a8a;
-  --teal: #0f9b8e;
-  --amber: #f2a71b;
-  --success: #12805c;
-  --danger: #c0392b;
+  /* Marca. */
+  --brand: var(--cet-primary);
+  --brand-deep: var(--cet-primary-hover);
+  --brand-bright: var(--cet-primary-bright);
+  --on-brand: var(--cet-on-primary);
 
-  /* Semánticos — claro. */
-  --surface: #f4f7fb;
-  --surface-alt: #eef2f7;
-  --card: #ffffff;
-  --ink: #12202f;
-  --muted: #5d7086;
-  --line: #dfe6ee;
-  --ring: #0f9b8e;
-  --on-brand: #ffffff;
+  /*
+   * OJO con este: `--teal` apunta a la variante LEGIBLE, no a la decorativa.
+   * La app lo usa sobre todo como color de texto (`text-teal`, 14 sitios: los
+   * enlaces de vuelta, la pestaña activa del menú del alumno, el enlace de la
+   * política de privacidad). `--cet-teal` (#0f9b8e) da 3.44:1 sobre blanco y no
+   * llega al 4.5 de texto normal; `--cet-teal-text` da 6.03:1. Los tres usos
+   * decorativos que también tiene (un punto, un círculo del logotipo, un fondo
+   * al 10 %) se ven perfectamente con el tono oscuro; al revés no funcionaba.
+   */
+  --teal: var(--cet-teal-text);
+  --amber: var(--cet-amber);
+  --success: var(--cet-success);
+  --danger: var(--cet-danger);
 
-  color-scheme: light;
-}
+  /* Semánticos. */
+  --surface: var(--cet-bg);
+  --surface-alt: var(--cet-surface-3);
+  --card: var(--cet-surface);
+  --ink: var(--cet-ink);
+  --muted: var(--cet-ink-muted);
+  --line: var(--cet-line);
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --brand: #4a8fce;
-    --brand-deep: #0b1a2b;
-    --brand-bright: #6fb0e6;
-    --teal: #34c3b4;
-    --amber: #ffc247;
-    --success: #2fb782;
-    --danger: #f0705f;
-
-    --surface: #0b141f;
-    --surface-alt: #121e2c;
-    --card: #16222f;
-    --ink: #e7eef6;
-    --muted: #93a6ba;
-    --line: #24374a;
-    --ring: #34c3b4;
-    --on-brand: #08131e;
-
-    color-scheme: dark;
-  }
-}
-
-[data-theme="dark"] {
-  --brand: #4a8fce;
-  --brand-deep: #0b1a2b;
-  --brand-bright: #6fb0e6;
-  --teal: #34c3b4;
-  --amber: #ffc247;
-  --success: #2fb782;
-  --danger: #f0705f;
-
-  --surface: #0b141f;
-  --surface-alt: #121e2c;
-  --card: #16222f;
-  --ink: #e7eef6;
-  --muted: #93a6ba;
-  --line: #24374a;
-  --ring: #34c3b4;
-  --on-brand: #08131e;
-
-  color-scheme: dark;
+  /*
+   * El anillo de foco deja de ser teal y pasa a ser el foco del design system.
+   * Es el arreglo del fallo de 1.57:1: `--cet-focus` da 10.73:1 sobre el fondo
+   * de página en claro y 8.17:1 en oscuro.
+   */
+  --ring: var(--cet-focus);
 }
 
 /* ==========================================================================
@@ -187,10 +184,17 @@
   }
 
   /* Foco SIEMPRE visible. Quitarlo rompe la navegación por teclado, que es la
-     única que tienen algunos alumnos. WCAG 2.4.7. */
+     única que tienen algunos alumnos. WCAG 2.4.7.
+
+     Doble anillo, el mismo que `tokens.css`: color + halo. El anillo simple
+     dependía de que el elemento con foco estuviera sobre el fondo de página; en
+     cuanto caía sobre el relleno de un botón primario se quedaba sin contraste
+     (ese era el 1.57:1). El halo garantiza un borde claro contra el relleno
+     oscuro y el anillo oscuro contra el halo, pase lo que pase debajo. */
   :focus-visible {
     outline: 3px solid var(--ring);
     outline-offset: 2px;
+    box-shadow: 0 0 0 7px var(--cet-focus-halo);
     border-radius: 4px;
   }
 
