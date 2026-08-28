@@ -182,3 +182,21 @@ export { SubjectCard, type SubjectCardProps } from "./navigation/SubjectCard.js"
 export { SubjectGrid, type SubjectGridProps } from "./navigation/SubjectGrid.js";
 export { LessonTile, type LessonTileProps, type LessonState } from "./navigation/LessonTile.js";
 export { ModuleSection, type ModuleSectionProps } from "./navigation/ModuleSection.js";
+
+// La caja de las tarjetas, en una sola definicion. Se exporta para que las
+// pruebas de la aplicacion puedan comprobar que /practice y /learn comparten
+// caja de verdad, y no dos listas de clases que se parecen hoy.
+export {
+  CARD_CHROME,
+  MEDALLION_CHROME,
+  cardSkin,
+  medallionSkin,
+} from "./navigation/card-chrome.js";
+export {
+  TOPIC_CODES,
+  UNKNOWN_TOPIC,
+  topicIdentity,
+  type TopicCode,
+  type TopicIdentityCode,
+} from "./navigation/topic-identity.js";
+export { TopicIcon, type TopicIconProps } from "./navigation/TopicIcon.js";

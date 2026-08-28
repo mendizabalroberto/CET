@@ -49,16 +49,22 @@ const dictionary = getLearnDictionary(locale);
 const topics = practiceTopics(dictionary);
 
 /**
- * El fuente de `SubjectCard`, que es la referencia.
+ * El fuente de `card-chrome.ts`, que es la referencia.
+ *
+ * Es LA definición de la caja: `SubjectCard` (materias) y la tarjeta de tema la
+ * importan las dos, así que comprobar contra este fichero es comprobar contra lo
+ * que de verdad se pinta en `/learn`. Antes este test leía `SubjectCard.tsx`, y
+ * dejó de valer el día que la caja salió de allí: la referencia tiene que ser el
+ * sitio donde vive la decisión, no el primero que la usó.
  *
  * Se localiza desde el punto de entrada de `@cet/ui` que resuelve Node —el
  * `src/index.ts` del paquete—, no con un `../../../..` a pelo: así el test sigue
  * valiendo si el paquete se mueve dentro del monorepo.
  */
-function fuenteDeSubjectCard(): string {
+function fuenteDeLaCaja(): string {
   const require = createRequire(import.meta.url);
   const entrada = require.resolve("@cet/ui");
-  const ruta = resolve(dirname(entrada), "navigation/SubjectCard.tsx");
+  const ruta = resolve(dirname(entrada), "navigation/card-chrome.ts");
   return readFileSync(ruta, "utf8");
 }
 
@@ -91,7 +97,7 @@ function tarjetas(container: HTMLElement): HTMLAnchorElement[] {
 
 describe("invariante — práctica y materias comparten librería visual", () => {
   it("la caja de la tarjeta usa las mismas clases que SubjectCard", () => {
-    const referencia = fuenteDeSubjectCard();
+    const referencia = fuenteDeLaCaja();
     const container = pintar();
     const primera = tarjetas(container)[0];
     expect(primera, "la parrilla no ha pintado ninguna tarjeta").toBeDefined();
@@ -99,13 +105,13 @@ describe("invariante — práctica y materias comparten librería visual", () =>
     for (const clase of CAJA) {
       expect(
         referencia.includes(clase),
-        `\`${clase}\` ya no está en SubjectCard: la referencia de este test ha cambiado y hay ` +
+        `\`${clase}\` ya no está en card-chrome.ts: la referencia de este test ha cambiado y hay ` +
           "que decidir a la vez qué hace la tarjeta de práctica.",
       ).toBe(true);
       expect(
         (primera as HTMLAnchorElement).className,
-        `La tarjeta de práctica no usa \`${clase}\`, que sí usa SubjectCard. Dos pantallas del ` +
-          "mismo alumno con dos lenguajes visuales es justo lo que esta prueba impide.",
+        `La tarjeta de práctica no usa \`${clase}\`, que sí usa la caja del design system. Dos ` +
+          "pantallas del mismo alumno con dos lenguajes visuales es lo que esta prueba impide.",
       ).toContain(clase);
     }
     cleanup();

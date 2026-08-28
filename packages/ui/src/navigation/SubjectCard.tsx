@@ -64,6 +64,7 @@ import type { I18nText } from "@cet/shared";
 import { cn } from "../lib/cn.js";
 import { useI18n } from "../lib/i18n.js";
 
+import { CARD_CHROME, MEDALLION_CHROME, cardSkin, medallionSkin } from "./card-chrome.js";
 import { SubjectIcon } from "./SubjectIcon.js";
 import { subjectIdentity } from "./subject-identity.js";
 
@@ -173,34 +174,23 @@ export function SubjectCard({
   const pctOpen = counts.total > 0 ? ((counts.completed + counts.started) / counts.total) * 100 : 0;
 
   /* El rail y el cuerpo. Los dos colores salen de la identidad; ninguno se
-     escribe a mano. */
-  const skin: CSSProperties = {
-    backgroundColor: identity.soft,
-    borderInlineStartColor: identity.fill,
-  };
+     escribe a mano. La caja tampoco: vive en `card-chrome.ts`, que es la unica
+     definicion, y por eso la tarjeta de tema de /practice se ve como esta y no
+     como algo parecido. */
+  const skin: CSSProperties = cardSkin(identity);
 
   return (
     <a
       href={href}
       data-state={state}
       data-subject={identity.code}
-      className={cn(
-        "flex min-h-[var(--cet-touch-min)] flex-col gap-3 rounded-md border border-[var(--cet-line)]",
-        // El rail: el unico borde grueso, y del lado de la lectura.
-        "border-s-4 px-4 py-4 no-underline shadow-card",
-        "text-[var(--cet-ink)] hover:shadow-pop",
-        "transition-shadow duration-slow ease-cet motion-reduce:transition-none",
-        className,
-      )}
+      className={cn(CARD_CHROME, className)}
       style={skin}
     >
       <span className="flex items-center gap-3">
         {/* Medallon: relleno saturado con el icono en blanco, la unica
             combinacion medida sobre el relleno. */}
-        <span
-          className="flex h-11 w-11 flex-none items-center justify-center rounded-md"
-          style={{ backgroundColor: identity.fill, color: "var(--cet-ink-inverse)" }}
-        >
+        <span className={MEDALLION_CHROME} style={medallionSkin(identity)}>
           <SubjectIcon code={code} />
         </span>
         {/* `text-body-lg` y no un `text-[19px]` a pelo: el tamano sale de la
