@@ -23,7 +23,12 @@ function password() {
 const LOTES = [
   { id: 'socials-a', materia: 'socials', desde: 1, hasta: 3 },
   { id: 'socials-b', materia: 'socials', desde: 4, hasta: 6 },
-  { id: 'ict-a', materia: 'ict', desde: 1, hasta: 3 },
+  // ict-a entero (52 bloques) trunca la respuesta en el techo de 8000 tokens de
+  // salida: cinco rondas seguidas salieron con salida=8000 exacta. Va por
+  // lecciones sueltas.
+  { id: 'ict-a1', materia: 'ict', desde: 1, hasta: 1 },
+  { id: 'ict-a2', materia: 'ict', desde: 2, hasta: 2 },
+  { id: 'ict-a3', materia: 'ict', desde: 3, hasta: 3 },
   { id: 'ict-b', materia: 'ict', desde: 4, hasta: 6 },
   { id: 'science', materia: 'science', desde: 1, hasta: 5 },
 ];

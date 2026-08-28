@@ -1,0 +1,76 @@
+{
+  "materia": "ict",
+  "lecciones_desde": 1,
+  "lecciones_hasta": 1,
+  "total_bloques": 12,
+  "total_caracteres": 1631,
+  "lecciones": [
+    {
+      "leccion_ord": 1,
+      "titulo_en": "🖥️ Hardware and software selection",
+      "titulo_ya_traducido": false,
+      "bloques": [
+        {
+          "bloque_ord": 1,
+          "kind": "rule",
+          "html_en": "<b>Hardware</b> = all the <b>physical</b> components of a computer — the parts you can touch.<br><b>Software</b> = all the <b>programs</b> that tell the physical components what to do."
+        },
+        {
+          "bloque_ord": 2,
+          "kind": "text",
+          "html_en": "<h3>🔩 Hardware components</h3>"
+        },
+        {
+          "bloque_ord": 4,
+          "kind": "text",
+          "html_en": "<h3>💿 Software components</h3><ul><li><b>System software</b> — the <b>operating system</b> (Windows, macOS, Android).</li><li><b>Application software</b> — <b>word processing</b>, <b>spreadsheet</b>, <b>presentation</b> and <b>video editing</b> software.</li></ul>"
+        },
+        {
+          "bloque_ord": 5,
+          "kind": "tip",
+          "html_en": "Hardware and software are <b>complementary</b>. A computing device can only produce useful outputs when <b>both work together</b>."
+        },
+        {
+          "bloque_ord": 6,
+          "kind": "text",
+          "html_en": "<h3>⭐ The 5 factors when choosing hardware and software</h3>"
+        },
+        {
+          "bloque_ord": 8,
+          "kind": "tip",
+          "html_en": "<b>Memory trick:</b> <b>F–C–C–S–A</b> → <i>Funny Cats Can Sing Anything</i>. Those are the five things you must list if the exam says “what must be considered when purchasing hardware and software?”"
+        },
+        {
+          "bloque_ord": 9,
+          "kind": "text",
+          "html_en": "<h3>💾 Storage: HDD vs SSD</h3>"
+        },
+        {
+          "bloque_ord": 11,
+          "kind": "rule",
+          "html_en": "When choosing a <b>secondary storage</b> device, the two considerations are <b>space (capacity)</b> and <b>speed</b>."
+        },
+        {
+          "bloque_ord": 12,
+          "kind": "text",
+          "html_en": "<h3>📏 Data storage units — smallest to largest</h3>"
+        },
+        {
+          "bloque_ord": 13,
+          "kind": "text",
+          "html_en": "<b>bit → byte → kilobyte → megabyte → gigabyte → terabyte</b>"
+        },
+        {
+          "bloque_ord": 14,
+          "kind": "tip",
+          "html_en": "<b>1 byte = 1 character.</b> So the sentence <i>“Hello, what is your name?”</i> needs <b>25 bytes</b> — because <b>spaces, commas and the question mark are characters too</b>. Count them all!"
+        },
+        {
+          "bloque_ord": 15,
+          "kind": "text",
+          "html_en": "<h3>⚡ Processor speed</h3><ul><li>Everyday functions (writing, browsing): about <b>1–2 GHz</b>.</li><li><b>Gaming</b>: about <b>3 GHz</b> or more.</li><li>Processor speed matters because the CPU is <b>the brain of the computer</b> — everything waits for it.</li></ul><h3>✅ The answers your class wrote down</h3>"
+        }
+      ]
+    }
+  ]
+}

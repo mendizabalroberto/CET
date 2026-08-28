@@ -1,0 +1,51 @@
+{
+  "materia": "ict",
+  "lecciones_desde": 3,
+  "lecciones_hasta": 3,
+  "total_bloques": 7,
+  "total_caracteres": 1470,
+  "lecciones": [
+    {
+      "leccion_ord": 3,
+      "titulo_en": "📡 Digital content and streaming",
+      "titulo_ya_traducido": false,
+      "bloques": [
+        {
+          "bloque_ord": 1,
+          "kind": "rule",
+          "html_en": "<b>Digital content</b> is <b>anything that can be stored or sent digitally</b> — text, audio, video files, graphics, animations and images.<br><br><b>A server is a computer that provides services on a network.</b> ← learn this sentence word for word."
+        },
+        {
+          "bloque_ord": 2,
+          "kind": "text",
+          "html_en": "<h3>🗄️ What servers store</h3><ul><li><b>Photographs and images</b> — so people can share pictures and photo albums.</li><li><b>Messages</b> — mainly text, but they can include images and emojis.</li><li><b>Websites</b> — the files and data for websites.</li><li><b>Email messages</b> — Gmail, Hotmail and Yahoo! Mail store them on servers.</li><li><b>Online software</b> — like Google Docs™, used remotely and saved on Google’s servers.</li><li><b>Online games</b> — each game generally has its own server.</li><li><b>Video content</b> — movies, TV shows, music videos.</li><li><b>Audio content</b> — music, <b>podcasts</b> and <b>audio books</b>. <b>Music is the most popular form of audio.</b></li></ul><h3>▶️ Streaming</h3>"
+        },
+        {
+          "bloque_ord": 3,
+          "kind": "rule",
+          "html_en": "<b>Streaming is when a digital file is sent a few seconds at a time from the server.</b> You can start watching or listening while the rest of the file is still being sent."
+        },
+        {
+          "bloque_ord": 5,
+          "kind": "warning",
+          "html_en": "The trap: “Streamed content is automatically stored on the user’s device.” → <b>FALSE</b>. It is automatically <b>deleted</b>."
+        },
+        {
+          "bloque_ord": 6,
+          "kind": "text",
+          "html_en": "<h3>🔑 Keywords</h3>"
+        },
+        {
+          "bloque_ord": 8,
+          "kind": "text",
+          "html_en": "<h3>✅ The answers your class wrote down</h3>"
+        },
+        {
+          "bloque_ord": 10,
+          "kind": "tip",
+          "html_en": "<b>Two types of video content that can be streamed:</b> video calling and live streaming (also movies, TV shows and music videos)."
+        }
+      ]
+    }
+  ]
+}
