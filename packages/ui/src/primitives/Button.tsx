@@ -8,6 +8,8 @@
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cn } from "../lib/cn.js";
+import { Icono } from "../icons/Icono.js";
+import type { NombreDeIcono } from "../icons/registro.js";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "accent" | "danger";
 export type ButtonSize = "sm" | "md" | "lg";
@@ -39,6 +41,13 @@ const SIZES: Readonly<Record<ButtonSize, string>> = {
   lg: "min-h-touch-comfy px-7 text-body-lg",
 };
 
+/** Tamano del icono, en pixeles, por tamano de boton. */
+const ICON_SIZES: Readonly<Record<ButtonSize, number>> = {
+  sm: 18,
+  md: 18,
+  lg: 20,
+};
+
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   /** @default "primary" */
   readonly variant?: ButtonVariant | undefined;
@@ -53,6 +62,8 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   readonly loading?: boolean | undefined;
   /** Renderiza el hijo en lugar de un `<button>` (para envolver un `<a>`). */
   readonly asChild?: boolean | undefined;
+  /** Nombre del registro. El icono va SIEMPRE antes del texto. */
+  readonly icon?: NombreDeIcono | undefined;
 }
 
 /**
@@ -72,6 +83,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     fullWidth = false,
     loading = false,
     asChild = false,
+    icon,
     className,
     disabled,
     type,
@@ -100,6 +112,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       )}
       {...rest}
     >
+      {icon ? <Icono nombre={icon} tamano={ICON_SIZES[size]} /> : null}
       {children}
     </Comp>
   );
