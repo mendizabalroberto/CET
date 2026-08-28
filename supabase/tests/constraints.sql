@@ -10,7 +10,13 @@
 -- se prueban las CONSTRAINTS, que aplican a todos los roles por igual.
 -- =============================================================================
 begin;
-select plan(48);
+-- El plan cuadra con los asserts REALES del fichero, contados. Decia 48 con 45
+-- escritos, y un plan que no cuadra es un fallo que pgTAP reporta como
+-- "planned 48 but ran 45" al final del todo, despues de que los 45 salgan
+-- verdes: es facil leerlo como ruido y seguir. Los tres que faltaban nunca se
+-- escribieron. Ahora son 46 (los 45 de siempre mas el orden de los miembros de
+-- interfaz del enum, en §8).
+select plan(46);
 
 \ir helpers/fixture.psql
 
