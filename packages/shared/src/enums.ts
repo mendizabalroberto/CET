@@ -10,7 +10,7 @@
 import { z } from "zod";
 
 /** Roles del sistema. Un superadmin NO pertenece a ningún colegio (ver constraint en profiles). */
-export const userRole = z.enum(["superadmin", "school_admin", "teacher", "student"]);
+export const userRole = z.enum(["superadmin", "school_admin", "teacher", "student", "guardian"]);
 export type UserRole = z.infer<typeof userRole>;
 
 export const profileStatus = z.enum(["pending", "active", "suspended"]);
