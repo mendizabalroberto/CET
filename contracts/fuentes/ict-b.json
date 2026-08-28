@@ -1,0 +1,170 @@
+{
+  "materia": "ict",
+  "lecciones_desde": 4,
+  "lecciones_hasta": 6,
+  "total_bloques": 28,
+  "total_caracteres": 6070,
+  "lecciones": [
+    {
+      "leccion_ord": 4,
+      "titulo_en": "📶 Data transfer: Wi-Fi, radio waves &amp; bandwidth",
+      "titulo_ya_traducido": false,
+      "bloques": [
+        {
+          "bloque_ord": 1,
+          "kind": "rule",
+          "html_en": "Any network that is <b>not connected using wires</b> sends and receives data using <b>radio waves</b>."
+        },
+        {
+          "bloque_ord": 2,
+          "kind": "text",
+          "html_en": "<h3>📻 Radio waves</h3><ul><li>Radio waves are <b>just like light waves</b> — but we <b>cannot see</b> them.</li><li>They are <b>all around us all the time</b>.</li><li>They travel <b>through the air, in all directions</b>, and are picked up by a receiver.</li><li>They travel at <b>the speed of light</b> — that is why huge amounts of information move so quickly.</li><li>Radio waves used for <b>Wi-Fi</b> can travel long distances.</li></ul><h3>🔁 How the data actually gets to you — the chain</h3>"
+        },
+        {
+          "bloque_ord": 3,
+          "kind": "text",
+          "html_en": "<b>Internet → (wires) → router → converts data into radio waves → antenna → air → adapter inside your device → software turns it back into music / video / text</b>"
+        },
+        {
+          "bloque_ord": 5,
+          "kind": "warning",
+          "html_en": "<b>Exam trap:</b> “Which device converts the data coming from the internet into a radio wave?” → <b>the ROUTER</b>, not the adapter.<br>“What sends Wi-Fi signals?” → the <b>adapter</b> (acting as the transmitter). “What receives Wi-Fi signals?” → the <b>adapter</b> (acting as the receiver)."
+        },
+        {
+          "bloque_ord": 6,
+          "kind": "text",
+          "html_en": "<h3>📱 Cellular networks</h3><ul><li>They use <b>exactly the same principle</b>, just a <b>different type of radio wave</b>.</li><li>The waves carry data between a <b>smartphone</b> and a nearby <b>base station</b>.</li><li>Each base station is connected to the internet <b>by wires</b>.</li><li>They let a <b>large number of portable devices communicate over large distances</b>.</li></ul><h3>🚿 Bandwidth</h3>"
+        },
+        {
+          "bloque_ord": 7,
+          "kind": "rule",
+          "html_en": "<b>Bandwidth is the amount of data that can be sent and received in a fixed amount of time.</b><br>It is given in <b>kilobits per second (Kbps)</b>, <b>megabits per second (Mbps)</b> or <b>gigabits per second (Gbps)</b>."
+        },
+        {
+          "bloque_ord": 8,
+          "kind": "tip",
+          "html_en": "<b>The water pipe:</b> bandwidth is like the <b>diameter of a pipe</b> bringing water to your home. A wider pipe lets more water flow per second — more bandwidth lets more data flow per second. Bandwidth is <b>one of several factors that affect the performance of a network</b>."
+        },
+        {
+          "bloque_ord": 10,
+          "kind": "text",
+          "html_en": "<h3>➗ Sharing the bandwidth</h3>"
+        },
+        {
+          "bloque_ord": 11,
+          "kind": "tip",
+          "html_en": "Bandwidth has to be <b>shared</b> among all the devices on the network. More devices = <b>less bandwidth each</b> = reduced performance.<br><br>1 device → <b>54 Mbps</b>  ·  2 devices → <b>27 Mbps</b> each  ·  3 devices → <b>18 Mbps</b> each"
+        },
+        {
+          "bloque_ord": 12,
+          "kind": "tip",
+          "html_en": "<b>“Internet rush hour”</b> is usually <b>at night</b>, when everyone is back home from work or school and all the devices are online at once."
+        },
+        {
+          "bloque_ord": 13,
+          "kind": "text",
+          "html_en": "<h3>✅ The answers your class wrote down</h3>"
+        }
+      ]
+    },
+    {
+      "leccion_ord": 5,
+      "titulo_en": "📊 Excel: data types, validation &amp; operators",
+      "titulo_ya_traducido": false,
+      "bloques": [
+        {
+          "bloque_ord": 1,
+          "kind": "text",
+          "html_en": "<h3>🧱 How a database table is built</h3>"
+        },
+        {
+          "bloque_ord": 3,
+          "kind": "rule",
+          "html_en": "To make sure data is represented correctly in each field you must:<br>1️⃣ give each field a <b>meaningful name</b> using describing words, and<br>2️⃣ set the <b>data type</b> of each field."
+        },
+        {
+          "bloque_ord": 4,
+          "kind": "text",
+          "html_en": "<h3>🏷️ The four data types</h3>"
+        },
+        {
+          "bloque_ord": 6,
+          "kind": "warning",
+          "html_en": "<b>The classic trap:</b> a Club Code like <b>BO101</b> looks like it has numbers in it — but it is a <b>combination of letters and numbers</b> and it will <b>never be used in a calculation</b>, so its data type is <b>Text</b>."
+        },
+        {
+          "bloque_ord": 7,
+          "kind": "text",
+          "html_en": "<h3>🏫 The clubs table (page 95)</h3>"
+        },
+        {
+          "bloque_ord": 9,
+          "kind": "tip",
+          "html_en": "That finished table has <b>4 fields (columns)</b> and <b>5 records (rows)</b>. The <b>Club Code uniquely identifies</b> each club — needed because two records can share the same data item (two people with the same name), and then the database cannot retrieve the right record."
+        },
+        {
+          "bloque_ord": 10,
+          "kind": "text",
+          "html_en": "<h3>✔️ Data Validation — how you set the data type</h3><ol><li>Type the <b>field names</b> into the spreadsheet (row 1).</li><li><b>Select the range</b> of cells for that field (e.g. A2:A6).</li><li>Open <b>Data ▸ Data Validation</b>.</li><li>Under <b>Allow</b>, choose the type — e.g. <b>Text length</b>, <b>Data: equal to</b>, <b>Length: 6</b> for a 6-character club code.</li><li>Click <b>OK</b>, then repeat for every other field.</li></ol>"
+        },
+        {
+          "bloque_ord": 11,
+          "kind": "tip",
+          "html_en": "<b>In Spanish Excel:</b> <i>Longitud del texto · igual a · 6</i>. Same dialog, same idea."
+        },
+        {
+          "bloque_ord": 12,
+          "kind": "text",
+          "html_en": "<h3>🔍 The Find feature (phrase searching, page 98)</h3><ol><li>Click <b>Find &amp; Select</b> in the <b>Home</b> ribbon, or press <b>Ctrl + F</b> <span class=\"tsub\">(Ctrl + B in Spanish Excel)</span>.</li><li>The <b>Find and Replace</b> dialog box opens.</li><li>Type the keyword — e.g. <b>Cake</b> — in the <b>Find what</b> box.</li><li>Click <b>Find All</b>.</li></ol>"
+        },
+        {
+          "bloque_ord": 13,
+          "kind": "rule",
+          "html_en": "<b>search</b>: to look for. The Find feature searches a spreadsheet using <b>keywords or phrases</b> — much faster than reading through a large database by hand."
+        },
+        {
+          "bloque_ord": 14,
+          "kind": "text",
+          "html_en": "<h3>➕ Arithmetic operators (page 108)</h3>"
+        },
+        {
+          "bloque_ord": 16,
+          "kind": "text",
+          "html_en": "<h3>🔷 Flowchart shapes</h3>"
+        },
+        {
+          "bloque_ord": 18,
+          "kind": "text",
+          "html_en": "<h3>✅ The worked algorithms (page 110)</h3>"
+        },
+        {
+          "bloque_ord": 20,
+          "kind": "text",
+          "html_en": "<h3>✅ Fill in the blanks (page 103)</h3>"
+        },
+        {
+          "bloque_ord": 22,
+          "kind": "tip",
+          "html_en": "<b>Supermarket table:</b> Product Name → <b>Text</b> · Product Cost ($7.50) → <b>Number</b> (or Currency) · Quantity Sold (3) → <b>Number</b> · Date Sold (29/7/2023) → <b>Date</b>"
+        }
+      ]
+    },
+    {
+      "leccion_ord": 6,
+      "titulo_en": "🏥 Bonus: how industries use data",
+      "titulo_ya_traducido": false,
+      "bloques": [
+        {
+          "bloque_ord": 1,
+          "kind": "rule",
+          "html_en": "Industries use data every day to <b>solve problems</b>, <b>make informed decisions</b> and <b>monitor processes</b>. The three industries in your book are <b>health</b>, <b>sales</b> and <b>manufacturing</b>."
+        },
+        {
+          "bloque_ord": 2,
+          "kind": "text",
+          "html_en": "<h3>🏥 Health</h3><ul><li><b>Patient record keeping</b> — contact details, treatment and diagnosis stored in a database, so doctors can follow each patient's history. Essential in <b>emergencies</b>.</li><li><b>Health tracking</b> — wearable technology records vital signs (heart rate, blood pressure) and activity (steps, distance walked). Helps save the lives of ‘at risk’ patients.</li><li><b>Medical research</b> — data helps scientists find cures and test whether new medicines are working.</li></ul><h3>🛒 Sales</h3><ul><li><b>Stock control and advertisements</b> — data shows how many of each product sold, so shops can <b>reorder stock</b> and advertise the most popular products.</li><li><b>Customer service</b> — feedback on product quality and delivery time shows retailers what to improve.</li></ul><h3>🏭 Manufacturing</h3><ul><li><b>Control of machinery</b> — most factories are <b>automated</b>. Robotic arms use data (colour, size) to make every product the same way.</li><li>Data on <b>noise, heat and vibration</b> shows when a machine needs maintenance — so it does not break down.</li><li><b>Customer satisfaction</b> — data shows what customers want, e.g. which car colour is most popular.</li></ul><h3>🔑 Keywords</h3>"
+        }
+      ]
+    }
+  ]
+}

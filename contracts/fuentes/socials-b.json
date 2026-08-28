@@ -1,0 +1,195 @@
+{
+  "materia": "socials",
+  "lecciones_desde": 4,
+  "lecciones_hasta": 6,
+  "total_bloques": 33,
+  "total_caracteres": 9599,
+  "lecciones": [
+    {
+      "leccion_ord": 4,
+      "titulo_en": "🌋 4 · How Are Mountains Formed?",
+      "titulo_ya_traducido": false,
+      "bloques": [
+        {
+          "bloque_ord": 1,
+          "kind": "rule",
+          "html_en": "<b>Question 1 answer, ready to write:</b><br>Two types of mountain are <b>fold mountains</b> (examples: the <b>Himalayas</b>, the <b>Alps</b>, the <b>Andes</b> — also the Rockies and the Urals) and <b>block mountains</b> (examples: the highland areas of <b>East Africa</b>, such as the <b>Ruwenzori</b>, the <b>Usambara</b> and the <b>Uluguru</b> mountains). A third type is <b>volcanic mountains</b> (examples: <b>Mount Kilimanjaro</b>, <b>Fujiyama</b>, <b>Mount Taranaki</b>)."
+        },
+        {
+          "bloque_ord": 2,
+          "kind": "text",
+          "html_en": "<h3>🗻 Alone or in a chain?</h3><ul><li>A <b>few</b> mountains <b>stand alone</b>: <b>Fujiyama</b> in Japan, <b>Mount Taranaki</b> in New Zealand, <b>Mount Kenya</b> in Africa, and <b>Mount Kilimanjaro</b> in Africa (a volcanic mountain that stands alone).</li><li><b>Most</b> mountains are found in <b>long chains called ranges</b>. Examples of mountain ranges: the <b>Alps</b>, the <b>Andes</b>, the <b>Himalayas</b>, the <b>Sarawat</b> and the <b>Rocky Mountains</b>.</li></ul>"
+        },
+        {
+          "bloque_ord": 3,
+          "kind": "tip",
+          "html_en": "<b>Definition to learn:</b> a <b>mountain range</b> is a <b>long chain of mountains joined together</b>."
+        },
+        {
+          "bloque_ord": 4,
+          "kind": "text",
+          "html_en": "<h3>🌍 What is the Earth made up of?</h3><ul><li>The Earth is made up of <b>layers of rock</b>.</li><li>The <b>solid outside layer</b> of rock is called the <b>Earth's crust</b>.</li><li>Beneath the crust is a layer called the <b>mantle</b>.</li><li>Near the <b>top of the mantle</b> some of the rocks are so <b>hot</b> that they have <b>melted</b> to form a <b>thick liquid, like sticky tar</b> — this is <b>magma</b> (molten rock).</li></ul>"
+        },
+        {
+          "bloque_ord": 5,
+          "kind": "rule",
+          "html_en": "<b>What is the Earth's crust made up of?</b> The crust is made up of <b>large pieces called plates</b>, which <b>fit together like the pieces of a jigsaw puzzle</b>. Some plates <b>carry continents</b> and others <b>carry oceans</b>. The plates <b>move slowly, floating on the molten rock of the mantle below them</b>."
+        },
+        {
+          "bloque_ord": 6,
+          "kind": "text",
+          "html_en": "<h3>🌋 Volcanic mountains</h3><ol><li>All the rocks around the mantle <b>press down on it</b>, so the <b>molten rock is under great pressure</b>.</li><li>If there is a <b>weak point in the Earth's crust</b>, the molten rock <b>bursts through it</b>…</li><li>…and <b>out on to the Earth's surface</b>, forming a <b>volcano</b>.</li><li>The material builds up around the opening and forms a <b>volcanic mountain</b>.</li></ol><p>Example: <b>Mount Kilimanjaro</b> in Africa is a volcanic mountain that stands alone.</p><h3>🗻 Fold mountains</h3><ol><li>The crust is made of <b>plates</b> that <b>move slowly</b> on the molten rock of the mantle.</li><li>Where <b>two plates push against each other</b>, the Earth's crust is <b>slowly pushed up into folds or ridges</b>.</li><li>These folds form <b>fold mountains</b>.</li></ol>"
+        },
+        {
+          "bloque_ord": 7,
+          "kind": "tip",
+          "html_en": "<b>The Himalayas story — learn this example.</b> India used to be a long way from Asia. Slowly the plate with <b>India</b> on it moved closer to the plate with <b>Asia</b> on it. The rocks in the <b>sea between them</b> were gradually <b>pushed up into folds</b> that now form the <b>Himalayan mountain range</b>. That is why it is sometimes possible to find <b>fossilised seashells near the tops of the Himalayas</b>. 🐚"
+        },
+        {
+          "bloque_ord": 8,
+          "kind": "text",
+          "html_en": "<p>Many other ranges — the <b>Alps, Rockies, Andes and Urals</b> — are also <b>fold mountains</b>.</p><h3>🧱 Faults and block mountains</h3><ol><li>While some plates are <b>pushing together</b>, others are <b>moving apart</b>. Europe and North America are slowly moving further apart — each year the <b>Atlantic Ocean is a few centimetres wider</b>.</li><li>As the rocks move apart they often <b>crack</b> and create breaks called <b>faults</b>.</li><li>Sometimes <b>large blocks of rock are pushed up between two faults</b>.</li><li>These blocks may be so <b>large and high</b> that they form <b>block mountains</b> — like some of the <b>highland areas of East Africa</b>.</li><li>Block mountains often have <b>flat tops</b>. A <b>flat-topped highland is called a plateau</b>.</li></ol>"
+        },
+        {
+          "bloque_ord": 9,
+          "kind": "warning",
+          "html_en": "<b>Do not mix these up!</b><br>Plates <b>PUSH TOGETHER</b> → the crust <b>folds</b> → <b>FOLD</b> mountains.<br>Plates <b>MOVE APART</b> → the rock <b>cracks into faults</b> → blocks pushed up → <b>BLOCK</b> mountains.<br>Magma <b>BURSTS THROUGH</b> a weak point → <b>VOLCANIC</b> mountains."
+        },
+        {
+          "bloque_ord": 10,
+          "kind": "text",
+          "html_en": "<h3>✅ The 7 classwork questions, answered</h3>"
+        }
+      ]
+    },
+    {
+      "leccion_ord": 5,
+      "titulo_en": "🏙️ 5 · The Growth of Cities",
+      "titulo_ya_traducido": false,
+      "bloques": [
+        {
+          "bloque_ord": 1,
+          "kind": "text",
+          "html_en": "<b>Where did the first cities develop?</b> The first cities grew up <b>about 5,000 to 6,000 years ago</b>, in <b>Mesopotamia</b> — the land between the rivers <b>Tigris and Euphrates</b> (in modern Iraq). Other early cities appeared along the <b>Nile</b> in Egypt, the <b>Indus</b> in Pakistan/India, and the <b>Yellow River</b> in China. They all grew <b>next to rivers</b>, because rivers gave people <b>water, food, fertile soil for farming and transport</b>."
+        },
+        {
+          "bloque_ord": 2,
+          "kind": "text",
+          "html_en": "<h3>🏢 What is a modern city?</h3><p>A modern city is a <b>very large settlement</b> where a lot of people live and work. In most modern cities the land is used for:</p>"
+        },
+        {
+          "bloque_ord": 3,
+          "kind": "text",
+          "html_en": "<ul><li><b>homes</b></li><li><b>shops</b></li><li><b>offices</b></li><li><b>banks</b></li><li><b>factories</b></li></ul>"
+        },
+        {
+          "bloque_ord": 4,
+          "kind": "text",
+          "html_en": "<ul><li><b>schools</b></li><li><b>hospitals</b></li><li><b>railway and bus stations</b></li><li><b>civic buildings</b>, such as <b>city halls</b> or <b>town halls</b></li></ul>"
+        },
+        {
+          "bloque_ord": 5,
+          "kind": "text",
+          "html_en": "Many cities have a <b>mixture of older and newer buildings</b>, because the city has <b>developed over a long period of time</b>."
+        },
+        {
+          "bloque_ord": 6,
+          "kind": "text",
+          "html_en": "<h3>🏗️ Why are skyscrapers built in city centres?</h3>"
+        },
+        {
+          "bloque_ord": 7,
+          "kind": "rule",
+          "html_en": "Because <b>land in the city centre is very expensive</b>. To <b>make the most of the land</b>, people build <b>very tall buildings called skyscrapers</b>, which <b>tower over the older buildings</b>. Building <b>upwards</b> fits far more offices and homes onto a small, costly piece of ground."
+        },
+        {
+          "bloque_ord": 8,
+          "kind": "text",
+          "html_en": "<h3>🏦 City zones and the CBD</h3><ul><li>Cities may be divided into different <b>areas or zones</b>, each with a <b>different purpose</b>.</li><li>The <b>middle</b> of the city is called the <b>central business district (CBD)</b>.</li><li>In the CBD you find <b>most of the offices, banks, large shops, art galleries and museums</b>.</li></ul><h3>🚆 How transport helped cities grow outwards</h3><ol><li>Better transport — <b>commuter trains</b> and <b>metros</b> — helps cities <b>spread outwards</b>.</li><li>More people can then <b>live further away from the city centre</b> and <b>still be able to travel to work</b>.</li><li>As a result, new <b>residential areas called suburbs</b> develop <b>around the edges of the city</b>.</li></ol><h3>🔑 Key words</h3>"
+        },
+        {
+          "bloque_ord": 10,
+          "kind": "text",
+          "html_en": "<h3>🏘️ Conurbations</h3><p>As cities grow, they <b>spread out into the surrounding countryside</b>. Eventually neighbouring towns and cities may <b>merge</b> and become <b>one very large urban area</b>. This is called a <b>conurbation</b>.</p>"
+        },
+        {
+          "bloque_ord": 12,
+          "kind": "tip",
+          "html_en": "<b>Did you know?</b> <b>Sydney</b> and <b>Melbourne</b> are the <b>two largest cities in Australia</b>. In the nineteenth century they were <b>planned and built</b> as important cities."
+        },
+        {
+          "bloque_ord": 13,
+          "kind": "text",
+          "html_en": "<h3>🤔 Think about it: living in a conurbation</h3>"
+        }
+      ]
+    },
+    {
+      "leccion_ord": 6,
+      "titulo_en": "🏛️ 6 · Capital Cities of the World",
+      "titulo_ya_traducido": false,
+      "bloques": [
+        {
+          "bloque_ord": 1,
+          "kind": "rule",
+          "html_en": "<b>What is a capital city, and what is its main purpose?</b><br><b>Every country has a capital city. It is where the government of the country meets.</b> The capital city is <b>usually the largest and most important city</b> in a country. Its <b>main purpose</b> is to be the <b>centre of government</b> — where the country's laws are made and where the leaders work."
+        },
+        {
+          "bloque_ord": 2,
+          "kind": "text",
+          "html_en": "<h3>🏗️ Capital cities that were built on purpose</h3><p>Some countries <b>build their capital cities specially</b>. For example, in the <b>nineteenth century</b>, <b>Sydney and Melbourne</b> were planned and built as important cities.</p>"
+        },
+        {
+          "bloque_ord": 3,
+          "kind": "tip",
+          "html_en": "<b>Canberra, Australia — the story the exam likes.</b> The people <b>could not decide</b> whether <b>Sydney</b> or <b>Melbourne</b> should be the capital city of Australia. So they <b>built a new city, called Canberra</b>, to be the capital. Canberra is <b>inland, about halfway between Sydney and Melbourne</b>. In <b>1927</b> it became Australia's capital."
+        },
+        {
+          "bloque_ord": 4,
+          "kind": "text",
+          "html_en": "<p><b>Other specially-built capital cities:</b> <b>Brasília</b> (Brazil) · <b>Islamabad</b> (Pakistan) · <b>Abuja</b> (Nigeria) · <b>New Delhi</b> (India).</p>"
+        },
+        {
+          "bloque_ord": 5,
+          "kind": "warning",
+          "html_en": "This is why \"the capital is always the biggest city\" is <b>wrong</b>. Canberra, Brasília and Abuja are <b>not</b> the biggest cities in their countries — but they <b>are</b> where the government meets."
+        },
+        {
+          "bloque_ord": 6,
+          "kind": "text",
+          "html_en": "<h3>🌎 South America — all 14</h3>"
+        },
+        {
+          "bloque_ord": 8,
+          "kind": "tip",
+          "html_en": "<b>The traps:</b> Brazil is <b>Brasília</b> (not Rio de Janeiro) · Bolivia is <b>Sucre</b> · Ecuador is <b>Quito</b> (not Guayaquil)."
+        },
+        {
+          "bloque_ord": 9,
+          "kind": "text",
+          "html_en": "<h3>🧭 South America map questions</h3><ul><li><b>The equator passes through:</b> <b>Ecuador, Colombia</b> and <b>Brazil</b>.</li><li><b>North of the equator:</b> <b>Venezuela, Guyana, Suriname, French Guiana</b> (and the northern parts of Colombia, Ecuador and Brazil).</li><li>Rivers on the map: the <b>Amazon</b> and the <b>Orinoco</b>. The mountains running down the west side are the <b>Andes</b>.</li></ul><h3>🌎 North America — the main ones</h3>"
+        },
+        {
+          "bloque_ord": 11,
+          "kind": "text",
+          "html_en": "<b>The North America fill-in-the-blanks:</b> North America is the <b>third</b> largest continent. It is bordered to the <b>north</b> by the <b>Arctic</b> Ocean, to the <b>east</b> by the Atlantic Ocean, to the <b>west and south</b> by the Pacific <b>Ocean</b>, and to the <b>southeast</b> by South America and the Caribbean <b>Seas</b>."
+        },
+        {
+          "bloque_ord": 12,
+          "kind": "text",
+          "html_en": "<h3>🌍 Europe — the main ones</h3>"
+        },
+        {
+          "bloque_ord": 14,
+          "kind": "tip",
+          "html_en": "<b>Great Britain</b> is the largest island in Europe. It consists of three countries — <b>England, Scotland and Wales</b>. Those three plus <b>Northern Ireland</b> are known as the <b>United Kingdom</b>. <b>England</b> is the biggest country in Great Britain; its capital is <b>London</b> and the people are <b>English</b>."
+        },
+        {
+          "bloque_ord": 15,
+          "kind": "warning",
+          "html_en": "<b>Capital traps in Europe:</b> Switzerland is <b>Bern</b> (not Zurich or Geneva) · Turkey is <b>Ankara</b> (not Istanbul)."
+        }
+      ]
+    }
+  ]
+}

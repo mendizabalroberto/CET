@@ -1,0 +1,185 @@
+{
+  "materia": "socials",
+  "lecciones_desde": 1,
+  "lecciones_hasta": 3,
+  "total_bloques": 31,
+  "total_caracteres": 8798,
+  "lecciones": [
+    {
+      "leccion_ord": 1,
+      "titulo_en": "🏞️ 1 · The Amazon River",
+      "titulo_ya_traducido": false,
+      "bloques": [
+        {
+          "bloque_ord": 1,
+          "kind": "rule",
+          "html_en": "The Amazon is the <b>largest river in the world by the amount of water it carries</b>, and the <b>second longest</b> river after the Nile. It flows across South America from the <b>Andes Mountains in Peru</b> to the <b>Atlantic Ocean</b> in Brazil."
+        },
+        {
+          "bloque_ord": 2,
+          "kind": "text",
+          "html_en": "<h3>📊 The 8 facts to memorise</h3>"
+        },
+        {
+          "bloque_ord": 4,
+          "kind": "text",
+          "html_en": "<h3>🌴 The Amazon Rainforest</h3><ul><li>The land drained by the river is called the <b>Amazon basin</b> — about <b>7 million km²</b>, mostly covered by the <b>Amazon Rainforest</b>, the <b>largest rainforest on Earth</b>.</li><li><b>More than one third of all the known species in the world</b> live there.</li><li>It is often called the <b>\"lungs of the planet\"</b> because the trees take in carbon dioxide and give out oxygen.</li><li>Animals: <b>pink river dolphin, piranha, arapaima, anaconda, jaguar, macaw, sloth, caiman</b>. There are over <b>5,600 known species of fish</b>, and about 50 new ones are found every year.</li></ul><h3>🚢 Why the river matters to people</h3><ul><li><b>Water</b> for drinking and for <b>irrigation</b> (watering crops).</li><li><b>Transport</b> — there are almost no roads, so the river is the road. Large ocean ships can sail <b>1,600 km inland to Manaus</b> in Brazil; smaller boats reach <b>Iquitos</b> in Peru.</li><li><b>Food</b> — fishing feeds millions of people.</li><li>Homes for <b>indigenous peoples</b> who have lived along the river for thousands of years.</li></ul>"
+        },
+        {
+          "bloque_ord": 5,
+          "kind": "tip",
+          "html_en": "<b>Two facts that always impress an examiner:</b><br>① There is <b>no bridge</b> across the main Amazon River — it runs through rainforest where there are almost no roads.<br>② At <b>Manaus</b> the dark water of the <b>Rio Negro</b> and the sandy water of the <b>Solimões</b> flow <b>side by side without mixing</b> for several kilometres. It is called the <b>Meeting of the Waters</b>."
+        },
+        {
+          "bloque_ord": 6,
+          "kind": "warning",
+          "html_en": "<b>Dangers to the Amazon:</b> <b>deforestation</b> (cutting down the rainforest for farms, cattle and timber), <b>mining</b> (which puts mercury into the water), <b>oil spills</b>, and <b>pollution</b> from towns along the banks."
+        },
+        {
+          "bloque_ord": 7,
+          "kind": "text",
+          "html_en": "<h3>🗣️ Say it like this in the exam</h3>"
+        },
+        {
+          "bloque_ord": 8,
+          "kind": "tip",
+          "html_en": "\"The Amazon River begins as a small stream high in the <b>Andes Mountains of Peru</b> and flows east for about <b>6,400 km</b> across Brazil until it reaches its <b>mouth</b> at the <b>Atlantic Ocean</b>. It is the <b>largest river in the world by volume</b> because more than <b>1,000 tributaries</b> join it, and it flows through the <b>Amazon Rainforest</b>, the largest rainforest on Earth.\""
+        }
+      ]
+    },
+    {
+      "leccion_ord": 2,
+      "titulo_en": "🛢️ 2 · River Pollution",
+      "titulo_ya_traducido": false,
+      "bloques": [
+        {
+          "bloque_ord": 1,
+          "kind": "rule",
+          "html_en": "<b>Pollution</b> is <b>the contamination of air, water or soil by substances that are harmful to living organisms.</b> It can happen <b>naturally</b> (for example a volcanic eruption) or because of <b>human activities</b> (spilling oil, dumping industrial waste)."
+        },
+        {
+          "bloque_ord": 2,
+          "kind": "text",
+          "html_en": "Many villages, towns and cities were <b>built near rivers</b> so that people could use the water. Unfortunately, the water that people <b>return</b> to the river after they have used it often contains <b>harmful substances</b> that pollute the river."
+        },
+        {
+          "bloque_ord": 3,
+          "kind": "text",
+          "html_en": "<h3>1️⃣ The 4 causes of river pollution</h3><ol><li><b>Untreated sewage</b> from homes, schools and factories.</li><li><b>Chemical wastes</b> from factories and mines.</li><li><b>Farm chemicals</b> such as <b>fertilisers</b> and <b>pesticides</b>.</li><li><b>Waste oil and rubbish.</b></li></ol>"
+        },
+        {
+          "bloque_ord": 4,
+          "kind": "warning",
+          "html_en": "All these different pollutants <b>kill plants and animals</b> and make the water <b>unsafe for people to use</b>."
+        },
+        {
+          "bloque_ord": 5,
+          "kind": "text",
+          "html_en": "<h3>🟢 Why does a polluted river turn green?</h3><p>Fertiliser from a farm on the riverbank washes into the water. Tiny plants called <b>algae</b> grow and multiply <b>very fast</b> because of it. When the algae die they <b>sink to the bottom and rot away</b>, and rotting uses up <b>most of the oxygen in the water</b>. That leaves <b>little oxygen</b> for the other water plants and animals — so <b>they die</b>.</p><h3>2️⃣ Acid rain — the full story</h3>"
+        },
+        {
+          "bloque_ord": 7,
+          "kind": "text",
+          "html_en": "<h3>3️⃣ The damage acid rain does</h3><ul><li><b>Kills fish</b> and other <b>wildlife</b> in rivers and lakes.</li><li><b>Kills trees.</b></li><li><b>Damages crops.</b></li><li><b>Erodes stone buildings</b> and statues.</li></ul><h3>4️⃣ Preventing river pollution</h3><ul><li>Having <b>strict laws</b> that make it <b>illegal</b> to pollute rivers.</li><li>Making <b>factories remove harmful substances</b> from their wastewater <b>before</b> they let it flow into rivers.</li><li>Making <b>factories and mines pay</b> to clean up rivers if they pollute them.</li><li><b>Treating sewage</b> to make it safe before the wastewater is returned to a river.</li><li>Having laws to <b>reduce air pollution</b> from factories, power stations and motor vehicles, <b>in order to reduce acid rain</b>.</li></ul><h3>5️⃣ The types of pollution — describe each one</h3>"
+        },
+        {
+          "bloque_ord": 9,
+          "kind": "text",
+          "html_en": "<h3>🇬🇧 Case study: the River Thames</h3><p>The River Thames has always supplied most of <b>London's</b> water. But by the <b>late 1950s</b> it was so polluted that it was <b>black in colour</b> and it <b>smelled very bad</b>. The main causes were <b>sewage allowed to flow straight into the river</b> and <b>oil from ships</b> using it.</p><p>Today it is <b>much cleaner, for two main reasons</b>:</p><ol><li>London's <b>old docks were closed</b> because large modern ships could not use them. A new <b>port</b> was built near the <b>mouth</b> of the river where it is <b>deeper and wider</b>.</li><li>New <b>sewage works</b> were built, and <b>all wastewater</b> from homes, businesses and factories now <b>has to be treated</b> instead of going straight into the river.</li></ol>"
+        },
+        {
+          "bloque_ord": 10,
+          "kind": "tip",
+          "html_en": "Now <b>birds, fish and other wildlife are returning</b> to the Thames. Clean rivers matter because they show <b>the environment is healthy</b> — and because <b>the river water we pollute today may be the water we have to drink tomorrow.</b>"
+        },
+        {
+          "bloque_ord": 11,
+          "kind": "text",
+          "html_en": "<h3>🌍 Other badly polluted rivers</h3>"
+        },
+        {
+          "bloque_ord": 12,
+          "kind": "text",
+          "html_en": "<ul><li><b>River Indus</b> — Pakistan (chemicals from factories along its banks; it supplies most Pakistanis with water)</li><li><b>Ganges</b> — India</li></ul>"
+        },
+        {
+          "bloque_ord": 13,
+          "kind": "text",
+          "html_en": "<ul><li><b>Citarum</b> — Indonesia</li><li><b>Yellow River</b> — China</li><li><b>Sarno</b> — Italy</li></ul>"
+        },
+        {
+          "bloque_ord": 14,
+          "kind": "tip",
+          "html_en": "<b>China photo question:</b> the workers on the boat are <b>collecting the litter people have dropped in the river before it can do any harm</b>."
+        }
+      ]
+    },
+    {
+      "leccion_ord": 3,
+      "titulo_en": "🗺️ 3 · Mountains, Rivers and Hills",
+      "titulo_ya_traducido": false,
+      "bloques": [
+        {
+          "bloque_ord": 1,
+          "kind": "rule",
+          "html_en": "<b>The 300 metre rule.</b> Mountains and hills are both areas of <b>high ground</b>. If the ground rises <b>more than 300 metres</b> above the land around it, it is a <b>mountain</b>. If it rises <b>less than 300 metres</b>, it is a <b>hill</b>."
+        },
+        {
+          "bloque_ord": 2,
+          "kind": "text",
+          "html_en": "<h3>🗺️ The 2 main types of map</h3>"
+        },
+        {
+          "bloque_ord": 4,
+          "kind": "tip",
+          "html_en": "<b>Memory trick:</b> <b>T</b>opographic = <b>T</b>otal picture (nature + people). <b>R</b>elief = <b>R</b>ise of the land only."
+        },
+        {
+          "bloque_ord": 5,
+          "kind": "text",
+          "html_en": "<h3>🎨 How height is shown with colour</h3><ul><li>On <b>both</b> topographic and relief maps, height is shown using <b>different colours</b>, usually <b>shades of brown and green</b>.</li><li><b>All land areas of the same height above sea level are given the same colour.</b></li><li>The map needs a <b>key</b> to show what the different colours mean. <b>That is what a map key is for</b> — it explains what every colour and symbol on the map stands for, so you can read it.</li></ul><h3>🌊 Heights above sea level</h3>"
+        },
+        {
+          "bloque_ord": 6,
+          "kind": "text",
+          "html_en": "Heights <b>and depths</b> on a map are measured <b>above and below the average level of the sea</b>. When we say <b>Mount Everest</b>, the highest mountain in the world, is <b>8,863 metres</b> high, we mean its height measures <b>8,863 metres above sea level</b>."
+        },
+        {
+          "bloque_ord": 7,
+          "kind": "text",
+          "html_en": "<h3>〰️ Contour lines</h3><ul><li>Contour lines are <b>lines joining places that are the same height above sea level</b>.</li><li>They are <b>exactly level</b>.</li><li>They <b>do not cross each other</b>. If they seem to join up or stop, it is because they have reached a <b>cliff</b> or some other <b>vertical surface</b>.</li></ul><h3>📐 Scale — and what it does to the contours</h3>"
+        },
+        {
+          "bloque_ord": 9,
+          "kind": "rule",
+          "html_en": "<b>Reading the slope from the contour lines:</b><br>Contour lines <b>close together</b> → a <b>steep</b> slope.<br>Contour lines <b>further apart</b> → a <b>gentle</b> slope.<br><b>No contour lines at all</b> → the land is <b>flat</b>."
+        },
+        {
+          "bloque_ord": 10,
+          "kind": "text",
+          "html_en": "<p>In the large-scale map of Scotland in your book you can see <b>Ben Nevis</b>, <b>Fort William</b>, <b>Loch Linnhe</b> and the rivers Nevis, Kiachnish, Scaddle and Cona. The contour lines are packed tightly around Ben Nevis, so that land is <b>very steep and high</b>.</p><h3>🌊 River words you must know</h3>"
+        },
+        {
+          "bloque_ord": 12,
+          "kind": "tip",
+          "html_en": "Full sentence: \"A river is a body of water that <b>flows</b> from <b>high</b> ground to <b>low</b> ground. It begins at the <b>source</b>, is joined by <b>tributaries</b>, flows in its <b>channel</b> between its <b>banks</b>, and ends at its <b>mouth</b> where it meets a lake or an ocean.\""
+        },
+        {
+          "bloque_ord": 13,
+          "kind": "text",
+          "html_en": "<h3>⛰️ Landforms in the booklet</h3>"
+        },
+        {
+          "bloque_ord": 15,
+          "kind": "text",
+          "html_en": "<h3>💧 Bonus from the booklet: the water cycle</h3>"
+        },
+        {
+          "bloque_ord": 17,
+          "kind": "text",
+          "html_en": "<p>Earth's spheres: <b>geosphere</b> = land · <b>atmosphere</b> = air · <b>hydrosphere</b> = water · <b>biosphere</b> = living things.</p>"
+        }
+      ]
+    }
+  ]
+}

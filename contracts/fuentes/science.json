@@ -1,0 +1,234 @@
+{
+  "materia": "science",
+  "lecciones_desde": 1,
+  "lecciones_hasta": 5,
+  "total_bloques": 38,
+  "total_caracteres": 6517,
+  "lecciones": [
+    {
+      "leccion_ord": 1,
+      "titulo_en": "🌧️ Acid Rain",
+      "titulo_ya_traducido": false,
+      "bloques": [
+        {
+          "bloque_ord": 1,
+          "kind": "rule",
+          "html_en": "<b>What is acid rain?</b> Acid rain is rain (or snow, fog or mist) that has become <b>acidic</b> because polluting gases have mixed with the water in the clouds. It looks like normal rain — but it damages plants, animals, water and even buildings."
+        },
+        {
+          "bloque_ord": 2,
+          "kind": "text",
+          "html_en": "<h3>🔥 What causes it?</h3><ul><li><b>Burning fossil fuels</b> — coal, oil and gas — in <b>factories</b> and <b>power stations</b>.</li><li><b>Cars, buses and lorries</b> burning petrol and diesel.</li><li>A small amount comes from nature too, like <b>volcanoes</b>.</li></ul>"
+        },
+        {
+          "bloque_ord": 3,
+          "kind": "tip",
+          "html_en": "<b>⭐ Learn these two gases by heart:</b><br><b>Sulfur dioxide (SO₂)</b> and <b>Nitrogen oxides (NOₓ)</b>.<br>They mix with water in the air and turn into <b>sulfuric acid</b> and <b>nitric acid</b>."
+        },
+        {
+          "bloque_ord": 4,
+          "kind": "text",
+          "html_en": "<h3>💧 How is acid rain formed? (5 steps)</h3>"
+        },
+        {
+          "bloque_ord": 6,
+          "kind": "tip",
+          "html_en": "💨 The wind can carry those gases <b>very far</b>. Acid rain can fall in a country hundreds of kilometres away from the factory that made the pollution!"
+        },
+        {
+          "bloque_ord": 7,
+          "kind": "text",
+          "html_en": "<h3>🌍 Effects on the environment</h3>"
+        },
+        {
+          "bloque_ord": 9,
+          "kind": "warning",
+          "html_en": "<b>🔗 Acid rain breaks the food chain!</b><br>In a freshwater lake: <b>shrimps → fish → herons</b>.<br>If the acid kills the <b>shrimps</b>, the <b>fish</b> have no food and die. Then the <b>herons</b> have no fish to eat, so they die or fly away. <b>One dead animal affects everything above it in the food chain.</b>"
+        },
+        {
+          "bloque_ord": 10,
+          "kind": "text",
+          "html_en": "<h3>✅ Ways to reduce acid rain</h3><ul><li>🔆 Use <b>renewable energy</b> — solar panels, wind turbines, water power — instead of burning coal.</li><li>💡 <b>Use less electricity</b>: turn off lights, TVs and chargers you are not using.</li><li>🚲 <b>Walk, cycle, share a car or take the bus</b> instead of one car per person.</li><li>🏭 Put <b>filters (scrubbers)</b> on factory chimneys to trap the gases before they escape.</li><li>🚗 Use <b>catalytic converters</b> and cleaner fuels in cars.</li><li>🌱 <b>Plant trees</b> and add lime to damaged lakes to help them recover.</li></ul>"
+        },
+        {
+          "bloque_ord": 11,
+          "kind": "tip",
+          "html_en": "<b>Exam sentence you can use:</b> \"Acid rain is formed when sulfur dioxide and nitrogen oxides from burning fossil fuels mix with water in the atmosphere and fall as acidic rain.\""
+        }
+      ]
+    },
+    {
+      "leccion_ord": 2,
+      "titulo_en": "♻️ Recycling",
+      "titulo_ya_traducido": false,
+      "bloques": [
+        {
+          "bloque_ord": 1,
+          "kind": "rule",
+          "html_en": "<b>What is recycling?</b> Recycling means <b>taking used materials and turning them into new things</b> instead of throwing them away as rubbish. An old plastic bottle can become a new bottle — or even a fleece jacket!"
+        },
+        {
+          "bloque_ord": 2,
+          "kind": "text",
+          "html_en": "<h3>❓ Why is recycling important?</h3><ul><li>🌳 It <b>saves natural resources</b> — trees, oil, sand and metal stay in the ground.</li><li>⚡ It <b>saves energy</b>. Making a can from recycled aluminium uses far less energy than making a brand-new one.</li><li>🗑️ It means <b>less rubbish in landfills</b>, so we need fewer of them.</li><li>💨 It creates <b>less pollution</b> in the air, soil and water.</li><li>🐢 It <b>protects animals</b> and their habitats.</li></ul><h3>📦 Recyclable materials</h3>"
+        },
+        {
+          "bloque_ord": 4,
+          "kind": "tip",
+          "html_en": "<b>Golden rule:</b> rinse it first! Dirty containers with food on them can spoil a whole batch of recycling. 🚿"
+        },
+        {
+          "bloque_ord": 5,
+          "kind": "text",
+          "html_en": "<h3>🔺 The 3 Rs — in this exact order</h3>"
+        },
+        {
+          "bloque_ord": 7,
+          "kind": "warning",
+          "html_en": "<b>Don't mix these up!</b> 🔁 <b>Reuse</b> = the same object is used again (refilling a bottle). ♻️ <b>Recycle</b> = the object is broken down and <b>made into a new object</b> (a bottle becomes a T-shirt)."
+        },
+        {
+          "bloque_ord": 8,
+          "kind": "text",
+          "html_en": "<h3>🗑️ What happens if we throw away too much trash?</h3><ul><li>Landfills fill up and take over land where plants and animals used to live.</li><li>Rubbish gives off <b>harmful gases</b> and poisons that leak into the soil and water.</li><li>Plastic ends up in rivers and the sea. 🐋 Animals <b>eat it or get trapped in it</b> and die.</li><li>Plastic takes <b>hundreds of years</b> to break down.</li></ul>"
+        },
+        {
+          "bloque_ord": 9,
+          "kind": "tip",
+          "html_en": "<b>Exam sentence you can use:</b> \"Recycling is important because it saves natural resources and energy, reduces the amount of rubbish in landfills, and protects animals and the environment from pollution.\""
+        }
+      ]
+    },
+    {
+      "leccion_ord": 3,
+      "titulo_en": "⚡ Conductors and Insulators",
+      "titulo_ya_traducido": false,
+      "bloques": [
+        {
+          "bloque_ord": 1,
+          "kind": "rule",
+          "html_en": "<b>⚡ A CONDUCTOR</b> is a material that <b>lets electric current pass through it</b> easily.<br><b>🚫 An INSULATOR</b> is a material that <b>does NOT let electric current pass through it</b>."
+        },
+        {
+          "bloque_ord": 2,
+          "kind": "tip",
+          "html_en": "<b>Easy way to remember:</b> if it is a <b>metal</b>, it is almost always a <b>conductor</b>. If it is <b>not</b> a metal (plastic, rubber, glass, wood), it is almost always an <b>insulator</b>. 🧲"
+        },
+        {
+          "bloque_ord": 3,
+          "kind": "text",
+          "html_en": "<h3>📋 Examples of each</h3>"
+        },
+        {
+          "bloque_ord": 5,
+          "kind": "text",
+          "html_en": "<h3>🛠️ Uses — why we need BOTH</h3>"
+        },
+        {
+          "bloque_ord": 7,
+          "kind": "warning",
+          "html_en": "<b>⚠️ Safety!</b> Your body and water are conductors too. Never touch plugs or switches with <b>wet hands</b>, and never poke anything metal into a socket."
+        },
+        {
+          "bloque_ord": 8,
+          "kind": "tip",
+          "html_en": "<b>Exam sentence you can use:</b> \"Electrical wires are covered with plastic because plastic is an insulator. It stops the electricity from escaping and keeps people safe from electric shocks.\""
+        }
+      ]
+    },
+    {
+      "leccion_ord": 4,
+      "titulo_en": "💡 Electricity and Electric Circuits",
+      "titulo_ya_traducido": false,
+      "bloques": [
+        {
+          "bloque_ord": 1,
+          "kind": "text",
+          "html_en": "<h3>📖 The 10 words you MUST know</h3>"
+        },
+        {
+          "bloque_ord": 3,
+          "kind": "warning",
+          "html_en": "<b>The #1 mistake:</b> a <b>cell</b> is ONE. A <b>battery</b> is TWO OR MORE cells joined together. The thing in your TV remote is really a <i>cell</i>, even though everyone calls it a battery! 😄"
+        },
+        {
+          "bloque_ord": 4,
+          "kind": "text",
+          "html_en": "<h3>🔄 Parts of a simple circuit</h3>"
+        },
+        {
+          "bloque_ord": 6,
+          "kind": "text",
+          "html_en": "<h3>⚙️ How does an electric circuit work?</h3>"
+        },
+        {
+          "bloque_ord": 7,
+          "kind": "rule",
+          "html_en": "The <b>cell</b> pushes electric charge out. The charge travels along the <b>wires</b>, goes <b>through the bulb</b> (making it light up), and comes <b>all the way back to the cell</b>. It must go round in a <b>complete loop</b> — like a running track. 🏃‍♂️"
+        },
+        {
+          "bloque_ord": 8,
+          "kind": "text",
+          "html_en": "<h3>✅ Complete vs ❌ Incomplete (open) circuits</h3>"
+        },
+        {
+          "bloque_ord": 10,
+          "kind": "tip",
+          "html_en": "<b>Why does a bulb not light in an open circuit?</b> Because the path is <b>broken</b>, so the electric current <b>cannot flow</b> through the bulb. Learn that sentence! ✏️"
+        },
+        {
+          "bloque_ord": 11,
+          "kind": "tip",
+          "html_en": "🧪 Go to the <b>🔌 Circuit Lab</b> tab and build one yourself — it is the fastest way to remember this."
+        }
+      ]
+    },
+    {
+      "leccion_ord": 5,
+      "titulo_en": "🔌 Electric Circuit Symbols",
+      "titulo_ya_traducido": false,
+      "bloques": [
+        {
+          "bloque_ord": 1,
+          "kind": "rule",
+          "html_en": "<b>Circuit symbols</b> are simple drawings that represent electrical components. They help us draw circuits <b>clearly and quickly</b> — everyone in the world uses the same ones, so any scientist can read your diagram. 🌍"
+        },
+        {
+          "bloque_ord": 2,
+          "kind": "text",
+          "html_en": "<h3>⚡ The 7 symbols you need</h3>"
+        },
+        {
+          "bloque_ord": 4,
+          "kind": "warning",
+          "html_en": "<b>Cell vs Battery symbol:</b> count the pairs of lines!<br><b>1 pair</b> = cell. <b>2 or more pairs</b> = battery."
+        },
+        {
+          "bloque_ord": 5,
+          "kind": "tip",
+          "html_en": "<b>Bulb vs Motor:</b> both are circles. <b>X inside = bulb</b> (light 💡). <b>M inside = motor</b> (movement ⚙️)."
+        },
+        {
+          "bloque_ord": 6,
+          "kind": "text",
+          "html_en": "<h3>📐 Reading a circuit diagram</h3>"
+        },
+        {
+          "bloque_ord": 7,
+          "kind": "rule",
+          "html_en": "Follow the wire with your finger, starting at the cell. Say the name of every symbol you pass. When you get back to the cell — that's the whole circuit! If your finger has to <b>jump a gap</b>, the circuit is <b>open</b> and nothing will work."
+        },
+        {
+          "bloque_ord": 8,
+          "kind": "tip",
+          "html_en": "<b>Rules for drawing:</b> ✏️ use a <b>ruler</b> for every wire · draw <b>symbols only</b>, never the real objects · make corners into <b>right angles</b> · <b>label</b> each component."
+        },
+        {
+          "bloque_ord": 9,
+          "kind": "tip",
+          "html_en": "🃏 Go to the <b>🎮 Games</b> tab and win <b>Symbol Match</b> — after two or three games you will know all 7 symbols without thinking."
+        }
+      ]
+    }
+  ]
+}

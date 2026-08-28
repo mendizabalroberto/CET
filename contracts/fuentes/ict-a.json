@@ -1,0 +1,290 @@
+{
+  "materia": "ict",
+  "lecciones_desde": 1,
+  "lecciones_hasta": 3,
+  "total_bloques": 52,
+  "total_caracteres": 5564,
+  "lecciones": [
+    {
+      "leccion_ord": 1,
+      "titulo_en": "🖥️ Hardware and software selection",
+      "titulo_ya_traducido": false,
+      "bloques": [
+        {
+          "bloque_ord": 1,
+          "kind": "rule",
+          "html_en": "<b>Hardware</b> = all the <b>physical</b> components of a computer — the parts you can touch.<br><b>Software</b> = all the <b>programs</b> that tell the physical components what to do."
+        },
+        {
+          "bloque_ord": 2,
+          "kind": "text",
+          "html_en": "<h3>🔩 Hardware components</h3>"
+        },
+        {
+          "bloque_ord": 4,
+          "kind": "text",
+          "html_en": "<h3>💿 Software components</h3><ul><li><b>System software</b> — the <b>operating system</b> (Windows, macOS, Android).</li><li><b>Application software</b> — <b>word processing</b>, <b>spreadsheet</b>, <b>presentation</b> and <b>video editing</b> software.</li></ul>"
+        },
+        {
+          "bloque_ord": 5,
+          "kind": "tip",
+          "html_en": "Hardware and software are <b>complementary</b>. A computing device can only produce useful outputs when <b>both work together</b>."
+        },
+        {
+          "bloque_ord": 6,
+          "kind": "text",
+          "html_en": "<h3>⭐ The 5 factors when choosing hardware and software</h3>"
+        },
+        {
+          "bloque_ord": 8,
+          "kind": "tip",
+          "html_en": "<b>Memory trick:</b> <b>F–C–C–S–A</b> → <i>Funny Cats Can Sing Anything</i>. Those are the five things you must list if the exam says “what must be considered when purchasing hardware and software?”"
+        },
+        {
+          "bloque_ord": 9,
+          "kind": "text",
+          "html_en": "<h3>💾 Storage: HDD vs SSD</h3>"
+        },
+        {
+          "bloque_ord": 11,
+          "kind": "rule",
+          "html_en": "When choosing a <b>secondary storage</b> device, the two considerations are <b>space (capacity)</b> and <b>speed</b>."
+        },
+        {
+          "bloque_ord": 12,
+          "kind": "text",
+          "html_en": "<h3>📏 Data storage units — smallest to largest</h3>"
+        },
+        {
+          "bloque_ord": 13,
+          "kind": "text",
+          "html_en": "<b>bit → byte → kilobyte → megabyte → gigabyte → terabyte</b>"
+        },
+        {
+          "bloque_ord": 14,
+          "kind": "tip",
+          "html_en": "<b>1 byte = 1 character.</b> So the sentence <i>“Hello, what is your name?”</i> needs <b>25 bytes</b> — because <b>spaces, commas and the question mark are characters too</b>. Count them all!"
+        },
+        {
+          "bloque_ord": 15,
+          "kind": "text",
+          "html_en": "<h3>⚡ Processor speed</h3><ul><li>Everyday functions (writing, browsing): about <b>1–2 GHz</b>.</li><li><b>Gaming</b>: about <b>3 GHz</b> or more.</li><li>Processor speed matters because the CPU is <b>the brain of the computer</b> — everything waits for it.</li></ul><h3>✅ The answers your class wrote down</h3>"
+        }
+      ]
+    },
+    {
+      "leccion_ord": 2,
+      "titulo_en": "🐱 Scratch: predict the outcome &amp; draw shapes",
+      "titulo_ya_traducido": false,
+      "bloques": [
+        {
+          "bloque_ord": 1,
+          "kind": "rule",
+          "html_en": "A <b>variable</b> is a named box that stores a value. In Scratch you <b>set</b> a variable to a value, and the value can change while the program runs."
+        },
+        {
+          "bloque_ord": 2,
+          "kind": "text",
+          "html_en": "<h3>🔢 The blocks you must recognise</h3>"
+        },
+        {
+          "bloque_ord": 4,
+          "kind": "text",
+          "html_en": "<h3>➖ Example: subtracting two numbers (page 60)</h3>"
+        },
+        {
+          "bloque_ord": 5,
+          "kind": "text",
+          "html_en": "<span>when this sprite clicked</span>"
+        },
+        {
+          "bloque_ord": 6,
+          "kind": "text",
+          "html_en": "<span>ask <span>What is the first number?</span> and wait</span>"
+        },
+        {
+          "bloque_ord": 7,
+          "kind": "text",
+          "html_en": "<span>set <span>Number 1</span> to <span>answer</span></span>"
+        },
+        {
+          "bloque_ord": 8,
+          "kind": "text",
+          "html_en": "<span>ask <span>What is the second number?</span> and wait</span>"
+        },
+        {
+          "bloque_ord": 9,
+          "kind": "text",
+          "html_en": "<span>set <span>Number 2</span> to <span>answer</span></span>"
+        },
+        {
+          "bloque_ord": 10,
+          "kind": "text",
+          "html_en": "<span>set <span>Result</span> to <span>Number 1 − Number 2</span></span>"
+        },
+        {
+          "bloque_ord": 11,
+          "kind": "text",
+          "html_en": "<span>say <span>join Result = Result</span> for <span>2</span> seconds</span>"
+        },
+        {
+          "bloque_ord": 12,
+          "kind": "tip",
+          "html_en": "Enter <b>10</b> then <b>4</b> → Sam says <b>Result = 6</b>. The variables are shown in the <b>top left</b> of the stage, and they show the value stored right now."
+        },
+        {
+          "bloque_ord": 13,
+          "kind": "warning",
+          "html_en": "<b>Watch out:</b> when you click the <b>Green Flag</b>, the variables are <b>reset to 0</b>. That is why Section 1 contains <span>set <span>Number 3</span> to <span>0</span></span>."
+        },
+        {
+          "bloque_ord": 14,
+          "kind": "text",
+          "html_en": "<h3>➕ Adding three numbers (page 64)</h3><p>Same idea, but with <b>three</b> ask/set pairs and <b>two</b> addition operators nested inside one <span>set Result to</span> block:</p>"
+        },
+        {
+          "bloque_ord": 15,
+          "kind": "text",
+          "html_en": "<span>set <span>Result</span> to <span>( Number 1 + Number 2 ) + Number 3</span></span>"
+        },
+        {
+          "bloque_ord": 16,
+          "kind": "tip",
+          "html_en": "To add three numbers you place <b>one addition operator inside the set block</b>, then <b>drop a second addition operator into the first blank area</b>."
+        },
+        {
+          "bloque_ord": 17,
+          "kind": "text",
+          "html_en": "<h3>📐 Sub-routines: Draw Triangle and Draw Square (page 84)</h3><p>A <b>sub-routine</b> is your own block, made with <b>Make a block</b> in the <b>My Blocks</b> palette. You write the code once and reuse it as many times as you like.</p>"
+        },
+        {
+          "bloque_ord": 19,
+          "kind": "rule",
+          "html_en": "<b>repeat = number of sides  ·  turn = 360 ÷ number of sides</b>"
+        },
+        {
+          "bloque_ord": 21,
+          "kind": "text",
+          "html_en": "<h3>🎨 The Pattern algorithm</h3>"
+        },
+        {
+          "bloque_ord": 22,
+          "kind": "text",
+          "html_en": "<span>when 🏳 clicked</span>"
+        },
+        {
+          "bloque_ord": 23,
+          "kind": "text",
+          "html_en": "<span>repeat <span>3</span></span>"
+        },
+        {
+          "bloque_ord": 24,
+          "kind": "text",
+          "html_en": "<span>Draw Triangle</span>"
+        },
+        {
+          "bloque_ord": 25,
+          "kind": "text",
+          "html_en": "<span>move <span>40</span> steps</span>"
+        },
+        {
+          "bloque_ord": 26,
+          "kind": "text",
+          "html_en": "<span>repeat <span>3</span></span>"
+        },
+        {
+          "bloque_ord": 27,
+          "kind": "text",
+          "html_en": "<span>Draw Square</span>"
+        },
+        {
+          "bloque_ord": 28,
+          "kind": "text",
+          "html_en": "<span>move <span>40</span> steps</span>"
+        },
+        {
+          "bloque_ord": 29,
+          "kind": "text",
+          "html_en": "<span>repeat <span>3</span></span>"
+        },
+        {
+          "bloque_ord": 30,
+          "kind": "text",
+          "html_en": "<span>Draw Triangle</span>"
+        },
+        {
+          "bloque_ord": 31,
+          "kind": "text",
+          "html_en": "<span>move <span>40</span> steps</span>"
+        },
+        {
+          "bloque_ord": 32,
+          "kind": "text",
+          "html_en": "<span>repeat <span>2</span></span>"
+        },
+        {
+          "bloque_ord": 33,
+          "kind": "text",
+          "html_en": "<span>Draw Square</span>"
+        },
+        {
+          "bloque_ord": 34,
+          "kind": "text",
+          "html_en": "<span>move <span>40</span> steps</span>"
+        },
+        {
+          "bloque_ord": 35,
+          "kind": "tip",
+          "html_en": "That draws <b>3 triangles, 3 squares, 3 triangles, 2 squares</b> — 11 shapes in a row, spaced 40 steps apart. Try it in the <b>Scratch Lab</b> tab. 🎨"
+        },
+        {
+          "bloque_ord": 36,
+          "kind": "tip",
+          "html_en": "The <b>Pen</b> palette is not shown by default — you add it with the <b>Add Extension</b> icon at the bottom left."
+        }
+      ]
+    },
+    {
+      "leccion_ord": 3,
+      "titulo_en": "📡 Digital content and streaming",
+      "titulo_ya_traducido": false,
+      "bloques": [
+        {
+          "bloque_ord": 1,
+          "kind": "rule",
+          "html_en": "<b>Digital content</b> is <b>anything that can be stored or sent digitally</b> — text, audio, video files, graphics, animations and images.<br><br><b>A server is a computer that provides services on a network.</b> ← learn this sentence word for word."
+        },
+        {
+          "bloque_ord": 2,
+          "kind": "text",
+          "html_en": "<h3>🗄️ What servers store</h3><ul><li><b>Photographs and images</b> — so people can share pictures and photo albums.</li><li><b>Messages</b> — mainly text, but they can include images and emojis.</li><li><b>Websites</b> — the files and data for websites.</li><li><b>Email messages</b> — Gmail, Hotmail and Yahoo! Mail store them on servers.</li><li><b>Online software</b> — like Google Docs™, used remotely and saved on Google’s servers.</li><li><b>Online games</b> — each game generally has its own server.</li><li><b>Video content</b> — movies, TV shows, music videos.</li><li><b>Audio content</b> — music, <b>podcasts</b> and <b>audio books</b>. <b>Music is the most popular form of audio.</b></li></ul><h3>▶️ Streaming</h3>"
+        },
+        {
+          "bloque_ord": 3,
+          "kind": "rule",
+          "html_en": "<b>Streaming is when a digital file is sent a few seconds at a time from the server.</b> You can start watching or listening while the rest of the file is still being sent."
+        },
+        {
+          "bloque_ord": 5,
+          "kind": "warning",
+          "html_en": "The trap: “Streamed content is automatically stored on the user’s device.” → <b>FALSE</b>. It is automatically <b>deleted</b>."
+        },
+        {
+          "bloque_ord": 6,
+          "kind": "text",
+          "html_en": "<h3>🔑 Keywords</h3>"
+        },
+        {
+          "bloque_ord": 8,
+          "kind": "text",
+          "html_en": "<h3>✅ The answers your class wrote down</h3>"
+        },
+        {
+          "bloque_ord": 10,
+          "kind": "tip",
+          "html_en": "<b>Two types of video content that can be streamed:</b> video calling and live streaming (also movies, TV shows and music videos)."
+        }
+      ]
+    }
+  ]
+}

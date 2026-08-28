@@ -439,7 +439,15 @@ async function execute(c, key) {
       const esTest = (f) => /(^|\/)__tests__\//.test(f) || /\.(test|spec)\.[cm]?[jt]sx?$/.test(f);
       const codigo = guard.touched.filter((f) => !esTest(f));
       writeFileSync(join(wt, '.deepseek.verde.patch'), patch);
-      for (const f of codigo) run(`git checkout HEAD -- "${f}"`, wt);
+      for (const f of codigo) {
+        // `git checkout HEAD -- fichero-nuevo` no borra nada: el fichero no
+        // existe en HEAD y el comando falla en silencio. Sin esto, un contrato
+        // cuyo entregable es un fichero NUEVO se rechazaria como falso verde
+        // por no haberse revertido nunca.
+        const existiaEnHead = run(`git cat-file -e HEAD:"${f}"`, wt).code === 0;
+        if (existiaEnHead) run(`git checkout HEAD -- "${f}"`, wt);
+        else rmSync(join(wt, f), { force: true });
+      }
       const mut = run(c.verify, wt);
       run('git reset --hard HEAD', wt);
       run('git apply --whitespace=nowarn ".deepseek.verde.patch"', wt);
