@@ -29,8 +29,9 @@ import {
 } from "../../packages/content/src/corpus/transcript.ts";
 import { contentPack, type ContentPack } from "../../packages/content/src/schema.ts";
 
-import { connect, corpusTablesExist } from "./db.ts";
+import { connect, corpusTablesExist, PROJECT_REF } from "./db.ts";
 import { publicarAprobados } from "./publish.ts";
+import { BUCKET, subirOriginales } from "./upload.ts";
 import { blueprintMismatches, persistDocument, seedPack, type SeedGap } from "./seed.ts";
 import {
   apiKey,
@@ -913,6 +914,55 @@ async function cmdPublish(): Promise<void> {
 }
 
 /* ========================================================================== */
+/* upload — el fichero original, al bucket privado                            */
+/* ========================================================================== */
+
+/**
+ * Guarda el ORIGINAL de cada documento del corpus. El corpus guarda lo que pone
+ * dentro; esto guarda el fichero, para que un revisor que siga una cita hasta
+ * el span pueda ver la pagina. En el carril de vision es lo que cierra la
+ * cadena: ahi el span no es una copia, es la interpretacion de una imagen.
+ */
+async function cmdUpload(): Promise<void> {
+  await withDb(async (client) => {
+    if (!(await corpusTablesExist(client))) {
+      console.error("Falta aplicar supabase/migrations/0027_corpus.sql.");
+      process.exitCode = 1;
+      return;
+    }
+
+    const { rows: pendientes } = await client.query<{ n: string; bytes: string }>(
+      `select count(*)::text n, coalesce(sum(bytes), 0)::text bytes
+         from public.source_documents where storage_path is null`,
+    );
+    const cuantos = Number(pendientes[0]?.n ?? "0");
+    const mb = Number(pendientes[0]?.bytes ?? "0") / 1024 / 1024;
+
+    console.log("");
+    console.log(`${cuantos} originales sin subir (${mb.toFixed(1)} MB) al bucket privado \`${BUCKET}\``);
+
+    if (cuantos === 0) {
+      console.log("Todos subidos.");
+      console.log("");
+      return;
+    }
+    if (!apply) {
+      console.log("Nada subido. Anade --apply.");
+      console.log("");
+      return;
+    }
+
+    const hechas = await subirOriginales(client, repoRoot, PROJECT_REF, { soloSinSubir: true });
+    for (const h of hechas) {
+      console.log(`  ${String(Math.round(h.bytes / 1024)).padStart(6)} KB  ${h.clave}`);
+    }
+    console.log("");
+    console.log(`${hechas.length} originales subidos.`);
+    console.log("");
+  });
+}
+
+/* ========================================================================== */
 /* enable — activar los cursos para un colegio                                */
 /* ========================================================================== */
 
@@ -1074,6 +1124,7 @@ pnpm corpus <subcomando>
   review [--approve <id>]   cola de revision; --approve-all para el lote (--apply)
   push                      packs -> Supabase           (--apply para escribir)
   publish                   aprobados -> questions reales (--apply)
+  upload                    los ficheros originales -> bucket privado (--apply)
   enable [colegio]          activa los cursos para un colegio (--apply)
   propose [materia|ruta]    contratos DeepSeek en paralelo -> cuarentena (--apply)
   recheck                   vuelve a pasar la puerta sobre la cuarentena (--apply)
@@ -1093,6 +1144,7 @@ const commands: Record<string, () => void | Promise<void>> = {
   propose: cmdPropose,
   recheck: cmdRecheck,
   publish: cmdPublish,
+  upload: cmdUpload,
   transcribe: cmdTranscribe,
 };
 
