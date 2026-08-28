@@ -1,0 +1,71 @@
+{
+  "materia": "socials",
+  "lecciones_desde": 5,
+  "lecciones_hasta": 5,
+  "total_bloques": 11,
+  "total_caracteres": 2647,
+  "lecciones": [
+    {
+      "leccion_ord": 5,
+      "titulo_en": "🏙️ 5 · The Growth of Cities",
+      "titulo_ya_traducido": false,
+      "bloques": [
+        {
+          "bloque_ord": 1,
+          "kind": "text",
+          "html_en": "<b>Where did the first cities develop?</b> The first cities grew up <b>about 5,000 to 6,000 years ago</b>, in <b>Mesopotamia</b> — the land between the rivers <b>Tigris and Euphrates</b> (in modern Iraq). Other early cities appeared along the <b>Nile</b> in Egypt, the <b>Indus</b> in Pakistan/India, and the <b>Yellow River</b> in China. They all grew <b>next to rivers</b>, because rivers gave people <b>water, food, fertile soil for farming and transport</b>."
+        },
+        {
+          "bloque_ord": 2,
+          "kind": "text",
+          "html_en": "<h3>🏢 What is a modern city?</h3><p>A modern city is a <b>very large settlement</b> where a lot of people live and work. In most modern cities the land is used for:</p>"
+        },
+        {
+          "bloque_ord": 3,
+          "kind": "text",
+          "html_en": "<ul><li><b>homes</b></li><li><b>shops</b></li><li><b>offices</b></li><li><b>banks</b></li><li><b>factories</b></li></ul>"
+        },
+        {
+          "bloque_ord": 4,
+          "kind": "text",
+          "html_en": "<ul><li><b>schools</b></li><li><b>hospitals</b></li><li><b>railway and bus stations</b></li><li><b>civic buildings</b>, such as <b>city halls</b> or <b>town halls</b></li></ul>"
+        },
+        {
+          "bloque_ord": 5,
+          "kind": "text",
+          "html_en": "Many cities have a <b>mixture of older and newer buildings</b>, because the city has <b>developed over a long period of time</b>."
+        },
+        {
+          "bloque_ord": 6,
+          "kind": "text",
+          "html_en": "<h3>🏗️ Why are skyscrapers built in city centres?</h3>"
+        },
+        {
+          "bloque_ord": 7,
+          "kind": "rule",
+          "html_en": "Because <b>land in the city centre is very expensive</b>. To <b>make the most of the land</b>, people build <b>very tall buildings called skyscrapers</b>, which <b>tower over the older buildings</b>. Building <b>upwards</b> fits far more offices and homes onto a small, costly piece of ground."
+        },
+        {
+          "bloque_ord": 8,
+          "kind": "text",
+          "html_en": "<h3>🏦 City zones and the CBD</h3><ul><li>Cities may be divided into different <b>areas or zones</b>, each with a <b>different purpose</b>.</li><li>The <b>middle</b> of the city is called the <b>central business district (CBD)</b>.</li><li>In the CBD you find <b>most of the offices, banks, large shops, art galleries and museums</b>.</li></ul><h3>🚆 How transport helped cities grow outwards</h3><ol><li>Better transport — <b>commuter trains</b> and <b>metros</b> — helps cities <b>spread outwards</b>.</li><li>More people can then <b>live further away from the city centre</b> and <b>still be able to travel to work</b>.</li><li>As a result, new <b>residential areas called suburbs</b> develop <b>around the edges of the city</b>.</li></ol><h3>🔑 Key words</h3>"
+        },
+        {
+          "bloque_ord": 10,
+          "kind": "text",
+          "html_en": "<h3>🏘️ Conurbations</h3><p>As cities grow, they <b>spread out into the surrounding countryside</b>. Eventually neighbouring towns and cities may <b>merge</b> and become <b>one very large urban area</b>. This is called a <b>conurbation</b>.</p>"
+        },
+        {
+          "bloque_ord": 12,
+          "kind": "tip",
+          "html_en": "<b>Did you know?</b> <b>Sydney</b> and <b>Melbourne</b> are the <b>two largest cities in Australia</b>. In the nineteenth century they were <b>planned and built</b> as important cities."
+        },
+        {
+          "bloque_ord": 13,
+          "kind": "text",
+          "html_en": "<h3>🤔 Think about it: living in a conurbation</h3>"
+        }
+      ]
+    }
+  ]
+}

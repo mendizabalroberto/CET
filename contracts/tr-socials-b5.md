@@ -1,10 +1,10 @@
 ---
-id: tr-socials-b
+id: tr-socials-b5
 model: chat
-territory: [supabase/migrations/0041_*]
+territory: [supabase/migrations/0048_*]
 forbidden: [packages/ui/src/index.ts, supabase/migrations/0028_leccion_en_espanol.sql]
-context: [contracts/fuentes/socials-b.json, supabase/migrations/0028_leccion_en_espanol.sql]
-verify: node scripts/deepseek/validar-traduccion.mjs contracts/fuentes/socials-b.json supabase/migrations/0041_socials_es.sql
+context: [contracts/fuentes/socials-b5.json, supabase/migrations/0028_leccion_en_espanol.sql]
+verify: node scripts/deepseek/validar-traduccion.mjs contracts/fuentes/socials-b5.json supabase/migrations/0048_socials_es.sql
 setup: ninguno
 rounds: 5
 deadline: 5 rondas o 25 min
@@ -16,14 +16,14 @@ La materia **socials** (Sociales) esta sembrada en produccion
 **solo en ingles**. El alumno ve el marco de la aplicacion en espanol y la
 leccion en ingles. No es un fallo de i18n: es contenido que falta.
 
-Te toca **lecciones 4 a 6**: 33 bloques, 9599 caracteres.
+Te toca **la leccion 5**: 11 bloques, 2647 caracteres.
 Otro agente lleva el resto de esta misma materia en paralelo, asi que no toques
 ninguna otra migracion.
 
 ## 2 · La evidencia que ya tenemos
 
 El texto ingles exacto que hay que traducir esta en
-`contracts/fuentes/socials-b.json`, que te doy entero mas abajo. Cada bloque
+`contracts/fuentes/socials-b5.json`, que te doy entero mas abajo. Cada bloque
 trae su `leccion_ord`, su `bloque_ord` y su `html_en`. **Esas dos cifras son
 la clave por la que se localiza la fila**: no hay UUID en ninguna parte.
 
@@ -38,14 +38,14 @@ guarda `not (content -> 'html' ? 'es')` en cada UPDATE, y cero UUID.
 
 ## 3 · El criterio de aceptacion
 
-Escribe `supabase/migrations/0041_socials_es.sql` y haz que salga verde:
+Escribe `supabase/migrations/0048_socials_es.sql` y haz que salga verde:
 
 ```
-node scripts/deepseek/validar-traduccion.mjs contracts/fuentes/socials-b.json supabase/migrations/0041_socials_es.sql
+node scripts/deepseek/validar-traduccion.mjs contracts/fuentes/socials-b5.json supabase/migrations/0048_socials_es.sql
 ```
 
 Ese verificador **lo escribio el supervisor, no tu**, y comprueba por codigo de
-salida: cobertura de los 33 bloques uno a uno, que el marcado HTML se
+salida: cobertura de los 11 bloques uno a uno, que el marcado HTML se
 conserve como multiconjunto de etiquetas, que ningun numero cambie, que ninguna
 escritura reemplace el objeto entero, y que un bloque con palabras no quede
 identico al ingles.
@@ -82,12 +82,14 @@ obligatorias aqui**, para que las seis materias no diverjan en estilo:
   rechaza el parche.
 - UUID literales. Se localiza por `subjects.code = 'socials'` + el curso
   global de `year_level = 6` + `lessons.ord` + `lesson_blocks.ord`.
-- Traducir a medias y dejar bloques fuera. El verificador cuenta los 33.
+- Traducir a medias y dejar bloques fuera. El verificador cuenta los 11.
 - Cambiar un numero. Un dato plausible no es un dato correcto: si el ingles dice
   `4.7`, el espanol dice `4.7`.
 - Comerte o inventarte una etiqueta HTML. El verificador compara el
   multiconjunto de etiquetas de cada bloque.
-- Copiar el ingles tal cual en un bloque que tiene palabras.
+- Copiar el ingles tal cual en un bloque que tiene palabras, SIN DECLARARLO.
+  Si de verdad se escribe igual en los dos idiomas, declaralo con una linea
+  `-- IDENTICO leccion:bloque — motivo`. Declararlo en falso tambien se rechaza.
 - Tocar `0028_leccion_en_espanol.sql` o cualquier migracion que no sea la tuya.
   Hay cuatro agentes mas trabajando en paralelo sobre las suyas.
 - Decir «deberia funcionar». Ejecuta el verificador y pega su salida literal.

@@ -1,0 +1,76 @@
+{
+  "materia": "socials",
+  "lecciones_desde": 6,
+  "lecciones_hasta": 6,
+  "total_bloques": 12,
+  "total_caracteres": 2760,
+  "lecciones": [
+    {
+      "leccion_ord": 6,
+      "titulo_en": "🏛️ 6 · Capital Cities of the World",
+      "titulo_ya_traducido": false,
+      "bloques": [
+        {
+          "bloque_ord": 1,
+          "kind": "rule",
+          "html_en": "<b>What is a capital city, and what is its main purpose?</b><br><b>Every country has a capital city. It is where the government of the country meets.</b> The capital city is <b>usually the largest and most important city</b> in a country. Its <b>main purpose</b> is to be the <b>centre of government</b> — where the country's laws are made and where the leaders work."
+        },
+        {
+          "bloque_ord": 2,
+          "kind": "text",
+          "html_en": "<h3>🏗️ Capital cities that were built on purpose</h3><p>Some countries <b>build their capital cities specially</b>. For example, in the <b>nineteenth century</b>, <b>Sydney and Melbourne</b> were planned and built as important cities.</p>"
+        },
+        {
+          "bloque_ord": 3,
+          "kind": "tip",
+          "html_en": "<b>Canberra, Australia — the story the exam likes.</b> The people <b>could not decide</b> whether <b>Sydney</b> or <b>Melbourne</b> should be the capital city of Australia. So they <b>built a new city, called Canberra</b>, to be the capital. Canberra is <b>inland, about halfway between Sydney and Melbourne</b>. In <b>1927</b> it became Australia's capital."
+        },
+        {
+          "bloque_ord": 4,
+          "kind": "text",
+          "html_en": "<p><b>Other specially-built capital cities:</b> <b>Brasília</b> (Brazil) · <b>Islamabad</b> (Pakistan) · <b>Abuja</b> (Nigeria) · <b>New Delhi</b> (India).</p>"
+        },
+        {
+          "bloque_ord": 5,
+          "kind": "warning",
+          "html_en": "This is why \"the capital is always the biggest city\" is <b>wrong</b>. Canberra, Brasília and Abuja are <b>not</b> the biggest cities in their countries — but they <b>are</b> where the government meets."
+        },
+        {
+          "bloque_ord": 6,
+          "kind": "text",
+          "html_en": "<h3>🌎 South America — all 14</h3>"
+        },
+        {
+          "bloque_ord": 8,
+          "kind": "tip",
+          "html_en": "<b>The traps:</b> Brazil is <b>Brasília</b> (not Rio de Janeiro) · Bolivia is <b>Sucre</b> · Ecuador is <b>Quito</b> (not Guayaquil)."
+        },
+        {
+          "bloque_ord": 9,
+          "kind": "text",
+          "html_en": "<h3>🧭 South America map questions</h3><ul><li><b>The equator passes through:</b> <b>Ecuador, Colombia</b> and <b>Brazil</b>.</li><li><b>North of the equator:</b> <b>Venezuela, Guyana, Suriname, French Guiana</b> (and the northern parts of Colombia, Ecuador and Brazil).</li><li>Rivers on the map: the <b>Amazon</b> and the <b>Orinoco</b>. The mountains running down the west side are the <b>Andes</b>.</li></ul><h3>🌎 North America — the main ones</h3>"
+        },
+        {
+          "bloque_ord": 11,
+          "kind": "text",
+          "html_en": "<b>The North America fill-in-the-blanks:</b> North America is the <b>third</b> largest continent. It is bordered to the <b>north</b> by the <b>Arctic</b> Ocean, to the <b>east</b> by the Atlantic Ocean, to the <b>west and south</b> by the Pacific <b>Ocean</b>, and to the <b>southeast</b> by South America and the Caribbean <b>Seas</b>."
+        },
+        {
+          "bloque_ord": 12,
+          "kind": "text",
+          "html_en": "<h3>🌍 Europe — the main ones</h3>"
+        },
+        {
+          "bloque_ord": 14,
+          "kind": "tip",
+          "html_en": "<b>Great Britain</b> is the largest island in Europe. It consists of three countries — <b>England, Scotland and Wales</b>. Those three plus <b>Northern Ireland</b> are known as the <b>United Kingdom</b>. <b>England</b> is the biggest country in Great Britain; its capital is <b>London</b> and the people are <b>English</b>."
+        },
+        {
+          "bloque_ord": 15,
+          "kind": "warning",
+          "html_en": "<b>Capital traps in Europe:</b> Switzerland is <b>Bern</b> (not Zurich or Geneva) · Turkey is <b>Ankara</b> (not Istanbul)."
+        }
+      ]
+    }
+  ]
+}

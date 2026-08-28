@@ -1,0 +1,66 @@
+{
+  "materia": "socials",
+  "lecciones_desde": 4,
+  "lecciones_hasta": 4,
+  "total_bloques": 10,
+  "total_caracteres": 4192,
+  "lecciones": [
+    {
+      "leccion_ord": 4,
+      "titulo_en": "🌋 4 · How Are Mountains Formed?",
+      "titulo_ya_traducido": false,
+      "bloques": [
+        {
+          "bloque_ord": 1,
+          "kind": "rule",
+          "html_en": "<b>Question 1 answer, ready to write:</b><br>Two types of mountain are <b>fold mountains</b> (examples: the <b>Himalayas</b>, the <b>Alps</b>, the <b>Andes</b> — also the Rockies and the Urals) and <b>block mountains</b> (examples: the highland areas of <b>East Africa</b>, such as the <b>Ruwenzori</b>, the <b>Usambara</b> and the <b>Uluguru</b> mountains). A third type is <b>volcanic mountains</b> (examples: <b>Mount Kilimanjaro</b>, <b>Fujiyama</b>, <b>Mount Taranaki</b>)."
+        },
+        {
+          "bloque_ord": 2,
+          "kind": "text",
+          "html_en": "<h3>🗻 Alone or in a chain?</h3><ul><li>A <b>few</b> mountains <b>stand alone</b>: <b>Fujiyama</b> in Japan, <b>Mount Taranaki</b> in New Zealand, <b>Mount Kenya</b> in Africa, and <b>Mount Kilimanjaro</b> in Africa (a volcanic mountain that stands alone).</li><li><b>Most</b> mountains are found in <b>long chains called ranges</b>. Examples of mountain ranges: the <b>Alps</b>, the <b>Andes</b>, the <b>Himalayas</b>, the <b>Sarawat</b> and the <b>Rocky Mountains</b>.</li></ul>"
+        },
+        {
+          "bloque_ord": 3,
+          "kind": "tip",
+          "html_en": "<b>Definition to learn:</b> a <b>mountain range</b> is a <b>long chain of mountains joined together</b>."
+        },
+        {
+          "bloque_ord": 4,
+          "kind": "text",
+          "html_en": "<h3>🌍 What is the Earth made up of?</h3><ul><li>The Earth is made up of <b>layers of rock</b>.</li><li>The <b>solid outside layer</b> of rock is called the <b>Earth's crust</b>.</li><li>Beneath the crust is a layer called the <b>mantle</b>.</li><li>Near the <b>top of the mantle</b> some of the rocks are so <b>hot</b> that they have <b>melted</b> to form a <b>thick liquid, like sticky tar</b> — this is <b>magma</b> (molten rock).</li></ul>"
+        },
+        {
+          "bloque_ord": 5,
+          "kind": "rule",
+          "html_en": "<b>What is the Earth's crust made up of?</b> The crust is made up of <b>large pieces called plates</b>, which <b>fit together like the pieces of a jigsaw puzzle</b>. Some plates <b>carry continents</b> and others <b>carry oceans</b>. The plates <b>move slowly, floating on the molten rock of the mantle below them</b>."
+        },
+        {
+          "bloque_ord": 6,
+          "kind": "text",
+          "html_en": "<h3>🌋 Volcanic mountains</h3><ol><li>All the rocks around the mantle <b>press down on it</b>, so the <b>molten rock is under great pressure</b>.</li><li>If there is a <b>weak point in the Earth's crust</b>, the molten rock <b>bursts through it</b>…</li><li>…and <b>out on to the Earth's surface</b>, forming a <b>volcano</b>.</li><li>The material builds up around the opening and forms a <b>volcanic mountain</b>.</li></ol><p>Example: <b>Mount Kilimanjaro</b> in Africa is a volcanic mountain that stands alone.</p><h3>🗻 Fold mountains</h3><ol><li>The crust is made of <b>plates</b> that <b>move slowly</b> on the molten rock of the mantle.</li><li>Where <b>two plates push against each other</b>, the Earth's crust is <b>slowly pushed up into folds or ridges</b>.</li><li>These folds form <b>fold mountains</b>.</li></ol>"
+        },
+        {
+          "bloque_ord": 7,
+          "kind": "tip",
+          "html_en": "<b>The Himalayas story — learn this example.</b> India used to be a long way from Asia. Slowly the plate with <b>India</b> on it moved closer to the plate with <b>Asia</b> on it. The rocks in the <b>sea between them</b> were gradually <b>pushed up into folds</b> that now form the <b>Himalayan mountain range</b>. That is why it is sometimes possible to find <b>fossilised seashells near the tops of the Himalayas</b>. 🐚"
+        },
+        {
+          "bloque_ord": 8,
+          "kind": "text",
+          "html_en": "<p>Many other ranges — the <b>Alps, Rockies, Andes and Urals</b> — are also <b>fold mountains</b>.</p><h3>🧱 Faults and block mountains</h3><ol><li>While some plates are <b>pushing together</b>, others are <b>moving apart</b>. Europe and North America are slowly moving further apart — each year the <b>Atlantic Ocean is a few centimetres wider</b>.</li><li>As the rocks move apart they often <b>crack</b> and create breaks called <b>faults</b>.</li><li>Sometimes <b>large blocks of rock are pushed up between two faults</b>.</li><li>These blocks may be so <b>large and high</b> that they form <b>block mountains</b> — like some of the <b>highland areas of East Africa</b>.</li><li>Block mountains often have <b>flat tops</b>. A <b>flat-topped highland is called a plateau</b>.</li></ol>"
+        },
+        {
+          "bloque_ord": 9,
+          "kind": "warning",
+          "html_en": "<b>Do not mix these up!</b><br>Plates <b>PUSH TOGETHER</b> → the crust <b>folds</b> → <b>FOLD</b> mountains.<br>Plates <b>MOVE APART</b> → the rock <b>cracks into faults</b> → blocks pushed up → <b>BLOCK</b> mountains.<br>Magma <b>BURSTS THROUGH</b> a weak point → <b>VOLCANIC</b> mountains."
+        },
+        {
+          "bloque_ord": 10,
+          "kind": "text",
+          "html_en": "<h3>✅ The 7 classwork questions, answered</h3>"
+        }
+      ]
+    }
+  ]
+}
