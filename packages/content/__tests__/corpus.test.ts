@@ -8,11 +8,11 @@
  * blandos a mitad de frase, emojis, tablas y párrafos vacíos.
  */
 
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { docxToSpans } from "../src/corpus/office.ts";
 import { ingest, inventory } from "../src/corpus/ingest.ts";
@@ -29,7 +29,25 @@ import { readZip, ZipError } from "../src/corpus/zip.ts";
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const CW27 = join(repoRoot, "Y6A", "Science", "Classwork 27.docx");
 
-describe("readZip", () => {
+/**
+ * ¿Está el material fuente en este clon?
+ *
+ * `Y6A/` está en .gitignore a propósito: es material del centro educativo,
+ * propiedad de terceros, y no se versiona. Por tanto NO existe en CI, ni en un
+ * worktree, ni en el clon de nadie que no lo tenga aparte.
+ *
+ * Estos tests corren contra los ficheros reales —un fixture inventado por mí
+ * demostraría que mi extractor entiende mi propio XML, que sirve de poco— así
+ * que sin material se saltan, con un motivo legible, en vez de reventar la
+ * suite con una cascada de ENOENT. Es el mismo patrón que ya usaba
+ * `pipeline.test.ts`; no haberlo seguido dejó CI en rojo y tumbó dos contratos
+ * de DeepSeek que verificaban con esta misma orden.
+ */
+const hayMaterial = existsSync(join(repoRoot, "Y6A"));
+const describeConMaterial = hayMaterial ? describe : describe.skip;
+
+
+describeConMaterial("readZip", () => {
   it("lee el directorio central de un .docx real", () => {
     const entries = readZip(readFileSync(CW27));
     expect(entries.has("word/document.xml")).toBe(true);
@@ -41,8 +59,11 @@ describe("readZip", () => {
   });
 });
 
-describe("docxToSpans", () => {
-  const spans = docxToSpans(readFileSync(CW27));
+describeConMaterial("docxToSpans", () => {
+  let spans: SourceSpan[];
+  beforeAll(() => {
+    spans = docxToSpans(readFileSync(CW27));
+  });
 
   it("saca el título como heading, no como párrafo", () => {
     expect(spans[0]?.kind).toBe("heading");
@@ -76,8 +97,11 @@ describe("docxToSpans", () => {
   });
 });
 
-describe("inventory", () => {
-  const inv = inventory(repoRoot);
+describeConMaterial("inventory", () => {
+  let inv: ReturnType<typeof inventory>;
+  beforeAll(() => {
+    inv = inventory(repoRoot);
+  });
 
   it("clasifica los 71 ficheros de Y6A sin dejar ninguno sin carril", () => {
     expect(inv.length).toBe(71);

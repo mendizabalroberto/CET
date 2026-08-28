@@ -9,25 +9,50 @@
  * con un procesador de textos que nadie eligió, sale legible.
  */
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
-import { pdfToSpans } from "../src/corpus/pdf.ts";
+import { pdfToSpans, type PdfResult } from "../src/corpus/pdf.ts";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const CLAVE = join(repoRoot, "Y6A", "Math", "Grade 5 Math Exam - ANSWER KEY.pdf");
 const EXAMEN = join(repoRoot, "Y6A", "Math", "Grade 5 Math Exam.pdf");
 const BOOKLET = join(repoRoot, "Y6A", "Socials", "SSBooklet25.pdf");
 
-const clave = await pdfToSpans(readFileSync(CLAVE));
-const examen = await pdfToSpans(readFileSync(EXAMEN));
-const booklet = await pdfToSpans(readFileSync(BOOKLET));
+
+/**
+ * ¿Está el material fuente en este clon?
+ *
+ * `Y6A/` está en .gitignore a propósito: es material del centro educativo,
+ * propiedad de terceros, y no se versiona. Por tanto NO existe en CI, ni en un
+ * worktree, ni en el clon de nadie que no lo tenga aparte.
+ *
+ * Estos tests corren contra los ficheros reales —un fixture fabricado por mí
+ * sólo demostraría que sé escribir dos veces la misma constante— así que sin
+ * material se saltan, con un motivo legible, en vez de reventar la suite con
+ * una cascada de ENOENT. Es el mismo patrón que ya usaba `pipeline.test.ts`, y
+ * no haberlo seguido dejó CI en rojo y tumbó dos contratos de DeepSeek que
+ * verificaban con esta misma orden.
+ */
+const hayMaterial = existsSync(join(repoRoot, "Y6A"));
+const describeConMaterial = hayMaterial ? describe : describe.skip;
+
+let clave: PdfResult;
+let examen: PdfResult;
+let booklet: PdfResult;
+
+beforeAll(async () => {
+  if (!hayMaterial) return;
+  clave = await pdfToSpans(readFileSync(CLAVE));
+  examen = await pdfToSpans(readFileSync(EXAMEN));
+  booklet = await pdfToSpans(readFileSync(BOOKLET));
+});
 
 const textos = (r: { spans: { text: string }[] }): string[] => r.spans.map((s) => s.text);
 
-describe("ANSWER KEY: cada respuesta con su número de pregunta", () => {
+describeConMaterial("ANSWER KEY: cada respuesta con su número de pregunta", () => {
   it("pone pregunta y respuesta en el mismo span, separadas por la barra de celda", () => {
     // La barra es la convención que ya usa el extractor de .docx para las filas
     // de tabla: quien lee un span no tiene por qué saber de qué formato salió.
@@ -52,7 +77,7 @@ describe("ANSWER KEY: cada respuesta con su número de pregunta", () => {
   });
 });
 
-describe("fracciones apiladas", () => {
+describeConMaterial("fracciones apiladas", () => {
   it("une numerador y denominador en un solo texto", () => {
     expect(textos(clave)).toContain("3 | b) 31/7");
     expect(textos(clave)).toContain("4 | a) 7 5/6");
@@ -76,7 +101,7 @@ describe("fracciones apiladas", () => {
   });
 });
 
-describe("SSBooklet25: 22 páginas de prosa que no deben empeorar", () => {
+describeConMaterial("SSBooklet25: 22 páginas de prosa que no deben empeorar", () => {
   /**
    * Caracteres extraídos por el extractor anterior, medidos sobre este mismo
    * fichero antes de tocar nada. Es un suelo, no un objetivo: separar celdas

@@ -114,7 +114,10 @@ describeConMaterial("idempotencia", () => {
   });
 });
 
-describe("ids deterministas", () => {
+// Depende de `results`, que sin material queda vacio: sin la guarda, este
+// bloque afirmaba "mas de 1000 ids" contra un conjunto de cero y dejaba CI en
+// rojo. Los otros seis describe del fichero ya la llevaban.
+describeConMaterial("ids deterministas", () => {
   it("stableId es estable e insensible al orden de llamada", () => {
     expect(stableId("a", "b")).toBe(stableId("a", "b"));
     expect(stableId("a", "b")).not.toBe(stableId("b", "a"));

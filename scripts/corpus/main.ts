@@ -332,14 +332,35 @@ async function cmdIngest(): Promise<void> {
  * alguien con ojos tiene que leer. Lo que hace este subcomando es convertir eso
  * en una lista de encargos cerrados, que es lo unico que se puede repartir.
  */
-function cmdTranscribe(): void {
+async function cmdTranscribe(): Promise<void> {
   const inv = inventory(repoRoot).filter((e) => !e.duplicateOf);
   const materia = flagless[0];
 
+  /**
+   * Un PDF solo se sabe si sirve ABRIENDOLO.
+   *
+   * La heuristica de bytes lo llama `text_layer` porque declara fuentes, y solo
+   * al extraerlo se ve si tiene texto de verdad o cuatro palabras sobre una
+   * imagen. Antes este listado se fiaba de la heuristica, y por eso `La tilde
+   * en los hiatos.pdf` —un escaneo con 31 caracteres por pagina— no aparecio
+   * como pendiente en toda una sesion: no estaba hecho y tampoco figuraba por
+   * hacer, que es la peor combinacion de un inventario.
+   */
+  async function necesitaVision(e: InventoryEntry): Promise<boolean> {
+    if (e.method === "vision") return true;
+    if (e.ext !== ".pdf") return false;
+    try {
+      await ingest(repoRoot, e);
+      return false;
+    } catch (error) {
+      return error instanceof NotIngestibleError && error.entry.method === "vision";
+    }
+  }
+
   const pendientes: { entry: InventoryEntry; fichero: string; estado: string }[] = [];
   for (const e of inv) {
-    if (e.method !== "vision") continue;
     if (materia !== undefined && e.subjectCode !== materia) continue;
+    if (!(await necesitaVision(e))) continue;
     let estado = "PENDIENTE";
     try {
       if (cargarTranscripcion(repoRoot, e.path, e.checksum) !== null) estado = "hecha";
@@ -349,14 +370,9 @@ function cmdTranscribe(): void {
     pendientes.push({ entry: e, fichero: nombreDeTranscripcion(e.path), estado });
   }
 
-  // Los PDF que la heuristica de bytes llamo `text_layer` pero que al abrirlos
-  // resultan ser un escaneo tambien acaban aqui. No se pueden distinguir sin
-  // intentarlo, asi que se avisa en vez de fingir que la lista esta completa.
-  const dudosos = inv.filter((e) => e.method === "text_layer").length;
-
   const porHacer = pendientes.filter((p) => p.estado !== "hecha");
   console.log("");
-  console.log(`${pendientes.length} documentos en el carril de vision, ${porHacer.length} sin transcribir`);
+  console.log(`${pendientes.length} documentos exigen vision, ${porHacer.length} sin transcribir`);
   console.log(`Escribe cada una en ${TRANSCRIPTS_DIR}/<fichero>`);
   console.log("");
   for (const p of pendientes) {
@@ -367,8 +383,6 @@ function cmdTranscribe(): void {
       console.log(`             locale:   ${p.entry.subjectCode === "spanish" ? "es" : "en"}`);
     }
   }
-  console.log("");
-  console.log(`Ademas hay ${dudosos} PDF marcados 'text_layer' que solo se sabe si sirven al abrirlos.`);
   console.log("");
 }
 
