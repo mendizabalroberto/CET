@@ -58,7 +58,6 @@ import { MIXED_TOPIC_ID, topicSubjectCode, type PracticeTopic } from "./practice
 import {
   answeredCountI18n,
   nextStepI18n,
-  nextStepTargets,
   overviewSummaryI18n,
 } from "./practice-progress-text";
 import { overviewLevels, type TopicProgress } from "./practice-progress";
@@ -118,10 +117,9 @@ export function PracticeTopicGrid({
       level: own?.level ?? null,
       groupLabel: learnI18n((d) => d.practice.topics[topic.slug]),
       evidenceText,
-      // El objetivo y la frase salen del MISMO `nextStep`: si el texto promete
-      // tres aciertos y el dibujo enseña cinco círculos, el dibujo es decoración
-      // y el alumno aprende a no mirarlo.
-      targets: own === undefined ? undefined : nextStepTargets(own.nextStep),
+      // Del `nextStep` ya solo sale la FRASE. El objetivo numérico alimentaba los
+      // círculos del `EffortMeter`, que la tarjeta dejó de montar (obs003): eran
+      // un tercer lenguaje visual para lo que esta misma frase dice en palabras.
       nextStepText: own === undefined ? undefined : nextStepI18n(own.nextStep),
     };
   });

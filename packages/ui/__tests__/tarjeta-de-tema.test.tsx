@@ -48,7 +48,6 @@ function card(overrides: Partial<TopicCardProps> = {}): TopicCardProps {
     hint: "mayor, menor o igual",
     href: "/practice/math.compare",
     level: "learning",
-    targets: 2,
     trackedValue: "math.compare",
     ...TEXTOS,
     ...overrides,
@@ -181,15 +180,25 @@ describe("TopicCard — el color sale de la materia y ningun hexadecimal vive aq
     expect(container.innerHTML).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
   });
 
-  it("sobre el lavado no va texto atenuado: la pista y la evidencia en tinta normal", () => {
+  it("sobre el lavado no va texto atenuado en NINGUNA fila, ni en el separador", () => {
     // `--cet-ink-muted` sobre `--cet-materia-*-suave` mide de 4.45:1 a 4.51:1 y
     // se queda por debajo del 4.5 de WCAG 1.4.3 en tres de los siete tonos.
+    //
+    // Se recorren TODAS las filas y todo lo que cuelga de ellas, no una lista
+    // escrita a mano: la version anterior nombraba «pista» y «evidencia», asi
+    // que el dia que las filas se reorganizaron —y nacio el separador `·`— la
+    // comprobacion se quedo mirando una fila que ya no existia. Una defensa que
+    // enumera lo que vigila deja de vigilar en cuanto alguien anade algo.
     const { container } = wrap(<TopicCard {...card()} />);
+    const link = screen.getByRole("link");
 
-    for (const fila of ["pista", "evidencia"]) {
-      const el = container.querySelector(`[data-cet-fila="${fila}"]`);
-      expect(el, `no se ha pintado la fila ${fila}`).not.toBeNull();
-      expect(el?.className ?? "").not.toContain("ink-muted");
+    expect(filas(link).length, "la tarjeta no ha montado filas").toBeGreaterThan(0);
+
+    for (const el of container.querySelectorAll("[data-cet-fila], [data-cet-fila] *")) {
+      expect(
+        el.getAttribute("class") ?? "",
+        `tinta atenuada sobre el lavado: ${el.outerHTML.slice(0, 120)}`,
+      ).not.toContain("ink-muted");
     }
   });
 
@@ -239,22 +248,64 @@ describe("TopicCard — `null` no es un nivel cero", () => {
   });
 });
 
-describe("TopicCard — el medidor de esfuerzo no dibuja el cero", () => {
-  it("targets = 0 no pinta ni un circulo, y el siguiente paso se escribe", () => {
-    const { container } = wrap(<TopicCard {...card({ targets: 0 })} />);
+/**
+ * EL NOMBRE NO COMPARTE FILA CON NADA. Esta es la defensa que nace de obs003.
+ *
+ * La escalera vivia en la cabecera, pegada al nombre con `ms-auto shrink-0`. En
+ * produccion eso se leyo asi: «Comparar» y «Lo llevas bien» pintados uno encima
+ * del otro; «Impropias mixtas» partido en dos con el indicador incrustado en
+ * medio; «x / 10, 100, 1.000» ocupando tres lineas con «Dominado» flotando al
+ * lado. No era un problema de anchura: era que el titulo tenia un vecino que no
+ * cede sitio.
+ *
+ * Por eso el invariante NO dice «que la escalera este abajo» —eso lo cumpliria
+ * cualquier recolocacion y volveria a romperse al siguiente indicador que a
+ * alguien le parezca pequeno— sino: **la cabecera no cambia con el progreso**.
+ * Un indicador es, por definicion, algo que cambia con el progreso; si la
+ * cabecera no cambia nunca, no hay ninguno dentro. Es la misma tecnica de firmas
+ * que ya protege a la pista.
+ */
+describe("TopicCard — el nombre no comparte fila con ningun indicador", () => {
+  it("la cabecera es identica en todos los estados de progreso", () => {
+    const porFila = firmasPorFila();
+    const cabecera = indiceDeFila("cabecera");
 
-    expect(container.querySelectorAll("circle")).toHaveLength(0);
-    expect(screen.getByText("2 aciertos y subes de nivel")).toBeInTheDocument();
+    expect(
+      new Set(porFila[cabecera] ?? []).size,
+      "La cabecera cambia con el progreso, luego lleva un indicador dentro. " +
+        "El nombre del tema no comparte fila con nada: lo que hable de progreso " +
+        "va al bloque del pie.",
+    ).toBe(1);
   });
 
-  it("sin `targets` tampoco: ausente y cero son lo mismo", () => {
-    const { container } = wrap(<TopicCard {...card({ targets: undefined })} />);
-    expect(container.querySelectorAll("circle")).toHaveLength(0);
-  });
+  it("la cabecera no lleva ningun dibujo con rol de imagen junto al nombre", () => {
+    // El medallon es `aria-hidden`; la escalera es `role="img"`. Si aparece un
+    // `role="img"` aqui, alguien ha vuelto a colgar un indicador del titulo.
+    wrap(<TopicCard {...card()} />);
+    const cabecera = screen.getByRole("link").querySelector('[data-cet-fila="cabecera"]');
 
-  it("con objetivo pendiente hay un circulo por cosa que falta", () => {
-    const { container } = wrap(<TopicCard {...card({ targets: 3 })} />);
-    expect(container.querySelectorAll("circle")).toHaveLength(3);
+    expect(cabecera).not.toBeNull();
+    expect(cabecera?.querySelectorAll('[role="img"]')).toHaveLength(0);
+  });
+});
+
+/**
+ * El `EffortMeter` se fue de esta tarjeta a proposito: sus circulos eran un
+ * TERCER lenguaje visual —tras la escalera y las frases— para el mismo dato que
+ * la frase de debajo ya decia con palabras («2 aciertos y subes a Dominado»).
+ * El componente sigue vivo y con sus propias pruebas en su fichero; lo que se
+ * retiro es su uso aqui. Este test existe para que no vuelva por descuido.
+ */
+describe("TopicCard — un solo lenguaje para el progreso", () => {
+  it("ningun estado de progreso dibuja circulos", () => {
+    for (const escenario of ESCENARIOS) {
+      const { container } = wrap(<TopicCard {...card(escenario)} />);
+      expect(
+        container.querySelectorAll("circle"),
+        `el escenario "${escenario.level ?? "sin nivel"}" dibuja circulos`,
+      ).toHaveLength(0);
+      cleanup();
+    }
   });
 });
 
@@ -262,7 +313,7 @@ describe("TopicCard — un rotulo que la app no pasa no deja hueco ni literal", 
   it("sin evidencia y sin siguiente paso, esas filas no se montan", () => {
     wrap(
       <TopicCard
-        {...card({ evidenceText: undefined, nextStepText: undefined, targets: 0, level: null })}
+        {...card({ evidenceText: undefined, nextStepText: undefined, level: null })}
       />,
     );
     const link = screen.getByRole("link");
@@ -281,11 +332,14 @@ describe("TopicCard — un rotulo que la app no pasa no deja hueco ni literal", 
     }
   });
 
-  it("sin la frase del siguiente paso no se dibujan circulos sueltos", () => {
-    // Un medidor sin su mensaje seria un dibujo que no dice nada, y ademas el
-    // mensaje es su propio texto accesible: sin el, el `<title>` iria en blanco.
-    const { container } = wrap(<TopicCard {...card({ nextStepText: undefined, targets: 4 })} />);
-    expect(container.querySelectorAll("circle")).toHaveLength(0);
+  it("sin nivel y sin evidencia, la fila del pie tampoco se monta", () => {
+    // La escalera sola no sostiene una fila: si no hay nivel NI cifra, no hay
+    // nada que contar y la fila sobra. Un renglon vacio al pie es peor que su
+    // ausencia, que es la misma regla que rige la evidencia y el siguiente paso.
+    wrap(<TopicCard {...card({ level: null, evidenceText: undefined })} />);
+    const link = screen.getByRole("link");
+
+    expect(link.querySelector('[data-cet-fila="nivel"]')).toBeNull();
   });
 });
 
@@ -305,26 +359,22 @@ const ESCENARIOS: readonly Partial<TopicCardProps>[] = [
   {
     level: "starting",
     evidenceText: { es: "5 preguntas respondidas", en: "5 questions answered" },
-    targets: 4,
     nextStepText: { es: "4 aciertos y subes de nivel", en: "4 more correct" },
   },
   {
     level: "learning",
     evidenceText: { es: "12 preguntas respondidas", en: "12 questions answered" },
-    targets: 3,
     nextStepText: { es: "3 aciertos y subes de nivel", en: "3 more correct" },
   },
   {
     level: "solid",
     evidenceText: { es: "20 preguntas respondidas", en: "20 questions answered" },
-    targets: 1,
     nextStepText: { es: "1 acierto y subes de nivel", en: "1 more correct" },
   },
   {
     // Dominado: aqui el medidor se sustituye por la frase, y la fila SIGUE.
     level: "mastered",
     evidenceText: { es: "30 preguntas respondidas", en: "30 questions answered" },
-    targets: 0,
     nextStepText: { es: "Dominado. Pásate de vez en cuando", en: "Mastered" },
   },
 ];
@@ -410,18 +460,15 @@ describe("TopicCard — densidad: tres filas de progreso y ni una mas", () => {
     expect(new Set(porFila[pista] ?? []).size).toBe(1);
   });
 
-  it("el siguiente paso es una fila tanto dibujado como escrito", () => {
-    // Es el caso que hace bailar el alto de la tarjeta si se monta mal: con
-    // objetivo pendiente van los circulos y ya dominado va la frase, pero la
-    // tarjeta tiene que medir lo mismo en los dos.
-    const conMedidor = wrap(<TopicCard {...card({ targets: 2 })} />);
-    const filasConMedidor = filas(within(conMedidor.container).getByRole("link")).length;
-    cleanup();
+  it("el bloque de progreso va al pie, detras de la pista", () => {
+    // El orden es la mitad del arreglo de obs003: arriba quien es el tema,
+    // abajo como va. Ademas es lo que iguala el alto de las tarjetas de una
+    // misma fila —el bloque se empuja al fondo con `mt-auto`— en vez de dejar
+    // el hueco colgando debajo del texto, como se veia en «Unidades metricas».
+    wrap(<TopicCard {...card()} />);
+    const nombres = filas(screen.getByRole("link")).map((f) => f.getAttribute("data-cet-fila"));
 
-    const conFrase = wrap(<TopicCard {...card({ targets: 0 })} />);
-    const filasConFrase = filas(within(conFrase.container).getByRole("link")).length;
-
-    expect(filasConFrase).toBe(filasConMedidor);
+    expect(nombres).toEqual(["cabecera", "pista", "nivel", "siguiente"]);
   });
 });
 
@@ -437,7 +484,6 @@ const REJILLA: readonly TopicCardProps[] = [
     name: "Mezcla",
     href: "/practice/math.mix",
     level: null,
-    targets: 0,
     nextStepText: undefined,
     evidenceText: undefined,
   }),

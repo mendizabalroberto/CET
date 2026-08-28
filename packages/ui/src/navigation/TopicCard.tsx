@@ -45,18 +45,37 @@
  * lo que estorbaba, era el gris de encima.
  *
  * ===========================================================================
- * TRES FILAS QUE HABLAN DE PROGRESO, Y NI UNA MAS
+ * ARRIBA QUIEN ES; ABAJO COMO VA. EL NOMBRE NO COMPARTE FILA CON NADA
  * ===========================================================================
- * `apps/web/.../densidad-de-indicadores.test.tsx` cuenta como indicador toda
- * fila de la tarjeta cuya pinta cambia con el progreso, y el tope es tres. Aqui
- * son exactamente esas tres —cabecera con la escalera, evidencia y siguiente
- * paso—; la pista no cambia nunca y por eso no gasta cupo. Una cuarta fila que
- * dependa del avance pone rojo aquel fichero, y la respuesta correcta es quitar
- * una, no subir el tope.
+ * Esta tarjeta se rehizo el 28 de agosto de 2026 (obs003). La escalera vivia en
+ * la cabecera, pegada al nombre con `ms-auto shrink-0`, y en produccion se leyo
+ * asi: «Comparar» y «Lo llevas bien» pintados uno encima del otro; «Impropias
+ * mixtas» partido en dos con el indicador incrustado en medio; «x / 10, 100,
+ * 1.000» ocupando tres lineas con «Dominado» flotando al lado.
  *
- * Y el numero de filas no puede bailar entre estados de progreso: el siguiente
- * paso es SIEMPRE una fila, se dibuje con los circulos del `EffortMeter`
- * mientras queda objetivo o se escriba como frase cuando ya no queda.
+ * No era falta de anchura: era que el titulo tenia un vecino que no cede sitio.
+ * Un `min-w-0` mas o un `truncate` habrian escondido el sintoma hasta el
+ * siguiente nombre largo. La cabecera es hoy medallon y nombre, y nada mas.
+ *
+ * El orden es el de `SubjectCard` en /learn, que es la pantalla hermana: quien
+ * es el tema, la pista, y al pie el bloque que habla de progreso —escalera con
+ * su palabra y la cifra que la sostiene— seguido de que hacer ahora.
+ *
+ * `mt-auto` en la primera fila del pie es lo que iguala el alto: la rejilla
+ * estira las tarjetas a la mas alta de la fila, y sin el empujon el contenido se
+ * queda arriba dejando el hueco colgando debajo del texto. Con el, el hueco cae
+ * en medio y los pies se alinean.
+ *
+ * Y un lenguaje visual, no tres. Los circulos del `EffortMeter` se fueron: eran
+ * un tercer dibujo —tras la escalera y las frases— para el dato que la frase de
+ * al lado ya daba en palabras. `EffortMeter` sigue vivo y con sus pruebas en su
+ * fichero; lo que se retiro es su uso aqui.
+ *
+ * `apps/web/.../densidad-de-indicadores.test.tsx` cuenta como indicador toda
+ * fila cuya pinta cambia con el progreso, y el tope es tres. Aqui son dos —el
+ * pie entero: nivel y siguiente paso—; cabecera y pista no cambian nunca. Una
+ * fila mas que dependa del avance pone rojo aquel fichero, y la respuesta
+ * correcta es quitar una, no subir el tope.
  *
  * ===========================================================================
  * LA TELEMETRIA VIVE CON EL COMPONENTE
@@ -88,9 +107,7 @@
  * Ni un literal de cara al usuario vive en el paquete. `name` y `hint` llegan ya
  * resueltos por la aplicacion; el resto entra como `I18nText` y se resuelve con
  * `useI18n()`. Si la aplicacion no pasa uno, `t()` devuelve cadena vacia y la
- * fila NO se pinta: un hueco vacio es peor que la ausencia, y un medidor de
- * esfuerzo sin su frase seria justo el dibujo decorativo que este repositorio
- * persigue.
+ * fila NO se pinta: un hueco vacio es peor que la ausencia.
  */
 
 import type { CSSProperties, ReactNode } from "react";
@@ -99,7 +116,6 @@ import type { I18nText } from "@cet/shared";
 import { cn } from "../lib/cn.js";
 import { useI18n } from "../lib/i18n.js";
 import type { MasteryLevel } from "../data/mastery-level.js";
-import { EffortMeter } from "../progress/EffortMeter.js";
 import { MasteryLadder } from "../progress/MasteryLadder.js";
 
 import { CARD_CHROME, MEDALLION_CHROME, cardSkin, medallionSkin } from "./card-chrome.js";
@@ -124,8 +140,6 @@ export interface TopicCardProps {
   readonly groupLabel: I18nText;
   /** "10 preguntas respondidas" / "Sin practicar todavia". */
   readonly evidenceText?: I18nText | undefined;
-  /** Circulos del `EffortMeter`. 0 o ausente = ninguno. */
-  readonly targets?: number | undefined;
   /** La frase del siguiente paso. */
   readonly nextStepText?: I18nText | undefined;
   /**
@@ -154,7 +168,6 @@ export function TopicCard({
   level,
   groupLabel,
   evidenceText,
-  targets,
   nextStepText,
   trackedValue,
   className,
@@ -169,14 +182,12 @@ export function TopicCard({
   const evidence = t(evidenceText);
   const nextStep = t(nextStepText);
 
-  /* `targets` llega de un calculo de la aplicacion: se sanea antes de decidir
-     con el. Un decimal o un negativo no pueden convertirse en una fila. */
-  const pending = Number.isFinite(targets) ? Math.trunc(targets ?? 0) : 0;
-
-  /* El medidor solo se monta si ADEMAS hay frase: `EffortMeter` escribe el
-     mensaje al lado de los circulos y lo usa como su texto accesible, asi que
-     sin el serian un dibujo que no dice nada. */
-  const showMeter = pending > 0 && nextStepText !== undefined && nextStep.length > 0;
+  /* Cual de las dos filas del pie lleva el `mt-auto`. Es la PRIMERA que se
+     monte: si el empujon lo llevara siempre `nivel` y ese tema no tuviera ni
+     nivel ni cifra —el caso de «Unidades metricas»—, la frase se quedaria
+     pegada a la pista y esa tarjeta volveria a desalinearse con sus vecinas. */
+  const alPie: "nivel" | "siguiente" | null =
+    level !== null || evidence.length > 0 ? "nivel" : nextStep.length > 0 ? "siguiente" : null;
 
   return (
     <a
@@ -188,8 +199,8 @@ export function TopicCard({
       className={cn(CARD_CHROME, className)}
       style={skin}
     >
-      {/* Fila 1: quien es el tema y como va. El orden importa porque es el
-          nombre accesible del enlace. */}
+      {/* Fila 1: QUIEN es el tema. Y solo eso: el nombre no comparte fila con
+          nada. Ver la cabecera del fichero. */}
       <span data-cet-fila="cabecera" className="flex items-center gap-3">
         <span className={MEDALLION_CHROME} style={medallionSkin(identity)}>
           <TopicIcon code={topic} />
@@ -197,17 +208,6 @@ export function TopicCard({
         {/* `text-body-lg` y no un tamano a pelo: la escala vive en el preset,
             que es donde se cambia una vez para todo el producto. */}
         <span className="min-w-0 flex-1 text-body-lg font-bold leading-tight">{name}</span>
-        {/* Sin nivel no hay escalera. No existe un "nivel cero": cuatro peldanos
-            vacios le dirian a quien no ha empezado que va mal. */}
-        {level === null ? null : (
-          <MasteryLadder
-            level={level}
-            groupLabel={groupLabel}
-            size="sm"
-            showLabel
-            className="ms-auto shrink-0"
-          />
-        )}
       </span>
 
       {/* Fila 2: la pista. No cambia con el progreso, y por eso no gasta cupo
@@ -216,25 +216,51 @@ export function TopicCard({
         {hint}
       </span>
 
-      {/* Fila 3: la cifra de la que sale todo lo demas. Sin ella el nivel es un
-          oraculo; con ella el alumno puede comprobarlo. */}
-      {evidence.length > 0 ? (
-        <span data-cet-fila="evidencia" className="text-body-sm">
-          {evidence}
+      {/* Fila 3: COMO va. La escalera con su palabra y la cifra de la que sale
+          — el mismo sitio y el mismo orden que las cifras de `SubjectCard` en
+          /learn, que es la pantalla hermana.
+
+          `mt-auto` es lo que iguala el alto de las tarjetas de una misma fila:
+          la rejilla las estira a la mas alta, y sin esto el contenido se queda
+          arriba dejando el hueco colgando (se veia en «Unidades metricas»). Con
+          el, el hueco cae en medio y el pie de todas las tarjetas se alinea.
+
+          Sin nivel no hay escalera. No existe un "nivel cero": cuatro peldanos
+          vacios le dirian a quien no ha empezado que va mal. */}
+      {level !== null || evidence.length > 0 ? (
+        <span
+          data-cet-fila="nivel"
+          className={cn(
+            "flex flex-wrap items-center gap-x-2 gap-y-1 text-body-sm",
+            alPie === "nivel" ? "mt-auto" : undefined,
+          )}
+        >
+          {level === null ? null : (
+            <MasteryLadder level={level} groupLabel={groupLabel} size="sm" showLabel />
+          )}
+          {/* SIN separador `·`, y a proposito, aunque /learn lo use.
+              Alli separa dos cifras cortas que caben en un renglon. Aqui los dos
+              trozos —«Dominado» y «10 preguntas respondidas»— no caben en el
+              ancho de la tarjeta, asi que la fila envuelve y el punto se quedaba
+              colgando al final de la primera linea separando el vacio. Un
+              separador que no cae entre las dos cosas no separa: estorba.
+              La envoltura ya hace el trabajo, y la escalera marca donde empieza
+              el nivel. */}
+          {evidence.length > 0 ? <span>{evidence}</span> : null}
         </span>
       ) : null}
 
-      {/* Fila 4: el siguiente paso, dibujado o escrito, pero siempre UNA fila.
-          Ya dominado, `EffortMeter` no pinta cero circulos —cero no es
-          ausencia— y dejar muda la tarjeta haria que el unico tema que el
+      {/* Fila 4: que hacer ahora, escrito. Ya dominado tambien habla —«Pasate de
+          vez en cuando»—: dejar muda la tarjeta haria que el unico tema que el
           alumno domina fuese el que menos le dice. */}
-      {/* `EffortMeter` no acepta atributos sueltos, asi que esta fila se
-          reconoce por su dibujo y no por un `data-`; el rotulo va en la otra
-          rama, que si es marcado de esta tarjeta. */}
-      {showMeter ? (
-        <EffortMeter targets={pending} message={nextStepText} />
-      ) : nextStep.length > 0 ? (
-        <span data-cet-fila="siguiente" className="text-body-sm font-semibold">
+      {nextStep.length > 0 ? (
+        <span
+          data-cet-fila="siguiente"
+          className={cn(
+            "text-body-sm font-semibold",
+            alPie === "siguiente" ? "mt-auto" : undefined,
+          )}
+        >
           {nextStep}
         </span>
       ) : null}
