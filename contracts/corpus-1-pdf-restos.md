@@ -5,7 +5,7 @@ territory: [packages/content/src/corpus/pdf.ts, packages/content/__tests__/corpu
 forbidden: [packages/ui/src/index.ts, packages/shared/src/index.ts, packages/content/src/corpus/ingest.ts]
 context: [packages/content/src/corpus/pdf.ts, packages/content/__tests__/corpus-pdf.test.ts, packages/content/src/corpus/spans.ts]
 verify: pnpm --filter @cet/content test
-setup: pnpm install --prefer-offline --frozen-lockfile
+setup: pnpm install --prefer-offline --frozen-lockfile && node -e "require('fs').cpSync('D:/Cambridge Exam Trainer/Y6A','Y6A',{recursive:true})"
 rounds: 3
 deadline: 3 rondas o 20 min
 ---
@@ -72,3 +72,28 @@ debe disminuir, ni el de los otros tres PDF de examen de Math.
 - Cambiar el fixture o el umbral de un test existente para que pase.
 - Tocar `ingest.ts`: esta prohibido a proposito, para que la mejora se pruebe
   donde vive.
+
+## 5 · Dos condiciones del entorno que no puedes ignorar
+
+**`Y6A/` no esta en git.** Es material del centro educativo, propiedad de
+terceros, y `.gitignore` lo excluye a proposito. En este worktree lo tienes
+porque el `setup` de este contrato lo copia SOLO para poder verificar; en CI y
+en cualquier otro clon NO existe.
+
+Consecuencia, y es obligatoria: todo `describe` que lea un fichero de `Y6A`
+tiene que saltarse limpiamente cuando el material no esta. El patron ya existe
+en este mismo paquete y se usa en `pipeline.test.ts`, `corpus.test.ts` y
+`corpus-pdf.test.ts`:
+
+```ts
+const hayMaterial = existsSync(join(repoRoot, "Y6A"));
+const describeConMaterial = hayMaterial ? describe : describe.skip;
+```
+
+Y ojo con un detalle de vitest: `describe.skip` SI ejecuta su callback para
+recolectar los tests. Un `readFileSync` suelto en el cuerpo del describe revienta
+igual. La carga va dentro de `beforeAll`, con la variable declarada fuera.
+
+Un test que reviente sin material deja CI en rojo. Ya paso una vez, y costo dos
+contratos agotados en rojo por un motivo que no tenia nada que ver con el
+encargo.
