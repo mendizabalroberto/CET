@@ -34,6 +34,9 @@ export const learnEs: LearnDictionary = {
   },
   lesson: {
     backToIndex: "Volver a tus lecciones",
+    /** Nombre accesible de las migas de pan, y raiz de la ruta. */
+    trailLabel: "Ruta",
+    trailRoot: "Aprender",
     estimated: "Unos {count} min",
     emptyTitle: "Esta lección está vacía",
     emptyBody: "Aquí todavía no hay nada que leer. Díselo a tu profesor para que lo añada.",
@@ -51,7 +54,12 @@ export const learnEs: LearnDictionary = {
     chooseTopic: "Elige un tema",
     topicLegend: "Temas",
     backToTopics: "Elegir otro tema",
+    trailLabel: "Ruta",
+    trailRoot: "Practicar",
     start: "Empezar",
+    /** Nombre accesible de la zona de acciones. Un `role="group"` sin nombre
+     *  no se anuncia como grupo: el lector lee cuatro botones sueltos. */
+    actionsLabel: "Acciones",
     check: "Comprobar",
     nextQuestion: "Siguiente pregunta",
     skip: "Saltar",
