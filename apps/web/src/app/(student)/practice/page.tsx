@@ -44,7 +44,7 @@ export default async function PracticeIndexPage() {
 
   return (
     <UiLocaleProvider locale={locale}>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-8">
         <header>
           <h1 className="text-2xl font-bold text-ink">{t.title}</h1>
           <p className="mt-2 max-w-prose text-muted">{t.subtitle}</p>

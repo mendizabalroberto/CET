@@ -133,3 +133,35 @@ function pickMixedEngineKey(seed: number): string {
   const index = seed % keys.length;
   return keys[index] ?? keys[0] ?? "";
 }
+
+/* -------------------------------------------------------------------------- */
+/* Identidad visual                                                            */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * La MATERIA a la que pertenece un tema de práctica, para que su tarjeta use la
+ * misma identidad que la de `/learn`.
+ *
+ * Sale del primer segmento de la clave del generador (`math.compare` -> `math`),
+ * que es de donde ya sale todo lo demás en este fichero: la lista de temas se
+ * DERIVA del registro de `@cet/engine`, así que el día que se registre un
+ * generador de otra materia su tarjeta cambia de color sin tocar la interfaz. No
+ * hay tabla escrita a mano que se quede desfasada.
+ *
+ * `mix` no tiene generador —es un sorteo entre los demás— y por eso devuelve la
+ * cadena vacía: `subjectIdentity()` la resuelve a la identidad NEUTRA (`otra`),
+ * que es exactamente lo que es. No se le asigna el color de matemáticas a
+ * propósito: sería decir que pertenece a una materia cuando lo que hace es
+ * cruzarlas.
+ *
+ * Aviso de siempre en esta casa: el color NO identifica nada. Aquí lo que
+ * distingue un tema de otro son su nombre y su pista, que van escritos en la
+ * tarjeta. El rail de color es refuerzo, y en escala de grises los siete tonos
+ * son el mismo gris. Ver `packages/ui/src/navigation/subject-identity.ts`.
+ */
+export function topicSubjectCode(topic: PracticeTopic): string {
+  const key = topic.engineKey;
+  if (key === null) return "";
+  const [head] = key.split(".");
+  return head ?? "";
+}
