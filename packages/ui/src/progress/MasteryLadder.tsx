@@ -179,7 +179,15 @@ export function MasteryLadder({
       {/* El dibujo ya lleva el nivel en su <title>; escribirlo otra vez para el
           lector lo diria dos veces. Visualmente si tiene que estar: es el canal
           que no depende ni del color ni de contar barritas. */}
-      <span aria-hidden="true" className="text-body-sm font-semibold text-[var(--cet-ink-muted)]">
+      {/* El rotulo hereda la tinta del contenedor, como el dibujo. Fijaba
+          `--cet-ink-muted` y eso media 4.45:1 a 4.51:1 sobre los lavados de
+          materia de /practice: tres de siete tonos por debajo del 4.5 de WCAG
+          1.4.3. El contenedor es quien ha medido su fondo, asi que es quien
+          decide el color. Donde antes ya era correcto (tarjetas sobre
+          --cet-surface con tinta --cet-ink) la palabra pasa de atenuada a
+          tinta normal: cambio visible y decidido, no un accidente — rotulo y
+          escalera comparten tinta porque son dos mitades del mismo indicador. */}
+      <span aria-hidden="true" className="text-body-sm font-semibold">
         {levelText}
       </span>
     </span>
