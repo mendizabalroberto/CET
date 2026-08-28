@@ -268,10 +268,20 @@ begin
     if exists (select 1 from cron.job where jobname = 'skill_mastery_job') then
       perform cron.unschedule('skill_mastery_job');
     end if;
+    -- El comando va entre comillas simples, y no entre el delimitador de dólar
+    -- doble que abre este mismo bloque. El delimitador es LÉXICO: cualquier
+    -- aparición suya aquí dentro cierra el bloque, aunque esté en un comentario.
+    -- Con él, el resto del cuerpo queda suelto y Postgres corta con «syntax
+    -- error at or near "select"», que manda a mirar el SELECT y no las comillas.
+    --
+    -- Lo encontró la primera aplicación real contra la base, y no lo habría
+    -- visto ningún análisis del texto de la migración. Dos veces, además: la
+    -- primera en el comando programado, y la segunda en el comentario que
+    -- explicaba la primera, por nombrar el delimitador en vez de describirlo.
     perform cron.schedule(
       'skill_mastery_job',
       '*/10 * * * *',
-      $$select app.rebuild_skill_mastery();$$
+      'select app.rebuild_skill_mastery()'
     );
   end if;
 end;

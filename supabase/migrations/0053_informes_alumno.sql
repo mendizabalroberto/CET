@@ -3,6 +3,25 @@
 -- Cambridge Exam Trainer · © 2026 Roberto Mendizabal.
 -- =============================================================================
 
+-- -----------------------------------------------------------------------------
+-- Se sueltan antes de recrear
+-- -----------------------------------------------------------------------------
+-- `create or replace function` NO puede cambiar el tipo de retorno: falla con
+-- «cannot change return type of existing function». Con funciones que devuelven
+-- `table (...)`, eso incluye anadir, quitar o retipar UNA columna, que es
+-- exactamente lo que pasa mientras un informe se esta afinando.
+--
+-- Sin estos drops, la migracion solo se aplica en una base donde las funciones
+-- no existan todavia: reaplicarla —que es lo que hace `db-apply` con el
+-- directorio entero— reventaria. Los GRANT se vuelven a conceder mas abajo, asi
+-- que soltar no deja ningun hueco de permisos.
+drop function if exists app.informe_alumno_resumen(uuid, timestamptz, timestamptz);
+drop function if exists app.informe_alumno_skills(uuid, timestamptz, timestamptz);
+drop function if exists app.informe_alumno_secuencia(uuid);
+drop function if exists app.informe_alumno_habitos(uuid, timestamptz, timestamptz);
+drop function if exists app.informe_alumno_botones(uuid, timestamptz, timestamptz);
+drop function if exists app.puede_ver_informe(uuid);
+
 create or replace function app.puede_ver_informe(p_student_id uuid)
 returns void
 language plpgsql
@@ -117,11 +136,17 @@ begin
         and le.event_type::text = 'practice_streak'
         and le.server_ts >= p_desde and le.server_ts < p_hasta)::integer
   from (
+    -- `/ 60.0` al final, y no es un detalle: `extract(epoch ...)` da SEGUNDOS y
+    -- la columna se llama `minutos_estudio`. Sin la division, el informe de un
+    -- nino que estudio un minuto decia «60 minutos de estudio» —y lo decia con
+    -- toda la confianza del mundo, porque el numero es correcto en otra unidad.
+    -- Es el fallo que ninguna revision del texto del SQL habria visto y que la
+    -- primera ejecucion contra datos reales canta de inmediato.
     select greatest(
              extract(epoch from (max(server_ts) - min(server_ts)))
              - (coalesce(sum(case when event_type::text = 'idle_end' then (payload->>'idleMs')::numeric end), 0)
                 + coalesce(sum(case when event_type::text = 'focus_gained' then (payload->>'awayMs')::numeric end), 0)) / 1000.0,
-             0) as min_estudio
+             0) / 60.0 as min_estudio
     from public.learning_events
     where student_id = p_student_id
       and server_ts >= p_desde and server_ts < p_hasta
@@ -140,7 +165,10 @@ create or replace function app.informe_alumno_skills(
 )
 returns table (
   skill_id uuid,
-  nombre_skill text,
+  -- jsonb y no text: el nombre es I18nText y quien llama resuelve el idioma con
+  -- `resolveI18n`, igual que en el resto de la aplicacion. Declararlo `text` y
+  -- meterle el JSON dentro hace que el front-end pinte «{"en": "Reading"}».
+  nombre_skill jsonb,
   mastery numeric
 )
 language plpgsql
@@ -151,7 +179,7 @@ as $$
 begin
   perform app.puede_ver_informe(p_student_id);
   return query
-  select sm.skill_id, s.name::text, sm.mastery::numeric
+  select sm.skill_id, s.name, sm.mastery::numeric
   from public.skill_mastery sm
   join public.skills s on s.id = sm.skill_id
   where sm.student_id = p_student_id
@@ -273,11 +301,14 @@ begin
     ), 0)::numeric,
     coalesce((
       select sum((payload->>'idleMs')::numeric)
-             / nullif((select sum(extract(epoch from (max(server_ts) - min(server_ts))) * 1000)
-                       from public.learning_events
-                       where student_id = p_student_id
-                         and server_ts >= p_desde and server_ts < p_hasta
-                       group by session_id), 0)
+             / nullif((select sum(s.duracion_ms) from (
+                         select extract(epoch from (max(server_ts) - min(server_ts))) * 1000
+                                  as duracion_ms
+                         from public.learning_events
+                         where student_id = p_student_id
+                           and server_ts >= p_desde and server_ts < p_hasta
+                         group by session_id
+                       ) s), 0)
       from public.learning_events
       where student_id = p_student_id
         and event_type::text = 'idle_end'
@@ -285,11 +316,14 @@ begin
     ), 0)::numeric,
     coalesce((
       select count(*)::numeric
-             / nullif((select sum(extract(epoch from (max(server_ts) - min(server_ts))) * 1000)
-                       from public.learning_events
-                       where student_id = p_student_id
-                         and server_ts >= p_desde and server_ts < p_hasta
-                       group by session_id) / 3600000.0, 0)
+             / nullif((select sum(s.duracion_ms) from (
+                         select extract(epoch from (max(server_ts) - min(server_ts))) * 1000
+                                  as duracion_ms
+                         from public.learning_events
+                         where student_id = p_student_id
+                           and server_ts >= p_desde and server_ts < p_hasta
+                         group by session_id
+                       ) s) / 3600000.0, 0)
       from public.learning_events
       where student_id = p_student_id
         and event_type::text = 'focus_lost'
@@ -343,10 +377,15 @@ as $$
 begin
   perform app.puede_ver_informe(p_student_id);
   return query
-  select 'control'::text,
-         le.payload->>'control',
-         count(*)::integer,
+  -- Las columnas se ALIAN aunque parezca redundante: despues de un UNION, el
+  -- ORDER BY solo puede nombrar columnas de SALIDA, y sin alias la salida se
+  -- llama `?column?`. El error es «invalid UNION/INTERSECT/EXCEPT ORDER BY
+  -- clause», que no menciona ni el UNION que lo causa ni los alias que faltan.
+  select 'control'::text as tipo,
+         le.payload->>'control' as clave,
+         count(*)::integer as cuenta,
          percentile_cont(0.5) within group (order by (le.payload->>'sinceLastMs')::numeric)::numeric
+           as mediana_ms
   from public.learning_events le
   where le.student_id = p_student_id
     and le.event_type::text = 'ui_interaction'
@@ -362,7 +401,9 @@ begin
     and le.event_type::text = 'nav_route_changed'
     and le.server_ts >= p_desde and le.server_ts < p_hasta
   group by le.payload->>'from', le.payload->>'to'
-  order by tipo, cuenta desc, clave;
+  -- Por POSICION y no por nombre: dentro de plpgsql, `order by tipo` es ademas
+  -- ambiguo entre la columna de salida y el parametro OUT que se llama igual.
+  order by 1, 3 desc, 2;
 end;
 $$;
 

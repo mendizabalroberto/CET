@@ -6,18 +6,53 @@ begin;
 
 select plan(19);
 
-insert into public.schools (id, status) values
-  ('00000000-0000-0000-0000-000000000001'::uuid, 'active'),
-  ('00000000-0000-0000-0000-000000000002'::uuid, 'active');
+-- -----------------------------------------------------------------------------
+-- Siembra
+-- -----------------------------------------------------------------------------
+-- No se usa `helpers/fixture.psql`: el fixture inserta materias GLOBALES y esta
+-- base ya tiene el currículo real, así que choca con `subjects_global_code_uniq`
+-- antes del primer assert. Todo lo de aquí cuelga de colegios propios, donde el
+-- índice único que aplica es el de colegio y no el global.
+insert into public.schools (id, name, slug) values
+  ('00000000-0000-0000-0000-000000000001'::uuid, 'Colegio Informes A', 'informes-a'),
+  ('00000000-0000-0000-0000-000000000002'::uuid, 'Colegio Informes B', 'informes-b');
 
-insert into public.profiles (id, school_id, role, status) values
-  ('00000000-0000-0000-0000-000000000011'::uuid, '00000000-0000-0000-0000-000000000001'::uuid, 'teacher', 'active'),
-  ('00000000-0000-0000-0000-000000000012'::uuid, '00000000-0000-0000-0000-000000000001'::uuid, 'student', 'active'),
-  ('00000000-0000-0000-0000-000000000013'::uuid, '00000000-0000-0000-0000-000000000002'::uuid, 'teacher', 'active');
+-- `profiles` lleva clave foránea contra `auth.users`, y `full_name` es NOT NULL.
+insert into auth.users (id, email) values
+  ('00000000-0000-0000-0000-000000000011'::uuid, 'teacher.informes.a@cet.test'),
+  ('00000000-0000-0000-0000-000000000012'::uuid, 's.INF1@informes-a.students.cet.invalid'),
+  ('00000000-0000-0000-0000-000000000013'::uuid, 'teacher.informes.b@cet.test');
 
-insert into public.skills (id, name, school_id) values
-  ('00000000-0000-0000-0000-000000000021'::uuid, 'Reading', null),
-  ('00000000-0000-0000-0000-000000000022'::uuid, 'Listening', null);
+-- El personal lleva correo obligatorio (`profiles_staff_needs_email`) y el
+-- alumno NO lo lleva: un nino de primaria no tiene cuenta de correo, y esa
+-- asimetria es una decision del modelo, no un descuido.
+insert into public.profiles (id, school_id, role, full_name, email, status) values
+  ('00000000-0000-0000-0000-000000000011'::uuid, '00000000-0000-0000-0000-000000000001'::uuid, 'teacher', 'Profe A', 'teacher.informes.a@cet.test', 'active'),
+  ('00000000-0000-0000-0000-000000000012'::uuid, '00000000-0000-0000-0000-000000000001'::uuid, 'student', 'Alumno Informes', null, 'active'),
+  ('00000000-0000-0000-0000-000000000013'::uuid, '00000000-0000-0000-0000-000000000002'::uuid, 'teacher', 'Profe B', 'teacher.informes.b@cet.test', 'active');
+
+-- `skills.course_id` es NOT NULL con clave foránea, y `name` es I18nText, no
+-- texto suelto: hay que montar la cadena materia -> curso -> skill entera.
+insert into public.subjects (id, school_id, code, name) values
+  ('00000000-0000-0000-0000-000000000019'::uuid,
+   '00000000-0000-0000-0000-000000000001'::uuid, 'informes_test',
+   '{"en":"Informes test subject"}'::jsonb);
+
+insert into public.courses (id, school_id, subject_id, name, year_level) values
+  ('00000000-0000-0000-0000-000000000020'::uuid,
+   '00000000-0000-0000-0000-000000000001'::uuid,
+   '00000000-0000-0000-0000-000000000019'::uuid,
+   '{"en":"Informes test course"}'::jsonb, 6);
+
+insert into public.skills (id, school_id, course_id, code, name) values
+  ('00000000-0000-0000-0000-000000000021'::uuid,
+   '00000000-0000-0000-0000-000000000001'::uuid,
+   '00000000-0000-0000-0000-000000000020'::uuid,
+   'informes.reading', '{"en":"Reading"}'::jsonb),
+  ('00000000-0000-0000-0000-000000000022'::uuid,
+   '00000000-0000-0000-0000-000000000001'::uuid,
+   '00000000-0000-0000-0000-000000000020'::uuid,
+   'informes.listening', '{"en":"Listening"}'::jsonb);
 
 insert into public.skill_mastery
   (student_id, skill_id, school_id, mastery, confidence, attempts_count, correct_count, ewma_correct, avg_time_ms, hints_used, last_practiced_at, updated_at)
@@ -76,7 +111,10 @@ select is(
 );
 select is(
   (select porcentaje_acierto from app.informe_alumno_resumen('00000000-0000-0000-0000-000000000012', now() - interval '1 day', now() + interval '1 day')),
-  50,
+  -- `50.0` y no `50`: la columna es numeric y `is()` es polimorfica, asi que un
+  -- literal entero no encuentra la funcion. El error («function is(numeric,
+  -- integer, unknown) does not exist») suena a que falta pgTAP y es un tipo.
+  50.0,
   'porcentaje de acierto 50%'
 );
 select is(
@@ -91,8 +129,8 @@ select is(
   'dos skills'
 );
 select is(
-  (select nombre_skill from app.informe_alumno_skills('00000000-0000-0000-0000-000000000012', now() - interval '1 day', now() + interval '1 day') limit 1),
-  'Reading',
+  (select nombre_skill from app.informe_alumno_skills('00000000-0000-0000-0000-000000000012', now() - interval '1 day', now() + interval '1 day') limit 1)::jsonb,
+  '{"en": "Reading"}'::jsonb,
   'la skill más floja primero'
 );
 

@@ -18,6 +18,12 @@ begin
     execute 'create role teacher';
   end if;
 
+  -- `set role` exige ser MIEMBRO del rol, no solo que el rol exista. Sin esta
+  -- linea el error es «permission denied to set role "teacher"», que se lee como
+  -- un problema de privilegios del rol destino cuando es del rol de origen. La
+  -- pertenencia se revierte con el rollback final, como todo lo demas.
+  execute format('grant teacher to %I', current_user);
+
   select n.nspname into v_schema
   from pg_catalog.pg_proc p
   join pg_catalog.pg_namespace n on n.oid = p.pronamespace
@@ -47,7 +53,7 @@ select is(
 
 -- 2 · todas las particiones declaran RLS activada
 select is(
-  (select count(*) from app.estado_particiones_learning_events() where not rls_activa),
+  (select count(*)::int from app.estado_particiones_learning_events() where not rls_activa),
   0,
   'todas las particiones de learning_events tienen RLS activada'
 );
@@ -61,7 +67,7 @@ join pg_catalog.pg_namespace n on n.oid = c.relnamespace
 where i.inhparent = 'public.learning_events'::regclass
   and n.nspname = 'public';
 
-create temp table _retencion_dry_out (linea text) as
+create temp table _retencion_dry_out (linea) as
 select * from app.purgar_learning_events(24, true);
 
 -- 3 · dry run no borra nada
@@ -77,7 +83,7 @@ select is(
 );
 
 -- Preparación del caso p_meses => 0
-create temp table _retencion_purga_0 (linea text) as
+create temp table _retencion_purga_0 (linea) as
 select * from app.purgar_learning_events(0, true);
 
 -- 4 · learning_events_default nunca aparece como candidata a purga
