@@ -22,7 +22,6 @@
  * El progreso persistente se actualiza al volver a entrar, que es cuando el
  * alumno lo mira.
  */
-import Link from "next/link";
 import { EffortMeter, MasteryLadder } from "@cet/ui";
 
 import { getLearnDictionary, learnI18n } from "@/components/learn/dictionary";
@@ -35,6 +34,7 @@ import {
 } from "@/components/learn/practice-progress-text";
 import { PracticeSession } from "@/components/learn/PracticeSession";
 import { getPracticeProgress } from "@/components/learn/queries";
+import { Migas } from "@/components/nav/Migas";
 import { UiLocaleProvider } from "@/components/learn/UiLocaleProvider";
 import { requireStudent } from "@/lib/auth/session";
 import { resolveLocale } from "@/lib/i18n/server";
@@ -61,12 +61,15 @@ export default async function PracticeTopicPage({
     <UiLocaleProvider locale={locale}>
       <div className="flex flex-col gap-6">
         <header className="flex flex-col gap-2">
-          <Link
-            href="/practice"
-            className="inline-flex min-h-11 w-fit items-center text-sm font-semibold text-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2"
-          >
-            {t.backToTopics}
-          </Link>
+          {/* Mismas migas que la leccion: el alumno tiene que poder responder
+              "donde estoy" sin leerse el titulo y adivinar. */}
+          <Migas
+            label={t.trailLabel}
+            items={[
+              { label: t.trailRoot, href: "/practice" },
+              { label: topic ? t.topics[topic.slug] : t.unknownTopicTitle },
+            ]}
+          />
           <h1 className="text-2xl font-bold text-ink">
             {topic ? t.topics[topic.slug] : t.unknownTopicTitle}
           </h1>

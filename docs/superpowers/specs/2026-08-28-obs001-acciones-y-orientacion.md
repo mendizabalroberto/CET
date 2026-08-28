@@ -2,7 +2,7 @@
 
 > © 2026 Roberto Mendizabal. Todos los derechos reservados.
 > Origen: `obs/obs001.docx`, dos capturas anotadas a mano.
-> Estado: **diseñado, con contratos escritos y medidas tomadas.**
+> Estado: **ejecutado y verificado.** `pnpm verify` en verde el 28 de agosto de 2026.
 
 ---
 
@@ -246,20 +246,94 @@ Lo que no se traduce, no se delega:
 | Cableado en las páginas, rótulos i18n, exportación del barril | **Yo** | El barril es ajeno siempre (§5.2) y los rótulos cruzan tres diccionarios |
 | **Mirar que quede bien** | **Yo, con capturas** | §5.5. Un agente que no ve no puede cumplirlo, y «cuadra» es un juicio de ojo |
 
-Los tres contratos tienen territorios disjuntos (`packages/ui/src/{primitives,feedback}`,
-`apps/web/src/components/learn`, `apps/web/src/components/nav`) y ninguno depende
-del resultado de otro, así que salen en un solo lote.
-
 El motor hace la contraprueba por mutación en cada uno: revierte el código y deja
 los tests: si siguen verdes, el parche se rechaza por falso verde. Es lo que
 impide que «pasa el test del orden» signifique «el test no mira el orden».
 
+### 5.1 · Cómo salió, de verdad
+
+Dos lotes y no uno. La zona de acciones necesita la API `part` que entrega el
+contrato de la paleta, y un lote corre en paralelo desde el mismo `HEAD`: no
+puede apoyarse en lo que otro está escribiendo a la vez.
+
+| Contrato | Lote | Rondas | Coste |
+|---|---|---|---|
+| `obs1-paleta-de-botones` | 1 | 3 de 4 | $0.044 (el lote entero) |
+| `obs2-migas-de-pan` | 1 → relanzado ×2 | 4 (rojo) → 1 → 1 | $0.026 |
+| `obs1-zona-de-acciones` | 2 → relanzado | 4 (rojo) → 1 | $0.035 |
+
+**Los tres rojos fueron defectos del contrato, no del agente**, y los tres se
+arreglaron escribiendo en el contrato el dato que faltaba:
+
+1. *Migas.* Su propio test contaba dos enlaces donde su propia regla obligaba a
+   uno. Se añadió el recorrido escalón por escalón del fixture.
+2. *Zona, primer rojo.* Pedí un test de «sin pista, tres botones» que **no se
+   puede montar**: `hint` es obligatorio en `PracticeItem`. Culpa mía; el
+   contrato pedía algo que no existe.
+3. *Zona, segundo rojo.* El agente volvía a buscar el botón por su nombre
+   **después** de pulsarlo, y `HintPanel` lo renombra de «Ver una pista» a
+   «Pista» al abrirse. Se añadió la trampa al contrato, con la forma correcta.
+
+La lección se sostiene: cuando el motor sale rojo cuatro veces con la misma
+salida, lo que hay que releer es el encargo.
+
+### 5.2 · Dos fallos que el motor no podía encontrar
+
+**Un fichero nuevo se perdía al consolidar.** `obs2-migas-de-pan` salió verde y
+la rama se quedó con el test y **sin el componente que ese test probaba**.
+`git diff` no ve un fichero sin indexar, así que el parche verde salía vacío;
+la contraprueba sí borraba el fichero nuevo, y al restaurar no había nada que
+restaurar. Arreglado en `run-contract.mjs`: se indexa antes de medir
+(`git add -A` + `git diff --cached`), se limpia antes de restaurar, y si la
+restauración falla el motor se para en vez de dejar media rama.
+
+**«Comprobar» llevaba meses ilegible.** Al mirar la captura —lo único que
+ningún contrato podía hacer— el botón principal pintaba su texto en `#12202f`
+sobre `#173a63`: **1.53:1**, donde el token prometía 11.53:1.
+
+La causa no estaba en la paleta. `tailwind-merge` no lee la configuración de
+Tailwind: no reconoce `text-body` como un tamaño, lo mete en el mismo grupo que
+`text-[var(--cet-on-primary)]`, y de dos clases del mismo grupo se queda con la
+última. `Button` compone variante y **después** tamaño, así que el color
+desaparecía del atributo `class` en toda variante con tinta propia: `primary`,
+`accent` y `danger`.
+
+`contraste-tokens.test.ts` no podía cazarlo, y no por descuido: mide los
+hexadecimales de la hoja, y los hexadecimales estaban bien. Lo que fallaba era
+el tramo del token a la clase, que nadie vigilaba. Ahora sí:
+`cn.ts` le declara la escala a `tailwind-merge` y
+`packages/ui/__tests__/boton-conserva-su-tinta.test.ts` cubre ese tramo, con la
+contraprueba hecha: revertido el arreglo, sus tres casos caen en rojo.
+
+Es el argumento entero de §5, del derecho y del revés. Traducir lo visual a
+números deja delegar casi todo; lo que no se puede traducir es mirar.
+
 ---
 
-## 6 · Después
+## 6 · Lo que además hizo falta
 
-1. Aplicar las tres ramas `deepseek/*` sobre `main`.
-2. Cablear migas y rótulos (mío).
-3. `pnpm verify`.
-4. Capturas de las dos pantallas, claro y oscuro, 360 px y escritorio → `tocheck/`.
-5. Desplegar.
+**Las vistas previas de `/dev/*` son públicas en desarrollo.** No lo eran, y el
+middleware las mandaba a `/login` antes de que su propio `notFound()` llegara a
+ejecutarse: existían para poder mirar una pantalla sin teclear el PIN de un
+alumno, y no servían para eso. En producción no cambia nada —la comparación es
+falsa y además la página responde 404—, y hay tres tests que lo fijan. Sin esta
+excepción, el fallo de contraste de «Comprobar» seguiría sin descubrirse.
+
+**Migas: tres señales, no dos.** Al verlas en pantalla, un escalón enlazado y
+uno muerto salían idénticos, los dos en gris apagado: la pregunta «cómo me
+muevo» se quedaba otra vez sin responder. Ahora son tres colores distintos —teal
+se pulsa, gris solo sitúa, tinta en negrita es dónde estás— y el enlace se
+subraya al pasar por encima, porque el color nunca va solo.
+
+**El disparador de ayuda acepta el ancho del llamante.** Salía `w-fit` dentro
+de una celda de la rejilla, así que las dos filas no cuadraban entre sí. El
+ancho lo decide ahora el contenedor.
+
+## 7 · Evidencia
+
+- `pnpm verify` en verde: typecheck, lint, **1.461 tests** y build.
+- Capturas en `tocheck/`: `obs001-acciones-*`, `obs001-zona-*-detalle`,
+  `obs001-migas-*`.
+- Vistas previas para volver a mirarlo: `/dev/keyboard-preview` (la zona de
+  acciones dentro de la práctica real) y `/dev/migas-preview` (los cuatro casos
+  de la ruta).

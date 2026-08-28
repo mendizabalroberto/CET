@@ -22,6 +22,7 @@ import {
   LessonOpened,
 } from "@/components/learn/LessonTracking";
 import { getLesson } from "@/components/learn/queries";
+import { Migas, type Miga } from "@/components/nav/Migas";
 import { findPracticeTopic } from "@/components/learn/practice-topics";
 import { UiLocaleProvider } from "@/components/learn/UiLocaleProvider";
 import { requireStudent } from "@/lib/auth/session";
@@ -45,7 +46,13 @@ export default async function LessonPage({
     return (
       <UiLocaleProvider locale={locale}>
         <div className="flex flex-col gap-6">
-          <BackLink label={t.backToIndex} />
+          <Migas
+            label={t.trailLabel}
+            items={[
+              { label: t.trailRoot, href: "/learn" },
+              { label: t.notFoundTitle },
+            ]}
+          />
           <ErrorState
             title={learnI18n((d) => d.lesson.notFoundTitle)}
             body={learnI18n((d) => d.lesson.notFoundBody)}
@@ -62,21 +69,27 @@ export default async function LessonPage({
     .map((code) => findPracticeTopic(code, dictionary))
     .find((topic) => topic !== undefined);
 
+  // Curso y modulo van SIN `href`: todavia no tienen pagina propia. Un escalon
+  // sin destino se pinta como texto y no desaparece — que no exista la pagina no
+  // es motivo para ocultarle al alumno en que modulo esta.
+  const migas: readonly Miga[] = [
+    { label: t.trailRoot, href: "/learn" },
+    ...(lesson.courseTitle ? [{ label: resolveI18n(lesson.courseTitle, locale) }] : []),
+    ...(lesson.moduleTitle ? [{ label: resolveI18n(lesson.moduleTitle, locale) }] : []),
+    { label: resolveI18n(lesson.title, locale) },
+  ];
+
   return (
     <UiLocaleProvider locale={locale}>
       <LessonOpened lessonId={lesson.id} blockCount={lesson.blocks.length} />
 
       <article className="flex flex-col gap-6">
         <header className="flex flex-col gap-2">
-          <BackLink label={t.backToIndex} />
-          {lesson.courseTitle || lesson.moduleTitle ? (
-            <p className="text-xs font-bold uppercase tracking-wide text-muted">
-              {[lesson.courseTitle, lesson.moduleTitle]
-                .filter((text) => text !== null)
-                .map((text) => resolveI18n(text, locale))
-                .join(" · ")}
-            </p>
-          ) : null}
+          {/* Las migas sustituyen a DOS cosas: el enlace gris de "volver", que
+              no decia a donde, y el parrafo de curso y modulo, que nombraba el
+              sitio del alumno sin llevarle a ninguna parte. Ahora la misma
+              informacion es la navegacion. */}
+          <Migas label={t.trailLabel} items={migas} />
           <h1 className="text-2xl font-bold text-ink">{resolveI18n(lesson.title, locale)}</h1>
           {lesson.estimatedMinutes === null ? null : (
             <p className="text-sm text-muted">
@@ -123,16 +136,5 @@ export default async function LessonPage({
         </footer>
       </article>
     </UiLocaleProvider>
-  );
-}
-
-function BackLink({ label }: { readonly label: string }) {
-  return (
-    <Link
-      href="/learn"
-      className="inline-flex min-h-11 w-fit items-center text-sm font-semibold text-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2"
-    >
-      {label}
-    </Link>
   );
 }

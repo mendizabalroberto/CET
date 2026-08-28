@@ -55,7 +55,12 @@ export function HintPanel({ html, open, onOpenChange, label, className, part = "
         type="button"
         variant="secondary"
         size="md"
-        className="w-fit"
+        /* `w-fit` es el ancho por defecto —el disparador entero no debe
+           estirarse cuando va suelto—, pero lo decide quien llama: dentro de la
+           rejilla de acciones tiene que ocupar su celda, o queda un boton
+           estrecho al lado de dos anchos y vuelve a no cuadrar. `cn` es
+           tailwind-merge: un `w-full` de fuera gana. */
+        className={cn("w-fit", className)}
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => onOpenChange(!open)}

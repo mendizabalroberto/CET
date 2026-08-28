@@ -107,7 +107,24 @@ function matchesPrefix(pathname: string, prefix: string): boolean {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);
 }
 
+/**
+ * Las vistas previas de `/dev/*`, y SOLO en desarrollo.
+ *
+ * Existen para poder MIRAR una pantalla sin teclear las credenciales de un
+ * alumno —que es justo lo que este proyecto no hace—, y cada una llama a
+ * `notFound()` en cuanto `NODE_ENV` deja de ser `development`. Sin esta
+ * excepcion el middleware las manda a `/login` antes de que ese `notFound()`
+ * llegue a ejecutarse, y la vista previa no sirve para lo unico que existe.
+ *
+ * No ensancha nada en produccion: alli la comparacion es falsa y ademas la
+ * pagina responderia 404 aunque no lo fuese. Son dos cierres, no uno.
+ */
+function esVistaPreviaDeDesarrollo(pathname: string): boolean {
+  return process.env.NODE_ENV === "development" && matchesPrefix(pathname, "/dev");
+}
+
 export function isPublicPath(pathname: string): boolean {
+  if (esVistaPreviaDeDesarrollo(pathname)) return true;
   return PUBLIC_PREFIXES.some((p) => matchesPrefix(pathname, p));
 }
 

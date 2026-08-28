@@ -64,9 +64,17 @@ export function Migas({ label, items, className }: MigasProps): ReactNode {
               {esEnlace ? (
                 <Link
                   href={miga.href}
+                  // Color de ENLACE, no el gris apagado del texto muerto. Con
+                  // `text-muted` en los dos, un escalon que se pulsa y uno que
+                  // no se pulsa se veian exactamente igual, y la pregunta «como
+                  // me muevo» se quedaba otra vez sin responder. `text-teal` es
+                  // el color de enlace de la app y su par contra la tarjeta
+                  // esta medido en `contraste-tokens.test.ts` (4.5:1). El
+                  // subrayado al pasar por encima es la segunda senal: el color
+                  // nunca va solo.
                   className={[
-                    "min-h-11 inline-flex items-center text-sm text-muted transition-colors",
-                    "hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2",
+                    "min-h-11 inline-flex items-center text-sm text-teal underline-offset-4 transition-colors",
+                    "hover:text-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2",
                   ].join(" ")}
                 >
                   {miga.label}
@@ -76,6 +84,9 @@ export function Migas({ label, items, className }: MigasProps): ReactNode {
                   {...(esUltimo ? { "aria-current": "page" as const } : {})}
                   className={[
                     "min-h-11 inline-flex items-center text-sm",
+                    // Tres senales distintas, no dos: aqui estas (tinta,
+                    // negrita), aqui puedes ir (teal), y esto solo te situa
+                    // (gris apagado, sin subrayado).
                     esUltimo ? "font-semibold text-ink" : "text-muted",
                   ].join(" ")}
                 >

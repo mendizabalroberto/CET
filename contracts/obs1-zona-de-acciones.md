@@ -122,8 +122,49 @@ del teclado numerico, es que has metido la zona donde no era.
 El cuerpo desplegable de la pista y el de la solucion se montan **detras** de
 los cuatro disparadores, no intercalados. El test abre la pista con `userEvent`,
 comprueba que el texto de la pista aparece, y que el elemento que lo contiene va
-**despues** del ultimo boton en orden de documento
-(`compareDocumentPosition` con `Node.DOCUMENT_POSITION_FOLLOWING`).
+**despues** del ultimo boton en orden de documento.
+
+`compareDocumentPosition` se lee **desde el receptor hacia el argumento**, y un
+intento anterior murio justo aqui por invertirlo. La direccion correcta, literal:
+
+```ts
+// "el panel VA DESPUES del ultimo boton": se pregunta AL BOTON por el panel.
+expect(
+  ultimoBoton.compareDocumentPosition(panel) & Node.DOCUMENT_POSITION_FOLLOWING,
+).toBeTruthy();
+```
+
+Escrito al reves —`panel.compareDocumentPosition(ultimoBoton)`— estarias
+afirmando que el boton va despues del panel, que es exactamente lo contrario de
+lo que pide este apartado, y el test sale rojo contra una implementacion
+correcta.
+
+### 3.3 bis · El boton de la pista CAMBIA DE NOMBRE al abrirse
+
+Esto ha matado dos intentos seguidos, los dos en el mismo sitio. `HintPanel`
+rotula su disparador asi:
+
+```
+{t(label, open ? UI_STRINGS.hint : UI_STRINGS.showHint)}
+```
+
+y `UI_STRINGS` dice `showHint: "Ver una pista"` pero `hint: "Pista"`. Es decir:
+**despues de pulsarlo ya no se llama «Ver una pista», se llama «Pista»**. Lo
+mismo en `SolutionPanel`, que pasa de «Ver cómo se hace» a «Ocultar».
+
+Un `getByRole("button", { name: "Ver una pista" })` **posterior al clic** no
+encuentra nada, revienta dentro del `waitFor`, y el fichero se queda en rojo
+contra una implementacion perfectamente correcta.
+
+La forma correcta: **guarda la referencia al elemento antes de pulsar** y
+reutilizala despues. El nodo es el mismo aunque su texto cambie.
+
+```ts
+const boton = within(zona).getByRole("button", { name: "Ver una pista" });
+await user.click(boton);
+// a partir de aqui se usa `boton`, NUNCA se vuelve a buscar por ese nombre
+const panel = document.getElementById(boton.getAttribute("aria-controls") ?? "");
+```
 
 ### 3.4 · El cableado ARIA sobrevive al reparto
 
@@ -159,8 +200,20 @@ Los paneles siguen montandose **solo** si `item.hint` / `item.solution` existen,
 y su HTML sigue montandose **solo** cuando estan abiertos. Ese `state.hintOpen ?
 resolveI18n(...) : ""` no es una optimizacion: es lo que impide que la respuesta
 correcta este en el DOM antes de que el alumno conteste, y hay un test que lo
-comprueba en el fichero prohibido. Cuando la pista no existe, la zona tiene tres
-botones y el test tiene que contemplarlo.
+comprueba en el fichero prohibido. Conserva las dos guardas tal cual.
+
+**No escribas un test de «sin pista, tres botones».** No se puede montar: en
+`packages/engine/src/generators/common.ts`, linea 96, el campo es
+
+```
+  readonly hint: Bilingual;
+```
+
+sin `?`. Todo item que sale del motor trae pista, asi que por la practica real
+la zona tiene siempre los cuatro botones. Un intento anterior escribio ese test,
+eligio un tema cualquiera, y le salieron cuatro donde afirmaba tres. Las guardas
+del codigo se quedan porque el tipo de `PracticeItem` las pide; el test que las
+ejercite no existe porque no hay dato que lo produzca.
 
 ## 4 · Que NO cuenta como resuelto
 

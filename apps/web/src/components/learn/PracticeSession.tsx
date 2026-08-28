@@ -507,6 +507,7 @@ export function PracticeSession({ topicId, locale, levels }: PracticeSessionProp
                 <HintPanel
                   part="trigger"
                   id={hintId}
+                  className="w-full"
                   html={state.hintOpen ? resolveI18n(item.hint, locale) : ""}
                   open={state.hintOpen}
                   onOpenChange={(open) => {
@@ -519,6 +520,7 @@ export function PracticeSession({ topicId, locale, levels }: PracticeSessionProp
                 <SolutionPanel
                   part="trigger"
                   id={solutionId}
+                  className="w-full"
                   html={state.solutionOpen ? resolveI18n(item.solution, locale) : undefined}
                   open={state.solutionOpen}
                   onOpenChange={(open) => {

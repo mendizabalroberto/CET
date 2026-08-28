@@ -72,9 +72,13 @@ describe("PracticeSession — zona de acciones", () => {
     });
 
     const botones = within(zona).getAllByRole("button");
-    const ultimoBoton = botones[botones.length - 1];
+    // `noUncheckedIndexedAccess` esta activo en todo el proyecto: un indice
+    // devuelve `T | undefined` y el compilador lo exige aqui igual que en
+    // produccion. Si la zona llegase vacia, esto falla diciendo por que.
+    const ultimoBoton = botones.at(-1);
+    expect(ultimoBoton, "la zona de acciones no tiene ni un boton").toBeDefined();
     expect(
-      ultimoBoton.compareDocumentPosition(panel!) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ultimoBoton!.compareDocumentPosition(panel!) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
   });
 
@@ -94,9 +98,13 @@ describe("PracticeSession — zona de acciones", () => {
     });
 
     const botones = within(zona).getAllByRole("button");
-    const ultimoBoton = botones[botones.length - 1];
+    // `noUncheckedIndexedAccess` esta activo en todo el proyecto: un indice
+    // devuelve `T | undefined` y el compilador lo exige aqui igual que en
+    // produccion. Si la zona llegase vacia, esto falla diciendo por que.
+    const ultimoBoton = botones.at(-1);
+    expect(ultimoBoton, "la zona de acciones no tiene ni un boton").toBeDefined();
     expect(
-      ultimoBoton.compareDocumentPosition(panel!) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ultimoBoton!.compareDocumentPosition(panel!) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
   });
 

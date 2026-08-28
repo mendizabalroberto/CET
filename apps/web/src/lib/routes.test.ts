@@ -2,9 +2,42 @@
  * La matriz de autorización es la pieza más fácil de romper sin darse cuenta.
  * © 2026 Roberto Mendizabal. Todos los derechos reservados.
  */
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import { findProtectedArea, homeForRole, isApiPath, isPublicPath } from "./routes";
+
+describe("las vistas previas de /dev", () => {
+  // El valor de `NODE_ENV` se lee en cada llamada, no al importar el modulo:
+  // por eso se puede cambiar aqui y volver a preguntar.
+  const original = process.env.NODE_ENV;
+  afterEach(() => {
+    poner(original);
+  });
+  // `process.env` no acepta `defineProperty`: solo asignacion. El cast es la
+  // forma que tiene TypeScript de dejarnos escribir en una propiedad que
+  // declara de solo lectura, y aqui es legitimo porque es exactamente lo que
+  // hace el entorno al arrancar.
+  const poner = (v: string | undefined) => {
+    (process.env as Record<string, string | undefined>)["NODE_ENV"] = v;
+  };
+
+  it("en desarrollo son publicas: si no, el middleware las manda a /login y el 404 de la propia pagina nunca llega a correr", () => {
+    poner("development");
+    expect(isPublicPath("/dev/keyboard-preview")).toBe(true);
+    expect(isPublicPath("/dev")).toBe(true);
+  });
+
+  it("en produccion NO lo son", () => {
+    poner("production");
+    expect(isPublicPath("/dev/keyboard-preview")).toBe(false);
+  });
+
+  it("no se deja enganar por una ruta que solo EMPIECE por /dev", () => {
+    poner("development");
+    expect(isPublicPath("/development-secreto")).toBe(false);
+    expect(isPublicPath("/devops")).toBe(false);
+  });
+});
 
 describe("isPublicPath", () => {
   it("acepta las rutas públicas y sus subrutas", () => {
