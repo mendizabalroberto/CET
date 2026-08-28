@@ -155,6 +155,10 @@ export function PracticeSession({ topicId, locale, levels }: PracticeSessionProp
   const actionRef = useRef<HTMLButtonElement | null>(null);
   // Ata los controles de respuesta al enunciado para el lector de pantalla.
   const stemId = `${useId()}-stem`;
+  // Ata el disparador de cada ayuda a su cuerpo. El mismo id en las dos
+  // mitades: es lo que hace que el `aria-controls` apunte a algo que existe.
+  const hintId = `${useId()}-hint`;
+  const solutionId = `${useId()}-solution`;
 
   const lastChangeEventAt = useRef(0);
 
@@ -487,13 +491,42 @@ export function PracticeSession({ topicId, locale, levels }: PracticeSessionProp
               </p>
             ) : null}
 
-            <div className="flex flex-wrap gap-3">
-              <Button type="button" ref={actionRef} onClick={submit}>
+            {/* Una sola zona de acciones, con nombre. Los cuatro disparadores
+                viven aquí, en orden fijo: primero lo que cierra la pregunta,
+                después lo que la esquiva, después las dos ayudas de menor a
+                mayor. Los cuerpos desplegables van DETRÁS de los botones, no
+                intercalados. */}
+            <div role="group" aria-label={t.actionsLabel} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Button type="button" ref={actionRef} onClick={submit} fullWidth>
                 {answered ? t.nextQuestion : t.check}
               </Button>
-              <Button type="button" variant="secondary" onClick={skip} disabled={answered}>
+              <Button type="button" variant="secondary" onClick={skip} disabled={answered} fullWidth>
                 {t.skip}
               </Button>
+              {item.hint ? (
+                <HintPanel
+                  part="trigger"
+                  id={hintId}
+                  html={state.hintOpen ? resolveI18n(item.hint, locale) : ""}
+                  open={state.hintOpen}
+                  onOpenChange={(open) => {
+                    noteActivity();
+                    dispatch({ type: "hint_toggled", open, now: Date.now() });
+                  }}
+                />
+              ) : null}
+              {item.solution ? (
+                <SolutionPanel
+                  part="trigger"
+                  id={solutionId}
+                  html={state.solutionOpen ? resolveI18n(item.solution, locale) : undefined}
+                  open={state.solutionOpen}
+                  onOpenChange={(open) => {
+                    noteActivity();
+                    dispatch({ type: "solution_toggled", open, now: Date.now() });
+                  }}
+                />
+              ) : null}
             </div>
 
             {/* El HTML de la pista y el de la solución SOLO se montan cuando
@@ -502,6 +535,8 @@ export function PracticeSession({ topicId, locale, levels }: PracticeSessionProp
                 inspector para verla. */}
             {item.hint ? (
               <HintPanel
+                part="panel"
+                id={hintId}
                 html={state.hintOpen ? resolveI18n(item.hint, locale) : ""}
                 open={state.hintOpen}
                 onOpenChange={(open) => {
@@ -513,6 +548,8 @@ export function PracticeSession({ topicId, locale, levels }: PracticeSessionProp
 
             {item.solution ? (
               <SolutionPanel
+                part="panel"
+                id={solutionId}
                 html={state.solutionOpen ? resolveI18n(item.solution, locale) : undefined}
                 open={state.solutionOpen}
                 onOpenChange={(open) => {
