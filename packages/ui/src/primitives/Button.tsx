@@ -6,7 +6,7 @@
  */
 
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
-import { Slot } from "@radix-ui/react-slot";
+import { Slot, Slottable } from "@radix-ui/react-slot";
 import { cn } from "../lib/cn.js";
 import { Icono } from "../icons/Icono.js";
 import type { NombreDeIcono } from "../icons/registro.js";
@@ -112,8 +112,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       )}
       {...rest}
     >
+      {/* `Slottable` y no `{children}` a secas.
+          Con `asChild`, `Slot` clona a su UNICO hijo, y anadir el icono le daba
+          dos: reventaba en ejecucion con «Slot failed to slot onto its
+          children». Marcando cual de los dos es el hijo que hay que clonar,
+          `Slot` mete el icono DENTRO de el, que es justo lo que se quiere: un
+          enlace de «Practicar esto» con su diana delante. Sin `asChild`,
+          `Slottable` es transparente y no cambia nada. */}
       {icon ? <Icono nombre={icon} tamano={ICON_SIZES[size]} /> : null}
-      {children}
+      <Slottable>{children}</Slottable>
     </Comp>
   );
 });

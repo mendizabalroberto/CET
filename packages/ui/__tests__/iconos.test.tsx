@@ -42,13 +42,16 @@ describe("Icono", () => {
         </Button>
       </>,
     );
-    const botones = container.querySelectorAll("button");
-    expect(botones).toHaveLength(2);
+    const [medio, grande] = [...container.querySelectorAll("button")];
+    // Se afirma que existen antes de mirarlos: con `noUncheckedIndexedAccess`
+    // el compilador lo exige, y si el render fallara este es el mensaje util.
+    expect(medio, "no se pinto el boton md").toBeDefined();
+    expect(grande, "no se pinto el boton lg").toBeDefined();
     // El ATRIBUTO, no el className: si alguien lo cambia a `h-4 w-4`, este test
     // tiene que ponerse rojo, porque esa es justamente la via que reabre el
     // conflicto de `cn`.
-    expect(botones[0].querySelector("svg")?.getAttribute("width")).toBe("18");
-    expect(botones[1].querySelector("svg")?.getAttribute("width")).toBe("20");
+    expect(medio!.querySelector("svg")?.getAttribute("width")).toBe("18");
+    expect(grande!.querySelector("svg")?.getAttribute("width")).toBe("20");
   });
 
   it("el icono es invisible para el lector y el nombre accesible no cambia", () => {
@@ -70,16 +73,18 @@ describe("Icono", () => {
   });
 
   it("dentro de un grupo, dos acciones no comparten dibujo", () => {
+    // `noUncheckedIndexedAccess` esta activo: se recorre por pares con
+    // `entries`, que si da el elemento, en vez de indexar a ciegas.
     for (const grupo of GRUPOS) {
-      for (let i = 0; i < grupo.length; i++) {
-        for (let j = i + 1; j < grupo.length; j++) {
+      for (const [i, a] of grupo.entries()) {
+        for (const b of grupo.slice(i + 1)) {
           // Lo que tiene que ser distinto son los COMPONENTES, no las cadenas:
           // dos claves distintas apuntando al mismo dibujo es exactamente el
-          // fallo que se busca.
+          // fallo que se busca, y comparar las claves lo dejaria pasar siempre.
           expect(
-            ICONOS[grupo[i]],
-            `"${grupo[i]}" y "${grupo[j]}" comparten dibujo y se ven juntos`,
-          ).not.toBe(ICONOS[grupo[j]]);
+            ICONOS[a],
+            `"${a}" y "${b}" comparten dibujo y se ven juntos`,
+          ).not.toBe(ICONOS[b]);
         }
       }
     }
@@ -113,5 +118,28 @@ describe("Icono", () => {
       ).not.toBeNull();
       container.remove();
     }
+  });
+
+  /**
+   * El caso que el contrato no cubrio y que revento en ejecucion.
+   *
+   * `asChild` hace que `Button` se pinte con `Slot`, y `Slot` clona a su UNICO
+   * hijo. Anadir el icono le daba dos: «Slot failed to slot onto its children».
+   * No es hipotetico — «Practicar esto», en la leccion, es exactamente eso: un
+   * `<Link>` envuelto en un boton, y con icono.
+   *
+   * La mutacion que lo pone rojo: cambiar `<Slottable>{children}</Slottable>`
+   * por `{children}` en `Button.tsx`.
+   */
+  it("un boton con asChild acepta icono, y el icono entra DENTRO del enlace", () => {
+    render(
+      <Button asChild icon="practicar">
+        <a href="/practice/math.simplify">Practicar esto</a>
+      </Button>,
+    );
+    const enlace = screen.getByRole("link", { name: "Practicar esto" });
+    expect(enlace.querySelector("svg"), "el icono no acabo dentro del enlace").not.toBeNull();
+    // Y el nombre accesible sigue siendo solo el texto: el icono no lo alarga.
+    expect(enlace).toHaveAccessibleName("Practicar esto");
   });
 });

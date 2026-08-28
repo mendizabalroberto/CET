@@ -752,11 +752,11 @@ export function ExamRunner({ assignmentId, locale, resultHref }: ExamRunnerProps
 
         <div className="flex flex-wrap items-center gap-3">
           {allowBack ? (
-            <Button variant="secondary" onClick={() => goTo(current - 1)} disabled={current <= 1}>
+            <Button variant="secondary" onClick={() => goTo(current - 1)} disabled={current <= 1} icon="anterior">
               {t.run.previous}
             </Button>
           ) : null}
-          <Button variant="secondary" onClick={() => goTo(current + 1)} disabled={current >= total}>
+          <Button variant="secondary" onClick={() => goTo(current + 1)} disabled={current >= total} icon="siguiente">
             {t.run.next}
           </Button>
           <Button
@@ -771,6 +771,10 @@ export function ExamRunner({ assignmentId, locale, resultHref }: ExamRunnerProps
                colgado el alumno se quedaba sin ninguna forma de entregar. Ahora
                solo se apaga mientras hay una entrega de verdad en vuelo. */
             disabled={submitting || (timeUp && submitFailed === null)}
+            /* El icono sigue al texto: entregar es un envio, reintentar es una
+               vuelta atras. Un mismo dibujo para los dos le diria al alumno que
+               no ha pasado nada cuando si ha pasado. */
+            icon={timeUp && submitFailed !== null ? "reintentar" : "entregar"}
           >
             {submitting
               ? t.run.submitting

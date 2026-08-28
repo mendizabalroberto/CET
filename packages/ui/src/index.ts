@@ -35,6 +35,12 @@ export { SkipLink, type SkipLinkProps } from "./a11y/SkipLink.js";
 
 /* --- primitivas --- */
 export { Button, type ButtonProps, type ButtonVariant, type ButtonSize } from "./primitives/Button.js";
+
+// Iconos. `registro.ts` es el UNICO fichero del monorepo que importa
+// `lucide-react`, y hay un invariante que lo vigila: quien necesite un icono
+// nuevo lo da de alta ahi, no importa del catalogo por su cuenta.
+export { Icono, type IconoProps } from "./icons/Icono.js";
+export { ICONOS, esNombreDeIcono, type NombreDeIcono } from "./icons/registro.js";
 export { Input, type InputProps } from "./primitives/Input.js";
 export { Select, type SelectProps, type SelectOption } from "./primitives/Select.js";
 export { Checkbox, type CheckboxProps } from "./primitives/Checkbox.js";

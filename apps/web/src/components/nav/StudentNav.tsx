@@ -28,7 +28,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { Icono, type NombreDeIcono } from "@cet/ui";
 
 import type { Dictionary } from "@/lib/i18n/dictionaries/en";
 import { ROUTES } from "@/lib/routes";
@@ -51,37 +51,28 @@ export function esModoExamen(pathname: string): boolean {
 interface Destino {
   readonly href: string;
   readonly label: string;
-  readonly icono: ReactNode;
+  readonly icono: NombreDeIcono;
 }
 
 /**
- * Iconos en SVG inline y no de una librería: son cuatro, no justifican una
- * dependencia, y así heredan `currentColor` sin configuración.
+ * Los tres dibujos del rail.
  *
- * `aria-hidden` en todos: el nombre accesible lo da el texto de al lado, que
- * SIEMPRE está presente. Un icono suelto sin etiqueta es un jeroglífico para
- * quien no lo reconoce, y a los once años no se reconocen tantos.
+ * Antes eran SVG escritos a mano aqui, con este razonamiento: «son cuatro, no
+ * justifican una dependencia, y asi heredan `currentColor` sin configuracion».
+ * Era cierto con cuatro. Con un icono en cada boton de la aplicacion ya no, y
+ * veinte ficheros dibujando cada uno a su manera es peor que una dependencia.
+ *
+ * Las METAFORAS no cambian —libro abierto, circulos concentricos, documento con
+ * marca— justamente para que nadie tenga que reaprender por donde se va a
+ * Practicar. Lo que cambia es el trazo, que ahora es el mismo que el del resto
+ * de la aplicacion. Y `aria-hidden` sigue puesto, porque lo pone `Icono`: el
+ * nombre accesible lo da el texto de al lado, que SIEMPRE esta presente.
  */
-const Icono = {
-  learn: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-      <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5v-13Z" />
-      <path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5v-13Z" />
-    </svg>
-  ),
-  practice: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-      <circle cx="12" cy="12" r="8" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  ),
-  exam: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-      <path d="M6 3h9l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" />
-      <path d="M14 3v5h5M8.5 13.5l2 2 4-4" />
-    </svg>
-  ),
-} as const;
+const NOMBRE_DE_ICONO = {
+  learn: "navAprender",
+  practice: "navPracticar",
+  exam: "navExamenes",
+} as const satisfies Record<string, NombreDeIcono>;
 
 export interface StudentNavProps {
   readonly t: Dictionary;
@@ -96,9 +87,9 @@ export function StudentNav({ t }: StudentNavProps) {
   const N = t.studentNav;
 
   const destinos: readonly Destino[] = [
-    { href: ROUTES.studentHome, label: N.learn, icono: Icono.learn },
-    { href: "/practice", label: N.practice, icono: Icono.practice },
-    { href: "/exam", label: N.exam, icono: Icono.exam },
+    { href: ROUTES.studentHome, label: N.learn, icono: NOMBRE_DE_ICONO.learn },
+    { href: "/practice", label: N.practice, icono: NOMBRE_DE_ICONO.practice },
+    { href: "/exam", label: N.exam, icono: NOMBRE_DE_ICONO.exam },
   ];
 
   /**
@@ -144,7 +135,7 @@ export function StudentNav({ t }: StudentNavProps) {
                   activo ? "md:bg-teal/10" : "",
                 ].join(" ")}
               >
-                <span className="h-6 w-6 shrink-0">{destino.icono}</span>
+                <Icono nombre={destino.icono} tamano={24} />
                 <span>{destino.label}</span>
                 {activo ? <span className="sr-only">({N.current})</span> : null}
                 {/* La marca visual de "estás aquí". En móvil, una barra sobre la

@@ -9,6 +9,7 @@ import { useId, type ReactNode } from "react";
 import type { I18nText } from "@cet/shared";
 import { cn } from "../lib/cn.js";
 import { Button } from "../primitives/Button.js";
+import { Icono } from "../icons/Icono.js";
 import { useI18n } from "../lib/i18n.js";
 import { parseSafeHtml } from "../lib/html-to-react.js";
 import { UI_STRINGS } from "../lib/strings.js";
@@ -65,7 +66,12 @@ export function HintPanel({ html, open, onOpenChange, label, className, part = "
         aria-controls={panelId}
         onClick={() => onOpenChange(!open)}
       >
-        <span aria-hidden="true" className="h-2 w-2 rounded-full bg-[var(--cet-hint-vivid)]" />
+        {/* La bombilla sustituye al punto ambar de obs001: la misma senal,
+            ahora con FORMA ademas de color, que es lo que pedia la regla de
+            «ninguna senal viaja sola». Va aqui y no por la prop `icon` del
+            boton porque lleva tinta propia: es el unico icono de la aplicacion
+            que no hereda el color del texto. */}
+        <Icono nombre="pista" className="text-[var(--cet-hint-vivid-text)]" />
         {t(label, open ? UI_STRINGS.hint : UI_STRINGS.showHint)}
       </Button>
     );
@@ -97,7 +103,12 @@ export function HintPanel({ html, open, onOpenChange, label, className, part = "
         aria-controls={panelId}
         onClick={() => onOpenChange(!open)}
       >
-        <span aria-hidden="true" className="h-2 w-2 rounded-full bg-[var(--cet-hint-vivid)]" />
+        {/* La bombilla sustituye al punto ambar de obs001: la misma senal,
+            ahora con FORMA ademas de color, que es lo que pedia la regla de
+            «ninguna senal viaja sola». Va aqui y no por la prop `icon` del
+            boton porque lleva tinta propia: es el unico icono de la aplicacion
+            que no hereda el color del texto. */}
+        <Icono nombre="pista" className="text-[var(--cet-hint-vivid-text)]" />
         {t(label, open ? UI_STRINGS.hint : UI_STRINGS.showHint)}
       </Button>
 

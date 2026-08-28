@@ -9,6 +9,7 @@ import { useId, type ReactNode } from "react";
 import type { I18nText } from "@cet/shared";
 import { cn } from "../lib/cn.js";
 import { Button } from "../primitives/Button.js";
+import { Icono } from "../icons/Icono.js";
 import { useI18n } from "../lib/i18n.js";
 import { parseSafeHtml } from "../lib/html-to-react.js";
 import { UI_STRINGS } from "../lib/strings.js";
@@ -71,6 +72,11 @@ export function SolutionPanel({
         aria-controls={panelId}
         onClick={() => onOpenChange(!open)}
       >
+        {/* Lista numerada, no otra bombilla: pedir una pista y ver la
+            solucion no son lo mismo, y la analitica de dificultad los cuenta
+            como eventos distintos. Al plegarse pasa a un galon hacia arriba,
+            igual que cambia el texto. */}
+        <Icono nombre={open ? "ocultar" : "solucion"} />
         {t(label, open ? UI_STRINGS.hideSolution : UI_STRINGS.showSolution)}
       </Button>
     );
@@ -107,6 +113,11 @@ export function SolutionPanel({
         aria-controls={panelId}
         onClick={() => onOpenChange(!open)}
       >
+        {/* Lista numerada, no otra bombilla: pedir una pista y ver la
+            solucion no son lo mismo, y la analitica de dificultad los cuenta
+            como eventos distintos. Al plegarse pasa a un galon hacia arriba,
+            igual que cambia el texto. */}
+        <Icono nombre={open ? "ocultar" : "solucion"} />
         {t(label, open ? UI_STRINGS.hideSolution : UI_STRINGS.showSolution)}
       </Button>
 

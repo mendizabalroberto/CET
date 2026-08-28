@@ -86,7 +86,7 @@ export function StartExamButton({
             {t.lobby.startErrorBody}
           </Alert>
         ) : null}
-        <Button size="lg" variant="primary" onClick={() => void onStart()} loading={busy}>
+        <Button size="lg" variant="primary" onClick={() => void onStart()} loading={busy} icon="empezar">
           {busy ? t.lobby.starting : resuming ? t.lobby.resume : t.lobby.start}
         </Button>
       </div>

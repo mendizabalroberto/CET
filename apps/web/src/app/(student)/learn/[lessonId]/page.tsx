@@ -13,7 +13,7 @@
  */
 import Link from "next/link";
 import { resolveI18n } from "@cet/shared";
-import { EmptyState, ErrorState, LessonBlock } from "@cet/ui";
+import { Button, EmptyState, ErrorState, LessonBlock } from "@cet/ui";
 
 import { getLearnDictionary, learnI18n } from "@/components/learn/dictionary";
 import {
@@ -126,12 +126,15 @@ export default async function LessonPage({
             className="text-sm font-semibold text-ink"
           />
           {practiceTopic ? (
-            <Link
-              href={`/practice/${encodeURIComponent(practiceTopic.id)}`}
-              className="inline-flex min-h-11 items-center rounded-lg bg-ink px-4 text-sm font-semibold text-card focus-visible:outline-2 focus-visible:outline-offset-2"
-            >
-              {t.practiceThis}
-            </Link>
+            // `asChild`: por dentro sigue siendo un `<Link>` —navegacion sin
+            // recarga, y el boton derecho y el central funcionan— pero se pinta
+            // con el mismo `Button` que todo lo demas. El icono entra DENTRO
+            // del enlace gracias al `Slottable` de `Button`.
+            <Button asChild icon="practicar">
+              <Link href={`/practice/${encodeURIComponent(practiceTopic.id)}`}>
+                {t.practiceThis}
+              </Link>
+            </Button>
           ) : null}
         </footer>
       </article>

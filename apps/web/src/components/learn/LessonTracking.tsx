@@ -20,6 +20,8 @@
  */
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
+import { Button, Icono, cn } from "@cet/ui";
+
 import { useTelemetry } from "@/lib/telemetry/provider";
 
 /** Debajo de esto, el bloque pasó por delante de los ojos pero no se leyó. */
@@ -163,19 +165,20 @@ export function LessonCompleteButton({
 
   if (done) {
     return (
-      <p role="status" className={className}>
+      <p role="status" className={cn("inline-flex items-center gap-2", className)}>
+        <Icono nombre="terminado" />
         {doneLabel}
       </p>
     );
   }
 
+  // Era un `<button>` a mano con `border-2` y `px-4`: exactamente el defecto
+  // que obs001 cerro en los paneles de feedback, con la misma consecuencia —
+  // medía distinto que cualquier otro boton de la pantalla. Ahora sale del
+  // mismo `Button` que todos.
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="min-h-11 rounded-lg border-2 border-line px-4 py-2 text-sm font-semibold text-ink hover:bg-card focus-visible:outline-2 focus-visible:outline-offset-2"
-    >
+    <Button type="button" variant="secondary" size="sm" onClick={onClick} icon="terminado">
       {label}
-    </button>
+    </Button>
   );
 }

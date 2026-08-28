@@ -497,10 +497,19 @@ export function PracticeSession({ topicId, locale, levels }: PracticeSessionProp
                 mayor. Los cuerpos desplegables van DETRÁS de los botones, no
                 intercalados. */}
             <div role="group" aria-label={t.actionsLabel} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <Button type="button" ref={actionRef} onClick={submit} fullWidth>
+              <Button
+                type="button"
+                ref={actionRef}
+                onClick={submit}
+                fullWidth
+                // El icono cambia con el texto: comprobar es una marca, seguir
+                // es una flecha. Si los dos fuesen la marca, el boton diria
+                // «has acertado» cuando solo quiere decir «sigue».
+                icon={answered ? "siguiente" : "comprobar"}
+              >
                 {answered ? t.nextQuestion : t.check}
               </Button>
-              <Button type="button" variant="secondary" onClick={skip} disabled={answered} fullWidth>
+              <Button type="button" variant="secondary" onClick={skip} disabled={answered} fullWidth icon="saltar">
                 {t.skip}
               </Button>
               {item.hint ? (

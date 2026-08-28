@@ -105,19 +105,44 @@ describe("paleta de botones — el ambar deja de ser contorno", () => {
     expect(solution).not.toContain("border-[var(--cet-hint-accent)]");
   });
 
-  it("el disparador de la pista lleva un punto ambar decorativo de 8px", () => {
+  /*
+   * Este test cambio de FORMA, no de REQUISITO, y conviene que quede escrito.
+   *
+   * Cuando obs001 retiro el ambar del contorno del boton —2.04:1, por debajo
+   * del 3:1 que pide WCAG 1.4.11— la identidad de «pista» se traslado a un
+   * PUNTO ambar de 8 px dentro del boton, y este test lo fijaba clase a clase.
+   *
+   * Al llegar los iconos, ese punto paso a ser una BOMBILLA ambar. El requisito
+   * es el mismo y de hecho se cumple mejor: la senal ya no es solo un color,
+   * tiene forma. Lo que se afloja aqui es la forma concreta; lo que se conserva,
+   * y es lo unico que de verdad importaba, es que:
+   *
+   *   1. el disparador de la pista lleva una marca ambar propia,
+   *   2. invisible para el lector de pantalla, y
+   *   3. el ambar NO es el contorno del control (eso lo fija el test de arriba).
+   *
+   * Si alguien quita la marca ambar del boton, esto se pone rojo igual que
+   * antes. Que es la razon por la que el test existe.
+   */
+  it("el disparador de la pista lleva una marca ambar propia y decorativa", () => {
     render(
       <LocaleProvider locale="es">
         <HintPanel html="<p>pista</p>" open={false} onOpenChange={() => {}} />
       </LocaleProvider>,
     );
     const boton = screen.getByRole("button", { name: "Ver una pista" });
-    const punto = boton.querySelector('span[aria-hidden="true"]');
-    expect(punto).not.toBeNull();
-    expect(punto!.className).toContain("bg-[var(--cet-hint-vivid)]");
-    expect(punto!.className).toContain("h-2");
-    expect(punto!.className).toContain("w-2");
-    expect(punto!.className).toContain("rounded-full");
+
+    const marcas = [...boton.querySelectorAll('[aria-hidden="true"]')].filter((el) =>
+      /--cet-hint-vivid/.test(el.getAttribute("class") ?? ""),
+    );
+    expect(
+      marcas,
+      "el boton de la pista se quedo sin su marca ambar: la unica senal que lo " +
+        "distingue de «Ver como se hace» seria la palabra",
+    ).toHaveLength(1);
+
+    // Y sigue sin anunciarse: el nombre accesible es solo el texto.
+    expect(boton).toHaveAccessibleName("Ver una pista");
   });
 
   it("el cuerpo del panel conserva su borde izquierdo ambar", () => {
