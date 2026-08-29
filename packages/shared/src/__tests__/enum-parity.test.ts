@@ -35,6 +35,7 @@ import {
   registrationStatus,
   responseSource,
   schoolStage,
+  membershipStatus,
   sectionRole,
   schoolStatus,
   submittedBy,
@@ -147,6 +148,7 @@ const PAIRS: ReadonlyArray<readonly [string, z.ZodEnum<[string, ...string[]]>]> 
   ["registration_status", registrationStatus],
   ["blueprint_section_source", blueprintSectionSource],
   ["section_role", sectionRole],
+  ["membership_status", membershipStatus],
   ["learning_event_type", learningEventType],
 ];
 

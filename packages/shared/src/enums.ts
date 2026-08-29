@@ -115,3 +115,19 @@ export type BlueprintSectionSource = z.infer<typeof blueprintSectionSource>;
  */
 export const sectionRole = z.enum(["student", "teacher", "assistant"]);
 export type SectionRole = z.infer<typeof sectionRole>;
+
+/**
+ * Estado de la matrícula de un alumno en un colegio
+ * (`student_school_memberships`, migración 0057).
+ *
+ * Los valores van en español porque así los declaró la migración, y este fichero
+ * refleja lo que Postgres tiene — no al revés. `enum-parity.test.ts` compara los
+ * dos y no perdona una diferencia de orden ni de grafía.
+ *
+ * Existió en la base desde el 28/08/2026 y aquí no: el test llevaba rojo desde
+ * las 15:54 de ese día sin que nadie lo viera, porque Turbo servía un resultado
+ * cacheado de este paquete. Un rojo que la caché esconde es un rojo que no
+ * existe hasta que algo ajeno invalida la caché, que fue como salió a la luz.
+ */
+export const membershipStatus = z.enum(["solicitada", "activa", "rechazada", "terminada"]);
+export type MembershipStatus = z.infer<typeof membershipStatus>;
