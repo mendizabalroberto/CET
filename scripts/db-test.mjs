@@ -81,10 +81,31 @@ function resolverIncludes(sql, base, vistos = new Set()) {
   });
 }
 
-const ROUTES = [
-  { label: "directa", host: `db.${PROJECT_REF}.supabase.co`, user: "postgres" },
-  { label: "pooler", host: "aws-0-us-east-1.pooler.supabase.com", user: `postgres.${PROJECT_REF}` },
-];
+/**
+ * A donde se conecta. Sin `CET_DB_URL`, produccion.
+ *
+ * `db-apply.mjs` ya aceptaba esta variable y este fichero no: se podia aplicar
+ * una migracion en una rama y verificarla contra PRODUCCION sin que nada
+ * avisara, que es la peor combinacion posible — el verde diria que la migracion
+ * funciona cuando lo que se ha probado es otra base. Las dos mitades del ciclo
+ * tienen que apuntar al mismo sitio o ninguna de las dos significa nada.
+ */
+const ROUTES = process.env.CET_DB_URL
+  ? [(() => {
+      const url = new URL(process.env.CET_DB_URL);
+      return {
+        label: `CET_DB_URL (${url.hostname})`,
+        host: url.hostname,
+        port: Number(url.port || 5432),
+        user: decodeURIComponent(url.username),
+        password: decodeURIComponent(url.password),
+        database: url.pathname.replace(/^\//, "") || "postgres",
+      };
+    })()]
+  : [
+      { label: "directa", host: `db.${PROJECT_REF}.supabase.co`, user: "postgres" },
+      { label: "pooler", host: "aws-0-us-east-1.pooler.supabase.com", user: `postgres.${PROJECT_REF}` },
+    ];
 
 async function connectAny() {
   const password = readPassword();
@@ -92,10 +113,10 @@ async function connectAny() {
   for (const route of ROUTES) {
     const candidate = new pg.Client({
       host: route.host,
-      port: 5432,
-      database: "postgres",
+      port: route.port ?? 5432,
+      database: route.database ?? "postgres",
       user: route.user,
-      password,
+      password: route.password ?? password,
       ssl: { rejectUnauthorized: false },
       statement_timeout: 120_000,
       connectionTimeoutMillis: 8_000,

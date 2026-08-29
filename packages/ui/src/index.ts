@@ -202,3 +202,32 @@ export {
 export { TopicIcon, type TopicIconProps } from "./navigation/TopicIcon.js";
 export { TopicCard, type TopicCardProps } from "./navigation/TopicCard.js";
 export { TopicGrid, type TopicGridProps } from "./navigation/TopicGrid.js";
+
+/* --- informes (scorecard del profesor) --- */
+// `scorecard-data` sale de un modulo SIN "use client": son tipos y funciones
+// puras, y el umbral de cohorte lo tiene que poder leer tambien el servidor.
+// Mismo motivo que `mastery-level` y `block-kind`.
+export {
+  MIN_COHORTE,
+  hayCohorteSuficiente,
+  minutosDelDia,
+  haySerieDeEsfuerzo,
+  hayDestrezasMedidas,
+  hayTiempoPorLeccion,
+  type EffortDay,
+  type SkillEntry,
+  type LessonTime,
+} from "./reports/scorecard-data.js";
+export { ScorecardPanel, type ScorecardPanelProps } from "./reports/ScorecardPanel.js";
+export { EffortTrend, type EffortTrendProps } from "./reports/EffortTrend.js";
+export { SkillList, type SkillListProps } from "./reports/SkillList.js";
+export { CohortComparison, type CohortComparisonProps } from "./reports/CohortComparison.js";
+export {
+  LessonTimeBreakdown,
+  type LessonTimeBreakdownProps,
+} from "./reports/LessonTimeBreakdown.js";
+export {
+  StudyScorecard,
+  type StudyScorecardProps,
+  type ScorecardStat,
+} from "./reports/StudyScorecard.js";
