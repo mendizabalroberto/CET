@@ -92,6 +92,20 @@ async function soloRecuerdaElDispositivo(context: BrowserContext): Promise<void>
 }
 
 /**
+ * El saludo por el nombre de pila, en los dos idiomas.
+ *
+ * La aplicacion resuelve el idioma por `profiles.locale`, que gana a la cookie
+ * y a la cabecera `Accept-Language` (`lib/i18n/server.ts`). Es decir: el idioma
+ * de estas pantallas lo decide la CUENTA que las mira, no el navegador de la
+ * prueba. Fijar `locale: "en-GB"` en el config no cambia nada en cuanto hay
+ * sesion, asi que los selectores van en los dos idiomas — como ya lo estaban
+ * los de `login.spec.ts` y `staff-session.spec.ts`.
+ */
+function saludo(): RegExp {
+  return new RegExp(`(Hi|Hola), ${NOMBRE_PILA}`);
+}
+
+/**
  * Escribe un PIN en el input segmentado que lleva esa etiqueta.
  *
  * Las casillas viven dentro de un `<fieldset>` con `<legend>`, que es un grupo
@@ -138,14 +152,14 @@ test("la cadena de invitación: superadmin → tutor → hijo → enlace → dis
     await paginaAdmin.waitForURL((url) => !url.pathname.startsWith("/login"), { timeout: 20_000 });
 
     await paginaAdmin.goto("/admin");
-    await paginaAdmin.getByLabel(/Their email address/i).fill(correoDelTutor);
-    await paginaAdmin.getByRole("button", { name: /Create invitation/i }).click();
+    await paginaAdmin.getByLabel(/Their email address|Su dirección de correo/i).fill(correoDelTutor);
+    await paginaAdmin.getByRole("button", { name: /Create invitation|Crear invitación/i }).click();
 
     const enlaceDelTutor = await urlEnPantalla(paginaAdmin, /\/register\?t=/);
 
     // El aviso va PEGADO al enlace: quien cierre esta pantalla sin copiarlo
     // tiene que crear otro, y tiene que enterarse antes de decidir.
-    await expect(paginaAdmin.getByText(/will not be shown again/i)).toBeVisible();
+    await expect(paginaAdmin.getByText(/will not be shown again|no se volverá a mostrar/i)).toBeVisible();
 
     /* ───────────────────────────────────────────────────────────────────────
      * 2 · El tutor abre su enlace y se da de alta
@@ -158,13 +172,13 @@ test("la cadena de invitación: superadmin → tutor → hijo → enlace → dis
     const paginaTutor = await tutor.newPage();
     await paginaTutor.goto(enlaceDelTutor);
 
-    const campoCorreo = paginaTutor.getByLabel(/Your email/i);
+    const campoCorreo = paginaTutor.getByLabel(/Your email|Tu correo/i);
     await expect(campoCorreo).toHaveValue(correoDelTutor);
     await expect(campoCorreo).toHaveAttribute("readonly", "");
 
-    await paginaTutor.getByLabel(/Your name/i).fill("E2E Tutor");
-    await paginaTutor.getByLabel(/Choose a password/i).fill("cadena-de-invitacion-e2e");
-    await paginaTutor.getByRole("button", { name: /Create account/i }).click();
+    await paginaTutor.getByLabel(/Your name|Tu nombre/i).fill("E2E Tutor");
+    await paginaTutor.getByLabel(/Choose a password|Elige una contraseña/i).fill("cadena-de-invitacion-e2e");
+    await paginaTutor.getByRole("button", { name: /Create account|Crear cuenta/i }).click();
 
     // Entra con la contraseña que acaba de elegir: pedírsela otra vez dos
     // segundos después no aporta seguridad y sí una vía de abandono.
@@ -173,17 +187,17 @@ test("la cadena de invitación: superadmin → tutor → hijo → enlace → dis
     /* ───────────────────────────────────────────────────────────────────────
      * 3 · Crea un hijo
      * ─────────────────────────────────────────────────────────────────────── */
-    await paginaTutor.getByLabel(/Their full name/i).fill(NOMBRE_HIJO);
-    await paginaTutor.getByLabel(/Date of birth/i).fill("2015-05-04");
-    await paginaTutor.getByLabel(/^Year$/i).selectOption("6");
-    await paginaTutor.getByRole("button", { name: /^Add$/i }).click();
+    await paginaTutor.getByLabel(/Their full name|Su nombre completo/i).fill(NOMBRE_HIJO);
+    await paginaTutor.getByLabel(/Date of birth|Fecha de nacimiento/i).fill("2015-05-04");
+    await paginaTutor.getByLabel(/^Year$|^Curso$/i).selectOption("6");
+    await paginaTutor.getByRole("button", { name: /^Add$|^Añadir$/i }).click();
 
     const fichaDelHijo = paginaTutor.getByRole("link", { name: new RegExp(NOMBRE_HIJO) });
     await expect(fichaDelHijo).toBeVisible({ timeout: 20_000 });
 
     // «Aprende en casa» y no «sin colegio»: un hijo dado de alta por su padre
     // no pertenece a ningún centro, y eso no es una carencia.
-    await expect(fichaDelHijo).toContainText(/Learning at home/i);
+    await expect(fichaDelHijo).toContainText(/Learning at home|Aprende en casa/i);
 
     await fichaDelHijo.click();
     await paginaTutor.waitForURL(/\/tutor\/hijos\//, { timeout: 20_000 });
@@ -191,8 +205,8 @@ test("la cadena de invitación: superadmin → tutor → hijo → enlace → dis
     /* ───────────────────────────────────────────────────────────────────────
      * 4 · Genera el enlace del hijo
      * ─────────────────────────────────────────────────────────────────────── */
-    await expect(paginaTutor.getByText(/None yet/i)).toBeVisible();
-    await paginaTutor.getByRole("button", { name: /Create link/i }).click();
+    await expect(paginaTutor.getByText(/None yet|Ninguno todavía/i)).toBeVisible();
+    await paginaTutor.getByRole("button", { name: /Create link|Crear enlace/i }).click();
 
     const enlaceDelHijo = await urlEnPantalla(paginaTutor, /\/e\//);
 
@@ -204,11 +218,11 @@ test("la cadena de invitación: superadmin → tutor → hijo → enlace → dis
 
     // El enlace ya dice quién es: no hay colegio que elegir ni código que
     // teclear. Y el saludo lleva solo el nombre de pila.
-    await expect(paginaNino.getByText(new RegExp(`Hi, ${NOMBRE_PILA}`))).toBeVisible();
+    await expect(paginaNino.getByText(saludo())).toBeVisible();
 
-    await escribirPin(paginaNino, /Your new PIN/i, PIN);
-    await escribirPin(paginaNino, /Type it again/i, PIN);
-    await paginaNino.getByRole("button", { name: /That.s my PIN/i }).click();
+    await escribirPin(paginaNino, /Your new PIN|Tu PIN nuevo/i, PIN);
+    await escribirPin(paginaNino, /Type it again|Escríbelo otra vez/i, PIN);
+    await paginaNino.getByRole("button", { name: /That.s my PIN|Este es mi PIN/i }).click();
 
     // Y adentro. Sin esa redirección el niño se quedaría en la página del
     // enlace, que acaba de consumirse, leyendo «este enlace ya no vale»: el
@@ -221,13 +235,13 @@ test("la cadena de invitación: superadmin → tutor → hijo → enlace → dis
     await soloRecuerdaElDispositivo(nino);
     await paginaNino.goto("/login/student");
 
-    await expect(paginaNino.getByText(new RegExp(`Hi, ${NOMBRE_PILA}`))).toBeVisible();
+    await expect(paginaNino.getByText(saludo())).toBeVisible();
     // Ni colegio ni código. Si quedara el desplegable, el atajo no existe.
     await expect(paginaNino.getByRole("combobox")).toHaveCount(0);
-    await expect(paginaNino.getByText(/Step 1 of 3/i)).toHaveCount(0);
+    await expect(paginaNino.getByText(/Step 1 of 3|Paso 1 de 3/i)).toHaveCount(0);
 
-    await escribirPin(paginaNino, /Enter your PIN/i, PIN);
-    await paginaNino.getByRole("button", { name: /^Sign in$/i }).click();
+    await escribirPin(paginaNino, /Enter your PIN|Escribe tu PIN/i, PIN);
+    await paginaNino.getByRole("button", { name: /^Sign in$|^Entrar$/i }).click();
     await paginaNino.waitForURL(/\/learn/, { timeout: 30_000 });
 
     /* ───────────────────────────────────────────────────────────────────────
@@ -238,15 +252,15 @@ test("la cadena de invitación: superadmin → tutor → hijo → enlace → dis
      * llegaron a existir alguna vez.
      * ─────────────────────────────────────────────────────────────────────── */
     await paginaNino.goto(enlaceDelHijo);
-    await expect(paginaNino.getByText(/doesn.t work any more/i)).toBeVisible();
+    await expect(paginaNino.getByText(/doesn.t work any more|ya no vale/i)).toBeVisible();
 
     /* ───────────────────────────────────────────────────────────────────────
      * 8 · El tutor olvida el dispositivo, y el atajo desaparece
      * ─────────────────────────────────────────────────────────────────────── */
     await paginaTutor.reload();
-    await expect(paginaTutor.getByText(/None yet/i)).toHaveCount(0);
-    await paginaTutor.getByRole("button", { name: /Forget this device/i }).click();
-    await expect(paginaTutor.getByText(/None yet/i)).toBeVisible({ timeout: 20_000 });
+    await expect(paginaTutor.getByText(/None yet|Ninguno todavía/i)).toHaveCount(0);
+    await paginaTutor.getByRole("button", { name: /Forget this device|Olvidar este aparato/i }).click();
+    await expect(paginaTutor.getByText(/None yet|Ninguno todavía/i)).toBeVisible({ timeout: 20_000 });
 
     await soloRecuerdaElDispositivo(nino);
     await paginaNino.goto("/login/student");
@@ -255,8 +269,8 @@ test("la cadena de invitación: superadmin → tutor → hijo → enlace → dis
     // anulado no es un error que explicarle a un niño de diez años; es, sin
     // más, un dispositivo que ya no le conoce.
     await expect(paginaNino.getByRole("combobox")).toBeVisible();
-    await expect(paginaNino.getByText(/Step 1 of 3/i)).toBeVisible();
-    await expect(paginaNino.getByText(new RegExp(`Hi, ${NOMBRE_PILA}`))).toHaveCount(0);
+    await expect(paginaNino.getByText(/Step 1 of 3|Paso 1 de 3/i)).toBeVisible();
+    await expect(paginaNino.getByText(saludo())).toHaveCount(0);
   } finally {
     // Se cierran pase lo que pase: un contexto abierto deja el navegador vivo
     // y la suite colgada.
