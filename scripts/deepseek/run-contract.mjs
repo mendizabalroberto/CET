@@ -301,8 +301,57 @@ function makeWorktree(id) {
   return { path, branch };
 }
 
+/**
+ * Credenciales para el `verify`, resueltas UNA vez desde el repositorio real.
+ *
+ * El worktree es un arbol limpio de git y `secrets/` no se versiona —bien— asi
+ * que dentro no existe. Consecuencia que costo un contrato entero:
+ * `cierre-3-invariantes-de-telemetria` agoto sus tres rondas contra
+ *
+ *   ENOENT: open 'D:\.cet-worktrees\...\secrets\database.env'
+ *
+ * Es decir: NINGUN contrato cuya verificacion toque la base de datos podia salir
+ * verde jamas, y el motor lo reportaba como si el modelo hubiera fallado. Los
+ * contratos de tenencia de ayer (`ref-03`...`ref-06`) verificaban asi.
+ *
+ * Se pasa por ENTORNO y no copiando `secrets/` al worktree: multiplicar los
+ * sitios donde vive una credencial es ir hacia atras, y el worktree se borra y
+ * se recrea sin ceremonia.
+ *
+ * Se pasan LAS DOS palancas, y hace falta: `db-test.mjs` honra `CET_DB_URL` al
+ * elegir la ruta, pero su `connectAny()` llama a `readPassword()` ANTES y sin
+ * condicion, asi que revienta con ENOENT antes de mirar la URL. `readPassword()`
+ * si respeta `PGPASSWORD`. Con solo `CET_DB_URL` el arreglo no funcionaba, y lo
+ * comprobe relanzando `cierre-3`: mismo ENOENT. `db-apply.mjs` usa las dos.
+ *
+ * Y no abre la puerta que ayer hubo que cerrar: `db-apply.mjs` clasifica
+ * el destino por el nombre del host, asi que apuntar a produccion SIGUE
+ * exigiendole `--produccion-de-verdad` escrito en el contrato, donde se revisa
+ * en el diff. Lo que se desbloquea es leer, no escribir.
+ */
+function credencialesDeVerificacion() {
+  const fichero = join(REPO, 'secrets', 'database.env');
+  if (!existsSync(fichero)) return {};
+  const m = /SUPABASE_DB_PASSWORD\s*=\s*(\S+)/.exec(readFileSync(fichero, 'utf8'));
+  if (!m?.[1]) return {};
+  const clave = m[1].replace(/^["']|["']$/g, '');
+  return {
+    PGPASSWORD: clave,
+    CET_DB_URL:
+      process.env.CET_DB_URL ??
+      `postgres://postgres.clcutoqjdgeggvgyreud:${encodeURIComponent(clave)}@aws-0-us-east-1.pooler.supabase.com:5432/postgres`,
+  };
+}
+const CREDENCIALES = credencialesDeVerificacion();
+
 function run(cmd, cwd) {
-  const r = spawnSync(cmd, { cwd, shell: true, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 });
+  const r = spawnSync(cmd, {
+    cwd,
+    shell: true,
+    encoding: 'utf8',
+    maxBuffer: 32 * 1024 * 1024,
+    env: { ...process.env, ...CREDENCIALES },
+  });
   return { code: r.status ?? -1, out: `${r.stdout || ''}${r.stderr || ''}` };
 }
 

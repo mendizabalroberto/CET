@@ -211,7 +211,12 @@ select ok(
 select pg_temp.logout();
 
 select is(
-  (select c.relname
+  -- `relname` es de tipo `name`, no `text`. pgTAP no unifica esa pareja y la
+  -- llamada muere con «function is(name, text, unknown) does not exist», que NO
+  -- es un rojo: es un ERROR que aborta la sentencia y con ella todo lo que este
+  -- fichero comprueba antes — incluidos los invariantes que vigilan que ninguna
+  -- particion de telemetria sea alcanzable por `anon`. Llevaban semanas mudos.
+  (select c.relname::text
      from public.learning_events e
      join pg_catalog.pg_class c on c.oid = e.tableoid
     where e.seq = 555),
