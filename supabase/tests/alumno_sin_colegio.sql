@@ -6,6 +6,12 @@ select plan(7);
 select col_is_null('public', 'students', 'school_id',
   'un alumno puede no tener colegio');
 
+-- OJO CON `pin_hash`: `students_pin_hash_is_argon2id` exige que empiece por
+-- `$argon2id$`. Sembrar 'x' hace que el INSERT muera con 23514, y como pgTAP
+-- aborta al primer error de SQL, TODOS los asserts posteriores quedan
+-- enmascarados: el fichero parece una prueba y no prueba nada. El valor de
+-- abajo es el hash señuelo de `auth-pin`, que tiene el formato correcto y no
+-- corresponde a ningún PIN.
 insert into auth.users (id, email) values
   ('33333333-3333-3333-3333-333333333331', 's.hijo1@familia.cet.invalid'),
   ('33333333-3333-3333-3333-333333333332', 's.hijo2@familia.cet.invalid');
@@ -14,19 +20,19 @@ insert into public.profiles (id, school_id, role, full_name, status) values
   ('33333333-3333-3333-3333-333333333332', null, 'student', 'Hijo Dos', 'active');
 
 insert into public.students (profile_id, school_id, student_code, year_level, stage, pin_hash)
-values ('33333333-3333-3333-3333-333333333331', null, 'FAM-0001', 6, 'primary', 'x');
+values ('33333333-3333-3333-3333-333333333331', null, 'FAM-0001', 6, 'primary', '$argon2id$v=19$m=19456,t=2,p=1$ZGVjb3lkZWNveWRlY295ZA$3aMPu3Q1u5oQpXk0Wm7Xr0nJZ8sVQe0h1sK9d2tXqYo');
 
 -- En Postgres dos NULL son distintos, asi que `unique (school_id, code)` NO
 -- basta: sin el indice parcial, esto entraria.
 select throws_ok(
   $$insert into public.students (profile_id, school_id, student_code, year_level, stage, pin_hash)
-    values ('33333333-3333-3333-3333-333333333332', null, 'FAM-0001', 6, 'primary', 'x')$$,
+    values ('33333333-3333-3333-3333-333333333332', null, 'FAM-0001', 6, 'primary', '$argon2id$v=19$m=19456,t=2,p=1$ZGVjb3lkZWNveWRlY295ZA$3aMPu3Q1u5oQpXk0Wm7Xr0nJZ8sVQe0h1sK9d2tXqYo')$$,
   '23505', null,
   'dos alumnos sin colegio no comparten codigo');
 
 select lives_ok(
   $$insert into public.students (profile_id, school_id, student_code, year_level, stage, pin_hash)
-    values ('33333333-3333-3333-3333-333333333332', null, 'FAM-0002', 6, 'primary', 'x')$$,
+    values ('33333333-3333-3333-3333-333333333332', null, 'FAM-0002', 6, 'primary', '$argon2id$v=19$m=19456,t=2,p=1$ZGVjb3lkZWNveWRlY295ZA$3aMPu3Q1u5oQpXk0Wm7Xr0nJZ8sVQe0h1sK9d2tXqYo')$$,
   'con codigos distintos, si');
 
 select col_is_null('public', 'learning_events', 'school_id',
