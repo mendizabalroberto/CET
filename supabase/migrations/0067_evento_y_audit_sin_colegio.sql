@@ -94,3 +94,21 @@ begin
   return v_id;
 end;
 $$;
+
+-- -----------------------------------------------------------------------------
+-- auth_attempts — el libro de intentos tambien vale sin colegio
+-- -----------------------------------------------------------------------------
+-- `school_id` era `not null` (0011), y eso dejaba un hueco que no se ve hasta
+-- que existe un alumno sin colegio: sus intentos fallidos NO SE PODIAN
+-- REGISTRAR. La cuenta seguia protegida por el lockout de
+-- `students.failed_pin_attempts` y por el limite por IP, asi que no era una
+-- puerta abierta — pero si un ciego: nadie podia ver un ataque contra el hijo
+-- de un tutor, ni contarlo en la ventana por codigo.
+--
+-- El codigo de un alumno sin colegio es unico globalmente (indice parcial de
+-- 0066), asi que `(school_id NULL, student_code)` sigue identificandolo sin
+-- ambiguedad.
+alter table public.auth_attempts alter column school_id drop not null;
+
+comment on column public.auth_attempts.school_id is
+  'NULL cuando el alumno no esta matriculado en ningun colegio. Su student_code es unico globalmente (0066).';

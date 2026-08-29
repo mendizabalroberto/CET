@@ -27,6 +27,8 @@ export const ROUTES = {
   /** Cambio obligatorio de contrasena del personal en el primer acceso. */
   passwordChange: "/account/password",
   studentHome: "/learn",
+  /** Portada del tutor: sus hijos. */
+  tutorHome: "/tutor",
   staffHome: "/teach",
   adminHome: "/admin",
 } as const;
@@ -41,6 +43,11 @@ const PUBLIC_PREFIXES = [
   "/terms",
   "/login",
   "/register",
+  // El canje del enlace de acceso. Es publico por definicion: quien lo abre
+  // TODAVIA no tiene sesion, y precisamente viene a conseguir una. Sin esta
+  // linea el middleware manda al nino a `/login` antes de que la pagina llegue
+  // a existir para el, y el enlace no sirve para lo unico que existe.
+  "/e",
   "/auth", // callbacks de Supabase (confirmación de email, recuperación)
   "/logout", // cierra la sesión; tiene que ser alcanzable SIN sesión válida
   "/not-found", // destino del rewrite de denegación; solo pinta un 404
@@ -72,6 +79,9 @@ export const PROTECTED_AREAS: readonly ProtectedArea[] = [
   { prefix: "/admin", allow: ["superadmin", "school_admin"], onDeny: "not-found" },
   { prefix: "/teach", allow: ["superadmin", "school_admin", "teacher"], onDeny: "not-found" },
   { prefix: "/reports", allow: ["superadmin", "school_admin", "teacher"], onDeny: "not-found" },
+  // La zona del tutor. `not-found` y no `home`, igual que `/admin`: un 403 le
+  // confirmaria a un alumno curioso que `/tutor` existe y que hay algo dentro.
+  { prefix: "/tutor", allow: ["guardian"], onDeny: "not-found" },
   { prefix: "/learn", allow: ["student"], onDeny: "home" },
   { prefix: "/practice", allow: ["student"], onDeny: "home" },
   // `/exam` en singular, que es la ruta real. Con el plural, `matchesPrefix`
@@ -82,7 +92,7 @@ export const PROTECTED_AREAS: readonly ProtectedArea[] = [
   // Cualquiera con sesión puede cambiar su propio PIN / ver su cuenta.
   {
     prefix: "/account",
-    allow: ["superadmin", "school_admin", "teacher", "student"],
+    allow: ["superadmin", "school_admin", "teacher", "student", "guardian"],
     onDeny: "home",
   },
 ];
@@ -144,6 +154,8 @@ export function homeForRole(role: UserRole | null): string {
   switch (role) {
     case "student":
       return ROUTES.studentHome;
+    case "guardian":
+      return ROUTES.tutorHome;
     case "teacher":
       return ROUTES.staffHome;
     case "school_admin":
