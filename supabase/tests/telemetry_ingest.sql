@@ -175,11 +175,17 @@ select is(pg_temp.errcode_of(
   's1a no puede insertar DIRECTAMENTE en la partición del mes');
 
 -- Control positivo de lectura: el arreglo no ha tocado el SELECT.
+--
+-- DOS y no uno: el fixture siembra un evento con esta misma `session_id`
+-- (`helpers/fixture.psql`) y el assert de mas arriba inserta otro. Este control
+-- esperaba 1 desde que se escribio, asi que llevaba rojo sin que nadie lo
+-- viera: `pnpm verify` NO corre la suite pgTAP, se lanza a mano con
+-- `node scripts/db-test.mjs`.
 select is(pg_temp.visible_count(
   $$select count(*)::int from public.learning_events
      where session_id = '0e0e0e0e-0000-4000-8000-000000000001'$$),
-  1,
-  's1a sigue leyendo su propio evento (la política de SELECT no se ha tocado)');
+  2,
+  's1a sigue leyendo sus propios eventos (la política de SELECT no se ha tocado)');
 
 select pg_temp.logout();
 select pg_temp.login_as('aaaaaaaa-0000-4000-8000-00000000002a');  -- teacher_a
