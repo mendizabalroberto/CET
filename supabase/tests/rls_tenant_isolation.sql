@@ -237,9 +237,20 @@ select pg_temp.login_as('aaaaaaaa-0000-4000-8000-00000000002a');
 -- colegio. El `>= 5` original era un error de aritmética, y además un umbral
 -- flojo: con `>=`, una RLS que dejara ver DE MÁS pasaría el control tan
 -- contenta. La cifra exacta comprueba las dos direcciones a la vez.
+-- «De su colegio» ya no se pregunta solo por la columna: desde 0066 el alumno
+-- NO lleva school_id en profiles, su colegio vive en la matricula. Preguntar
+-- solo por la columna contaba 2 y daba la impresion de una fuga de RLS al
+-- reves — el profesor «habia dejado de ver» a sus alumnos— cuando lo que
+-- fallaba era la pregunta, no la politica.
 select is(pg_temp.visible_count(
-  $$select count(*)::int from public.profiles
-    where school_id = '11111111-1111-4111-8111-111111111111'$$),
+  $$select count(*)::int from public.profiles p
+    where p.school_id = '11111111-1111-4111-8111-111111111111'
+       or exists (select 1 from public.student_school_memberships m
+                   where m.student_id = p.id
+                     and m.school_id = '11111111-1111-4111-8111-111111111111'
+                     and m.status = 'activa'
+                     and m.starts_on <= current_date
+                     and (m.ends_on is null or m.ends_on > current_date))$$),
   4, 'CONTROL: teacher_a ve los 4 perfiles de su colegio, ni uno más ni uno menos');
 
 select is(pg_temp.visible_count(
