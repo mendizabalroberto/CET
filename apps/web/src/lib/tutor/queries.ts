@@ -305,11 +305,24 @@ export async function detalleDeHijo(studentId: string): Promise<DetalleDeHijo | 
 
   const supabase = await createClient();
 
-  const { data: perfil } = await supabase
+  const { data: perfil, error: perfilError } = await supabase
     .from("profiles")
     .select("full_name")
     .eq("id", studentId)
     .maybeSingle();
+
+  // RUIDOSO A PROPOSITO (R4), y no por simetria con `listarHijos`.
+  //
+  // Esta funcion devuelve `null` y su pagina responde 404, que es lo correcto
+  // cuando el id no es de un hijo suyo. Pero un fallo de permisos —una politica
+  // que falta, un `grant` que no esta— produce EXACTAMENTE el mismo `null`, y
+  // entonces el 404 deja de significar "no es tuyo" y pasa a significar "algo
+  // esta roto y nadie se ha enterado". Distinguirlos en el LOG no le dice nada
+  // a quien sondea, porque la respuesta sigue siendo la misma.
+  if (perfilError !== null) {
+    console.error("[cet] detalleDeHijo profiles", perfilError.code, perfilError.message);
+    return null;
+  }
 
   const nombre = (perfil as Fila | null)?.["full_name"];
   if (typeof nombre !== "string") return null;
