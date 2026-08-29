@@ -851,7 +851,12 @@ export async function olvidarDispositivo(
     return fail("unexpected");
   }
 
-  await auditar(supabase, "tutor.dispositivo_olvidado", "student_devices", parsed.data.deviceId, {
+  // El `entity_id` es EL ALUMNO y no el dispositivo: el guard de `app.audit`
+  // (0074) solo deja al tutor auditar sobre una PERSONA que pueda ver, y
+  // ademas un id que apunta a la persona es mejor pista forense que uno que
+  // apunta al aparato. El dispositivo viaja en el payload.
+  await auditar(supabase, "tutor.dispositivo_olvidado", "student_devices", studentId, {
+    dispositivo_id: parsed.data.deviceId,
     student_id: studentId,
   });
 

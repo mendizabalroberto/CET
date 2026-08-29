@@ -37,7 +37,7 @@
 -- dice la verdad sobre lo que la aplicacion hace.
 -- =============================================================================
 begin;
-select plan(3);
+select plan(5);
 
 \ir helpers/fixture.psql
 
@@ -54,12 +54,37 @@ select plan(3);
 insert into auth.users (id, email)
 values ('aaaaaaaa-0000-4000-8000-0000000000f1', 's.F1@alfa.students.cet.invalid'),
        ('aaaaaaaa-0000-4000-8000-0000000000f2', 'profesor.sin.correo@alfa.test');
+-- LO QUE EL PANEL ESCRIBE HOY, y ya no es lo de ayer. Desde 0066 la matricula
+-- del alumno vive en `student_school_memberships` y `profiles.school_id` es
+-- NULL para el; `components/staff/actions.ts` escribe exactamente esto.
 select lives_ok(
   $$insert into public.profiles (id, school_id, role, full_name, email, locale, status)
     values ('aaaaaaaa-0000-4000-8000-0000000000f1',
-            '11111111-1111-4111-8111-111111111111',
+            null,
             'student', 'Alta como la hace el panel', null, 'es', 'active')$$,
-  'el colegio puede dar de alta a un alumno con school_id, como hace el panel');
+  'el colegio puede dar de alta a un alumno sin school_id, como hace el panel');
+
+-- Y el contrario, que es el que mantiene sincronizados codigo y base: si alguien
+-- vuelve a escribir el colegio en `profiles`, esto tiene que romper. El dia que
+-- este assert se ponga rojo, o la constraint se ha caido o el panel ha vuelto al
+-- modelo viejo — y las dos cosas hay que verlas.
+select throws_ok(
+  $$insert into public.profiles (id, school_id, role, full_name, email, locale, status)
+    values ('aaaaaaaa-0000-4000-8000-0000000000f2',
+            '11111111-1111-4111-8111-111111111111',
+            'student', 'Alta al modo viejo', null, 'es', 'active')$$,
+  '23514', null,
+  'un alumno CON school_id en profiles ya no entra: la matricula vive en otro sitio');
+
+-- La matricula, que es donde vive ahora la pertenencia. El panel la escribe en
+-- la misma accion que el alta.
+select lives_ok(
+  $$insert into public.student_school_memberships
+      (student_id, school_id, starts_on, status)
+    values ('aaaaaaaa-0000-4000-8000-0000000000f1',
+            '11111111-1111-4111-8111-111111111111',
+            current_date, 'activa')$$,
+  'y su matricula entra, que es lo que le da colegio de verdad');
 
 -- =============================================================================
 -- B. El alumno guarda su idioma

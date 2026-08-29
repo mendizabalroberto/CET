@@ -22,7 +22,7 @@
 -- mano: SQL no puede leer TypeScript.
 -- =============================================================================
 begin;
-select plan(19);
+select plan(20);
 
 \ir helpers/fixture.psql
 
@@ -163,11 +163,26 @@ select is(
 -- =============================================================================
 select pg_temp.login_as('aaaaaaaa-0000-4000-8000-00000000003a');  -- s1a, alumno
 
+-- 22023 y ya no 42501, y el matiz importa. Desde 0068 el envoltorio tiene un
+-- vocabulario POR ROL: el alumno pasa la puerta del rol y se estrella contra la
+-- de las acciones. La garantia es la misma -no escribe acciones de personal- y
+-- el motivo es distinto, asi que el codigo tambien.
 select is(pg_temp.errcode_of(
   $$select public.audit_staff_action('student.created', 'students',
       'aaaaaaaa-0000-4000-8000-00000000003a', null, null)$$),
+  '22023',
+  'Un ALUMNO no escribe acciones de PERSONAL en el audit_log');
+
+-- El positivo de esa misma decision. Un alumno SI audita una cosa: el canje de
+-- su propio enlace, porque el actor de ese hecho es el y auditarlo con
+-- service_role dejaria el registro sin actor. Sin este assert, la unica
+-- capacidad nueva que 0068 concede quedaria sin probar — y una capacidad sin
+-- probar es donde se esconde el siguiente agujero.
+select isnt(pg_temp.errcode_of(
+  $$select public.audit_staff_action('alumno.enlace_canjeado', 'student_access_links',
+      'aaaaaaaa-0000-4000-8000-00000000003a', null, null)$$),
   '42501',
-  'Un ALUMNO no escribe en el audit_log: un log donde escribe cualquiera no prueba nada');
+  'pero SI audita el canje de su propio enlace');
 
 select pg_temp.logout();
 select pg_temp.login_as('aaaaaaaa-0000-4000-8000-00000000002a');  -- teacher_a

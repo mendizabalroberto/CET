@@ -89,11 +89,15 @@ select is(pg_temp.visible_count(
 -- ESCRITURA — el alumno no escribe NADA del motor de examen (AD-5)
 -- =============================================================================
 -- Si pudiera hacer UPDATE sobre su intento, se regalaría `server_deadline_at`.
+-- -1 y no 0: comprobado con el sqlstate real, el corte es 42501 —no hay ni
+-- GRANT de UPDATE— y no «la RLS filtro y quedaron cero filas». La defensa es
+-- MAS dura de lo que decia este assert, y el fichero ya usa -1 con ese
+-- significado unas lineas mas abajo.
 select is(pg_temp.affected(
   $$update public.exam_attempts
        set server_deadline_at = now() + interval '10 years'
      where id = '33333333-0000-4000-8000-0000000000a1'$$),
-  0, 's1a no consigue alargar el deadline de SU PROPIO intento (0 filas)');
+  -1, 's1a no consigue alargar el deadline de SU PROPIO intento (ni GRANT tiene)');
 
 -- Si pudiera insertar respuestas, fabricaría `server_ts` y "respondería"
 -- después de la campana.
@@ -152,11 +156,18 @@ select is(pg_temp.errcode_of(
 select is(pg_temp.affected(
   $$update public.students set failed_pin_attempts = 0, locked_until = null
      where profile_id = 'aaaaaaaa-0000-4000-8000-00000000003a'$$),
-  0, 's1a no se desbloquea solo: la RLS no le da ni una fila de students');
+  -1, 's1a no se desbloquea solo: no tiene ni GRANT de UPDATE sobre students');
 
 -- Y en app.audit(), donde la condición va al revés: authenticated tiene EXECUTE,
 -- así que con el guard inerte cualquier alumno escribía en el audit_log. Un log
 -- en el que cualquiera puede escribir no prueba nada.
+--
+-- OJO A LA ENTIDAD NULA. Este assert la usa a proposito, y por eso caza lo que
+-- caza: 0067 abrio el guard al tutor y al alumno con un comodin
+-- `p_entity_id is null`, y como `app.audit` acepta la accion como texto libre,
+-- ese comodin devolvia el agujero entero por otra puerta. Lo cerro 0074. Si
+-- alguien vuelve a admitir la entidad nula en una de esas dos ramas, esto se
+-- pone rojo.
 select is(pg_temp.errcode_of(
   $$select app.audit('exam.tampered', 'exam_attempts', null, null, '{"nota":10}'::jsonb)$$),
   '42501',
