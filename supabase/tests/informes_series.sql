@@ -16,6 +16,13 @@ select plan(34);
 -- La migración bajo prueba. `\ir` es relativo al fichero que incluye, así que
 -- esto sube a supabase/ y baja a migrations/.
 \ir ../migrations/0062_informes_series.sql
+-- Y 0064 DETRAS, sin excepcion. 0064 redefine con `create or replace` las tres
+-- funciones que 0062 acaba de crear: si no se incluye, la linea de arriba las
+-- revierte —dentro de esta transaccion— a la formula sin tope, y este fichero
+-- pasaria a probar unas definiciones que en produccion ya no existen. Seguiria
+-- en verde, porque su fixture no tiene ningun hueco mayor que el umbral, y ese
+-- es justo el problema: un fichero que prueba el pasado y no avisa.
+\ir ../migrations/0064_tiempo_de_estudio.sql
 
 -- El mundo compartido: colegios Alfa y Beta, clase Y6A con s1a y s2a, clase Y6B
 -- con s1b sola, y la lección ffffffff-...-0001.
