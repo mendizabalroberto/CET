@@ -1,7 +1,7 @@
 ---
 id: enl-1-tablas
 model: reasoner
-territory: [supabase/migrations/0064_invitaciones_y_dispositivos.sql, supabase/tests/invitaciones_y_dispositivos.sql]
+territory: [supabase/migrations/0065_invitaciones_y_dispositivos.sql, supabase/tests/invitaciones_y_dispositivos.sql]
 forbidden: [packages/ui/src/index.ts, packages/shared/src/index.ts, supabase/migrations/0057_tutor_y_membresias.sql]
 context: [supabase/migrations/0057_tutor_y_membresias.sql, supabase/migrations/0013_grants.sql, supabase/migrations/0058_puede_ver_alumno.sql, docs/superpowers/specs/2026-08-29-alta-por-enlace-design.md]
 verify: node scripts/db-apply.mjs migrations && node scripts/db-test.mjs invitaciones_y_dispositivos

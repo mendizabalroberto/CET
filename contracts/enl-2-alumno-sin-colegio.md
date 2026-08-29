@@ -1,7 +1,7 @@
 ---
 id: enl-2-alumno-sin-colegio
 model: reasoner
-territory: [supabase/migrations/0065_alumno_sin_colegio.sql, supabase/migrations/0066_evento_y_audit_sin_colegio.sql, supabase/tests/alumno_sin_colegio.sql]
+territory: [supabase/migrations/0066_alumno_sin_colegio.sql, supabase/migrations/0067_evento_y_audit_sin_colegio.sql, supabase/tests/alumno_sin_colegio.sql]
 forbidden: [packages/ui/src/index.ts, packages/shared/src/index.ts, supabase/migrations/0060_quitar_alcance_por_rol.sql]
 context: [supabase/migrations/0003_tenancy.sql, supabase/migrations/0011_audit.sql, supabase/migrations/0022_fix_inert_guards.sql, supabase/migrations/0024_learning_events_ingest.sql, supabase/migrations/0060_quitar_alcance_por_rol.sql, supabase/tests/escrituras_de_perfil.sql]
 verify: node scripts/db-apply.mjs migrations && node scripts/db-test.mjs alumno_sin_colegio
@@ -51,12 +51,12 @@ en verde, con `plan(7)`:
 6. Un `profiles` con `role='guardian'` y `school_id` no nulo falla con `23514`.
 7. `app.colegio_del_evento()` sobre un alumno sin membresía activa devuelve NULL.
 
-`0065` hace: `alter table public.students alter column school_id drop not null`;
+`0066` hace: `alter table public.students alter column school_id drop not null`;
 `create unique index students_code_sin_colegio_uniq on public.students
 (student_code) where school_id is null`; y devuelve `profiles_alcance_por_rol`
 tal y como la declaró `0056`, esta vez **sin** `not valid`.
 
-`0066` hace: `learning_events.school_id` nullable;
+`0067` hace: `learning_events.school_id` nullable;
 `app.colegio_del_evento(p_student_id uuid) returns uuid` como `security definer`
 con `set search_path = ''`, que devuelve el `school_id` de la membresía `activa`
 vigente hoy o NULL; y amplía el guard de `app.audit()` para que un `guardian`

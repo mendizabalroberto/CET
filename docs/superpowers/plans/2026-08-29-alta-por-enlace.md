@@ -19,7 +19,7 @@
 - **TypeScript `strict: true` y `noUncheckedIndexedAccess`.** Sin `any` implícito en código de producción.
 - **Texto visible al usuario en `es` y `en`**, desde los diccionarios de `apps/web/src/lib/i18n/dictionaries/`. Ni una cadena a pelo en un componente.
 - **`packages/ui/src/index.ts` y `packages/shared/src/index.ts` son territorio ajeno**: ningún contrato delegado los toca.
-- **Migraciones:** numeración estricta y correlativa. La última aplicada es `0063_public_informes_wrapper.sql`; este plan usa `0064`, `0065` y `0066`.
+- **Migraciones:** numeración estricta y correlativa. La última en el árbol es `0064_tiempo_de_estudio.sql`; este plan usa `0065`, `0065` y `0066`.
 - **Nunca aplicar migraciones contra producción desde un contrato.** `node scripts/db-apply.mjs migrations` tiene guarda de producción y así se queda.
 - **Argon2id, parámetros fijos:** `{ parallelism: 1, iterations: 2, memorySize: 19456, hashLength: 32 }`. Idénticos en `student-pin` y en el hash señuelo de `auth-pin`; si divergen, el tiempo de respuesta revela qué cuentas existen.
 - **Todo fallo de credencial devuelve el mismo cuerpo y el mismo tiempo.** `MIN_RESPONSE_MS = 350`.
@@ -32,9 +32,9 @@
 
 | Fichero | Responsabilidad |
 |---|---|
-| `supabase/migrations/0064_invitaciones_y_dispositivos.sql` | `guardian_invites`, `student_devices`, su RLS y sus grants por columna |
-| `supabase/migrations/0065_alumno_sin_colegio.sql` | `students.school_id` nullable, índice único parcial del código, `profiles_alcance_por_rol` de vuelta |
-| `supabase/migrations/0066_evento_y_audit_sin_colegio.sql` | `learning_events.school_id` nullable, `app.colegio_del_evento()`, `app.audit()` admite al tutor |
+| `supabase/migrations/0065_invitaciones_y_dispositivos.sql` | `guardian_invites`, `student_devices`, su RLS y sus grants por columna |
+| `supabase/migrations/0066_alumno_sin_colegio.sql` | `students.school_id` nullable, índice único parcial del código, `profiles_alcance_por_rol` de vuelta |
+| `supabase/migrations/0067_evento_y_audit_sin_colegio.sql` | `learning_events.school_id` nullable, `app.colegio_del_evento()`, `app.audit()` admite al tutor |
 | `supabase/tests/invitaciones_y_dispositivos.sql` | pgTAP de 0064 |
 | `supabase/tests/alumno_sin_colegio.sql` | pgTAP de 0065 y 0066 |
 
@@ -91,7 +91,7 @@ Orden: 1 → 2 → (3, 4) → 5 → (6-7 ‖ 8-10) → 11-14 → 15 → 16 → 1
 ---
 id: enl-1-tablas
 model: reasoner
-territory: [supabase/migrations/0064_invitaciones_y_dispositivos.sql, supabase/tests/invitaciones_y_dispositivos.sql]
+territory: [supabase/migrations/0065_invitaciones_y_dispositivos.sql, supabase/tests/invitaciones_y_dispositivos.sql]
 forbidden: [packages/ui/src/index.ts, packages/shared/src/index.ts, supabase/migrations/0057_tutor_y_membresias.sql]
 context: [supabase/migrations/0057_tutor_y_membresias.sql, supabase/migrations/0013_grants.sql, supabase/migrations/0058_puede_ver_alumno.sql, docs/superpowers/specs/2026-08-29-alta-por-enlace-design.md]
 verify: node scripts/db-test.mjs invitaciones_y_dispositivos
@@ -155,7 +155,7 @@ El spec §4.1 y §4.2 fija las columnas exactas.
 ---
 id: enl-2-alumno-sin-colegio
 model: reasoner
-territory: [supabase/migrations/0065_alumno_sin_colegio.sql, supabase/migrations/0066_evento_y_audit_sin_colegio.sql, supabase/tests/alumno_sin_colegio.sql]
+territory: [supabase/migrations/0066_alumno_sin_colegio.sql, supabase/migrations/0067_evento_y_audit_sin_colegio.sql, supabase/tests/alumno_sin_colegio.sql]
 forbidden: [packages/ui/src/index.ts, packages/shared/src/index.ts, supabase/migrations/0060_quitar_alcance_por_rol.sql]
 context: [supabase/migrations/0003_tenancy.sql, supabase/migrations/0011_audit.sql, supabase/migrations/0022_fix_inert_guards.sql, supabase/migrations/0024_learning_events_ingest.sql, supabase/migrations/0060_quitar_alcance_por_rol.sql, supabase/tests/escrituras_de_perfil.sql]
 verify: node scripts/db-test.mjs alumno_sin_colegio
@@ -206,12 +206,12 @@ los datos y que el código que los lee». Esta es esa tanda.
 7. `app.audit('tutor.hijo_creado','profiles', ...)` ejecutada como un `guardian`
    **no** levanta excepción y devuelve un `bigint`.
 
-`0065` hace: `alter table public.students alter column school_id drop not null`;
+`0066` hace: `alter table public.students alter column school_id drop not null`;
 crea `create unique index students_code_sin_colegio_uniq on public.students
 (student_code) where school_id is null`; y devuelve `profiles_alcance_por_rol`
 tal y como la declaró `0056`, esta vez **sin** `not valid`.
 
-`0066` hace: `learning_events.school_id` nullable, `app.colegio_del_evento()`
+`0067` hace: `learning_events.school_id` nullable, `app.colegio_del_evento()`
 como `security definer` con `search_path = ''`, y amplía el guard de
 `app.audit()` para que un `guardian` pueda escribir entradas **cuyo
 `entity_id` sea un hijo suyo o él mismo**, comprobándolo con
@@ -237,7 +237,7 @@ id: enl-3-dos-puertas
 model: k3
 territory: [supabase/functions/auth-pin/index.ts, supabase/functions/student-pin/index.ts]
 forbidden: [packages/ui/src/index.ts, packages/shared/src/index.ts, apps/web/**]
-context: [supabase/migrations/0064_invitaciones_y_dispositivos.sql, docs/superpowers/specs/2026-08-29-alta-por-enlace-design.md]
+context: [supabase/migrations/0065_invitaciones_y_dispositivos.sql, docs/superpowers/specs/2026-08-29-alta-por-enlace-design.md]
 verify: pnpm vitest run supabase/functions
 setup: pnpm install --prefer-offline --frozen-lockfile
 rounds: 3
@@ -264,7 +264,7 @@ de un colegio con un script y un cronómetro».
 `student-pin/index.ts` ya tiene una unión discriminada por `op` con `change`,
 `reset` y `provision`, y es el único sitio del sistema que calcula Argon2id.
 
-`student_devices` (migración `0064`) tiene `device_hash` = SHA-256 hex del
+`student_devices` (migración `0065`) tiene `device_hash` = SHA-256 hex del
 secreto, y `revoked_at`.
 
 ## 3 · El criterio de aceptación
@@ -438,7 +438,7 @@ git commit -m "chore(contratos): los cinco encargos de la cadena de invitacion"
 **Agente:** DeepSeek `reasoner`, contrato `enl-1-tablas`.
 
 **Files:**
-- Create: `supabase/migrations/0064_invitaciones_y_dispositivos.sql`
+- Create: `supabase/migrations/0065_invitaciones_y_dispositivos.sql`
 - Test: `supabase/tests/invitaciones_y_dispositivos.sql`
 
 **Interfaces:**
@@ -487,7 +487,7 @@ Expected: FAIL — `relation "public.guardian_invites" does not exist`.
 
 ```sql
 -- =============================================================================
--- 0064_invitaciones_y_dispositivos.sql — la cadena de invitacion
+-- 0065_invitaciones_y_dispositivos.sql — la cadena de invitacion
 -- Cambridge Exam Trainer · © 2026 Roberto Mendizabal.
 -- =============================================================================
 -- Dos tablas con la MISMA disciplina que `student_access_links` (0057): el
@@ -587,7 +587,7 @@ Expected: PASS, `# Looks like you planned 8 and ran 8`.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add supabase/migrations/0064_invitaciones_y_dispositivos.sql supabase/tests/invitaciones_y_dispositivos.sql
+git add supabase/migrations/0065_invitaciones_y_dispositivos.sql supabase/tests/invitaciones_y_dispositivos.sql
 git commit -m "feat(acceso): las dos tablas de la cadena, con el hash protegido por grant de columna"
 ```
 
@@ -598,7 +598,7 @@ git commit -m "feat(acceso): las dos tablas de la cadena, con el hash protegido 
 **Agente:** DeepSeek `reasoner`, contrato `enl-2-alumno-sin-colegio` (primera mitad).
 
 **Files:**
-- Create: `supabase/migrations/0065_alumno_sin_colegio.sql`
+- Create: `supabase/migrations/0066_alumno_sin_colegio.sql`
 - Test: `supabase/tests/alumno_sin_colegio.sql`
 
 **Interfaces:**
@@ -668,11 +668,11 @@ rollback;
 Run: `node scripts/db-test.mjs alumno_sin_colegio`
 Expected: FAIL en el primer assert — `school_id` es `not null`.
 
-- [ ] **Step 3: Escribir `0065_alumno_sin_colegio.sql`**
+- [ ] **Step 3: Escribir `0066_alumno_sin_colegio.sql`**
 
 ```sql
 -- =============================================================================
--- 0065_alumno_sin_colegio.sql — la tanda que 0060 dejo pendiente
+-- 0066_alumno_sin_colegio.sql — la tanda que 0060 dejo pendiente
 -- Cambridge Exam Trainer · © 2026 Roberto Mendizabal.
 -- =============================================================================
 -- 0060 retiro `profiles_alcance_por_rol` y dejo escrito por que: la aplicacion
@@ -716,7 +716,7 @@ Expected: pasan los asserts 1, 2, 3 y 6; siguen fallando 4, 5 y 7 (son de `0066`
 - [ ] **Step 5: Commit**
 
 ```bash
-git add supabase/migrations/0065_alumno_sin_colegio.sql supabase/tests/alumno_sin_colegio.sql
+git add supabase/migrations/0066_alumno_sin_colegio.sql supabase/tests/alumno_sin_colegio.sql
 git commit -m "feat(tenencia): el alumno puede no tener colegio, y su codigo sigue siendo unico"
 ```
 
@@ -727,18 +727,18 @@ git commit -m "feat(tenencia): el alumno puede no tener colegio, y su codigo sig
 **Agente:** DeepSeek `reasoner`, contrato `enl-2-alumno-sin-colegio` (segunda mitad).
 
 **Files:**
-- Create: `supabase/migrations/0066_evento_y_audit_sin_colegio.sql`
+- Create: `supabase/migrations/0067_evento_y_audit_sin_colegio.sql`
 - Modify: `supabase/tests/alumno_sin_colegio.sql` (ya escrito en la tarea 3)
 
 **Interfaces:**
 - Consumes: `app.puede_ver_alumno(uuid)` de `0058`.
 - Produces: `app.colegio_del_evento(p_student_id uuid) returns uuid`; `app.audit(...)` con el guard ampliado.
 
-- [ ] **Step 1: Escribir `0066_evento_y_audit_sin_colegio.sql`**
+- [ ] **Step 1: Escribir `0067_evento_y_audit_sin_colegio.sql`**
 
 ```sql
 -- =============================================================================
--- 0066_evento_y_audit_sin_colegio.sql
+-- 0067_evento_y_audit_sin_colegio.sql
 -- Cambridge Exam Trainer · © 2026 Roberto Mendizabal.
 -- =============================================================================
 -- Dos consecuencias de que exista un alumno sin colegio:
@@ -848,7 +848,7 @@ Expected: PASS en los 20 ficheros. Si `escrituras_de_perfil.sql` falla, es porqu
 - [ ] **Step 4: Commit**
 
 ```bash
-git add supabase/migrations/0066_evento_y_audit_sin_colegio.sql
+git add supabase/migrations/0067_evento_y_audit_sin_colegio.sql
 git commit -m "feat(tenencia): el evento sin colegio, y el tutor puede auditar lo suyo"
 ```
 
