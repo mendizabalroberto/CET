@@ -65,8 +65,15 @@ test.describe("flujo de login", () => {
     await expect(page).toHaveURL(/\/login/);
   });
 
-  test("el formulario de registro deja claro que queda pendiente de aprobación", async ({ page }) => {
+  test("/register sin invitación no enseña ningún formulario", async ({ page }) => {
+    // Esta página ERA una solicitud de acceso que un administrador aprobaba.
+    // Desde la cadena de invitación, nadie entra en CET sin que alguien le
+    // haya dado un enlace: sin `?t=` válido no hay campo deshabilitado ni
+    // aviso al pie, no hay DONDE ESCRIBIR. Eso es lo que se comprueba.
     await page.goto("/register");
-    await expect(page.getByText(/administrator will review|administrador del colegio lo revisará/i)).toBeVisible();
+    await expect(
+      page.getByText(/invitation only|se entra por invitación/i),
+    ).toBeVisible();
+    await expect(page.locator('input[type="password"]')).toHaveCount(0);
   });
 });

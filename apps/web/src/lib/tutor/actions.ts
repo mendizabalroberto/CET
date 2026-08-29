@@ -37,11 +37,13 @@
  * ===========================================================================
  */
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
 import { requireRole } from "@/lib/auth/session";
+import { ROUTES } from "@/lib/routes";
 import { fetchConPlazo, PLAZO_AUTENTICAR_MS } from "@/lib/net/plazo";
 import { clientKeyFromHeaders, rateLimit } from "@/lib/security/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -354,7 +356,16 @@ export async function altaDeTutor(_prev: TutorState, fd: FormData): Promise<Tuto
     return done("altaCompletadaEntraTu", { email });
   }
 
-  return done("altaCompletada", { email });
+  /*
+   * A SU PORTADA, y no a un mensaje de exito.
+   *
+   * `redirect()` lanza una excepcion de control de flujo, asi que va FUERA de
+   * todo `try` y en la ultima linea. Sin el, el tutor se queda mirando el
+   * formulario que acaba de enviar: tiene sesion abierta y ninguna pista de
+   * que la tiene. La rama de mas arriba —la que no consiguio abrir sesion— si
+   * devuelve estado, porque ahi hay algo que decirle.
+   */
+  redirect(ROUTES.tutorHome);
 }
 
 /* ========================================================================== */
@@ -797,7 +808,18 @@ export async function canjearEnlace(_prev: TutorState, fd: FormData): Promise<Tu
     agente_familia: familiaDeAgente(cabeceras.get("user-agent")),
   });
 
-  return done("canjeCompletado");
+  /*
+   * Y ADENTRO. Esta linea no es cosmetica: sin ella el nino que acaba de elegir
+   * su PIN se queda en `/e/[token]`, la accion refresca el arbol de servidor,
+   * `alumnoDelEnlace()` ya no encuentra el enlace —lo acabamos de consumir en
+   * el paso 2— y la pagina le contesta «este enlace ya no vale». El peor final
+   * posible para el unico paso que si le salio bien.
+   *
+   * A `/learn` y no a `/account/pin`: `set-from-link` deja `pin_must_change` en
+   * falso porque el PIN lo acaba de elegir el. Pedirle que lo cambie otra vez
+   * seria pedirselo dos veces seguidas.
+   */
+  redirect(ROUTES.studentHome);
 }
 
 /* ========================================================================== */
