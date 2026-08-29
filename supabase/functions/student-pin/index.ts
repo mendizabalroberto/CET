@@ -49,6 +49,7 @@ import { argon2id, argon2Verify } from "https://esm.sh/hash-wasm@4.11.0";
 // Ese es el único código de estas funciones que una prueba unitaria puede
 // importar: ver la cabecera de `supabase/functions/vitest.config.mjs`.
 import {
+  emailSinteticoDeAlumno,
   entradaDeStudentPin,
   esPinDebil,
   longitudDePinPorEtapa,
@@ -156,7 +157,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     const { data: alumno } = await admin
       .from("students")
-      .select("profile_id, school_id, stage")
+      .select("profile_id, school_id, stage, student_code")
       .eq("profile_id", input.studentProfileId)
       .maybeSingle();
 
@@ -169,6 +170,47 @@ Deno.serve(async (req: Request): Promise<Response> => {
     // La MISMA lista que aplica `change`. Un enlace no convierte `1234` en un
     // buen PIN.
     if (esPinDebil(input.newPin)) return json({ error: "weak_pin" }, 400);
+
+    /* ---------------------------------------------------------------------
+     * LA IDENTIDAD SINTÉTICA, Y NO SOLO EL PIN
+     * ---------------------------------------------------------------------
+     * `auth-pin` no valida el PIN y abre sesión: valida el PIN y DESPUÉS entra
+     * con `signInWithPassword` usando una contraseña que deriva de
+     * `CET_STUDENT_PASSWORD_SECRET`. Un alumno cuya cuenta de `auth.users` no
+     * tenga esa contraseña exacta no puede entrar por mucho que su PIN sea
+     * correcto.
+     *
+     * `crearHijo` da de alta la cuenta con una contraseña ALEATORIA a
+     * propósito: la aplicación web no conoce el secreto —vive solo aquí, y ese
+     * es justo el punto— así que no puede derivarla. Sin estas líneas el
+     * recorrido acababa en un 500 con este renglón en el log: «la cuenta
+     * sintética falló pese a un PIN válido: invalid_credentials». El niño
+     * elegía su PIN, el enlace se consumía, y no entraba.
+     *
+     * Es lo mismo que hace `provision` (más abajo) para un alumno de colegio.
+     * Aquí, además, el colegio puede no existir: el hijo de un tutor no tiene
+     * ninguno, y `emailSinteticoDeAlumno` lo resuelve con el dominio
+     * `familia.cet.invalid`.
+     *
+     * VA ANTES DEL PIN a propósito. Si fallara después, el niño tendría un PIN
+     * bueno y ninguna forma de usarlo; fallando antes, no se ha escrito nada,
+     * el servidor no consume el enlace y el mismo enlace sigue sirviendo.
+     * ------------------------------------------------------------------- */
+    const { data: colegio } = alumno.school_id
+      ? await admin.from("schools").select("slug").eq("id", alumno.school_id).maybeSingle()
+      : { data: null };
+
+    const { error: identidadError } = await admin.auth.admin.updateUserById(alumno.profile_id, {
+      email: emailSinteticoDeAlumno(alumno.student_code, colegio?.slug ?? null),
+      password: await hmacBase64(passwordSecret, alumno.profile_id),
+      email_confirm: true,
+      user_metadata: { cet_student_code: alumno.student_code },
+    });
+
+    if (identidadError) {
+      console.error("student-pin set-from-link identidad:", identidadError);
+      return json({ error: "server_error" }, 500);
+    }
 
     const { error } = await admin
       .from("students")
