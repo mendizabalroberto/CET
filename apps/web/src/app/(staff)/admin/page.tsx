@@ -26,6 +26,7 @@
 import Link from "next/link";
 
 import { AdminPanel } from "@/components/staff/AdminPanel";
+import { InvitarTutor } from "@/components/staff/InvitarTutor";
 import { resolveAdminSchool } from "@/components/staff/admin-school";
 import { getStaffDictionary } from "@/components/staff/i18n";
 import { loadAdminData } from "@/components/staff/queries";
@@ -65,7 +66,14 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
         {profile.role === "superadmin" ? (
           <>
-            <p className="mt-3 max-w-prose text-muted">{P.body}</p>
+            {/* Invitar a un tutor NO depende del colegio elegido: un tutor no
+                pertenece a ninguno. Por eso vive aqui arriba, alcanzable
+                tambien mientras el superadmin no haya elegido colegio. */}
+            <div className="mt-6">
+              <InvitarTutor t={t} />
+            </div>
+
+            <p className="mt-8 max-w-prose text-muted">{P.body}</p>
 
             {schools.length === 0 ? (
               <p className="mt-6 text-muted">{P.empty}</p>

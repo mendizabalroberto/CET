@@ -340,6 +340,22 @@ export const staffEs: StaffDictionary = {
       registrations: "Solicitudes de acceso",
       audit: "Audit log",
     },
+    inviteTutor: {
+      title: "Invitar a un padre, madre o tutor",
+      body:
+        "Recibe un enlace para crear su cuenta. Sirve una vez y caduca a los siete d\u00edas.",
+      emailLabel: "Su direcci\u00f3n de correo",
+      submit: "Crear invitaci\u00f3n",
+      submitting: "Creando\u2026",
+      once: "C\u00f3pialo ahora: este enlace no se volver\u00e1 a mostrar.",
+      copy: "Copiar",
+      copied: "Copiado",
+      sentTo: "Invitaci\u00f3n para {email}",
+      errors: {
+        emailFormat: "Eso no parece un correo electr\u00f3nico.",
+        generic: "No se ha podido crear la invitaci\u00f3n. Int\u00e9ntalo otra vez.",
+      },
+    },
     students: {
       title: "Alumnos",
       caption: "Alumnos matriculados en este colegio",

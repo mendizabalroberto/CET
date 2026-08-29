@@ -22,6 +22,7 @@ import { redirect } from "next/navigation";
 
 import { listActiveSchools } from "@/lib/data/schools";
 import { fetchConPlazo, PLAZO_AUTENTICAR_MS } from "@/lib/net/plazo";
+import { leerCookieDispositivo } from "@/lib/tutor/dispositivo";
 import { homeForRole, ROUTES } from "@/lib/routes";
 import { clientKeyFromHeaders, rateLimit } from "@/lib/security/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -32,6 +33,7 @@ import {
   pinChangeSchema,
   registrationSchema,
   staffLoginSchema,
+  studentDeviceLoginSchema,
   studentLoginSchema,
 } from "./schemas";
 
@@ -105,11 +107,36 @@ export async function signInStudent(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const parsed = studentLoginSchema.safeParse({
-    schoolId: formData.get("schoolId"),
-    studentCode: formData.get("studentCode"),
-    pin: formData.get("pin"),
-  });
+  /*
+   * DOS PUERTAS, UN SOLO CAMINO A PARTIR DE AQUI.
+   *
+   * Si el formulario trae `deviceToken`, es el nino que vuelve: la cookie ya
+   * dijo quien es y solo ha tecleado su PIN. Si no, es la puerta clasica de
+   * colegio + codigo + PIN, intacta.
+   *
+   * Lo unico que cambia es el cuerpo que se le manda a la Edge Function. Todo
+   * lo demas —rate limit, tratamiento del 401, del 429 y del cuerpo ilegible—
+   * es identico, y tiene que serlo: si la puerta nueva se desviara aunque fuese
+   * en el mensaje de error, seria distinguible de la vieja y esa diferencia es
+   * exactamente lo que permite enumerar.
+   */
+  // EL SECRETO NO LLEGA DEL FORMULARIO, y no puede: vive en una cookie
+  // `HttpOnly` que ningun JavaScript de la pagina lee. El campo del formulario
+  // solo dice por que puerta se entra; el token lo lee el servidor.
+  const porDispositivo = formData.get("porDispositivo") === "1";
+  const secretoDeDispositivo = porDispositivo ? await leerCookieDispositivo() : null;
+
+  const parsed =
+    secretoDeDispositivo !== null
+      ? studentDeviceLoginSchema.safeParse({
+          deviceToken: secretoDeDispositivo,
+          pin: formData.get("pin"),
+        })
+      : studentLoginSchema.safeParse({
+          schoolId: formData.get("schoolId"),
+          studentCode: formData.get("studentCode"),
+          pin: formData.get("pin"),
+        });
 
   // Un formulario inválido devuelve el MISMO error que unas credenciales
   // incorrectas. Si devolviera "el código tiene formato inválido", ya estaría

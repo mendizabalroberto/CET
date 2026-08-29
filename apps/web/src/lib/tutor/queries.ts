@@ -178,3 +178,171 @@ export async function alumnoDelDispositivo(secreto: string): Promise<{
     longitudDePin: longitud,
   };
 }
+
+/**
+ * Quien es el nino que acaba de abrir su enlace.
+ *
+ * Misma escalada y mismo motivo que `alumnoDelDispositivo`: quien abre el
+ * enlace no tiene sesion todavia —viene precisamente a conseguirla— y
+ * `student_access_links` solo la lee `service_role`.
+ *
+ * Devuelve `null` para un enlace caducado, ya usado o inexistente, SIN
+ * distinguir cual de los tres. La pantalla pinta el mismo mensaje en los tres
+ * casos, y esa indistincion es deliberada: separarlos convertiria la pagina en
+ * un oraculo sobre que tokens llegaron a existir.
+ */
+export async function alumnoDelEnlace(token: string): Promise<{
+  readonly nombreDePila: string;
+  readonly longitudDePin: 4 | 6;
+} | null> {
+  if (!/^[A-Za-z0-9_-]{43}$/.test(token)) return null;
+
+  const admin = createAdminClient(
+    "Resolver el alumno de un enlace de acceso: student_access_links solo la lee service_role",
+  );
+
+  const { data: enlace } = await admin
+    .from("student_access_links")
+    .select("student_id, expires_at")
+    .eq("token_hash", hashToken(token))
+    .is("revoked_at", null)
+    .maybeSingle();
+
+  const fila = enlace as Fila | null;
+  const studentId = fila?.["student_id"];
+  const caduca = fila?.["expires_at"];
+  if (typeof studentId !== "string") return null;
+
+  // La caducidad se comprueba aqui y no en el `where`: asi el mismo camino
+  // resuelve «caducado» y «revocado», y los dos devuelven exactamente lo mismo.
+  if (typeof caduca !== "string" || new Date(caduca).getTime() <= Date.now()) return null;
+
+  const [{ data: perfil }, { data: ficha }] = await Promise.all([
+    admin.from("profiles").select("full_name").eq("id", studentId).maybeSingle(),
+    admin.from("students").select("stage").eq("profile_id", studentId).maybeSingle(),
+  ]);
+
+  const nombreCompleto = (perfil as Fila | null)?.["full_name"];
+  if (typeof nombreCompleto !== "string" || nombreCompleto.trim() === "") return null;
+
+  const etapa = (ficha as Fila | null)?.["stage"];
+
+  return {
+    nombreDePila: nombreCompleto.trim().split(/\s+/)[0] ?? "",
+    longitudDePin: longitudPorEtapa(etapa === "secondary" ? "secondary" : "primary"),
+  };
+}
+
+/**
+ * A que buzon iba una invitacion de tutor, si sigue siendo canjeable.
+ *
+ * Devuelve `null` para una invitacion caducada, ya usada, revocada o
+ * inexistente — sin distinguir, por el mismo motivo que `alumnoDelEnlace`.
+ *
+ * `guardian_invites` no tiene NI UNA politica RLS (0065) y es deliberado: el
+ * fallo seguro de la tabla que guarda la credencial de un adulto es que nadie
+ * la lea. De ahi la escalada, con la misma disciplina que las otras dos: se
+ * devuelve el correo y nada mas.
+ */
+export async function invitacionDelToken(token: string): Promise<{ readonly email: string } | null> {
+  if (!/^[A-Za-z0-9_-]{43}$/.test(token)) return null;
+
+  const admin = createAdminClient(
+    "Resolver una invitacion de tutor: guardian_invites no tiene politica RLS para nadie, por diseño",
+  );
+
+  const { data } = await admin
+    .from("guardian_invites")
+    .select("email, expires_at, used_at")
+    .eq("token_hash", hashToken(token))
+    .is("revoked_at", null)
+    .maybeSingle();
+
+  const fila = data as Fila | null;
+  const email = fila?.["email"];
+  const caduca = fila?.["expires_at"];
+
+  if (typeof email !== "string") return null;
+  // Un solo uso: `used_at` relleno es una invitacion gastada.
+  if (fila?.["used_at"] != null) return null;
+  if (typeof caduca !== "string" || new Date(caduca).getTime() <= Date.now()) return null;
+
+  return { email };
+}
+
+export interface DispositivoRow {
+  readonly id: string;
+  readonly etiqueta: string | null;
+  readonly agenteFamilia: string | null;
+  readonly ultimoUso: string | null;
+}
+
+export interface DetalleDeHijo {
+  readonly id: string;
+  readonly nombre: string;
+  readonly enlaceActivo: boolean;
+  readonly dispositivos: readonly DispositivoRow[];
+}
+
+/**
+ * La ficha de UN hijo para su pantalla.
+ *
+ * Va con la SESION DEL TUTOR y no con el cliente administrativo, a proposito:
+ * asi es la RLS quien decide si puede verlo -`dispositivos_select_tutor` en
+ * 0065 se apoya en `app.puede_ver_alumno`- y no una condicion que hayamos
+ * escrito nosotros aqui. Si la consulta no devuelve fila, no es suyo, y la
+ * pantalla responde 404 sin preguntarse por que.
+ *
+ * `device_hash` NO aparece en el `select`, y aunque apareciera no llegaria:
+ * 0065 le retira el `select` de esa columna a `authenticated` con un grant por
+ * columna. La lista de campos de aqui es conveniencia; la garantia esta en el
+ * motor.
+ */
+export async function detalleDeHijo(studentId: string): Promise<DetalleDeHijo | null> {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(studentId)) {
+    return null;
+  }
+
+  const supabase = await createClient();
+
+  const { data: perfil } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("id", studentId)
+    .maybeSingle();
+
+  const nombre = (perfil as Fila | null)?.["full_name"];
+  if (typeof nombre !== "string") return null;
+
+  const [{ data: enlaces }, { data: dispositivos }] = await Promise.all([
+    supabase
+      .from("student_access_links")
+      .select("id, expires_at")
+      .eq("student_id", studentId)
+      .is("revoked_at", null),
+    supabase
+      .from("student_devices")
+      .select("id, etiqueta, agente_familia, last_seen_at")
+      .eq("student_id", studentId)
+      .is("revoked_at", null)
+      .order("created_at", { ascending: false }),
+  ]);
+
+  const ahora = Date.now();
+  const enlaceActivo = ((enlaces ?? []) as Fila[]).some((fila) => {
+    const caduca = fila["expires_at"];
+    return typeof caduca === "string" && new Date(caduca).getTime() > ahora;
+  });
+
+  return {
+    id: studentId,
+    nombre,
+    enlaceActivo,
+    dispositivos: ((dispositivos ?? []) as Fila[]).map((fila) => ({
+      id: String(fila["id"]),
+      etiqueta: typeof fila["etiqueta"] === "string" ? fila["etiqueta"] : null,
+      agenteFamilia: typeof fila["agente_familia"] === "string" ? fila["agente_familia"] : null,
+      ultimoUso: typeof fila["last_seen_at"] === "string" ? fila["last_seen_at"] : null,
+    })),
+  };
+}

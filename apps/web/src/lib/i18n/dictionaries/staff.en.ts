@@ -339,6 +339,27 @@ export const staffEn = {
       registrations: "Access requests",
       audit: "Audit log",
     },
+    /**
+     * Invitar a un tutor. Hoy lo hace el superadmin a mano; manana lo hara el
+     * proceso de contratacion llamando a la misma accion de dominio.
+     */
+    inviteTutor: {
+      title: "Invite a parent or guardian",
+      body:
+        "They get a link to create their account. It works once and expires in seven days.",
+      emailLabel: "Their email address",
+      submit: "Create invitation",
+      submitting: "Creating\u2026",
+      /* El aviso va pegado al enlace, como el PIN de un solo uso. */
+      once: "Copy it now \u2014 this link will not be shown again.",
+      copy: "Copy",
+      copied: "Copied",
+      sentTo: "Invitation for {email}",
+      errors: {
+        emailFormat: "That doesn't look like an email address.",
+        generic: "The invitation could not be created. Try again.",
+      },
+    },
     students: {
       title: "Students",
       caption: "Students enrolled at this school",

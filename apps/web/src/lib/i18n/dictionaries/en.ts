@@ -288,6 +288,92 @@ export const en = {
       generic: "We could not send your request. Please try again.",
     },
   },
+  /**
+   * La cadena de invitacion: el tutor y su hijo.
+   *
+   * REGISTRO. `modules/admin` fija densidad y detalle tecnico para personal
+   * adulto; un padre no es eso, y un nino de diez menos todavia. Aqui no
+   * aparece ni un termino tecnico, tampoco en los errores: nadie que lea esto
+   * tiene por que saber que es un token ni un dispositivo casado.
+   */
+  tutor: {
+    home: {
+      title: "My children",
+      empty: "You haven't added anyone yet.",
+      emptyBody: "Add your child and we'll give you a link to send them.",
+      add: "Add a child",
+      noSchool: "Learning at home",
+      linkActive: "Link ready to send",
+      linkNone: "No link right now",
+      devices: "{count} device(s) remembered",
+      open: "Open",
+    },
+    add: {
+      title: "Add a child",
+      fullNameLabel: "Their full name",
+      birthDateLabel: "Date of birth",
+      birthDateHelp: "We use it only to work out their year. We don't store it.",
+      yearLevelLabel: "Year",
+      submit: "Add",
+      submitting: "Adding\u2026",
+    },
+    child: {
+      linkTitle: "Their access link",
+      linkBody:
+        "Send this link to your child. It works once: they choose their PIN and they're in.",
+      linkGenerate: "Create link",
+      linkRegenerate: "Create a new link",
+      linkRevoke: "Cancel this link",
+      linkCopy: "Copy",
+      linkCopied: "Copied",
+      linkOnce: "Copy it now \u2014 for your child's safety we won't show it again.",
+      devicesTitle: "Devices that remember them",
+      devicesEmpty: "None yet. The first one is remembered when they use their link.",
+      devicesLastSeen: "Last used {when}",
+      devicesForget: "Forget this device",
+      devicesForgetHelp:
+        "They'll need a new link to get back in on it. Use this if the device is lost or is no longer theirs.",
+      pinTitle: "Their PIN",
+      pinBody: "If they've forgotten it, create a new link and they'll choose another one.",
+      back: "Back to my children",
+    },
+    signUp: {
+      title: "Create your account",
+      closedTitle: "CET is invitation only",
+      closedBody:
+        "If you've signed up for the service, look for the link in your email. It's the only way in.",
+      emailLabel: "Your email",
+      emailFixed: "This is the address the invitation was sent to, so it can't be changed.",
+      fullNameLabel: "Your name",
+      passwordLabel: "Choose a password",
+      passwordHelp: "At least 10 characters. Make it something no one else would guess.",
+      submit: "Create account",
+      submitting: "Creating\u2026",
+      doneSignInYourself: "Your account is ready. Sign in with your email and password.",
+    },
+    redeem: {
+      greeting: "Hi, {name}",
+      title: "Choose your PIN",
+      body: "Pick {length} numbers you'll remember. You'll use them every time you come back.",
+      pinLabel: "Your new PIN",
+      repeatLabel: "Type it again",
+      submit: "That's my PIN",
+      submitting: "Just a second\u2026",
+      invalidTitle: "This link doesn't work any more",
+      invalidBody: "Ask whoever sent it to you for a new one.",
+    },
+    errors: {
+      nameRequired: "Please write a name.",
+      yearRange: "Pick a year between 1 and 13.",
+      emailFormat: "That doesn't look like an email address.",
+      passwordTooShort: "A bit longer, please \u2014 at least 10 characters.",
+      pinMismatch: "The two PINs aren't the same. Try again.",
+      pinTooEasy: "That PIN is too easy to guess. Pick another one.",
+      linkInvalid: "This link doesn't work any more.",
+      notFound: "We couldn't find that.",
+      generic: "That didn't work. Please try again.",
+    },
+  },
   dashboard: {
     studentTitle: "Your learning",
     staffTitle: "Teaching",

@@ -8,6 +8,8 @@ import Link from "next/link";
 import { StudentLoginForm } from "@/components/auth/StudentLoginForm";
 import { redirectIfSignedIn } from "@/lib/auth/session";
 import { listActiveSchools } from "@/lib/data/schools";
+import { leerCookieDispositivo } from "@/lib/tutor/dispositivo";
+import { alumnoDelDispositivo } from "@/lib/tutor/queries";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { ROUTES } from "@/lib/routes";
 
@@ -30,16 +32,33 @@ export default async function StudentLoginPage() {
   const { t } = await getServerDictionary();
   const schools = await listActiveSchools();
 
+  /*
+   * ¿ESTE APARATO YA RECUERDA A ALGUIEN?
+   *
+   * Si la cookie trae un secreto valido, el formulario se queda en UNA pantalla
+   * y UN campo. Si no trae nada, o el dispositivo fue anulado por el tutor, o
+   * la cookie se perdio al borrar los datos del navegador, `alumnoDelDispositivo`
+   * devuelve null y todo sigue exactamente como antes: colegio, codigo y PIN.
+   *
+   * No hay tercer caso ni pantalla de error. Un dispositivo que ya no vale no
+   * es un fallo que haya que explicarle a un nino de diez anos: es, sin mas, un
+   * dispositivo que no le conoce.
+   */
+  const secreto = await leerCookieDispositivo();
+  const dispositivo = secreto === null ? null : await alumnoDelDispositivo(secreto);
+
   return (
     <div>
       <Link href={ROUTES.login} className="text-sm font-semibold text-teal">
         ← {t.common.back}
       </Link>
 
-      <h1 className="mt-4 text-2xl font-bold text-ink">{t.auth.chooseRole.student}</h1>
+      {dispositivo === null ? (
+        <h1 className="mt-4 text-2xl font-bold text-ink">{t.auth.chooseRole.student}</h1>
+      ) : null}
 
       <div className="mt-7">
-        <StudentLoginForm schools={schools} />
+        <StudentLoginForm schools={schools} dispositivo={dispositivo ?? undefined} />
       </div>
     </div>
   );

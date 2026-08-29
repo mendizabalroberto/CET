@@ -21,6 +21,16 @@ import { signInStudent } from "@/lib/auth/actions";
 import { IDLE_STATE } from "@/lib/auth/state";
 import { useI18n } from "@/lib/i18n/provider";
 
+/**
+ * El alumno que este dispositivo ya recuerda. Solo el nombre de pila y cuantas
+ * casillas dibujar: quien encuentre la tablet perdida no debe poder sacar de
+ * aqui la ficha de un menor.
+ */
+export interface DispositivoRecordado {
+  readonly nombreDePila: string;
+  readonly longitudDePin: 4 | 6;
+}
+
 export interface SchoolOption {
   readonly id: string;
   readonly name: string;
@@ -30,9 +40,31 @@ export interface SchoolOption {
 
 const TOTAL_STEPS = 3;
 
-export function StudentLoginForm({ schools }: { schools: readonly SchoolOption[] }) {
+export function StudentLoginForm({
+  schools,
+  dispositivo,
+}: {
+  readonly schools: readonly SchoolOption[];
+  /**
+   * Presente solo si este navegador trae una cookie de dispositivo valida. Con
+   * el, los pasos 1 y 2 sobran: el dispositivo ya identifico al nino y solo
+   * queda demostrar que es el.
+   *
+   * Ojo con lo que ESTO NO ES: la cookie no abre sesion. Lo unico que compra es
+   * saltarse dos pasos del formulario; el PIN sigue yendo a Argon2id.
+   */
+  readonly dispositivo?: DispositivoRecordado | undefined;
+}) {
   const { t, fmt } = useI18n();
   const [state, formAction, isPending] = useActionState(signInStudent, IDLE_STATE);
+
+  /**
+   * «¿No eres tu?» devuelve al recorrido de tres pasos. Tiene que existir: un
+   * nino que coge la tablet de su hermano no puede quedarse encerrado en una
+   * pantalla que saluda a otro.
+   */
+  const [ignorarDispositivo, setIgnorarDispositivo] = useState(false);
+  const recordado = ignorarDispositivo ? undefined : dispositivo;
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [schoolId, setSchoolId] = useState<string>("");
@@ -54,7 +86,7 @@ export function StudentLoginForm({ schools }: { schools: readonly SchoolOption[]
   const [useSecondaryLength, setUseSecondaryLength] = useState(false);
   const primaryLength = school?.pinLengthPrimary ?? 4;
   const secondaryLength = school?.pinLengthSecondary ?? 6;
-  const pinLength = useSecondaryLength ? secondaryLength : primaryLength;
+  const pinLength = recordado ? recordado.longitudDePin : useSecondaryLength ? secondaryLength : primaryLength;
   const lengthsDiffer = primaryLength !== secondaryLength;
 
   const message = authErrorMessage(state.error, t, fmt, pinLength);
@@ -68,11 +100,21 @@ export function StudentLoginForm({ schools }: { schools: readonly SchoolOption[]
    */
   const attemptKey = state.status === "error" ? errorId + String(state.error) : "first";
 
+  // Con dispositivo recordado hay UN paso y no tres, asi que el contador
+  // desaparece: «paso 1 de 1» es ruido, no informacion.
+  const pasoVisible = recordado ? 3 : step;
+
   return (
     <form action={formAction} className="space-y-6" noValidate>
-      <p className="text-sm font-semibold uppercase tracking-wider text-muted">
-        {fmt(S.stepOf, { current: step, total: TOTAL_STEPS })}
-      </p>
+      {recordado ? (
+        <p className="text-sm font-semibold uppercase tracking-wider text-muted">
+          {fmt(t.tutor.redeem.greeting, { name: recordado.nombreDePila })}
+        </p>
+      ) : (
+        <p className="text-sm font-semibold uppercase tracking-wider text-muted">
+          {fmt(S.stepOf, { current: step, total: TOTAL_STEPS })}
+        </p>
+      )}
 
       {/* El error se anuncia siempre, en cualquier paso. `role="alert"` hace que
           el lector de pantalla lo lea sin que el usuario tenga que ir a buscarlo. */}
@@ -87,7 +129,7 @@ export function StudentLoginForm({ schools }: { schools: readonly SchoolOption[]
       ) : null}
 
       {/* ---------------- Paso 1: colegio ---------------- */}
-      {step === 1 ? (
+      {pasoVisible === 1 ? (
         <div className="space-y-3">
           <label htmlFor={schoolFieldId} className="block text-lg font-semibold text-ink">
             {S.schoolLabel}
@@ -119,7 +161,7 @@ export function StudentLoginForm({ schools }: { schools: readonly SchoolOption[]
       ) : null}
 
       {/* ---------------- Paso 2: código ---------------- */}
-      {step === 2 ? (
+      {pasoVisible === 2 ? (
         <div className="space-y-3">
           <label htmlFor={codeFieldId} className="block text-lg font-semibold text-ink">
             {S.codeLabel}
@@ -157,7 +199,7 @@ export function StudentLoginForm({ schools }: { schools: readonly SchoolOption[]
       ) : null}
 
       {/* ---------------- Paso 3: PIN ---------------- */}
-      {step === 3 ? (
+      {pasoVisible === 3 ? (
         <div className="space-y-5">
           <PinInput
             /*
@@ -176,7 +218,7 @@ export function StudentLoginForm({ schools }: { schools: readonly SchoolOption[]
             disabled={isPending}
           />
 
-          {lengthsDiffer ? (
+          {lengthsDiffer && !recordado ? (
             <button
               type="button"
               onClick={() => setUseSecondaryLength((prev) => !prev)}
@@ -189,13 +231,15 @@ export function StudentLoginForm({ schools }: { schools: readonly SchoolOption[]
           ) : null}
 
           <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => setStep(2)}
-              className="rounded-xl border-2 border-line px-5 py-4 text-lg font-semibold text-ink"
-            >
-              {t.common.back}
-            </button>
+            {recordado ? null : (
+              <button
+                type="button"
+                onClick={() => setStep(2)}
+                className="rounded-xl border-2 border-line px-5 py-4 text-lg font-semibold text-ink"
+              >
+                {t.common.back}
+              </button>
+            )}
             <button
               type="submit"
               disabled={isPending}
@@ -210,6 +254,7 @@ export function StudentLoginForm({ schools }: { schools: readonly SchoolOption[]
             <button
               type="button"
               onClick={() => {
+                setIgnorarDispositivo(true);
                 setStep(1);
                 setStudentCode("");
               }}
@@ -224,6 +269,10 @@ export function StudentLoginForm({ schools }: { schools: readonly SchoolOption[]
       {/* Valores de los pasos anteriores. Se envían siempre, se vea el paso o no. */}
       <input type="hidden" name="schoolId" value={schoolId} />
       <input type="hidden" name="studentCode" value={studentCode.trim()} />
+      {/* El secreto NO viaja por aqui: vive en una cookie `HttpOnly` que este
+          JavaScript no puede leer, y la Server Action la lee del lado servidor.
+          Lo unico que dice este campo es POR QUE PUERTA se entra. */}
+      {recordado ? <input type="hidden" name="porDispositivo" value="1" /> : null}
     </form>
   );
 }

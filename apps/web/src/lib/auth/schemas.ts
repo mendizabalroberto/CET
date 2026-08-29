@@ -38,6 +38,21 @@ export const studentLoginSchema = z.object({
 });
 export type StudentLoginInput = z.infer<typeof studentLoginSchema>;
 
+/**
+ * La puerta del dispositivo. El nino que ya canjeo su enlace vuelve al dia
+ * siguiente y NO teclea colegio ni codigo: la cookie dice quien es y el PIN
+ * demuestra que es el.
+ *
+ * 43 caracteres es la longitud exacta de 32 bytes en base64url. Se acota aqui,
+ * antes de que el valor llegue a ningun sitio, por el mismo motivo que el PIN:
+ * la cookie la controla quien visita la pagina.
+ */
+export const studentDeviceLoginSchema = z.object({
+  deviceToken: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
+  pin: pinSchema,
+});
+export type StudentDeviceLoginInput = z.infer<typeof studentDeviceLoginSchema>;
+
 export const staffLoginSchema = z.object({
   email: z.string().trim().toLowerCase().email().max(254),
   // No se imponen reglas de complejidad al ENTRAR: eso corresponde al alta.
