@@ -48,7 +48,18 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
  * usuario, interpolar sin comprobar en un lenguaje de filtros es exactamente el
  * hábito que un día se copia a un sitio donde el valor sí viene de fuera.
  */
-function globalOrOwn(schoolId: string): string {
+/**
+ * `null` significa «alumno sin colegio»: el hijo de un tutor, que practica en
+ * casa. No es un error ni un dato que falte — es un estado de primera clase
+ * desde la refundación de la tenencia.
+ *
+ * Para él, el alcance es SOLO la biblioteca global (AD-2, `school_id IS NULL`).
+ * Y eso es lo correcto en las dos direcciones: ve el contenido que cualquiera
+ * puede ver, y no ve el de ningún colegio — tampoco por accidente, porque el
+ * filtro no menciona ninguno.
+ */
+function globalOrOwn(schoolId: string | null): string {
+  if (schoolId === null) return "school_id.is.null";
   if (!UUID_RE.test(schoolId)) {
     throw new Error("school_id no es un uuid; se aborta la consulta antes de construir el filtro.");
   }
@@ -118,15 +129,22 @@ export interface LessonDetail {
  * lecciones es peor que no aparecer. Cinco `in (...)` sobre índices existentes
  * no son un N+1: son cinco viajes, pase lo que pase con el tamaño del catálogo.
  */
-export async function getStudentCourses(schoolId: string): Promise<CourseSummary[] | null> {
+export async function getStudentCourses(schoolId: string | null): Promise<CourseSummary[] | null> {
   const supabase = await createClient();
   const scope = globalOrOwn(schoolId);
 
-  const { data: activations, error: activationError } = await supabase
-    .from("school_courses")
-    .select("course_id")
-    .eq("school_id", schoolId)
-    .eq("is_active", true);
+  // Sin colegio no hay activaciones que consultar: `school_courses` es la tabla
+  // con la que un colegio enciende un curso global, y el hijo de un tutor no
+  // tiene colegio que encienda nada. Se salta el viaje y se sigue con la lista
+  // vacia, que es la respuesta correcta y no un fallo.
+  const { data: activations, error: activationError } =
+    schoolId === null
+      ? { data: [] as { course_id: string }[], error: null }
+      : await supabase
+          .from("school_courses")
+          .select("course_id")
+          .eq("school_id", schoolId)
+          .eq("is_active", true);
 
   if (activationError) return null;
 
@@ -270,10 +288,11 @@ export async function getStudentCourses(schoolId: string): Promise<CourseSummary
  * consulta caída no lo es. Ver `practice-progress.ts`.
  */
 export async function getPracticeProgress(
-  schoolId: string,
+  schoolId: string | null,
   studentId: string,
 ): Promise<Map<string, TopicProgress> | null> {
-  if (!UUID_RE.test(schoolId) || !UUID_RE.test(studentId)) return null;
+  if (schoolId !== null && !UUID_RE.test(schoolId)) return null;
+  if (!UUID_RE.test(studentId)) return null;
 
   const since = new Date(Date.now() - LOOKBACK_DAYS * 24 * 60 * 60 * 1000).toISOString();
   const supabase = await createClient();
@@ -284,7 +303,10 @@ export async function getPracticeProgress(
     // La RLS ya limita a `student_id = auth.uid()`; el filtro explícito por
     // colegio es la regla transversal 2 de `MODULES.md`.
     .eq("student_id", studentId)
-    .eq("school_id", schoolId)
+    // `is null` y no `eq` cuando no hay colegio: en Postgres `= NULL` no es
+    // falso, es NULL, y una comparacion asi no devuelve NINGUNA fila. El
+    // alumno sin colegio veria su progreso siempre vacio y sin error.
+    .filter("school_id", schoolId === null ? "is" : "eq", schoolId)
     .eq("event_type", "practice_item_answered")
     .gte("server_ts", since)
     // El orden es parte del contrato de `summarisePracticeEvents`: la ventana
@@ -313,7 +335,7 @@ export async function getPracticeProgress(
  */
 export async function getLesson(
   lessonId: string,
-  schoolId: string,
+  schoolId: string | null,
   locale: Locale,
 ): Promise<LessonDetail | null> {
   if (!UUID_RE.test(lessonId)) return null;
@@ -447,10 +469,11 @@ export async function getLesson(
  * cifra. "Cero" es un dato; una consulta caída no lo es.
  */
 export async function getLessonProgress(
-  schoolId: string,
+  schoolId: string | null,
   studentId: string,
 ): Promise<Map<string, LessonState> | null> {
-  if (!UUID_RE.test(schoolId) || !UUID_RE.test(studentId)) return null;
+  if (schoolId !== null && !UUID_RE.test(schoolId)) return null;
+  if (!UUID_RE.test(studentId)) return null;
 
   const since = new Date(Date.now() - LOOKBACK_DAYS * 24 * 60 * 60 * 1000).toISOString();
   const supabase = await createClient();
@@ -461,7 +484,7 @@ export async function getLessonProgress(
     // La RLS ya limita a `student_id = auth.uid()`; el filtro explícito por
     // colegio es la regla transversal 2 de `MODULES.md`.
     .eq("student_id", studentId)
-    .eq("school_id", schoolId)
+    .filter("school_id", schoolId === null ? "is" : "eq", schoolId)
     .in("event_type", ["lesson_opened", "lesson_completed"])
     .gte("server_ts", since)
     .order("server_ts", { ascending: false })

@@ -66,18 +66,44 @@ export async function requireStudentContext(): Promise<ExamContext> {
   }
 
   const profile = state.profile;
-  if (profile.role !== "student" || !profile.schoolId) {
+  if (profile.role !== "student") {
     // Un profesor no "hace" un examen. 403 y no 404: la ruta no es un secreto,
     // simplemente no es para él.
     throw new ExamError("forbidden", "Solo un alumno puede operar sobre un intento");
   }
 
-  const admin = createAdminClient(ADMIN_REASON);
   const session = await createClient();
+
+  /*
+   * EL COLEGIO DEL EXAMEN
+   *
+   * Antes salía de `profiles.school_id`. Ya no puede: la matrícula vive en
+   * `student_school_memberships` y esa columna es NULL para todo alumno, así
+   * que la comprobación de antes dejaba a TODOS fuera del examen con un 403.
+   *
+   * Sale de `students.school_id`, la caché de la matrícula (DATA_MODEL §3.3).
+   * Y si es NULL, el 403 SÍ es correcto, pero por un motivo distinto del que
+   * decía el código viejo: un examen lo asigna un colegio a una de sus clases
+   * (`exam_assignments`), así que un alumno que no está matriculado en ninguno
+   * no tiene ningún examen que abrir. No es que le falte un dato: es que no
+   * existe el examen.
+   */
+  const { data: ficha } = await session
+    .from("students")
+    .select("school_id")
+    .eq("profile_id", profile.id)
+    .maybeSingle();
+
+  const schoolId = (ficha?.school_id as string | null) ?? null;
+  if (schoolId === null) {
+    throw new ExamError("forbidden", "Un examen lo asigna un colegio, y este alumno no está en uno");
+  }
+
+  const admin = createAdminClient(ADMIN_REASON);
 
   return {
     studentId: profile.id,
-    schoolId: profile.schoolId,
+    schoolId,
     locale: profile.locale === "es" ? "es" : "en",
     repo: createSupabaseExamRepository(admin, session),
     events: createSupabaseEventEmitter(admin),

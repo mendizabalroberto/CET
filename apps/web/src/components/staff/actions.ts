@@ -466,9 +466,14 @@ export async function createStudent(
   const schoolLocale = (schoolRow as Record<string, unknown> | null)?.["default_locale"];
   const locale = schoolLocale === "es" || schoolLocale === "en" ? schoolLocale : "en";
 
+  // `school_id: null` y no el del colegio. La matrícula del alumno dejó de ser
+  // una columna de `profiles` y pasó a ser una relación con fechas
+  // (`student_school_memberships`), que es lo que se escribe unas líneas más
+  // abajo. `students.school_id` conserva el valor como caché denormalizada
+  // (DATA_MODEL §3.3) porque es lo que leen las políticas RLS sin hacer join.
   const { error: profileError } = await admin.from("profiles").insert({
     id: newUserId,
-    school_id: schoolId,
+    school_id: null,
     role: "student",
     full_name: input.fullName,
     email: null,
@@ -502,6 +507,26 @@ export async function createStudent(
     console.error("[cet] createStudent students.insert", studentError.message);
     await rollback();
     return studentError.code === "23505" ? fail("codeTaken") : fail("unexpected");
+  }
+
+  // LA MATRÍCULA. Sin esta fila el alumno tiene ficha y no tiene colegio, y
+  // entonces `students.school_id` sería una caché de nada. El `exclude` de
+  // `0057` impide que existan dos matrículas activas solapadas, así que esta
+  // escritura no puede duplicar la pertenencia aunque se reintente el alta.
+  const { error: membershipError } = await admin.from("student_school_memberships").insert({
+    student_id: newUserId,
+    school_id: schoolId,
+    starts_on: new Date().toISOString().slice(0, 10),
+    status: "activa",
+    requested_by: viewer.id,
+    approved_by: viewer.id,
+    approved_at: new Date().toISOString(),
+  });
+
+  if (membershipError !== null) {
+    console.error("[cet] createStudent membership.insert", membershipError.message);
+    await rollback();
+    return fail("unexpected");
   }
 
   // El alta queda auditada AUNQUE el PIN falle: la ficha ya existe.

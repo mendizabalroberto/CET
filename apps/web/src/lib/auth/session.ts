@@ -173,7 +173,17 @@ export async function requireRole(
 
 export interface StudentSession extends SessionProfile {
   readonly role: "student";
-  readonly schoolId: string;
+  /**
+   * `null` para el hijo de un tutor, que practica en casa y no está matriculado
+   * en ningún colegio. Es un estado válido, no un dato que falte.
+   *
+   * Sale de `students.school_id` y NO de `profiles.school_id`: desde la
+   * refundación de la tenencia, la matrícula vive en
+   * `student_school_memberships` y `profiles.school_id` es NULL para todo
+   * alumno. `students.school_id` es la caché denormalizada de esa matrícula
+   * (DATA_MODEL §3.3), y es la fila que esta consulta ya trae de todos modos.
+   */
+  readonly schoolId: string | null;
   readonly studentCode: string;
   readonly pinMustChange: boolean;
   readonly stage: "primary" | "secondary";
@@ -197,16 +207,22 @@ export async function requireStudent(): Promise<StudentSession> {
     .eq("profile_id", profile.id)
     .maybeSingle();
 
-  if (error || !data || !profile.schoolId) {
+  if (error || !data) {
     // Un perfil con rol `student` sin ficha en `students` es un estado
     // imposible según DATA_MODEL §1. Si ocurre, no se adivina: se corta.
+    //
+    // Lo que YA NO corta es no tener colegio. Antes esta condición incluía
+    // `|| !profile.schoolId`, y con la matrícula fuera de `profiles` eso dejaba
+    // 404 a TODO alumno. Para el hijo de un tutor, además, era un 404 correcto
+    // por accidente y equivocado por diseño: no tener colegio es su estado
+    // normal, no un perfil roto.
     notFound();
   }
 
   return {
     ...profile,
     role: "student",
-    schoolId: profile.schoolId,
+    schoolId: (data.school_id as string | null) ?? null,
     studentCode: data.student_code as string,
     pinMustChange: Boolean(data.pin_must_change),
     stage: data.stage as "primary" | "secondary",
