@@ -81,6 +81,13 @@
  *   La contraseña se lee de PGPASSWORD o de secrets/database.env. Nunca se
  *   imprime.
  *
+ *   `CET_DB_REF_PRUEBAS=<ref>` declara qué proyecto remoto es la base de
+ *   PRUEBAS. Solo entonces se puede escribir en ella sin la bandera. Sin esa
+ *   declaración, cualquier host remoto que no sea producción sigue siendo
+ *   `desconocido`, y `desconocido` se trata como producción. Declarar el ref de
+ *   producción aquí NO la degrada: se comprueba después, y hay una prueba que
+ *   lo fija.
+ *
  * SEMILLAS
  *   El registro se aplica solo a `migrations`. Las semillas están escritas para
  *   ser re-ejecutables (`on conflict do nothing`) y resembrar es un flujo
@@ -164,16 +171,33 @@ export function leerArgumentos(argv) {
 
 /**
  * Clasifica un host de destino. Fail-closed a propósito: lo que no se reconoce
- * como local se trata como producción. Equivocarse hacia «pide confirmación»
- * cuesta una bandera; equivocarse hacia «adelante» costó el acceso de todos los
- * alumnos una tarde entera.
+ * como local o como base de pruebas DECLARADA se trata como producción.
+ * Equivocarse hacia «pide confirmación» cuesta una bandera; equivocarse hacia
+ * «adelante» costó el acceso de todos los alumnos una tarde entera.
+ *
+ * POR QUÉ EXISTE `CET_DB_REF_PRUEBAS`
+ * -----------------------------------
+ * El mensaje de la guarda termina diciendo «si querías trabajar contra otra
+ * base, exporta CET_DB_URL con su cadena de conexión y vuelve a lanzarlo». Eso
+ * era FALSO: una base remota que no fuera producción caía en `desconocido`, y
+ * `desconocido` se trata como producción, así que el consejo no desbloqueaba
+ * nada. Un mensaje de error que recomienda algo que no funciona manda a quien lo
+ * lee a depurar el sitio equivocado.
+ *
+ * La declaración es por REF DE PROYECTO y no por «no es el ref de producción»
+ * a propósito: exige escribir cuál es la base de pruebas, en lugar de deducir
+ * que todo lo demás lo es. Y se comprueba DESPUÉS de producción, así que
+ * declarar el ref de producción como base de pruebas no desarma nada — hay una
+ * prueba que lo fija.
  */
-export function clasificarDestino(host) {
+export function clasificarDestino(host, env = process.env) {
   const h = String(host ?? "").toLowerCase();
   if (h.includes(PROJECT_REF)) return "produccion";
   if (["localhost", "127.0.0.1", "::1", "[::1]", "host.docker.internal"].includes(h)) {
     return "local";
   }
+  const refDePruebas = String(env?.CET_DB_REF_PRUEBAS ?? "").toLowerCase();
+  if (refDePruebas !== "" && h.includes(refDePruebas)) return "pruebas";
   return "desconocido";
 }
 
@@ -194,6 +218,12 @@ export function comprobarGuardaDeProduccion({
 }) {
   if (!escribe) return { permitido: true, motivo: null };
   if (clase === "local") return { permitido: true, motivo: null };
+  // Una base declarada explícitamente como de pruebas en `CET_DB_REF_PRUEBAS`.
+  // Es el destino que el propio mensaje de esta guarda recomienda, y para eso
+  // tiene que ser alcanzable sin la bandera de producción: si exigiera la misma
+  // bandera, esa bandera acabaría escrita en ficheros de `contracts/` — y desde
+  // ahí, a un copia y pega de apuntar a la base de verdad.
+  if (clase === "pruebas") return { permitido: true, motivo: null };
   if (produccionDeVerdad) return { permitido: true, motivo: null };
 
   const queEs =
@@ -437,7 +467,7 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
 
   // ---- GUARDA DE PRODUCCIÓN: antes de conectar, antes de leer la contraseña.
   const { hostVisible, rutas } = resolverDestino(env);
-  const clase = clasificarDestino(hostVisible);
+  const clase = clasificarDestino(hostVisible, env);
   const guarda = comprobarGuardaDeProduccion({
     clase,
     host: hostVisible,

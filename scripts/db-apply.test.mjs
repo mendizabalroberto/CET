@@ -116,6 +116,20 @@ describe("clasificarDestino", () => {
     expect(clasificarDestino("una-base-cualquiera.example.com")).toBe("desconocido");
     expect(clasificarDestino("")).toBe("desconocido");
   });
+
+  it("reconoce una base declarada de pruebas, y solo si está declarada", () => {
+    const env = { CET_DB_REF_PRUEBAS: "nfeiimhcqqlcyjkpoirf" };
+    expect(clasificarDestino("db.nfeiimhcqqlcyjkpoirf.supabase.co", env)).toBe("pruebas");
+    // Sin la declaración, la misma base sigue siendo desconocida.
+    expect(clasificarDestino("db.nfeiimhcqqlcyjkpoirf.supabase.co", {})).toBe("desconocido");
+  });
+
+  it("declarar producción como base de pruebas NO la degrada", () => {
+    // El orden de las comprobaciones es la defensa: producción se decide antes
+    // de mirar la declaración, así que esta variable no puede desarmar la guarda.
+    const env = { CET_DB_REF_PRUEBAS: "clcutoqjdgeggvgyreud" };
+    expect(clasificarDestino("db.clcutoqjdgeggvgyreud.supabase.co", env)).toBe("produccion");
+  });
 });
 
 describe("resolverDestino", () => {
@@ -169,6 +183,21 @@ describe("comprobarGuardaDeProduccion", () => {
         ...base,
         clase: "local",
         host: "localhost",
+        escribe: true,
+        produccionDeVerdad: false,
+      }).permitido,
+    ).toBe(true);
+  });
+
+  it("contra una base declarada de pruebas tampoco pide nada", () => {
+    // Es lo que la propia guarda promete en su mensaje: «si querías trabajar
+    // contra otra base, exporta CET_DB_URL». Antes de esto, hacerlo no
+    // desbloqueaba nada y el consejo era falso.
+    expect(
+      comprobarGuardaDeProduccion({
+        ...base,
+        clase: "pruebas",
+        host: "db.nfeiimhcqqlcyjkpoirf.supabase.co",
         escribe: true,
         produccionDeVerdad: false,
       }).permitido,
