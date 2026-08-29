@@ -57,8 +57,8 @@ Espejo de `auth.users`. **`id` = `auth.users.id`.**
 | Columna | Tipo | Nota |
 |---|---|---|
 | `profile_id` | uuid PK → `profiles(id)` on delete cascade | |
-| `school_id` | uuid not null → `schools(id)` on delete restrict | denormalizado a propósito: evita un join en cada política RLS |
-| `student_code` | citext not null | **unique (school_id, student_code)** — el código solo es único dentro del colegio |
+| `school_id` | uuid **nullable** → `schools(id)` on delete restrict | denormalizado a propósito: evita un join en cada política RLS. **`NULL` = el hijo de un tutor, que practica en casa.** Es una caché de la matrícula activa de `student_school_memberships`, no la fuente de verdad |
+| `student_code` | citext not null | **unique (school_id, student_code)** — el código solo es único dentro del colegio. Sin colegio hace falta ADEMÁS un índice único parcial `where school_id is null`: en Postgres dos NULL son distintos entre sí, así que la constraint sola no impediría códigos repetidos |
 | `year_level` | smallint not null | 1–13 |
 | `stage` | `school_stage` not null | primary / secondary → determina longitud de PIN |
 | `section` | text | "Y6A" |
@@ -77,6 +77,42 @@ Registro de alumno con aprobación de admin.
 
 `id`, `school_id` not null, `full_name`, `requested_year_level`, `guardian_email`, `note`,
 `status` (`pending`/`approved`/`rejected`), `reviewed_by` → profiles, `reviewed_at`, `rejection_reason`, `created_at`.
+
+### La cadena de invitación
+
+Tres eslabones, **un mismo mecanismo**: un token aleatorio de 32 bytes del que la base guarda
+únicamente el `sha256` en hexadecimal, con caducidad, revocable, y consumido al primer canje.
+La forma se repite a propósito: una sola idea que auditar y un solo modo de fallo que entender.
+
+```
+[contratación]  →  guardian_invites  →  tutor  →  student_access_links  →  alumno  →  student_devices
+   (aún no)          un solo uso                    un solo uso                        recuerda el aparato
+```
+
+#### `guardian_invites`
+`id`, `token_hash` **unique**, `email` (a quién va dirigida; la pantalla de alta lo muestra fijo),
+`expires_at`, `revoked_at`, `used_at`, `used_by` → profiles, `created_by` → profiles,
+`contrato_ref` (vacía hasta que exista la contratación), `created_at`.
+
+RLS habilitada y **sin una sola política**: la lee únicamente `service_role`. El fallo seguro de la
+tabla que guarda la credencial de un adulto es que nadie la lea. `revoke all … from authenticated,
+anon`.
+
+#### `student_devices`
+`id`, `student_id` → profiles, `device_hash` **unique**, `etiqueta`, `agente_familia`,
+`created_from_link` → student_access_links, `created_at`, `last_seen_at`, `revoked_at`.
+
+El secreto vive **solo** en una cookie `HttpOnly` del aparato; aquí está su `sha256`. `device_hash`
+se protege con **grant por columna**, igual que `students.pin_hash` en `0013`: una política se
+reescribe mal, un grant retirado por columna lo impide el motor.
+
+`agente_familia` guarda «Chrome en Android» y **no** el user-agent completo. Es minimización de
+datos, no pereza: el tutor necesita reconocer qué tablet está anulando, y el user-agent entero de un
+menor es una huella digital.
+
+> **La cookie no abre sesión.** Lo único que compra es saltarse los pasos «colegio» y «código» del
+> formulario de login. La sesión sigue naciendo de un Argon2id verificado dentro de `auth-pin`, y
+> `auth.uid()` sigue siendo el único eje de la RLS.
 
 ### `sections` y `section_members`
 Clases. `sections(id, school_id, name, year_level, academic_year)`.
