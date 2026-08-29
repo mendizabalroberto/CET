@@ -26,6 +26,30 @@ import { updateSession } from "@/lib/supabase/middleware";
 /** Ruta interna a la que se reescribe una denegación que debe parecer un 404. */
 const NOT_FOUND_REWRITE = "/not-found";
 
+/**
+ * UN 404 MUDO PARA QUIEN SONDEA, NO PARA QUIEN OPERA.
+ *
+ * La respuesta no dice nada: ese es el diseño, y no cambia. Pero hasta ahora
+ * tampoco quedaba constancia EN NINGUN SITIO de que el borde habia denegado ni
+ * de por que, y este repositorio ya se ha quemado dos veces con lo mismo: un
+ * superadmin recibiendo 404 en su propio panel (staff-session.spec.ts) y un
+ * tutor recibiendo 404 en la ficha de su hijo. En los dos casos la persona
+ * afectada veia una pagina que no explica nada y nosotros no teniamos un solo
+ * renglon que mirar.
+ *
+ * El motivo va al log del servidor, que solo leemos nosotros, y jamas a la
+ * respuesta. Sin identificadores de usuario: la ruta y la causa bastan para
+ * saber que mirar despues.
+ */
+function motivoDeDenegacion(request: NextRequest, motivo: string): void {
+  // Solo los NOMBRES de las cookies, nunca sus valores: uno de ellos es la
+  // sesion entera. Con los nombres basta para distinguir "el navegador no
+  // mando nada" de "mando algo que no pudimos leer", que son dos averias
+  // distintas y se arreglan en sitios distintos.
+  const cookies = request.cookies.getAll().map((c) => c.name).join(",") || "(ninguna)";
+  console.error(`[cet] borde deniega ${request.nextUrl.pathname} motivo=${motivo} cookies=${cookies}`);
+}
+
 function supabaseOrigin(): string {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!url) return "'self'";
@@ -111,6 +135,7 @@ export async function middleware(request: NextRequest) {
   if (!claims?.userId) {
     if (area?.onDeny === "not-found") {
       // Un anónimo tampoco debe descubrir que /admin existe.
+      motivoDeDenegacion(request, "sin-sesion");
       const url = request.nextUrl.clone();
       url.pathname = NOT_FOUND_REWRITE;
       url.search = "";
@@ -128,6 +153,7 @@ export async function middleware(request: NextRequest) {
   // Lista blanca: si la ruta no es pública y no está en la matriz, se deniega.
   // Añadir una página nueva sin registrarla la deja cerrada, no abierta.
   if (!area) {
+    motivoDeDenegacion(request, "ruta-no-catalogada");
     const url = request.nextUrl.clone();
     url.pathname = NOT_FOUND_REWRITE;
     url.search = "";
@@ -152,6 +178,7 @@ export async function middleware(request: NextRequest) {
   // conceder, y nunca para denegar por ignorancia.
   if (claims.role !== null && claims.role !== undefined && !area.allow.includes(claims.role)) {
     if (area.onDeny === "not-found") {
+      motivoDeDenegacion(request, `rol=${claims.role}`);
       const url = request.nextUrl.clone();
       url.pathname = NOT_FOUND_REWRITE;
       url.search = "";

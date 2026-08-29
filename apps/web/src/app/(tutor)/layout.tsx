@@ -17,6 +17,7 @@
 import Link from "next/link";
 
 import { LocaleSwitcher } from "@/components/PreferenceSwitchers";
+import { signOut } from "@/lib/auth/actions";
 import { requireRole } from "@/lib/auth/session";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { LocaleProvider } from "@/lib/i18n/provider";
@@ -38,9 +39,29 @@ export default async function TutorLayout({ children }: { children: React.ReactN
           </Link>
           <div className="flex items-center gap-4">
             <LocaleSwitcher current={locale} t={t} />
-            <Link href={ROUTES.logout} className="text-sm font-semibold text-teal">
-              {t.common.signOut}
-            </Link>
+            {/*
+              UN FORMULARIO, Y NO UN <Link> A LA RUTA DE SALIDA.
+              ------------------------------------------------------------
+              Lo fue, y cerraba la sesion del tutor sin que nadie pulsara
+              nada: Next PREFETCHA los enlaces que entran en pantalla, y
+              prefetchar `/logout` es EJECUTARLO. El padre abria «Mis hijos»,
+              el navegador pedia /logout por su cuenta, la respuesta traia
+              `Set-Cookie: sb-...-auth-token=; Max-Age=0`, y el siguiente clic
+              se encontraba con un 404 mudo. Se veia como un fallo aleatorio
+              porque dependia de cuando decidiera prefetchar el navegador.
+
+              La cabecera de `app/logout/route.ts` ya lo decia: esa ruta es el
+              destino de un `redirect()` del servidor, «no un enlace que un
+              tercero pueda hacer pulsar», y el cierre de sesion desde la
+              interfaz usa la Server Action `signOut`, que va por POST. Es lo
+              que hacen `(staff)` y `(student)`; esta zona era la unica que se
+              habia salido del carril.
+            */}
+            <form action={signOut}>
+              <button type="submit" className="text-sm font-semibold text-teal">
+                {t.common.signOut}
+              </button>
+            </form>
           </div>
         </header>
 
