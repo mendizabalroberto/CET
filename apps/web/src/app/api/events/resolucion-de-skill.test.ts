@@ -122,9 +122,9 @@ describe("POST /api/events — resolución de skill_id desde payload.skillCode",
 
     expect(response.status).toBe(204);
     expect(inserted).toHaveLength(2);
-    expect(inserted[0].skill_id).toBe("11111111-1111-1111-1111-111111111111");
-    expect(inserted[1].skill_id).toBe("22222222-2222-2222-2222-222222222222");
-    expect(inserted[0].skill_id).not.toBe(inserted[1].skill_id);
+    expect(inserted[0]?.skill_id).toBe("11111111-1111-1111-1111-111111111111");
+    expect(inserted[1]?.skill_id).toBe("22222222-2222-2222-2222-222222222222");
+    expect(inserted[0]?.skill_id).not.toBe(inserted[1]?.skill_id);
   });
 
   it("guarda skill_id nulo y deja rastro si el skillCode no existe", async () => {
@@ -147,9 +147,9 @@ describe("POST /api/events — resolución de skill_id desde payload.skillCode",
 
     expect(response.status).toBe(204);
     expect(inserted).toHaveLength(1);
-    expect(inserted[0].skill_id).toBeNull();
+    expect(inserted[0]?.skill_id).toBeNull();
     expect(errorSpy).toHaveBeenCalled();
-    expect(String(errorSpy.mock.calls[0][0])).toContain("NO-EXISTE");
+    expect(String(errorSpy.mock.calls[0]?.[0])).toContain("NO-EXISTE");
   });
 
   it("si el select de skills falla, inserta igual y registra el fallo", async () => {
@@ -175,9 +175,9 @@ describe("POST /api/events — resolución de skill_id desde payload.skillCode",
 
     expect(response.status).toBe(204);
     expect(inserted).toHaveLength(1);
-    expect(inserted[0].skill_id).toBeNull();
+    expect(inserted[0]?.skill_id).toBeNull();
     expect(errorSpy).toHaveBeenCalled();
-    expect(String(errorSpy.mock.calls[0][0])).toContain("ESCRITURA PERDIDA");
+    expect(String(errorSpy.mock.calls[0]?.[0])).toContain("ESCRITURA PERDIDA");
   });
 
   it("sin skillCode no consulta skills ni registra nada", async () => {
@@ -199,7 +199,7 @@ describe("POST /api/events — resolución de skill_id desde payload.skillCode",
 
     expect(response.status).toBe(204);
     expect(inserted).toHaveLength(1);
-    expect(inserted[0].skill_id).toBeNull();
+    expect(inserted[0]?.skill_id).toBeNull();
     const skillsCalls = fromMock.mock.calls.filter(
       ([table]) => table === "skills",
     );
