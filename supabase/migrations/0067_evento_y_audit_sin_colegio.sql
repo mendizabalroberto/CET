@@ -66,6 +66,14 @@ begin
   -- Staff y superadmin: como siempre. Un tutor: SOLO sobre si mismo o sobre un
   -- hijo suyo, y eso lo decide `app.puede_ver_alumno`, que es la misma funcion
   -- que gobierna toda la RLS del tutor. Cualquier otro usuario de la app: no.
+  -- Tres puertas, y ninguna mas:
+  --   · personal y superadmin, como siempre;
+  --   · el tutor, sobre si mismo o sobre un hijo suyo — y quien es hijo suyo lo
+  --     decide `app.puede_ver_alumno`, la misma funcion que gobierna toda su RLS;
+  --   · el alumno, SOLO sobre si mismo. Existe por un unico hecho: el canje de
+  --     su enlace lo audita su propia sesion recien abierta, porque el actor de
+  --     ese hecho es el. Auditarlo con `service_role` escribiria `actor_id`
+  --     nulo, y un registro forense sin actor vale la mitad.
   if app.is_app_user()
      and not (app.is_staff() or app.is_superadmin())
      and not (
@@ -73,8 +81,12 @@ begin
        and (p_entity_id is null
             or p_entity_id = auth.uid()
             or app.puede_ver_alumno(p_entity_id))
+     )
+     and not (
+       app.current_role() = 'student'
+       and (p_entity_id is null or p_entity_id = auth.uid())
      ) then
-    raise exception 'Solo el personal del colegio y el tutor sobre los suyos escriben en el audit_log'
+    raise exception 'Solo el personal, el tutor sobre los suyos y el alumno sobre si mismo escriben en el audit_log'
       using errcode = 'insufficient_privilege';
   end if;
 

@@ -85,6 +85,31 @@ const config = [
        * captcha, que es lo unico que para a un bot distribuido.
        */
       "src/lib/auth/actions.ts",
+      /**
+       * TERCERA Y CUARTA EXCEPCION TASADAS — la cadena de invitacion del tutor.
+       *
+       * `src/lib/tutor/actions.ts` escala por cuatro motivos, cada uno escrito
+       * en su propia llamada a `createAdminClient`:
+       *   - `guardian_invites` no tiene NI UNA politica RLS (0065), y es
+       *     deliberado: el fallo seguro de la tabla que guarda la credencial de
+       *     un adulto es que nadie la lea.
+       *   - dar de alta a un tutor o a un hijo crea un `auth.users`, igual que
+       *     `createStudent`.
+       *   - `student_access_links` y `student_devices` solo admiten escritura
+       *     de `service_role`.
+       *
+       * `src/lib/tutor/queries.ts` escala por UN motivo, y es el unico de todo
+       * el repositorio de esta forma: `alumnoDelDispositivo()` la invoca quien
+       * TODAVIA NO TIENE SESION —es la pantalla de login— asi que no hay
+       * `auth.uid()` contra el que ninguna politica pueda decidir. A cambio,
+       * devuelve solo el nombre de pila y cuantas casillas de PIN dibujar.
+       *
+       * En las dos, el rol se comprueba ANTES de escalar siempre que hay sesion
+       * que comprobar; donde no la hay, la credencial es un token de 256 bits
+       * que solo llego por el buzon o por el enlace.
+       */
+      "src/lib/tutor/actions.ts",
+      "src/lib/tutor/queries.ts",
     ],
     rules: {
       "no-restricted-imports": [
