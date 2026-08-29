@@ -71,7 +71,16 @@
 | 15 | `contracts/enl-5-e2e.md` | Kimi `codigo` |
 | 1, 5, 11, 12, 13, 14, 16, 17 | — | Opus, en esta sesión |
 
-Orden: 1 → 2 → (3, 4) → 5 → (6-7 ‖ 8-10) → 11-14 → 15 → 16 → 17.
+Orden: 1 → 2 → (3, 4) → 5 → (6-7 ‖ 8-10) → 11-14 → **16.1** → 15 → 16.2 → 17.
+
+> **Correccion del 29/08/2026, comprobada contra produccion.** El borrado del
+> alumno de prueba (paso 1 y 2 de la tarea 16) tiene que ocurrir **ANTES** de
+> aplicar `0066`, no despues. Esa migracion devuelve `profiles_alcance_por_rol`
+> sin `not valid`, asi que Postgres la valida contra las filas existentes — y
+> hoy existe un alumno con `school_id` relleno que la viola. Aplicarla antes de
+> limpiar reproduce exactamente el fallo que `0060` tuvo que revertir. El aviso
+> esta tambien en la cabecera de la propia migracion, que es donde lo vera quien
+> la aplique.
 `enl-1` y `enl-2` **no van en el mismo `--batch`**: sus territorios se solapan en `supabase/tests/` y el motor valida que sean disjuntos.
 
 ---

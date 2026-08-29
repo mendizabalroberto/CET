@@ -10,6 +10,27 @@
 -- `if (!schoolId)` y la 16 borra el unico alumno que la violaria.
 -- =============================================================================
 
+-- =============================================================================
+-- ORDEN OBLIGATORIO — LEER ANTES DE APLICAR
+-- =============================================================================
+-- La constraint del final se anade SIN `not valid`, asi que Postgres la valida
+-- contra las filas que haya. Comprobado contra produccion el 29/08/2026: hay un
+-- alumno con `school_id` relleno, y con el dentro esta migracion NO ENTRA — es
+-- exactamente el fallo que `0060` documenta y tuvo que revertir.
+--
+-- Asi que primero se limpian los datos y despues se aplica esto. En este caso la
+-- limpieza es borrar el unico alumno de prueba, autorizado por el propietario:
+--
+--   select p.id, p.full_name, s.student_code
+--     from public.students s join public.profiles p on p.id = s.profile_id;
+--   -- y borrar su fila de auth.users, que arrastra profiles y students en cascada
+--
+-- Si algun dia hay alumnos de verdad, la limpieza deja de ser un borrado y pasa
+-- a ser mover su colegio de `profiles.school_id` a una fila de
+-- `student_school_memberships` con `status = 'activa'`. Esa migracion de datos
+-- va AQUI ARRIBA, en este mismo fichero, antes de la constraint.
+-- =============================================================================
+
 alter table public.students alter column school_id drop not null;
 
 -- `students_code_uniq` es unique (school_id, student_code). Con school_id NULL
