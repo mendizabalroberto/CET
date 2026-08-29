@@ -16,7 +16,7 @@ begin;
 -- verdes: es facil leerlo como ruido y seguir. Los tres que faltaban nunca se
 -- escribieron. Ahora son 46 (los 45 de siempre mas el orden de los miembros de
 -- interfaz del enum, en §8).
-select plan(46);
+select plan(49);
 
 \ir helpers/fixture.psql
 
@@ -85,11 +85,11 @@ select throws_ok(
 -- =============================================================================
 insert into public.profiles (id, school_id, role, full_name, status) values
   ('0f0f0f0f-0000-4000-8000-000000000004',
-   '11111111-1111-4111-8111-111111111111', 'student', 'Alumno X', 'active'),
+   null, 'student', 'Alumno X', 'active'),
   ('0f0f0f0f-0000-4000-8000-000000000005',
-   '11111111-1111-4111-8111-111111111111', 'student', 'Duplicado', 'active'),
+   null, 'student', 'Duplicado', 'active'),
   ('0f0f0f0f-0000-4000-8000-000000000006',
-   '22222222-2222-4222-8222-222222222222', 'student', 'S1A de Beta', 'active');
+   null, 'student', 'S1A de Beta', 'active');
 
 select throws_ok(
   $$insert into public.students (profile_id, school_id, student_code, year_level,
@@ -394,8 +394,15 @@ select ok(
 -- =============================================================================
 -- Un miembro de más o de menos aquí es un `invalid input value for enum` en
 -- producción, con el insert ya perdido.
+-- `guardian` entro en 0055 y este assert seguia esperando cuatro miembros. No
+-- lo vio nadie porque el fichero entero moria antes de llegar aqui: los perfiles
+-- de alumno que sembraba arriba violaban una constraint y pgTAP aborta al primer
+-- error de SQL. Dos fallos que se tapaban el uno al otro.
+--
+-- El orden IMPORTA: en Postgres el orden de declaracion de un enum es su orden
+-- de comparacion, y `guardian` se apendo al final a proposito (ver 0055).
 select enum_has_labels('public', 'user_role',
-  array['superadmin', 'school_admin', 'teacher', 'student'],
+  array['superadmin', 'school_admin', 'teacher', 'student', 'guardian'],
   'public.user_role coincide con userRole de @cet/shared');
 
 select enum_has_labels('public', 'attempt_status',

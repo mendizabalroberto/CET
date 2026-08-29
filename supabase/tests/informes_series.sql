@@ -65,7 +65,7 @@ insert into auth.users (id, email)
 values ('aaaaaaaa-0000-4000-8000-00000000005a', 's.S3A@alfa.students.cet.invalid');
 
 insert into public.profiles (id, school_id, role, full_name, email, locale, status)
-values ('aaaaaaaa-0000-4000-8000-00000000005a', '11111111-1111-4111-8111-111111111111',
+values ('aaaaaaaa-0000-4000-8000-00000000005a', null,
         'student', 'Alumno S3A', null, 'es', 'active');
 
 insert into public.students (profile_id, school_id, student_code, year_level, stage,
@@ -90,7 +90,7 @@ insert into auth.users (id, email)
 values ('aaaaaaaa-0000-4000-8000-00000000006a', 's.S4A@alfa.students.cet.invalid');
 
 insert into public.profiles (id, school_id, role, full_name, email, locale, status)
-values ('aaaaaaaa-0000-4000-8000-00000000006a', '11111111-1111-4111-8111-111111111111',
+values ('aaaaaaaa-0000-4000-8000-00000000006a', null,
         'student', 'Alumno S4A', null, 'es', 'active');
 
 insert into public.students (profile_id, school_id, student_code, year_level, stage,
@@ -115,7 +115,7 @@ insert into auth.users (id, email)
 values ('aaaaaaaa-0000-4000-8000-00000000007a', 's.S5A@alfa.students.cet.invalid');
 
 insert into public.profiles (id, school_id, role, full_name, email, locale, status)
-values ('aaaaaaaa-0000-4000-8000-00000000007a', '11111111-1111-4111-8111-111111111111',
+values ('aaaaaaaa-0000-4000-8000-00000000007a', null,
         'student', 'Alumno S5A', null, 'es', 'active');
 
 insert into public.students (profile_id, school_id, student_code, year_level, stage,

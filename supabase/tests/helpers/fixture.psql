@@ -120,6 +120,11 @@ values
 -- -----------------------------------------------------------------------------
 -- Perfiles
 -- -----------------------------------------------------------------------------
+-- EL ALUMNO NO LLEVA COLEGIO EN `profiles`, y desde 0066 la constraint
+-- `profiles_alcance_por_rol` lo impide. Su colegio vive en
+-- `student_school_memberships` -mas abajo, ya sembradas- y, denormalizado para
+-- la RLS, en `students.school_id`. Poner aqui el colegio de un alumno tumbaba
+-- 17 de los 23 ficheros pgTAP con un 23514.
 insert into public.profiles (id, school_id, role, full_name, email, locale, status)
 values
   ('aaaaaaaa-0000-4000-8000-00000000000a', null,
@@ -128,15 +133,15 @@ values
    'school_admin', 'Admin Alfa',   'admin.a@alfa.test',   'es', 'active'),
   ('aaaaaaaa-0000-4000-8000-00000000002a', '11111111-1111-4111-8111-111111111111',
    'teacher',      'Teacher Alfa', 'teacher.a@alfa.test', 'es', 'active'),
-  ('aaaaaaaa-0000-4000-8000-00000000003a', '11111111-1111-4111-8111-111111111111',
+  ('aaaaaaaa-0000-4000-8000-00000000003a', null,
    'student',      'Alumno S1A',   null,                  'es', 'active'),
-  ('aaaaaaaa-0000-4000-8000-00000000004a', '11111111-1111-4111-8111-111111111111',
+  ('aaaaaaaa-0000-4000-8000-00000000004a', null,
    'student',      'Alumno S2A',   null,                  'es', 'active'),
   ('bbbbbbbb-0000-4000-8000-00000000001b', '22222222-2222-4222-8222-222222222222',
    'school_admin', 'Admin Beta',   'admin.b@beta.test',   'en', 'active'),
   ('bbbbbbbb-0000-4000-8000-00000000002b', '22222222-2222-4222-8222-222222222222',
    'teacher',      'Teacher Beta', 'teacher.b@beta.test', 'en', 'active'),
-  ('bbbbbbbb-0000-4000-8000-00000000003b', '22222222-2222-4222-8222-222222222222',
+  ('bbbbbbbb-0000-4000-8000-00000000003b', null,
    'student',      'Alumno S1B',   null,                  'en', 'active');
 
 

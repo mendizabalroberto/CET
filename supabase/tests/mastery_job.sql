@@ -35,9 +35,9 @@ insert into auth.users (id, email) values
 
 insert into public.profiles (id, school_id, role, full_name, status) values
   ('aaaaaaaa-0000-4000-8000-00000000aa01',
-   'aaaaaaaa-1111-4111-8111-111111111111', 'student', 'Alumno A', 'active'),
+   null, 'student', 'Alumno A', 'active'),
   ('bbbbbbbb-0000-4000-8000-00000000bb01',
-   'bbbbbbbb-2222-4222-8222-222222222222', 'student', 'Alumno B', 'active');
+   null, 'student', 'Alumno B', 'active');
 
 insert into public.students (profile_id, school_id, student_code, year_level, stage, pin_hash) values
   ('aaaaaaaa-0000-4000-8000-00000000aa01',
