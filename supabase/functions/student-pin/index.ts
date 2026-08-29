@@ -26,14 +26,35 @@
  *             mano. Nunca se puede volver a leer: solo queda el hash.
  *   provision Crea la cuenta sintética de auth de un alumno que aún no la tiene
  *             y le fija un PIN inicial. Solo school_admin.
+ *   set-from-link
+ *             Fija el PRIMER PIN de un alumno SIN exigirle el anterior, porque
+ *             no existe: quien la invoca ya presentó un enlace de un solo uso y
+ *             lo canjeó. Solo `service_role`.
  *
- * Todas exigen JWT válido (`verify_jwt: true`) y comprueban el rol y el tenant
- * del llamante contra la base de datos, nunca contra lo que diga el cuerpo.
+ * `change`, `reset` y `provision` exigen JWT válido (`verify_jwt: true`) y
+ * comprueban el rol y el tenant del llamante contra la base de datos, nunca
+ * contra lo que diga el cuerpo.
+ *
+ * `set-from-link` es la excepción, y es deliberada: al no pedir el PIN anterior,
+ * un JWT de usuario aquí sería un cambio de PIN sin credencial —el del hijo, o
+ * el de cualquier alumno cuyo UUID se adivine—. Así que NO acepta ningún JWT de
+ * usuario, ni el del propio tutor: exige la clave de `service_role`, que solo
+ * tiene el servidor que ya validó y consumió el enlace.
  */
 
 import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { z } from "https://esm.sh/zod@3.23.8";
 import { argon2id, argon2Verify } from "https://esm.sh/hash-wasm@4.11.0";
+
+// Las piezas puras viven en `_shared/puertas.ts`, que importa zod y nada más.
+// Ese es el único código de estas funciones que una prueba unitaria puede
+// importar: ver la cabecera de `supabase/functions/vitest.config.mjs`.
+import {
+  entradaDeStudentPin,
+  esPinDebil,
+  longitudDePinPorEtapa,
+  presentaClaveDeServicio,
+  type EntradaDeStudentPin,
+} from "../_shared/puertas.ts";
 
 /* -------------------------------------------------------------------------- */
 /* Parámetros de coste                                                        */
@@ -51,51 +72,6 @@ const ARGON = { parallelism: 1, iterations: 2, memorySize: 19456, hashLength: 32
 
 const enc = new TextEncoder();
 
-/* -------------------------------------------------------------------------- */
-/* Entrada                                                                    */
-/* -------------------------------------------------------------------------- */
-
-const pinShape = z.string().regex(/^[0-9]{4,8}$/);
-
-const body = z.discriminatedUnion("op", [
-  z.object({
-    op: z.literal("change"),
-    currentPin: pinShape,
-    newPin: pinShape,
-  }),
-  z.object({
-    op: z.literal("reset"),
-    studentProfileId: z.string().uuid(),
-  }),
-  z.object({
-    op: z.literal("provision"),
-    studentProfileId: z.string().uuid(),
-  }),
-]);
-
-/* -------------------------------------------------------------------------- */
-/* PIN débiles                                                                */
-/* -------------------------------------------------------------------------- */
-/**
- * Se comprueba EN EL SERVIDOR aunque la app ya lo valide: la validación de
- * cliente es una cortesía para el usuario, nunca un control de seguridad. Un
- * `curl` se la salta entera.
- *
- * La lista es corta a propósito. Bloquear demasiado obliga a un niño de 10 años
- * a inventar un PIN que no recordará, y un PIN olvidado acaba escrito en la
- * tapa del estuche — que es mucho peor que "1357".
- */
-function isWeakPin(pin: string): boolean {
-  if (/^(\d)\1+$/.test(pin)) return true; // 0000, 1111, 999999
-
-  const ascending = "0123456789012345";
-  const descending = "9876543210987654";
-  if (ascending.includes(pin) || descending.includes(pin)) return true; // 1234, 4321
-
-  const blocked = new Set(["1010", "2020", "1212", "2121", "6969", "112233", "123123"]);
-  return blocked.has(pin);
-}
-
 /** PIN aleatorio con `crypto.getRandomValues`: `Math.random()` no es criptográfico. */
 function randomPin(length: number): string {
   const bytes = new Uint8Array(length);
@@ -104,7 +80,7 @@ function randomPin(length: number): string {
   for (const b of bytes) pin += String(b % 10);
   // Un PIN generado que salga débil se descarta y se vuelve a tirar: el profesor
   // no debería tener que mirar si al alumno le tocó "0000".
-  return isWeakPin(pin) ? randomPin(length) : pin;
+  return esPinDebil(pin) ? randomPin(length) : pin;
 }
 
 async function hashPin(pin: string): Promise<string> {
@@ -149,8 +125,81 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return json({ error: "server_error" }, 500);
   }
 
-  /* --- Identidad del llamante, desde el JWT y NUNCA desde el cuerpo -------- */
   const authHeader = req.headers.get("Authorization") ?? "";
+
+  const admin = createClient(supabaseUrl, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+
+  // El cuerpo se valida ANTES de resolver la identidad porque `set-from-link` no
+  // se autentica como las demás: no hay usuario que resolver, sino una clave de
+  // servicio que comprobar. Zod en la frontera, sin excepción (MASTER_PLAN §3).
+  let input: EntradaDeStudentPin;
+  try {
+    input = entradaDeStudentPin.parse(await req.json());
+  } catch {
+    return json({ error: "bad_request" }, 400);
+  }
+
+  /* ======================================================================== */
+  /* set-from-link — el niño fija su primer PIN, sin teclear ninguno anterior  */
+  /* ======================================================================== */
+  if (input.op === "set-from-link") {
+    // La ÚNICA credencial admitida. Un JWT de alumno o de tutor se rechaza aquí,
+    // antes de mirar nada: sin PIN anterior que exigir, aceptar un JWT de
+    // usuario sería permitir cambiar el PIN de cualquier alumno cuyo UUID se
+    // adivine. Quien canjeó el enlace es el servidor, y el servidor tiene la
+    // clave de servicio.
+    if (!presentaClaveDeServicio(authHeader, serviceKey)) {
+      return json({ error: "unauthorized" }, 401);
+    }
+
+    const { data: alumno } = await admin
+      .from("students")
+      .select("profile_id, school_id, stage")
+      .eq("profile_id", input.studentProfileId)
+      .maybeSingle();
+
+    if (!alumno) return json({ error: "not_found" }, 404);
+
+    const requerida = await requiredPinLength(admin, alumno.school_id, alumno.stage);
+    if (input.newPin.length !== requerida) {
+      return json({ error: "wrong_length", expected: requerida }, 400);
+    }
+    // La MISMA lista que aplica `change`. Un enlace no convierte `1234` en un
+    // buen PIN.
+    if (esPinDebil(input.newPin)) return json({ error: "weak_pin" }, 400);
+
+    const { error } = await admin
+      .from("students")
+      .update({
+        pin_hash: await hashPin(input.newPin),
+        // Ya no hay nada que cambiar en el primer acceso: acaba de elegirlo él.
+        pin_must_change: false,
+        pin_updated_at: new Date().toISOString(),
+        failed_pin_attempts: 0,
+        locked_until: null,
+      })
+      .eq("profile_id", alumno.profile_id);
+
+    if (error) {
+      console.error("student-pin set-from-link:", error);
+      return json({ error: "server_error" }, 500);
+    }
+
+    await admin.from("learning_events").insert({
+      school_id: alumno.school_id,
+      student_id: alumno.profile_id,
+      session_id: crypto.randomUUID(),
+      seq: 0,
+      event_type: "pin_changed",
+      payload: { by: "link" },
+    });
+
+    return json({ ok: true }, 200);
+  }
+
+  /* --- Identidad del llamante, desde el JWT y NUNCA desde el cuerpo -------- */
   const asCaller = createClient(supabaseUrl, anonKey, {
     global: { headers: { Authorization: authHeader } },
     auth: { persistSession: false, autoRefreshToken: false },
@@ -160,10 +209,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const callerId = userData.user?.id;
   if (!callerId) return json({ error: "unauthorized" }, 401);
 
-  const admin = createClient(supabaseUrl, serviceKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-
   const { data: caller } = await admin
     .from("profiles")
     .select("id, role, school_id, status")
@@ -171,13 +216,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
     .maybeSingle();
 
   if (!caller || caller.status !== "active") return json({ error: "unauthorized" }, 401);
-
-  let input: z.infer<typeof body>;
-  try {
-    input = body.parse(await req.json());
-  } catch {
-    return json({ error: "bad_request" }, 400);
-  }
 
   /* ======================================================================== */
   /* change — el alumno cambia su propio PIN                                  */
@@ -206,7 +244,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     if (input.newPin.length !== required) {
       return json({ error: "wrong_length", expected: required }, 400);
     }
-    if (isWeakPin(input.newPin)) return json({ error: "weak_pin" }, 400);
+    if (esPinDebil(input.newPin)) return json({ error: "weak_pin" }, 400);
     if (input.newPin === input.currentPin) return json({ error: "same_pin" }, 400);
 
     const { error } = await admin
@@ -324,18 +362,25 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
 /* -------------------------------------------------------------------------- */
 
-/** Longitud de PIN según la etapa: AD-4, configurable por colegio. */
+/**
+ * Longitud de PIN según la etapa: AD-4, configurable por colegio.
+ *
+ * `schoolId` puede ser nulo: el hijo de un tutor nace sin colegio, y entonces no
+ * hay configuración que consultar. No es un error, es el caso normal de esa
+ * familia, así que cae al default por etapa sin ir a la base.
+ */
 async function requiredPinLength(
   admin: SupabaseClient,
-  schoolId: string,
+  schoolId: string | null,
   stage: string,
 ): Promise<number> {
+  if (!schoolId) return longitudDePinPorEtapa(stage, null);
+
   const { data } = await admin
     .from("schools")
     .select("pin_length_primary, pin_length_secondary")
     .eq("id", schoolId)
     .maybeSingle();
 
-  if (!data) return stage === "secondary" ? 6 : 4;
-  return stage === "secondary" ? data.pin_length_secondary : data.pin_length_primary;
+  return longitudDePinPorEtapa(stage, data);
 }

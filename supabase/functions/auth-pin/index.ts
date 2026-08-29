@@ -7,12 +7,34 @@
  * ─────────────────────────────────────────────────────────────────────────────
  * QUÉ HACE
  * ─────────────────────────────────────────────────────────────────────────────
- *   slug de colegio + código de alumno + PIN
+ *   colegio + código de alumno + PIN   (la puerta del colegio)
+ *   deviceToken + PIN                  (la puerta del dispositivo)
  *        -> valida entrada (Zod)
+ *        -> RESUELVE UN ALUMNO, que es lo único distinto entre las dos puertas
  *        -> rate limit por código Y por IP
  *        -> comprueba lockout
  *        -> verifica Argon2id
  *        -> canjea por una sesión REAL de Supabase
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * LAS DOS PUERTAS, Y LO QUE NO CAMBIA ENTRE ELLAS
+ * ─────────────────────────────────────────────────────────────────────────────
+ * La cookie de dispositivo NO ABRE NINGUNA SESIÓN por sí sola. Lo único que
+ * compra es saltarse los pasos «colegio» y «código» del formulario: la sesión
+ * sigue naciendo de un Argon2id verificado, y `auth.uid()` sigue siendo el único
+ * eje de la RLS. La alternativa —mantener la sesión viva para siempre y poner el
+ * PIN como pantalla de bloqueo— convierte el PIN en decoración, porque quien
+ * coja la tablet entra navegando directamente a `/learn`.
+ *
+ * Cada puerta resuelve UN `profile_id` de alumno y ahí se acaba la diferencia:
+ *   - El lockout y el rate limit se cuentan POR ALUMNO, nunca por puerta. Si se
+ *     contaran por puerta, alternarlas daría intentos infinitos contra el mismo
+ *     PIN, que es exactamente lo que el lockout existe para impedir.
+ *   - Un `deviceToken` desconocido o revocado verifica IGUALMENTE contra el hash
+ *     señuelo y sale por `respond()`. Si «dispositivo desconocido» respondiera
+ *     en 5 ms y «PIN incorrecto» en 90, se enumerarían tokens con un cronómetro.
+ *   - Dispositivo revocado, alumno inexistente y colegio suspendido devuelven
+ *     todos el MISMO cuerpo: `genericFailure()`.
  *
  * Es la ÚNICA pieza del sistema que lee `students.pin_hash`. Corre con
  * `service_role`, que es el único rol con SELECT sobre esa columna (0013_grants).
@@ -49,8 +71,20 @@
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { z } from "https://esm.sh/zod@3.23.8";
 import { argon2Verify } from "https://esm.sh/hash-wasm@4.11.0";
+
+// Las piezas puras —los dos esquemas de la frontera, el hash del token, el
+// correo sintético— viven en `_shared/puertas.ts`, que importa zod y nada más.
+// Es el único código de esta función que una prueba unitaria puede importar:
+// ver la cabecera de `supabase/functions/vitest.config.mjs`.
+import {
+  claveDeIntento,
+  emailSinteticoDeAlumno,
+  entradaDeAuthPin,
+  esPuertaDeDispositivo,
+  sha256hex,
+  type EntradaDeAuthPin,
+} from "../_shared/puertas.ts";
 
 /* -------------------------------------------------------------------------- */
 /* Configuración                                                              */
@@ -80,28 +114,21 @@ const DECOY_HASH =
 /* -------------------------------------------------------------------------- */
 
 /**
- * Zod en la frontera, sin excepción (MASTER_PLAN §3). El PIN se acota a 4–8
- * dígitos ANTES de tocar la base de datos: sin este límite, un "PIN" de 10 MB
- * llegaría hasta el verificador de Argon2id y sería una denegación de servicio
- * gratuita (cada verificación reserva 19 MiB de memoria).
+ * Zod en la frontera, sin excepción (MASTER_PLAN §3). `entradaDeAuthPin` es la
+ * unión de las dos puertas y vive en `_shared/puertas.ts` para poder probarse
+ * sin red. El PIN se acota a 4–8 dígitos y el `deviceToken` a 43 caracteres de
+ * base64url ANTES de tocar la base de datos: sin ese límite, una entrada de
+ * 10 MB llegaría hasta el verificador de Argon2id y sería una denegación de
+ * servicio gratuita (cada verificación reserva 19 MiB de memoria).
  */
-const loginInput = z.object({
-  // El colegio se identifica por su UUID y no por su slug: `schools.id` es la
-  // clave de tenant en TODO el modelo de datos, y es lo que devuelve el selector
-  // de colegio de la app. El slug es una preocupacion de presentacion (vive en
-  // la URL de login) y aqui se deriva, no se recibe.
-  schoolId: z.string().uuid(),
-  studentCode: z.string().trim().min(2).max(32).regex(/^[A-Za-z0-9._-]+$/),
-  pin: z.string().regex(/^[0-9]{4,8}$/),
-});
-
-type LoginInput = z.infer<typeof loginInput>;
+type LoginInput = EntradaDeAuthPin;
 
 /** Motivos de fallo. Se registran en telemetría; NUNCA se devuelven al cliente. */
 type FailureReason =
   | "bad_pin"
   | "locked"
   | "unknown_code"
+  | "unknown_device"
   | "school_suspended"
   | "rate_limited";
 
@@ -123,11 +150,6 @@ async function hmacBase64(secret: string, message: string): Promise<string> {
   return btoa(String.fromCharCode(...new Uint8Array(sig)));
 }
 
-async function sha256Hex(input: string): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-256", enc.encode(input));
-  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
 /**
  * `ip_hash = sha256(ip + salt)` (DATA_MODEL §6). El salt vive en el entorno y no
  * en la base de datos: el espacio IPv4 tiene 2^32 direcciones, así que un hash
@@ -136,7 +158,7 @@ async function sha256Hex(input: string): Promise<string> {
 async function hashIp(req: Request, salt: string): Promise<string | null> {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
   if (!ip) return null;
-  return await sha256Hex(`${ip}${salt}`);
+  return await sha256hex(`${ip}${salt}`);
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -155,6 +177,31 @@ function genericFailure(): Response {
     { status: 401, headers: { "content-type": "application/json" } },
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/* Filas                                                                      */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Los mismos campos para las dos puertas. Se listan una sola vez a proposito: si
+ * una puerta leyera menos campos que la otra, el camino comun dejaria de serlo.
+ */
+const CAMPOS_DE_ALUMNO =
+  "profile_id, school_id, student_code, pin_hash, failed_pin_attempts, locked_until, pin_must_change, stage";
+
+type StudentRow = {
+  profile_id: string;
+  /** Nulo para el hijo de un tutor: nace sin colegio. */
+  school_id: string | null;
+  student_code: string;
+  pin_hash: string;
+  failed_pin_attempts: number;
+  locked_until: string | null;
+  pin_must_change: boolean;
+  stage: string;
+};
+
+type SchoolRow = { id: string; slug: string; status: string };
 
 /* -------------------------------------------------------------------------- */
 /* Handler                                                                    */
@@ -192,7 +239,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   /* --- 1. Validación de entrada ------------------------------------------- */
   let input: LoginInput;
   try {
-    input = loginInput.parse(await req.json());
+    input = entradaDeAuthPin.parse(await req.json());
   } catch {
     // Entrada mal formada: ni siquiera se registra como intento de login contra
     // un código, porque no hay código válido contra el que registrarlo.
@@ -216,47 +263,134 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
   }
 
-  /* --- 3. Colegio ---------------------------------------------------------- */
-  const { data: school } = await admin
-    .from("schools")
-    .select("id, slug, status, pin_length_primary, pin_length_secondary")
-    .eq("id", input.schoolId)
-    .maybeSingle();
+  /* --- 3. Resolver UN alumno, que es lo unico distinto entre las puertas --- */
+  // A partir del final de este bloque el codigo es identico para las dos: mismo
+  // lockout, mismo Argon2id, mismo canje por sesion. Ninguna de las tres
+  // defensas se duplica, y por tanto ninguna puede divergir con el tiempo.
 
-  // Colegio inexistente o suspendido: se sigue el MISMO camino de coste que un
-  // login normal (verificación señuelo incluida) para no filtrar por tiempo qué
-  // slugs existen.
-  if (!school || school.status !== "active") {
-    await argon2Verify({ password: input.pin, hash: DECOY_HASH }).catch(() => false);
-    return await respond(genericFailure());
+  /** El colegio del alumno. NULO para el hijo de un tutor, que nace sin colegio. */
+  let school: SchoolRow | null = null;
+  /** La fila de `students`. Nula solo si se sale antes por fallo generico. */
+  let student: StudentRow | null = null;
+  /** El dispositivo por el que se entro, para sellarle `last_seen_at` al salir bien. */
+  let deviceId: string | null = null;
+
+  if (esPuertaDeDispositivo(input)) {
+    /* --- 3a. La puerta del dispositivo ------------------------------------ */
+    // La base solo guarda el SHA-256 del secreto: el token en claro vive en la
+    // cookie `HttpOnly` y en ningun otro sitio. Perder la cookie es perder el
+    // atajo, nunca la cuenta.
+    const { data: device } = await admin
+      .from("student_devices")
+      .select("id, student_id")
+      .eq("device_hash", await sha256hex(input.deviceToken))
+      .is("revoked_at", null)
+      .maybeSingle();
+
+    if (!device) {
+      // Desconocido o revocado: se gasta la MISMA CPU y el MISMO reloj que un
+      // login real, y se devuelve el MISMO cuerpo. Sin esto se enumeran tokens
+      // con un cronometro, que es el ataque que esta cabecera ya documenta para
+      // los codigos de alumno.
+      await argon2Verify({ password: input.pin, hash: DECOY_HASH }).catch(() => false);
+      return await respond(genericFailure());
+    }
+
+    deviceId = device.id as string;
+
+    const { data: fila } = await admin
+      .from("students")
+      .select(CAMPOS_DE_ALUMNO)
+      .eq("profile_id", device.student_id)
+      .maybeSingle();
+
+    if (!fila) {
+      // Dispositivo huerfano: la fila de `students` ya no esta. Mismo camino de
+      // coste y mismo cuerpo.
+      await argon2Verify({ password: input.pin, hash: DECOY_HASH }).catch(() => false);
+      return await respond(genericFailure());
+    }
+
+    student = fila as StudentRow;
+
+    if (student.school_id) {
+      const { data: colegio } = await admin
+        .from("schools")
+        .select("id, slug, status")
+        .eq("id", student.school_id)
+        .maybeSingle();
+
+      if (!colegio || colegio.status !== "active") {
+        await argon2Verify({ password: input.pin, hash: DECOY_HASH }).catch(() => false);
+        return await respond(genericFailure());
+      }
+      school = colegio as SchoolRow;
+    }
+    // Sin colegio no hay nada que comprobar: el hijo de un tutor no pertenece a
+    // ningun tenant y no puede quedarse fuera porque un colegio se suspenda.
+  } else {
+    /* --- 3b. La puerta del colegio, intacta ------------------------------- */
+    const { data: colegio } = await admin
+      .from("schools")
+      .select("id, slug, status")
+      .eq("id", input.schoolId)
+      .maybeSingle();
+
+    // Colegio inexistente o suspendido: se sigue el MISMO camino de coste que un
+    // login normal (verificación señuelo incluida) para no filtrar por tiempo qué
+    // colegios existen.
+    if (!colegio || colegio.status !== "active") {
+      await argon2Verify({ password: input.pin, hash: DECOY_HASH }).catch(() => false);
+      return await respond(genericFailure());
+    }
+    school = colegio as SchoolRow;
+
+    const { data: fila } = await admin
+      .from("students")
+      .select(CAMPOS_DE_ALUMNO)
+      .eq("school_id", school.id)
+      .eq("student_code", input.studentCode)
+      .maybeSingle();
+
+    student = (fila as StudentRow | null) ?? null;
   }
 
-  /* --- 4. Rate limit por código ------------------------------------------- */
+  /* --- 4. Rate limit por ALUMNO, nunca por puerta -------------------------- */
+  // `claveDeIntento` es la que decide sobre que se cuenta, y sale de la fila de
+  // `students`: la puerta por la que se llamo NO entra en la clave. Alternar
+  // puertas no reinicia esta cuenta ni la esquiva, porque las dos leen y
+  // escriben exactamente las mismas filas de `auth_attempts`.
+  //
   // Consulta directa a la tabla y no `rpc("recent_failed_attempts")`: los
   // helpers viven en el esquema `app`, que NO está expuesto por PostgREST (y no
   // debe estarlo). `service_role` sí puede consultar la tabla directamente, y el
   // índice `auth_attempts_lookup_idx` convierte esto en un lookup.
-  const { count: codeFailures } = await admin
-    .from("auth_attempts")
-    .select("id", { count: "exact", head: true })
-    .eq("school_id", school.id)
-    .eq("student_code", input.studentCode)
-    .eq("success", false)
-    .gte("created_at", new Date(Date.now() - RATE_WINDOW_MINUTES * 60_000).toISOString());
+  const clave = claveDeIntento(input, student);
 
-  if ((codeFailures ?? 0) >= LOCKOUT_THRESHOLD * 2) {
-    await recordAttempt(admin, school.id, input.studentCode, false, ipHash);
-    return await respond(genericFailure());
+  if (clave) {
+    const desde = new Date(Date.now() - RATE_WINDOW_MINUTES * 60_000).toISOString();
+    const consulta = admin
+      .from("auth_attempts")
+      .select("id", { count: "exact", head: true })
+      .eq("student_code", clave.studentCode)
+      .eq("success", false)
+      .gte("created_at", desde);
+
+    // `is` y no `eq` para el colegio nulo: en Postgres `school_id = NULL` no es
+    // falso, es NULL, asi que la cuenta saldria SIEMPRE cero — sin dar un solo
+    // error — y el hijo de un tutor no tendria ventana por codigo.
+    const { count: codeFailures } =
+      clave.schoolId === null
+        ? await consulta.is("school_id", null)
+        : await consulta.eq("school_id", clave.schoolId);
+
+    if ((codeFailures ?? 0) >= LOCKOUT_THRESHOLD * 2) {
+      await recordAttempt(admin, clave.schoolId, clave.studentCode, false, ipHash);
+      return await respond(genericFailure());
+    }
   }
 
-  /* --- 5. Alumno ----------------------------------------------------------- */
-  const { data: student } = await admin
-    .from("students")
-    .select("profile_id, pin_hash, failed_pin_attempts, locked_until, pin_must_change, stage")
-    .eq("school_id", school.id)
-    .eq("student_code", input.studentCode)
-    .maybeSingle();
-
+  /* --- 5. El PIN ----------------------------------------------------------- */
   let reason: FailureReason | null = null;
 
   if (!student) {
@@ -267,6 +401,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
     // Cuenta bloqueada: TAMBIÉN se verifica el PIN, aunque el resultado se
     // descarte. Sin esto, "bloqueado" respondería más rápido que "PIN erróneo" y
     // el atacante sabría que ese código existe y que le va quedando poco.
+    //
+    // El bloqueo lo lleva la fila de `students`, indexada por `profile_id`: la
+    // puerta por la que se entro no aparece en esa cuenta.
     await argon2Verify({ password: input.pin, hash: student.pin_hash }).catch(() => false);
     reason = "locked";
   } else {
@@ -292,7 +429,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
         .eq("profile_id", student.profile_id);
     }
 
-    await recordAttempt(admin, school.id, input.studentCode, false, ipHash);
+    // `auth_attempts.school_id` es nullable desde 0067: el intento contra el hijo
+    // de un tutor se registra igual, con `school_id` nulo. Sin eso habia un
+    // ciego — la cuenta seguia protegida, pero nadie podia VER el ataque.
+    if (clave) {
+      await recordAttempt(admin, clave.schoolId, clave.studentCode, false, ipHash);
+    }
 
     // Telemetría: SOLO si el alumno existe. Un `login_failed` de un código
     // inexistente no tiene student_id al que colgarse (learning_events.student_id
@@ -300,7 +442,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     // tabla diseñada precisamente para códigos que no existen.
     if (student) {
       await admin.from("learning_events").insert({
-        school_id: school.id,
+        school_id: student.school_id,
         student_id: student.profile_id,
         session_id: crypto.randomUUID(),
         seq: 0,
@@ -313,8 +455,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   /* --- 7. Éxito: sesión real ---------------------------------------------- */
-  const email = `s.${input.studentCode}@${school.slug}.students.cet.invalid`;
-  const password = await hmacBase64(passwordSecret, student!.profile_id);
+  const alumno = student!;
+  const email = emailSinteticoDeAlumno(alumno.student_code, school?.slug ?? null);
+  const password = await hmacBase64(passwordSecret, alumno.profile_id);
 
   // Cliente ANÓNIMO a propósito: la sesión debe emitirla GoTrue por la vía
   // normal, con su rotación de refresh tokens y su expiración. Un token firmado
@@ -345,17 +488,29 @@ Deno.serve(async (req: Request): Promise<Response> => {
   await admin
     .from("students")
     .update({ failed_pin_attempts: 0, locked_until: null })
-    .eq("profile_id", student!.profile_id);
+    .eq("profile_id", alumno.profile_id);
 
-  await recordAttempt(admin, school.id, input.studentCode, true, ipHash);
+  // El dispositivo sella su `last_seen_at`: es lo que el tutor ve en la ficha de
+  // su hijo para decidir cual olvidar. Solo se toca cuando la entrada fue BUENA;
+  // un intento fallido no es una visita.
+  if (deviceId) {
+    await admin
+      .from("student_devices")
+      .update({ last_seen_at: new Date().toISOString() })
+      .eq("id", deviceId);
+  }
+
+  if (clave) {
+    await recordAttempt(admin, clave.schoolId, clave.studentCode, true, ipHash);
+  }
 
   await admin.from("learning_events").insert({
-    school_id: school.id,
-    student_id: student!.profile_id,
+    school_id: alumno.school_id,
+    student_id: alumno.profile_id,
     session_id: crypto.randomUUID(),
     seq: 0,
     event_type: "login_success",
-    payload: { stage: student!.stage },
+    payload: { stage: alumno.stage, puerta: deviceId ? "dispositivo" : "colegio" },
   });
 
   return await respond(
@@ -363,7 +518,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       JSON.stringify({
         session: session.session,
         // El cliente debe redirigir al cambio de PIN si es el primer acceso (AD-4).
-        pinMustChange: student!.pin_must_change,
+        pinMustChange: alumno.pin_must_change,
       }),
       { status: 200, headers: { "content-type": "application/json" } },
     ),
@@ -373,13 +528,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
 /* -------------------------------------------------------------------------- */
 
 /**
- * Registra el intento en `auth_attempts`. Se llama SIEMPRE que hay un colegio
- * identificado, con éxito o sin él: la tabla existe para detectar patrones, y un
- * patrón con la mitad de los datos no se detecta.
+ * Registra el intento en `auth_attempts`. Se llama SIEMPRE que hay una clave de
+ * intento, con éxito o sin él, y con `school_id` nulo si el alumno no está
+ * matriculado: la tabla existe para detectar patrones, y un patrón con la mitad
+ * de los datos no se detecta.
  */
 async function recordAttempt(
   admin: ReturnType<typeof createClient>,
-  schoolId: string,
+  /** Nulo cuando el alumno no esta matriculado en ningun colegio (0067). */
+  schoolId: string | null,
   studentCode: string,
   success: boolean,
   ipHash: string | null,
