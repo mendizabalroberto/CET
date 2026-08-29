@@ -19,8 +19,9 @@
     "corpus": "pnpm --filter @cet/content exec tsx ../../scripts/corpus/main.ts",
     "db:types": "supabase gen types typescript --project-id clcutoqjdgeggvgyreud --schema public > packages/shared/src/database.types.ts",
     "test:scripts": "vitest run --config scripts/vitest.config.mjs",
-    "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm test:scripts && pnpm build",
-    "format": "prettier --write ."
+    "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm test:scripts && pnpm test:functions && pnpm build",
+    "format": "prettier --write .",
+    "test:functions": "vitest run --config supabase/functions/vitest.config.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

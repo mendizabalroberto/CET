@@ -1,10 +1,10 @@
 ---
 id: enl-3-dos-puertas
 model: k3
-territory: [supabase/functions/auth-pin/index.ts, supabase/functions/student-pin/index.ts, supabase/functions/__tests__/puertas.test.ts]
+territory: [supabase/functions/auth-pin/index.ts, supabase/functions/student-pin/index.ts, supabase/functions/_shared/puertas.ts, supabase/functions/_shared/puertas.test.ts]
 forbidden: [packages/ui/src/index.ts, packages/shared/src/index.ts, apps/web/**]
 context: [supabase/functions/auth-pin/index.ts, supabase/functions/student-pin/index.ts, docs/superpowers/specs/2026-08-29-alta-por-enlace-design.md]
-verify: pnpm vitest run supabase/functions
+verify: pnpm test:functions
 setup: pnpm install --prefer-offline --frozen-lockfile
 rounds: 3
 timeout: 1800
@@ -38,9 +38,18 @@ minúsculas del secreto, `student_id` → `profiles(id)`, `revoked_at` y
 
 ## 3 · El criterio de aceptación
 
-`pnpm vitest run supabase/functions` en verde, con
-`supabase/functions/__tests__/puertas.test.ts` cubriendo las funciones puras que
-extraigas — sin red y sin base de datos.
+`pnpm test:functions` en verde, con `supabase/functions/_shared/puertas.test.ts`
+cubriendo las funciones puras que extraigas — sin red y sin base de datos.
+
+**Donde viven las piezas puras.** `supabase/functions/vitest.config.mjs` alias
+`https://esm.sh/zod@3.23.8` a la libreria del workspace, y **solo esa**.
+`hash-wasm` y `@supabase/supabase-js` NO tienen alias a proposito: pertenecen al
+camino con efectos, que no se prueba con un test unitario. Asi que todo lo que
+quieras probar —`entradaDeAuthPin`, `sha256hex`— va a
+`supabase/functions/_shared/puertas.ts`, que importa zod y nada mas, y los dos
+`index.ts` lo importan desde ahi. Un modulo de pruebas que importe `index.ts`
+directamente muere en el primer import y no hay forma de arreglarlo desde el
+contrato.
 
 En `auth-pin`:
 

@@ -292,8 +292,8 @@ que exige que el llamante sea `service_role` (no un JWT de usuario), escribe
 `pin_hash`, pone `pin_must_change = false` y `pin_updated_at = now()`, y aplica
 la MISMA lista de PIN débiles que ya aplica `change`.
 
-`pnpm vitest run supabase/functions` en verde. Las pruebas van en
-`supabase/functions/__tests__/puertas.test.ts` y comprueban, sin red, las
+`pnpm test:functions` en verde. Las pruebas van en
+`supabase/functions/_shared/puertas.test.ts` y comprueban, sin red, las
 funciones puras que extraigas: el discriminador de entrada y el cálculo de
 `sha256hex`.
 
@@ -917,7 +917,7 @@ git commit -m "fix(tenencia): un alumno sin colegio deja de ser un 403 a mitad d
 
 **Files:**
 - Modify: `supabase/functions/student-pin/index.ts`
-- Test: `supabase/functions/__tests__/puertas.test.ts`
+- Test: `supabase/functions/_shared/puertas.test.ts`
 
 **Interfaces:**
 - Consumes: nada nuevo.
@@ -952,13 +952,13 @@ La misma que ya aplica `change`. Un enlace no convierte `1234` en un buen PIN.
 
 - [ ] **Step 4: Test**
 
-Run: `pnpm vitest run supabase/functions`
+Run: `pnpm test:functions`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add supabase/functions/student-pin/index.ts supabase/functions/__tests__/puertas.test.ts
+git add supabase/functions/student-pin/index.ts supabase/functions/_shared/puertas.test.ts
 git commit -m "feat(acceso): el nino fija su primer PIN sin teclear ninguno anterior"
 ```
 
@@ -970,7 +970,7 @@ git commit -m "feat(acceso): el nino fija su primer PIN sin teclear ninguno ante
 
 **Files:**
 - Modify: `supabase/functions/auth-pin/index.ts`
-- Test: `supabase/functions/__tests__/puertas.test.ts`
+- Test: `supabase/functions/_shared/puertas.test.ts`
 
 **Interfaces:**
 - Consumes: `student_devices` de la tarea 2.
@@ -1002,7 +1002,7 @@ it("acepta las dos puertas y rechaza lo demas", () => {
 
 - [ ] **Step 2: Correr y ver que falla**
 
-Run: `pnpm vitest run supabase/functions`
+Run: `pnpm test:functions`
 Expected: FAIL — `entradaDeAuthPin` no está exportado.
 
 - [ ] **Step 3: La unión, y el camino común**
@@ -1051,13 +1051,13 @@ El `failed_pin_attempts` y el `locked_until` que se leen y escriben son los de `
 
 - [ ] **Step 7: Test y despliegue de la función**
 
-Run: `pnpm vitest run supabase/functions`
+Run: `pnpm test:functions`
 Expected: PASS.
 
 - [ ] **Step 8: Commit**
 
 ```bash
-git add supabase/functions/auth-pin/index.ts supabase/functions/__tests__/puertas.test.ts
+git add supabase/functions/auth-pin/index.ts supabase/functions/_shared/puertas.test.ts
 git commit -m "feat(acceso): la puerta del dispositivo, sin relajar ninguna defensa de la vieja"
 ```
 

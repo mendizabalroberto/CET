@@ -146,12 +146,40 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   const skillIdByCode = new Map<string, string>();
   if (skillCodes.length > 0) {
-    const { data: skills } = await supabase
+    const { data: skills, error } = await supabase
       .from("skills")
       .select("id, code")
       .in("code", skillCodes);
-    for (const skill of skills ?? []) {
-      skillIdByCode.set(skill.code, skill.id);
+ 
+    // CAUSA DEL FALLO MEDIDO EL 2026-08-29: este resultado se consumía sin
+    // comprobar `error`. Un fallo del select (red, timeout, RLS, PostgREST)
+    // dejaba `data` en null, el mapa vacío y el lote entero con `skill_id`
+    // NULL sin una sola línea en los logs: se veía exactamente igual que un
+    // evento que legítimamente no tiene destreza. El arreglo no es «confiar
+    // en que el select funciona», es hacer que cualquier fallo deje rastro
+    // con el mismo patrón `ESCRITURA PERDIDA` que el resto de la ruta.
+    if (error) {
+      console.error(
+        `[events] ESCRITURA PERDIDA resolución de skill_id: code=${error.code ?? "sin-codigo"}`,
+        error.message,
+        { skillCodes },
+      );
+    } else {
+      const foundCodes = new Set<string>();
+      for (const skill of skills ?? []) {
+        foundCodes.add(skill.code);
+        skillIdByCode.set(skill.code, skill.id);
+      }
+      // Un skillCode presente en el payload y ausente en `skills` también es
+      // una escritura perdida: la fila se guarda con `skill_id` NULL y, sin
+      // este log, nadie puede distinguirla de una pregunta sin destreza.
+      for (const code of skillCodes) {
+        if (!foundCodes.has(code)) {
+          console.error(
+            `[events] ESCRITURA PERDIDA skillCode sin resolver: ${code}`,
+          );
+        }
+      }
     }
   }
 

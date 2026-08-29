@@ -4,7 +4,7 @@ model: chat
 territory: [supabase/migrations/0055_rol_guardian.sql, packages/shared/src/enums.ts]
 forbidden: [packages/ui/src/index.ts, supabase/migrations/0012_rls_policies.sql]
 context: [packages/shared/src/__tests__/enum-parity.test.ts, supabase/migrations/0002_enums.sql, packages/shared/src/enums.ts]
-verify: pnpm --filter @cet/shared test enum-parity
+verify: grep -q 'guardian' packages/shared/src/enums.ts && grep -q 'guardian' supabase/migrations/0055_rol_guardian.sql && pnpm --filter @cet/shared test enum-parity
 setup: pnpm install --prefer-offline --frozen-lockfile
 rounds: 3
 deadline: 3 rondas o 15 min
