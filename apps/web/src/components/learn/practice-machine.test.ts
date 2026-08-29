@@ -96,7 +96,17 @@ describe("practiceReducer — racha", () => {
     const first = askAndAnswer(state, 1, correctAnswerFor);
     state = first.state;
     expect(first.effects.filter((e) => e.eventType === "practice_streak")).toHaveLength(1);
+    // El payload lleva además el contexto de la pregunta desde
+    // `skill-id-de-practica.test.ts`: una racha sin `skillCode` entraba en
+    // `learning_events` con `skill_id` NULL y no contaba para ninguna destreza.
+    // Se sigue comprobando ENTERO —no `toMatchObject`— para que un campo de más
+    // o de menos siga siendo un fallo.
     expect(first.effects.find((e) => e.eventType === "practice_streak")?.payload).toEqual({
+      topicId: "math.simplify",
+      engineKey: "math.simplify",
+      skillCode: "math.fractions.simplify",
+      seed: SEED + 1,
+      params: { locale: "en" },
       streak: 1,
     });
 

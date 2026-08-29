@@ -162,14 +162,69 @@ function timeOnItem(state: PracticeState, now: number): number {
   return Math.max(0, Math.round(now - state.shownAt));
 }
 
+/**
+ * El código de la DESTREZA de una pregunta, o `undefined` si no hay ninguno.
+ *
+ * ===========================================================================
+ * POR QUÉ `learning_events.skill_id` NO LLEGA, Y DÓNDE SE PIERDE DE VERDAD
+ * ===========================================================================
+ * Averiguado antes de tocar nada, siguiendo el dato de punta a punta:
+ *
+ *  1. **Se resuelve.** El generador conoce su destreza y el motor la pone en
+ *     `GeneratedItem.skillCode` (`packages/engine/src/generators/common.ts`).
+ *     Aquí llega intacta.
+ *  2. **No se pierde al serializar.** El payload viaja tal cual por la cola
+ *     (`lib/telemetry/client.ts` hace `JSON.stringify` del lote sin filtrar
+ *     claves) y la ruta lo guarda entero en la columna `payload`.
+ *  3. **`skill_id` no lo escribe NADIE en el cliente**, y no puede: es un uuid
+ *     de la tabla `skills` que solo existe en la base. Lo RESUELVE la ingesta
+ *     al insertar (`app/api/events/route.ts`: busca `skills.code` = el
+ *     `payload.skillCode` del lote), y el job de mastery repite el mismo cruce
+ *     (`0052_mastery_job.sql`: `s.code = le.payload ->> 'skillCode'`).
+ *
+ * De ahí que la causa NO sea una sola. La resolución por código es de 27/08
+ * (contrato `3.5-skill-id-null`, commit `02bfdec`) y `learning_events` es
+ * append-only: toda fila escrita antes se queda NULL para siempre, y eso ya
+ * explica el 0 de 26 medido el 29/08. Pero además quedaban dos agujeros vivos
+ * que ninguna ingesta puede tapar, porque el código no sale de aquí:
+ *
+ *  a) **`practice_streak` no llevaba NADA de la pregunta.** Su payload era
+ *     `{ streak }` a secas: una racha sin destreza es una fila que el scorecard
+ *     no puede atribuir a ninguna «área fortalecida».
+ *  b) **Un `skillCode` en blanco viajaba como si fuera un identificador.** La
+ *     ingesta solo comprueba `typeof code === "string"`, así que `""` —o unos
+ *     espacios— entra en el lote, se busca en `skills`, no aparece y acaba en
+ *     NULL. El daño no es el NULL: es que la fila queda con un `skillCode`
+ *     falso en el payload, y el cruce del job de mastery se hace contra ESE
+ *     payload. Un identificador inventado es peor que ausente porque la
+ *     analítica no puede distinguirlo de uno correcto.
+ *
+ * Por eso esta función devuelve `undefined` en vez de una cadena vacía, y por
+ * eso `questionContext` omite la clave: la única forma de decir «no lo sé» que
+ * la base entiende. Lo que NO se hace nunca es rellenar el hueco con
+ * `engineKey` ni con `topicId` — son la clave del GENERADOR (`math.compare`),
+ * no el identificador de la DESTREZA (`math.fractions.compare`). Hoy hay uno
+ * por generador y se parecen; el día que dejen de parecerse, fundirlos
+ * falsearía hacia atrás una serie histórica que ya existe. Ver la cabecera de
+ * `packages/ui/src/navigation/TopicCard.tsx`.
+ */
+function skillCodeOf(question: PracticeQuestion): string | undefined {
+  const code = question.item.skillCode;
+  if (typeof code !== "string") return undefined;
+  const trimmed = code.trim();
+  return trimmed === "" ? undefined : trimmed;
+}
+
 /** Base de payload compartida por todos los eventos de una pregunta. */
 function questionContext(state: PracticeState): Record<string, unknown> {
   const question = state.question;
   if (!question) return { topicId: state.topicId };
+  const skillCode = skillCodeOf(question);
   return {
     topicId: state.topicId,
     engineKey: question.engineKey,
-    skillCode: question.item.skillCode,
+    // Ausente y no `""`: ver `skillCodeOf`.
+    ...(skillCode === undefined ? {} : { skillCode }),
     // La semilla del cliente. Con ella + engineKey + params se regenera la
     // pregunta exacta que vio el alumno.
     seed: question.seed,
@@ -344,8 +399,15 @@ export function practiceReducer(state: PracticeState, action: PracticeAction): P
 
       // Solo al SUBIR la racha. Emitirlo también al romperla llenaría
       // `learning_events` de ceros sin información.
+      //
+      // Con el contexto de la pregunta, como todos sus hermanos: una racha la
+      // hace una destreza concreta, y sin `skillCode` su fila entra con
+      // `skill_id` NULL y no cuenta para ningún «área fortalecida».
       if (grading.isCorrect) {
-        effects.push({ eventType: "practice_streak", payload: { streak } });
+        effects.push({
+          eventType: "practice_streak",
+          payload: { ...questionContext(next), streak },
+        });
       }
 
       return { state: next, effects };
