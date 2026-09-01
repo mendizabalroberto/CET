@@ -33,9 +33,11 @@ const upsert = vi.fn();
 const getUser = vi.fn();
 const maybeSingle = vi.fn();
 const skillsSelect = vi.fn();
+const rpc = vi.fn();
 
 const supabase = {
   auth: { getUser },
+  rpc,
   from: vi.fn((table: string) => {
     if (table === "profiles") {
       return { select: () => ({ eq: () => ({ maybeSingle }) }) };
@@ -82,10 +84,16 @@ function lote(eventos: number): Request {
 beforeEach(() => {
   vi.clearAllMocks();
   getUser.mockResolvedValue({ data: { user: { id: ALUMNO } }, error: null });
+  // OJO: `school_id` NO va en este perfil. Desde la migracion 0066 la columna
+  // `profiles.school_id` es NULL para TODO alumno —la pertenencia vive en
+  // `student_school_memberships`—, y el fixture anterior, que la rellenaba,
+  // era la razon de que nadie viera el 403 que se comia la telemetria entera.
   maybeSingle.mockResolvedValue({
-    data: { school_id: COLEGIO, role: "student", status: "active" },
+    data: { role: "student", status: "active" },
     error: null,
   });
+  // El colegio del evento sale de la matricula, por `public.colegio_del_evento()`.
+  rpc.mockResolvedValue({ data: COLEGIO, error: null });
   insert.mockResolvedValue({ error: null });
   upsert.mockResolvedValue({ error: null });
   skillsSelect.mockResolvedValue({ data: [], error: null });
@@ -121,6 +129,10 @@ describe("POST /api/events · lo que le pide a la base", () => {
     const fila = (insert.mock.calls[0]?.[0] as Record<string, unknown>[])[0]!;
     expect(fila["student_id"]).toBe(ALUMNO);
     expect(fila["school_id"]).toBe(COLEGIO);
+    // Y sale de la MATRICULA, que es la fuente contra la que compara la
+    // politica `learning_events_insert_own` (0070). Si volviera a salir de
+    // `profiles.school_id` este assert cae: el perfil del fixture no la trae.
+    expect(rpc).toHaveBeenCalledWith("colegio_del_evento");
   });
 
   it("NUNCA envía server_ts: la hora la sella la base de datos", async () => {
@@ -162,9 +174,70 @@ describe("POST /api/events · lo que le pide a la base", () => {
     expect(mensaje).toContain("code=42501");
   });
 
+  it("EL FALLO MEDIDO EL 01/09/2026: el hijo de un tutor, SIN colegio, SÍ emite telemetría", async () => {
+    // El caso real de produccion. `profiles.school_id` es NULL desde 0066 y
+    // este nino no tiene matricula, asi que `colegio_del_evento()` devuelve
+    // NULL. La guarda `!profile.school_id` convertia esto en un 403, el cliente
+    // descartaba el lote sin reintentar y `learning_events` se quedaba a cero
+    // sin una sola linea de log. Ningun test lo vio porque todos montaban un
+    // perfil con colegio.
+    rpc.mockResolvedValue({ data: null, error: null });
+    const { POST } = await import("./route");
+
+    const response = await POST(lote(3));
+
+    expect(response.status).toBe(204);
+    expect(insert).toHaveBeenCalledTimes(1);
+    const filas = insert.mock.calls[0]?.[0] as Record<string, unknown>[];
+    expect(filas).toHaveLength(3);
+    // NULL es el valor CORRECTO, no un hueco: la practica en casa no se le
+    // atribuye a ningun centro. Es lo que exige `is not distinct from` en la
+    // politica de INSERT de 0070.
+    expect(filas[0]!["school_id"]).toBeNull();
+  });
+
+  it("el colegio NUNCA sale de profiles: manda la matrícula", async () => {
+    // Defensa contra la vuelta atras. Si alguien reintroduce
+    // `profile.school_id` como fuente, esta fila saldria con OTRO_COLEGIO y la
+    // politica de INSERT la rechazaria con 42501 — en bucle, esta vez.
+    const OTRO_COLEGIO = "99999999-9999-4999-8999-999999999999";
+    maybeSingle.mockResolvedValue({
+      data: { school_id: OTRO_COLEGIO, role: "student", status: "active" },
+      error: null,
+    });
+    rpc.mockResolvedValue({ data: COLEGIO, error: null });
+    const { POST } = await import("./route");
+
+    await POST(lote(1));
+
+    const fila = (insert.mock.calls[0]?.[0] as Record<string, unknown>[])[0]!;
+    expect(fila["school_id"]).toBe(COLEGIO);
+    expect(fila["school_id"]).not.toBe(OTRO_COLEGIO);
+  });
+
+  it("si el colegio no se puede resolver, 500 y NO se escribe nada", async () => {
+    // Un 406/PGRST106 aqui significa que el envoltorio publico de 0077 no esta
+    // desplegado. Escribir con un colegio adivinado seria atribuir el dato de
+    // un menor a un centro que no es el suyo; se prefiere el 500, que hace
+    // reintentar a la cola, y una linea con el codigo para que se pueda mirar
+    // la base de datos en vez de culpar a la red.
+    const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    rpc.mockResolvedValue({
+      data: null,
+      error: { message: "Invalid schema", code: "PGRST106" },
+    });
+    const { POST } = await import("./route");
+
+    const response = await POST(lote(1));
+
+    expect(response.status).toBe(500);
+    expect(insert).not.toHaveBeenCalled();
+    expect(String(error.mock.calls[0]?.[0] ?? "")).toContain("code=PGRST106");
+  });
+
   it("un profesor no genera telemetría de aprendizaje, y no es un error", async () => {
     maybeSingle.mockResolvedValue({
-      data: { school_id: COLEGIO, role: "teacher", status: "active" },
+      data: { role: "teacher", status: "active" },
       error: null,
     });
     const { POST } = await import("./route");

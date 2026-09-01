@@ -1,7 +1,7 @@
 -- alumno_sin_colegio.sql — pgTAP de 0066 y 0067
 -- Cambridge Exam Trainer · © 2026 Roberto Mendizabal.
 begin;
-select plan(7);
+select plan(10);
 
 select col_is_null('public', 'students', 'school_id',
   'un alumno puede no tener colegio');
@@ -63,6 +63,32 @@ select is(
   (select app.colegio_del_evento('33333333-3333-3333-3333-333333333331')),
   null,
   'un alumno sin membresia activa no aporta colegio a su evento');
+
+-- ---------------------------------------------------------------------------
+-- 0077 - el envoltorio publico, sin el cual la ruta de ingesta no lo alcanza
+-- ---------------------------------------------------------------------------
+-- `app` no lo expone PostgREST (406/PGRST106), asi que la ruta de ingesta no
+-- podia preguntar por el colegio del evento y lo sacaba de `profiles.school_id`
+-- —NULL para todo alumno desde 0066—. De ahi el 403 que se comio la telemetria
+-- entera. Ver la cabecera de 0077.
+select has_function('public', 'colegio_del_evento', array[]::text[],
+  'la ruta de ingesta alcanza el resolutor de colegio por PostgREST');
+
+-- Sin argumentos A PROPOSITO: uno que aceptase el alumno seria una via para
+-- averiguar en que centro esta matriculado un menor cualquiera. Es el mismo
+-- invariante que el assert A2 de public_rpc_surface.sql.
+select is(
+  (select coalesce(array_length(p.proargnames, 1), 0)
+     from pg_catalog.pg_proc p
+     join pg_catalog.pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname = 'colegio_del_evento'),
+  0,
+  'el envoltorio no acepta la identidad del llamante: la toma de auth.uid()');
+
+select is(
+  has_function_privilege('anon', 'public.colegio_del_evento()', 'EXECUTE'),
+  false,
+  'un anonimo no pregunta por el colegio de nadie');
 
 select * from finish();
 rollback;

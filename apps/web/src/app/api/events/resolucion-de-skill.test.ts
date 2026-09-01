@@ -36,8 +36,10 @@ function makeSupabase() {
       return {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
+        // Sin `school_id`: desde 0066 la columna es NULL para todo alumno y el
+        // colegio del evento lo da `colegio_del_evento()` (0077), no el perfil.
         maybeSingle: vi.fn().mockResolvedValue({
-          data: { school_id: "school-1", role: "student", status: "active" },
+          data: { role: "student", status: "active" },
           error: null,
         }),
       };
@@ -68,6 +70,7 @@ function makeSupabase() {
         }),
       },
       from: fromMock,
+      rpc: vi.fn().mockResolvedValue({ data: "school-1", error: null }),
     },
     inserted,
     fromMock,

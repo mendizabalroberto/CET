@@ -27,6 +27,15 @@
  * de aprendizaje entera —M11, y con ella el informe para los tutores— llevaba
  * meses sin guardar una sola fila. Lo arregla la migración 0024, y lo vigilan
  * `supabase/tests/telemetry_ingest.sql` y `events-route.test.ts`.
+ *
+ * Y VOLVIO A PASAR, POR EL OTRO EXTREMO: la guarda de perfil exigia
+ * `profile.school_id` no nulo, y desde 0066 esa columna es NULL para TODO
+ * alumno. Cada lote se iba en 403; el cliente descarta ante un 403 sin
+ * reintentar, asi que esta vez no hubo ni bucle ni logs. Medido el 01/09/2026:
+ * dos filas en `learning_events` en toda su historia, las dos escritas por el
+ * servidor. El colegio pasa a salir de la matricula via
+ * `public.colegio_del_evento()` (migracion 0077), que es la misma fuente que
+ * compara la politica de INSERT.
  * ===========================================================================
  */
 import { NextResponse } from "next/server";
@@ -108,11 +117,13 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("school_id, role, status")
+    // `school_id` ya no se pide: desde 0066 es NULL para todo alumno y el
+    // colegio del evento sale de la matricula (ver 3 bis).
+    .select("role, status")
     .eq("id", user.id)
     .maybeSingle();
 
-  if (profileError || !profile || profile.status !== "active" || !profile.school_id) {
+  if (profileError || !profile || profile.status !== "active") {
     return new NextResponse(null, { status: 403 });
   }
 
@@ -124,10 +135,52 @@ export async function POST(request: Request): Promise<NextResponse> {
     return noContent();
   }
 
-  const schoolId = profile.school_id as string;
   const studentId = user.id;
 
-  // --- 3 bis. Resolución de skill_id por código -----------------------------
+  // --- 3 bis. El colegio del evento sale de la MATRICULA -------------------
+  // NO de `profiles.school_id`. Desde 0066 esa columna es NULL para todo
+  // alumno: la pertenencia vive en `student_school_memberships`, y el hijo de
+  // un tutor no tiene ninguna. Leerla de `profiles` tenia dos consecuencias, y
+  // las dos se midieron contra produccion el 01/09/2026:
+  //
+  //   1. La guarda de arriba incluia `!profile.school_id`, asi que TODO lote de
+  //      TODO alumno se iba en 403. El cliente descarta el lote ante un 403 sin
+  //      reintentar —correctamente—, de modo que no habia bucle, ni error
+  //      visible, ni filas: `learning_events` llevaba dos eventos en toda su
+  //      historia, y los dos los escribe el servidor desde `lib/auth/actions`.
+  //   2. Aun quitando la guarda, `school_id` iria NULL a una fila cuyo alumno
+  //      SI tiene matricula, y la politica `learning_events_insert_own` (0070)
+  //      compara contra `app.colegio_del_evento()`: el insert moriria con
+  //      42501, esta vez sí en bucle.
+  //
+  // Por eso se pregunta a la base por la misma fuente que usa la politica, en
+  // vez de reconstruir aqui el predicado de la matricula. Dos copias de esa
+  // regla divergen, y el dia que divergieran empezaria el 42501.
+  // El tipado del cliente no conoce esta RPC, y sin la asercion `data` y
+  // `error` entran como `any` y se llevan por delante las reglas de
+  // no-unsafe-* del lint. El envoltorio devuelve `uuid` o NULL.
+  const { data: colegioDelEvento, error: colegioError } = (await supabase.rpc(
+    "colegio_del_evento",
+  )) as {
+    data: string | null;
+    error: { message: string; code?: string } | null;
+  };
+
+  if (colegioError) {
+    // Escribir con un colegio adivinado es peor que no escribir: o lo rechaza
+    // la politica, o atribuye el dato de un menor a un centro que no es el
+    // suyo. 500 para que la cola reintente con backoff.
+    console.error(
+      `[events] ESCRITURA PERDIDA colegio del evento: code=${colegioError.code ?? "sin-codigo"}`,
+      colegioError.message,
+    );
+    return new NextResponse(null, { status: 500 });
+  }
+
+  // NULL es un valor legitimo, no un fallo: es el nino que practica en casa.
+  const schoolId = colegioDelEvento;
+
+  // --- 3 ter. Resolución de skill_id por código -----------------------------
   // `event.skillId` llega siempre `undefined` (ningún emisor lo rellena), pero
   // el código de la skill viaja en `payload.skillCode`. Sin esta resolución,
   // `skill_id` queda NULL en el 100 % de las filas y el índice parcial
@@ -187,7 +240,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   // Una sola sentencia para todo el lote. Un insert por evento convertiría
   // treinta niños practicando en cientos de round-trips por minuto.
   const rows = parsed.data.events.map((event) => ({
-    school_id: schoolId, // de la sesión
+    school_id: schoolId, // de su matricula activa, o NULL si practica en casa
     student_id: studentId, // de la sesión
     session_id: event.sessionId,
     seq: event.seq,
