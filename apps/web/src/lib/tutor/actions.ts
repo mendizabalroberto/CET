@@ -46,6 +46,11 @@ import { requireRole } from "@/lib/auth/session";
 import { ROUTES } from "@/lib/routes";
 import { fetchConPlazo, PLAZO_AUTENTICAR_MS } from "@/lib/net/plazo";
 import { clientKeyFromHeaders, rateLimit } from "@/lib/security/rate-limit";
+import {
+  cabecerasDeContexto,
+  contextoDeAcceso,
+  registrarAcceso,
+} from "@/lib/seguridad/accesos";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
@@ -582,12 +587,30 @@ export async function crearEnlaceDeAcceso(
     return fail("unexpected");
   }
 
+  /*
+   * DESDE DONDE LO CREO EL TUTOR.
+   *
+   * No es telemetria: es el unico termino de comparacion que tiene la regla
+   * `canje_fuera_de_red`. El enlace es un bearer que el tutor manda por
+   * WhatsApp, asi que la pregunta que de verdad importa —«¿lo ha canjeado
+   * alguien que no estaba en casa?»— solo se puede responder si consta desde
+   * que red se emitio. Sin estas dos columnas, la senal mas valiosa de toda la
+   * tabla de accesos no tiene con que contrastar y nunca dispara.
+   *
+   * Se guardan las DOS: la `inet` porque «¿misma /24?» es un operador nativo de
+   * Postgres y reimplementarlo sobre `text` sale mal, y el hash porque es lo
+   * unico que sobrevive si algun dia se purga la columna en claro.
+   */
+  const contexto = contextoDeAcceso(await headers());
+
   const token = generarToken();
   const { error } = await admin.from("student_access_links").insert({
     token_hash: hashToken(token),
     student_id: parsed.data.studentId,
     created_by: tutor.id,
     expires_at: dentroDeSieteDias(),
+    creado_desde_ip: contexto.ip,
+    creado_desde_ip_hash: contexto.ipHash,
   });
 
   if (error !== null) {
@@ -656,6 +679,12 @@ export async function canjearEnlace(_prev: TutorState, fd: FormData): Promise<Tu
   const limitado = rateLimit(`canje:${clientKeyFromHeaders(cabeceras)}`, 10, 60_000);
   if (!limitado.allowed) return fail("rate_limited");
 
+  // Se resuelve UNA vez, arriba, y se usa tanto para el registro de acceso como
+  // para las cabeceras que bajan hasta `auth-pin`. Si cada uso releyera las
+  // cabeceras por su cuenta, dos filas del mismo canje podrian acabar diciendo
+  // cosas distintas sobre el mismo momento.
+  const contexto = contextoDeAcceso(cabeceras);
+
   const admin = createAdminClient(
     "Canje de enlace de acceso: quien lo presenta aún no tiene sesión, y ninguna politica cubre a anon",
   );
@@ -713,7 +742,56 @@ export async function canjearEnlace(_prev: TutorState, fd: FormData): Promise<Tu
     return fail("unexpected");
   }
 
-  // 2 · El enlace queda consumido. `revoked_at` ya significa "no vale" (0057),
+  /*
+   * 2 · EL DISPOSITIVO, Y VA ANTES DE CONSUMIR EL ENLACE.
+   *
+   * Aqui habia un fallo, y el comentario que lo justificaba era falso. Decia
+   * que si este INSERT fallaba no pasaba nada porque «el nino PUEDE entrar por
+   * la puerta del colegio». Un hijo de tutor NO TIENE COLEGIO: nace con
+   * `school_id = null` (ver `crearHijo`), y esa puerta pide colegio y filtra por
+   * el. Asi que el resultado real de tragarse el error era un nino con el enlace
+   * consumido, un PIN recien fijado y ningun dispositivo: sin puerta por la que
+   * entrar y sin credencial que reutilizar. Fuera, y sin manera de volver salvo
+   * pedirle a su tutor otro enlace.
+   *
+   * El arreglo no es «abortar», que dejaria el mismo destrozo un paso antes: es
+   * INVERTIR EL ORDEN. Se crea primero el dispositivo, que es la puerta de
+   * manana, y solo cuando existe se quema el enlace, que es la credencial de
+   * hoy. Si el INSERT falla, se aborta con el enlace INTACTO: el nino vuelve a
+   * abrirlo y reintenta. Lo unico que se repite es fijar el PIN, que es
+   * idempotente por definicion —`set-from-link` no exige el anterior—.
+   *
+   * En la base solo vive el SHA-256 del secreto y una familia de agente; el
+   * secreto vive unicamente en la cookie.
+   */
+  const secreto = generarToken();
+  const agenteFamilia = familiaDeAgente(cabeceras.get("user-agent"));
+  const { data: dispositivoRaw, error: dispositivoError } = await admin
+    .from("student_devices")
+    .insert({
+      student_id: studentId,
+      device_hash: hashToken(secreto),
+      agente_familia: agenteFamilia,
+      created_from_link: enlaceId,
+    })
+    // El id hace falta para el registro de acceso: una fila `enlace_canjeado`
+    // sin `device_id` no permite reconstruir despues que aparato se llevo esa
+    // cuenta, que es la mitad de para lo que existe la tabla.
+    .select("id")
+    .single();
+
+  if (dispositivoError !== null) {
+    console.error("[cet] canjearEnlace student_devices.insert", dispositivoError.code);
+    return fail("unexpected");
+  }
+
+  const deviceId = columnaTexto(dispositivoRaw, "id");
+  if (deviceId === null) {
+    console.error("[cet] canjearEnlace student_devices.insert sin id");
+    return fail("unexpected");
+  }
+
+  // 3 · El enlace queda consumido. `revoked_at` ya significa "no vale" (0057),
   //     asi que el uso unico no necesitaba columna nueva.
   const ahora = new Date().toISOString();
   const { error: consumoError } = await admin
@@ -724,29 +802,45 @@ export async function canjearEnlace(_prev: TutorState, fd: FormData): Promise<Tu
 
   if (consumoError !== null) {
     console.error("[cet] canjearEnlace consumo", consumoError.code);
+    // El dispositivo de arriba queda huerfano. Es inerte —su secreto solo
+    // existe en esta variable y la cookie no llego a escribirse, asi que nadie
+    // puede presentarlo jamas—, pero SI aparece en la lista de aparatos del
+    // panel del tutor, y un aparato fantasma que no se puede reconocer es ruido
+    // en la unica pantalla que existe para reconocerlos. Se revoca al vuelo, y
+    // el fallo de esa revocacion no cambia lo que se le devuelve al nino.
+    const { error: revocaError } = await admin
+      .from("student_devices")
+      .update({ revoked_at: ahora })
+      .eq("id", deviceId);
+    if (revocaError !== null) {
+      console.error("[cet] canjearEnlace dispositivo huerfano sin revocar", revocaError.code);
+    }
     return fail("unexpected");
   }
 
-  // 3 · El dispositivo. En la base solo vive el SHA-256 del secreto y una
-  //     familia de agente; el secreto vive unicamente en la cookie.
-  const secreto = generarToken();
-  const { error: dispositivoError } = await admin.from("student_devices").insert({
-    student_id: studentId,
-    device_hash: hashToken(secreto),
-    agente_familia: familiaDeAgente(cabeceras.get("user-agent")),
-    created_from_link: enlaceId,
-  });
+  // 4 · La cookie. `HttpOnly`: sin eso, el "dispositivo recordado" seria un
+  //     token robable desde la consola del navegador.
+  await escribirCookieDispositivo(secreto);
 
-  if (dispositivoError !== null) {
-    // El PIN ya esta fijado y el enlace consumido: el nino PUEDE entrar por la
-    // puerta del colegio. Lo unico que se pierde es el atajo del dia siguiente,
-    // asi que no se aborta.
-    console.error("[cet] canjearEnlace student_devices.insert", dispositivoError.code);
-  } else {
-    // 4 · La cookie. `HttpOnly`: sin eso, el "dispositivo recordado" seria un
-    //     token robable desde la consola del navegador.
-    await escribirCookieDispositivo(secreto);
-  }
+  /*
+   * 4 bis · EL RASTRO. Aqui, y no al final: es el punto en el que el canje ya
+   * es irreversible —enlace quemado, PIN nuevo, dispositivo creado— y por tanto
+   * el punto en el que hay algo que registrar aunque la sesion no llegue a
+   * abrirse despues. Un canje que se corta al pedir la sesion sigue siendo un
+   * canje consumado, y si solo se registrara tras el `setSession` seria
+   * justamente el caso raro —el interesante— el que no dejaria huella.
+   *
+   * NO LANZA y no se envuelve en `try`: ese contrato lo garantiza
+   * `registrarAcceso`. Si algun dia dejara de cumplirlo, el canje entero se
+   * caeria aqui, con el enlace ya quemado.
+   */
+  await registrarAcceso(admin, {
+    studentId,
+    deviceId,
+    tipo: "enlace_canjeado",
+    contexto,
+    agenteFamilia,
+  });
 
   // 5 · La sesion se abre POR LA MISMA PUERTA que usara manana, la del
   //     dispositivo. Es lo que hace que el canje de hoy pruebe el camino de
@@ -761,6 +855,13 @@ export async function canjearEnlace(_prev: TutorState, fd: FormData): Promise<Tu
           "content-type": "application/json",
           authorization: `Bearer ${getSupabaseAnonKey()}`,
           apikey: getSupabaseAnonKey(),
+          // La geo baja POR CABECERA. `entradaDeAuthPin` es una union de dos
+          // esquemas `.strict()`, y ese `.strict()` es lo que impide presentar
+          // las dos puertas a la vez: meterla en el cuerpo obligaria a aflojarlo
+          // en las dos ramas, o sea a debilitar un invariante de seguridad para
+          // transportar un dato de contexto. La Edge Function la ignora si no
+          // sabe que hacer con ella; el cuerpo no la perdonaria.
+          ...cabecerasDeContexto(contexto),
         },
         body: JSON.stringify({ deviceToken: secreto, pin: parsed.data.pin }),
         cache: "no-store",
@@ -805,7 +906,10 @@ export async function canjearEnlace(_prev: TutorState, fd: FormData): Promise<Tu
   await auditar(supabase, "alumno.enlace_canjeado", "student_access_links", studentId, {
     enlace_id: enlaceId,
     // La familia de agente, no el user-agent. Nunca el token ni el secreto.
-    agente_familia: familiaDeAgente(cabeceras.get("user-agent")),
+    // (El user-agent entero si queda, pero en `accesos_de_alumno`, que tiene un
+    // GRANT por columna que ninguna sesion de navegador alcanza. `audit_log` no
+    // lo tiene: aqui seguiria valiendo la minimizacion.)
+    agente_familia: agenteFamilia,
   });
 
   /*
@@ -880,6 +984,31 @@ export async function olvidarDispositivo(
   await auditar(supabase, "tutor.dispositivo_olvidado", "student_devices", studentId, {
     dispositivo_id: parsed.data.deviceId,
     student_id: studentId,
+  });
+
+  /*
+   * Y ADEMAS EN EL HISTORIAL DE ACCESOS, que no es una copia de la auditoria.
+   * `audit_log` responde «quien hizo que»; esta tabla responde «desde donde se
+   * toco esta cuenta», y una revocacion es justo el acto que uno quiere ver en
+   * la misma linea de tiempo que los accesos que la provocaron: el tutor revoca
+   * PORQUE vio algo raro, y sin esta fila su reaccion no aparece al lado de
+   * aquello a lo que reaccionaba.
+   *
+   * `agenteFamilia` va a nulo a proposito: el user-agent de esta peticion es el
+   * del TUTOR desde su panel, y ponerlo en la fila de un aparato del alumno
+   * seria describir el aparato equivocado. El de verdad ya esta en la fila de
+   * `student_devices` que se acaba de revocar.
+   *
+   * Con `admin`, no con `supabase`: la RPC solo tiene EXECUTE para
+   * `service_role`, nunca para `authenticated` — que es lo que impide que nadie
+   * se fabrique su propio rastro.
+   */
+  await registrarAcceso(admin, {
+    studentId,
+    deviceId: parsed.data.deviceId,
+    tipo: "dispositivo_olvidado",
+    contexto: contextoDeAcceso(await headers()),
+    agenteFamilia: null,
   });
 
   revalidatePath("/tutor");

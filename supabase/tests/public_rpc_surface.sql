@@ -39,7 +39,14 @@ select is(
      -- apps/web/src/components/staff/audit-rpc.ts  (AUDIT_RPC.publicFn)
      ('audit_staff_action'),
      -- apps/web/src/components/staff/audit-rpc.ts  (ANSWER_KEY_RPC.publicFn)
-     ('attempt_item_answer_key')
+     ('attempt_item_answer_key'),
+     -- apps/web/src/app/api/events/route.ts  (el colegio del evento, 0077)
+     ('colegio_del_evento'),
+     -- canjearEnlace / olvidarDispositivo (web) y auth-pin (edge), 0078.
+     -- Es la cuarta vez que una funcion que la aplicacion necesita nace solo en
+     -- `app`; esta se escribio con envoltorio desde el primer dia y este assert
+     -- es quien impide que alguien lo quite creyendo que sobra.
+     ('registrar_acceso')
    ) as f(nombre)
    where not exists (
      select 1

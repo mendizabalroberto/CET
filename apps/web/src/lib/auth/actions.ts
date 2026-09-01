@@ -25,6 +25,7 @@ import { fetchConPlazo, PLAZO_AUTENTICAR_MS } from "@/lib/net/plazo";
 import { leerCookieDispositivo } from "@/lib/tutor/dispositivo";
 import { homeForRole, ROUTES } from "@/lib/routes";
 import { clientKeyFromHeaders, rateLimit } from "@/lib/security/rate-limit";
+import { cabecerasDeContexto, contextoDeAcceso } from "@/lib/seguridad/accesos";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
@@ -161,6 +162,28 @@ export async function signInStudent(
         // no venga de un cliente Supabase legítimo.
         authorization: `Bearer ${getSupabaseAnonKey()}`,
         apikey: getSupabaseAnonKey(),
+        /*
+         * LA GEO BAJA POR CABECERA. NUNCA POR EL CUERPO.
+         *
+         * Aqui la capa web NO SABE QUIEN ESTA ENTRANDO, y no puede saberlo: en
+         * un fallo devuelve un cuerpo identico para todo —codigo inexistente,
+         * PIN erroneo, cuenta bloqueada— justamente para que nadie enumere que
+         * menores estan matriculados en un colegio. Solo `auth-pin` resuelve la
+         * fila de `students`, asi que solo `auth-pin` puede escribir la fila de
+         * acceso; y para escribirla con el pais y la ciudad, la geo tiene que
+         * bajar hasta alli.
+         *
+         * Va en cabeceras porque `entradaDeAuthPin` es una union de dos esquemas
+         * `.strict()`, y ese `.strict()` es lo unico que impide presentar las dos
+         * puertas —cookie de dispositivo y colegio+codigo— en la misma peticion.
+         * Meter `pais`/`region`/`ciudad` en `parsed.data` obligaria a aflojarlo
+         * en las dos ramas: debilitar un invariante de seguridad para
+         * transportar contexto forense. `parsed.data` se manda tal cual, y esa
+         * es la propiedad que hay que conservar.
+         */
+        // Geo + IP + agente del NAVEGADOR. Sin las tres, `auth-pin` ve la IP
+        // de salida de Vercel y el `user-agent` del fetch de Node.
+        ...cabecerasDeContexto(contextoDeAcceso(headerStore)),
       },
       body: JSON.stringify(parsed.data),
       cache: "no-store",

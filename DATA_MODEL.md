@@ -280,7 +280,7 @@ El equivalente de `MPARTS` en los trainers Y6A.
 | `submitted_by` | `student`/`timer`/`teacher` | quién cerró el intento |
 | `score_raw`, `score_max`, `score_pct` | numeric | |
 | `passed` | boolean | |
-| `user_agent`, `ip_hash` | text | `ip_hash` = sha256(ip + salt). Nunca la IP en claro |
+| `user_agent`, `ip_hash` | text | `ip_hash` = sha256(ip + salt). **En esta tabla, en `audit_log` y en `auth_attempts` nunca se guarda la IP en claro.** La única tabla que sí la guarda es `accesos_de_alumno` (§8), por decisión explícita del 2026-09-01 |
 | `last_heartbeat_at` | timestamptz | para recuperación de sesión |
 
 ### `attempt_items` — qué vio exactamente el alumno
@@ -379,6 +379,123 @@ Rate limiting y detección de fuerza bruta contra PINs.
 
 `id` bigint, `school_id`, `student_code` citext, `success` boolean, `ip_hash`, `created_at`.
 Índice `(school_id, student_code, created_at desc)`.
+
+> `audit_log` y `auth_attempts` guardan **`ip_hash` y nunca la IP en claro**. Eso sigue siendo
+> cierto y no cambia. La excepción vive en la tabla siguiente, y solo ahí.
+
+### `accesos_de_alumno` — el rastro de entrada de un alumno
+Append-only. Una fila por canje de enlace, login (correcto o fallido) y olvido de dispositivo.
+Existe porque un hijo de tutor entra por una cookie de aparato nacida de un enlace de un solo uso
+que viaja por WhatsApp: quien lo intercepte fija un PIN nuevo y se queda la cuenta. Sin esta tabla
+ese robo no deja rastro — `audit_log` deja `ip_hash` en NULL por el camino del tutor, y
+`auth_attempts` es munición del lockout, no un archivo histórico.
+
+**Aquí, y solo aquí, se guarda la IP en claro y sin caducidad.** Decisión del propietario del
+producto del 2026-09-01, tomada con dos alternativas más conservadoras sobre la mesa (solo hash +
+zona gruesa; o IP en claro purgada a los 30 días). Los cuatro usos que la justifican y la
+retención indefinida están en `MASTER_PLAN.md` §9. Se asume por escrito que es un historial de
+ubicación permanente de un menor y que esta es la tabla más sensible del sistema.
+
+| Columna | Tipo | Nota |
+|---|---|---|
+| `id` | bigint generated always as identity PK | tabla de eventos |
+| `student_id` | uuid not null → `profiles(id)` on delete cascade | el rastro se va con el alumno |
+| `device_id` | uuid → `student_devices(id)` **on delete set null** | el acceso sobrevive a la revocación del aparato; si no, borrar una tablet borraría la prueba |
+| `tipo` | `acceso_tipo` not null | `enlace_canjeado` / `login_ok` / `login_fallido` / `dispositivo_olvidado` |
+| `ip` | `inet` | **IP en claro. Fuera del GRANT de `authenticated`** |
+| `ip_hash` | text | sha256(ip + salt). Se conserva pese a tener la IP: permite comparar sin *leer* la IP, y es lo único que sobrevive si algún día se purga la columna. **Fuera del GRANT** |
+| `pais`, `region`, `ciudad` | text | geo derivada. Esto es lo que sí ve el tutor |
+| `agente_familia` | text | «Chrome en Android», igual que en `student_devices` |
+| `user_agent` | text | el user-agent **entero**, que es una huella digital. **Fuera del GRANT** |
+| `origen` | text not null | `check (origen in ('web','edge'))`. La web (Vercel) conoce la geo; la Edge Function no. Sin esta columna, «ciudad NULL» mezclaría «no se sabe» con «esa capa no puede saberlo» |
+| `senales` | `text[]` not null default `'{}'` | resultado de las reglas de detección, en la propia fila. Sin tabla nueva |
+| `created_at` | timestamptz not null default now() | reloj del servidor |
+
+Índices: `(student_id, created_at desc)` — el panel del tutor —, `(ip)` y `(ip_hash)` — las reglas
+que cruzan accesos.
+
+`ip` es **`inet` y no `text`**: «¿vino de la misma red?» es `ip << '10.0.0.0/24'`, un operador
+nativo de Postgres. Con `text` habría que reimplementarlo, y mal.
+
+En `student_access_links` se añaden `creado_desde_ip inet` y `creado_desde_ip_hash text`, para que
+la regla `canje_fuera_de_red` tenga con qué comparar.
+
+Sin particionar, a diferencia de `learning_events`: aquello crece con cada pulsación, esto con cada
+login. Si algún día pesa, se parte por `created_at`.
+
+#### El grant por columna — el invariante que sostiene la tabla
+Es lo primero que hay que saber de `accesos_de_alumno`, y la compensación que hace sostenible
+guardar la IP: **la retención es indefinida, el acceso no**.
+
+```sql
+revoke all on public.accesos_de_alumno from authenticated;
+
+grant select (id, student_id, device_id, tipo, pais, region, ciudad,
+              agente_familia, senales, created_at)
+  on public.accesos_de_alumno to authenticated;
+
+alter table public.accesos_de_alumno enable row level security;
+
+create policy accesos_select on public.accesos_de_alumno
+  for select to authenticated
+  using ((select app.puede_ver_alumno(student_id)));
+```
+
+- **`ip`, `ip_hash` y `user_agent` no están en el GRANT.** No los alcanza ninguna sesión de
+  navegador: ni el tutor, ni el staff, ni **el propio alumno** — el caso que más se olvida. Solo
+  `service_role`. Mismo patrón que `attempt_items.answer_key` y `students.pin_hash`: una política
+  se puede reescribir mal; un permiso retirado por columna lo impide el motor.
+- **No hay INSERT, UPDATE ni DELETE para `authenticated`.** Nadie fabrica ni retoca su rastro.
+- El tutor ve «Chrome en Android · Madrid · hace 2 días»: suficiente para reconocer un aparato y
+  revocarlo. La detección corre en el servidor, con `service_role`, que sí ve la IP. Responder a
+  un colegio es una consulta directa hecha por una persona, con constancia — no un botón en la web.
+
+Sin esto, un XSS en el panel del tutor exfiltra el historial de ubicación de un niño. Con esto, el
+dato sensible no aparece jamás en una respuesta HTTP. pgTAP lo verifica por las dos vías: que el
+tutor lee `pais`, `ciudad` y `agente_familia` de su hijo, y que al leer `ip` recibe un `42501`.
+
+#### Escritura y detección — `app.registrar_acceso`
+Insertar y evaluar las reglas son **la misma operación**, dentro de Postgres:
+
+```sql
+app.registrar_acceso(
+  p_student_id uuid, p_device_id uuid, p_tipo acceso_tipo,
+  p_ip inet, p_ip_hash text, p_pais text, p_region text, p_ciudad text,
+  p_agente_familia text, p_user_agent text, p_origen text
+) returns bigint
+```
+
+`security definer`, `search_path = ''`, `execute` **solo para `service_role`** — nunca
+`authenticated` —, con envoltorio en `public` porque PostgREST no expone el esquema `app`. Las
+reglas se evalúan en la base y no en la aplicación porque quienes escriben son dos runtimes
+distintos (la Edge Function en Deno, Next.js en Node) y una regla implementada dos veces diverge:
+es la misma razón por la que los parámetros de Argon2id ya están centralizados.
+
+`p_ip_hash` lo calcula quien llama, no la base: el salt (`CET_IP_HASH_SALT`) vive en el entorno de
+las funciones, y meterlo en Postgres sería copiarlo a un sitio más del que puede escaparse.
+
+Ninguna de estas escrituras puede tumbar un login: no lanzan, gritan en `console.error` con prefijo
+greppable, igual que `auditar()`. Un rastro perdido es un incidente de cumplimiento; un niño que no
+puede entrar es un producto roto.
+
+#### Las cuatro señales
+| Señal | Dispara cuando | Por qué |
+|---|---|---|
+| `canje_fuera_de_red` | el enlace se canjea desde una /24 distinta a la del tutor que lo generó | el enlace es un bearer que viaja por chat; canjearlo desde otra red es la señal más valiosa de esta tabla |
+| `salto_de_pais` | dos accesos del mismo alumno desde países distintos en menos de 12 h | credencial compartida o robada. 12 h absorbe un vuelo y una VPN torpe |
+| `ip_multicuenta` | una IP con accesos de más de 3 alumnos distintos en 24 h | hermanos y un aula comparten IP; veinte cuentas, no |
+| `dispositivo_nuevo` | primer acceso de un `device_id` recién creado | ruido cero, valor alto |
+
+**Ninguna bloquea.** Bloquear por geografía deja a un niño sin deberes porque está en casa de su
+abuela o porque su operador móvil lo saca por otro país, y eso pasa mucho más a menudo que un robo
+de cuenta. El bloqueo real ya existe y está bien puesto: el lockout por PIN y el rate limit, que
+miden intentos, no lugares.
+
+> **Límite honesto, y hay que leerlo antes de usar una señal para acusar a nadie:**
+> `x-forwarded-for` es falsificable. La IP que guarda esta tabla es la que dijo la cabecera, no una
+> verdad demostrada. Una señal dice **«esto merece una mirada»**, nunca «esto fue un ataque».
+
+Diseño completo: `docs/superpowers/specs/2026-09-01-registro-de-accesos-de-alumno-design.md`.
 
 ---
 

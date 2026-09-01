@@ -202,3 +202,43 @@ del colegio y se trata como read-only.
 Tratamiento de datos de menores: minimización (no se pide más dato del necesario), cifrado en
 tránsito y reposo, audit log de todo acceso de staff a datos de alumno, y borrado en cascada
 verificado. Ver `modules/security/CLAUDE.md`.
+
+La minimización sigue siendo la regla del producto. Tiene **una excepción, y está nombrada**:
+
+### Excepción — el registro de accesos de alumno
+
+Decisión del propietario del producto, **2026-09-01**, tomada con las alternativas encima de la
+mesa (guardar solo el hash más una zona geográfica gruesa; o guardar la IP en claro y purgarla a
+los 30 días). Se eligió la tercera: **guardar la IP en claro, sin caducidad**. No es un descuido
+ni un resto de depuración; es una decisión, y esto es lo que abarca.
+
+**Qué se guarda.** En la tabla `accesos_de_alumno` (ver `DATA_MODEL.md` §8), por cada canje de
+enlace, login correcto, login fallido y olvido de dispositivo de un alumno: la **IP en claro**
+(`inet`), su hash, el **user-agent completo**, el país/región/ciudad derivados, el aparato y el
+tipo de acceso. En `student_access_links` se guarda además la IP desde la que el tutor generó el
+enlace. Sin caducidad: **retención indefinida**, no hay job de purga.
+
+**Para qué.** Los cuatro usos que motivaron la decisión, todos posteriores al hecho:
+
+1. **Forense a posteriori** — reconstruir desde dónde se apropiaron de una cuenta. El enlace de
+   alta es un *bearer token* que viaja por WhatsApp: sin la IP, un robo no deja rastro.
+2. **Detección en vivo** — las cuatro señales de `accesos_de_alumno.senales`, que comparan redes
+   y países entre accesos. Comparar exige tener qué comparar.
+3. **Panel del tutor** — «Chrome en Android · Madrid · hace 2 días», para reconocer y revocar un
+   aparato. El tutor ve la ciudad y el aparato; **no** ve la IP.
+4. **Responder formalmente a un colegio** — cuando un centro pregunta por escrito qué pasó con
+   la cuenta de un alumno, la respuesta la firma una persona con datos, no con conjeturas.
+
+**Quién puede leerlo.** `ip`, `ip_hash` y `user_agent` están **fuera del GRANT de
+`authenticated`**: no los alcanza ninguna sesión de navegador — ni el tutor, ni el propio alumno,
+ni el staff del colegio. Solo `service_role`, es decir el código de servidor y una consulta
+directa hecha por una persona. Este es el patrón que ya protege `attempt_items.answer_key` y
+`students.pin_hash`, y es **la compensación que hace sostenible la decisión**: el dato existe,
+pero no aparece jamás en una respuesta HTTP, así que un XSS en el panel del tutor no lo exfiltra.
+Si esos grants se aflojan, la excepción deja de ser defendible y hay que revisarla entera.
+
+**Durante cuánto tiempo.** Indefinido. Se asume por escrito lo que eso significa: es un historial
+de ubicación permanente de un menor, y convierte a `accesos_de_alumno` en la tabla más sensible
+del sistema. Se borra con el alumno, por el `on delete cascade` de siempre.
+
+Diseño completo y razonado: `docs/superpowers/specs/2026-09-01-registro-de-accesos-de-alumno-design.md`.

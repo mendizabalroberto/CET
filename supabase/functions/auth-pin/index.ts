@@ -86,6 +86,15 @@ import {
   type EntradaDeAuthPin,
 } from "../_shared/puertas.ts";
 
+// El rastro de accesos (`accesos_de_alumno`) tiene su propio módulo puro por el
+// mismo motivo: qué IP es mandable como `inet`, qué cabeceras de geo se leen y
+// cómo se degrada un user-agent son decisiones que conviene poder probar sin red.
+import {
+  contextoDeAcceso,
+  parametrosDeAcceso,
+  type TipoDeAcceso,
+} from "../_shared/accesos.ts";
+
 /* -------------------------------------------------------------------------- */
 /* Configuración                                                              */
 /* -------------------------------------------------------------------------- */
@@ -156,7 +165,32 @@ async function hmacBase64(secret: string, message: string): Promise<string> {
  * sin salt secreto se revierte con una tabla precalculada en minutos.
  */
 async function hashIp(req: Request, salt: string): Promise<string | null> {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  // `x-cet-ip` PRIMERO, y no es un detalle de esta tabla nueva: es el arreglo
+  // de `IP_RATE_LIMIT`. Nadie llega aquí desde un navegador —`signInStudent` y
+  // `canjearEnlace` llaman de servidor a servidor desde Vercel—, así que
+  // `x-forwarded-for` traía SIEMPRE la IP de salida de Vercel. Todos los
+  // alumnos de la plataforma compartían por tanto un único `ip_hash`, y el
+  // contador de treinta fallos que se lee «por IP» se comportaba «por
+  // plataforma»: treinta PIN fallidos entre todos los niños en quince minutos
+  // —un aula un lunes— y dejaba de entrar todo el mundo.
+  //
+  // La capa web manda la IP real percent-codificada, por lo mismo que la geo:
+  // un byte fuera de ASCII hace que `fetch` rechace la petición entera.
+  const declarada = req.headers.get("x-cet-ip");
+  let ip = declarada === null || declarada.trim() === ""
+    ? null
+    : (() => {
+      try {
+        return decodeURIComponent(declarada).trim();
+      } catch {
+        return declarada.trim();
+      }
+    })();
+
+  // Sin la web por delante —una llamada directa a la función— el
+  // `x-forwarded-for` sí es el del llamante y sigue valiendo.
+  ip ??= req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
+
   if (!ip) return null;
   return await sha256hex(`${ip}${salt}`);
 }
@@ -235,6 +269,57 @@ Deno.serve(async (req: Request): Promise<Response> => {
   });
 
   const ipHash = await hashIp(req, ipSalt);
+
+  // Todo el contexto de la petición, calculado UNA vez y compartido por la
+  // salida buena y la mala: si el login fallido registrara menos que el
+  // correcto, el archivo serviría justo para lo contrario de para lo que se creó.
+  const contexto = contextoDeAcceso(req.headers, ipHash);
+
+  /**
+   * Deja constancia del acceso, y NUNCA tumba el login.
+   *
+   * Misma regla que `auditar()` en `apps/web/.../actions.ts`: no lanza, grita en
+   * `console.error` con prefijo greppable y sigue. Un rastro perdido es un
+   * incidente de cumplimiento; un niño que no puede entrar es un producto roto.
+   *
+   * SOBRE EL TIEMPO DE RESPUESTA, que aquí es una propiedad de seguridad y no un
+   * detalle de rendimiento: esta llamada solo ocurre cuando HAY alumno resuelto,
+   * porque `accesos_de_alumno.student_id` es NOT NULL y un código inexistente no
+   * tiene a quién colgarse. Es decir, el camino «el alumno existe» hace un viaje
+   * a PostgREST que el camino «no existe» no hace, y esa diferencia es
+   * exactamente la que `genericFailure()` existe para no filtrar.
+   *
+   * Se acepta porque la defensa contra ese oráculo NO es que las dos ramas hagan
+   * el mismo trabajo —ya no lo hacen: el `insert` en `learning_events` tiene esta
+   * misma asimetría desde el primer día—, sino el suelo fijo de MIN_RESPONSE_MS,
+   * que está puesto por encima del coste de un Argon2id (~90 ms) precisamente
+   * para absorber toda variación de abajo. Un viaje a PostgREST desde la misma
+   * región cabe de sobra en ese margen. Lo que sí sería un error es sacar el
+   * registro FUERA de `respond()` (un `waitUntil`, un `void` sin `await`): el
+   * suelo dejaría de cubrirlo y la diferencia se volvería medible. Por eso se
+   * espera aquí dentro, antes de devolver.
+   */
+  const registrarAcceso = async (
+    tipo: TipoDeAcceso,
+    studentId: string,
+    device: string | null,
+  ): Promise<void> => {
+    try {
+      const { error } = await admin.rpc(
+        // Envoltorio en `public` y no `app.registrar_acceso`: PostgREST no expone
+        // el esquema `app`, y no debe hacerlo (§6 del diseño; el mismo fallo de
+        // 0023, 0063 y 0077).
+        "registrar_acceso",
+        parametrosDeAcceso(contexto, { studentId, deviceId: device, tipo }),
+      );
+      if (error) {
+        console.error("[cet] auth-pin registrar_acceso", tipo, error.code, error.message);
+      }
+    } catch (causa) {
+      // Red caída, timeout, respuesta ilegible: el login sigue igual.
+      console.error("[cet] auth-pin registrar_acceso inalcanzable", tipo, String(causa));
+    }
+  };
 
   /* --- 1. Validación de entrada ------------------------------------------- */
   let input: LoginInput;
@@ -386,6 +471,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     if ((codeFailures ?? 0) >= LOCKOUT_THRESHOLD * 2) {
       await recordAttempt(admin, clave.schoolId, clave.studentCode, false, ipHash);
+      // Rechazado por rate limit sigue siendo un intento de entrar contra ESTE
+      // alumno, y es de los que más importa ver en el panel del tutor: son los
+      // que vienen en ráfaga. `device_id` va nulo aquí a propósito — la fila que
+      // se registra es el intento, no una visita del aparato (§5).
+      if (student) await registrarAcceso("login_fallido", student.profile_id, null);
       return await respond(genericFailure());
     }
   }
@@ -449,6 +539,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
         event_type: "login_failed",
         payload: { reason },
       });
+
+      // Y el rastro forense, con la misma condición y por la misma razón: sin
+      // alumno resuelto no hay `student_id` que registrar (la columna es NOT
+      // NULL y apunta a `profiles`). Un código inexistente ya queda en
+      // `auth_attempts`, que es la tabla hecha para códigos que no existen.
+      await registrarAcceso("login_fallido", student.profile_id, null);
     }
 
     return await respond(genericFailure());
@@ -512,6 +608,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
     event_type: "login_success",
     payload: { stage: alumno.stage, puerta: deviceId ? "dispositivo" : "colegio" },
   });
+
+  // El acceso bueno sí lleva `device_id` cuando se entró por la puerta del
+  // dispositivo: es lo que permite a la regla `dispositivo_nuevo` disparar y al
+  // tutor decidir qué aparato olvidar.
+  await registrarAcceso("login_ok", alumno.profile_id, deviceId);
 
   return await respond(
     new Response(
