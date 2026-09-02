@@ -210,7 +210,7 @@ async function ask(key, model, messages, temp = 0) {
       model,
       messages,
       temperature: temp,
-      max_tokens: model === 'deepseek-reasoner' ? 32000 : 8000,
+      max_tokens: model === 'deepseek-reasoner' ? 64000 : 8000,
     }),
   });
   if (!res.ok) fatal(`DeepSeek ${res.status}: ${(await res.text()).slice(0, 400)}`);

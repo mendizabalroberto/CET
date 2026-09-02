@@ -63,6 +63,9 @@ export default async function HijoLayout({ children, params }: LayoutProps) {
     // le va cuando lo intenta solo?». Una cuarta pestaña obligaría a decidir
     // antes de mirar, que es justo lo que esta zona evita.
     { href: rutas.practica, label: C.nav.practice },
+    // La cuarta llegó con el plan de estudio: es la única que pide algo al
+    // padre (subir el boletín), así que va la última, después de mirar.
+    { href: rutas.plan, label: C.nav.plan },
   ];
 
   return (
