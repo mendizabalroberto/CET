@@ -90,6 +90,15 @@ export const learnEs: LearnDictionary = {
     summary: "Has estado {count} minutos.",
     summaryOne: "Has estado 1 minuto.",
   },
+  envio: {
+    // «Sigue» es lo importante: sin esa palabra, un niño que ve fallar la red
+    // asume que su rato no cuenta, y esa es la peor lectura posible.
+    sinConexion: "Sin conexión. Sigue, no se pierde nada.",
+    pendiente: "Guardado aquí, se enviará solo.",
+    // «Guardado» y no «enviado»: enviado lo sabe el navegador, guardado lo
+    // sabe la base de datos, y solo se dice cuando el servidor lo acepta.
+    guardado: "Guardado.",
+  },
   practice: {
     title: "Práctica",
     subtitle: "Elige un tema. Cada pregunta es nueva y sabes al momento si la has acertado.",

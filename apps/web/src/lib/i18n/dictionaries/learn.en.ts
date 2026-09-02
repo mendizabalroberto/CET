@@ -95,6 +95,11 @@ export const learnEn = {
     summary: "You spent {count} minutes on this.",
     summaryOne: "You spent 1 minute on this.",
   },
+  envio: {
+    sinConexion: "No connection. Keep going, nothing is lost.",
+    pendiente: "Saved here, it will send on its own.",
+    guardado: "Saved.",
+  },
   practice: {
     title: "Practice",
     subtitle: "Pick a topic. You get a new question every time, and you find out straight away.",

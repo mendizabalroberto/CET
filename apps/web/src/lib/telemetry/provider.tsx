@@ -24,6 +24,21 @@ interface TelemetryContextValue {
 
 const TelemetryContext = createContext<TelemetryContextValue | null>(null);
 
+/**
+ * La cola en si, para quien necesite OBSERVARLA y no solo emitir.
+ *
+ * Va en un contexto aparte a proposito: `TelemetryContextValue` es la superficie
+ * que usa toda la aplicacion para emitir, y meterle el objeto entero invitaria a
+ * que cualquier pantalla llamara a `flush()` o tocara la cola por dentro. Aqui
+ * solo entra quien pinta su estado.
+ */
+const ColaContext = createContext<TelemetryQueue | null>(null);
+
+export function useTelemetryQueue(): TelemetryQueue | null {
+  return useContext(ColaContext);
+}
+
+
 export function TelemetryProvider({ children }: { children: ReactNode }) {
   // `useRef` y no `useState`: la cola es un objeto mutable con temporizadores;
   // recrearla en cada render duplicaría los intervalos y los listeners.
@@ -52,7 +67,11 @@ export function TelemetryProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  return <TelemetryContext.Provider value={value}>{children}</TelemetryContext.Provider>;
+  return (
+    <ColaContext.Provider value={queueRef.current}>
+      <TelemetryContext.Provider value={value}>{children}</TelemetryContext.Provider>
+    </ColaContext.Provider>
+  );
 }
 
 /** Mensaje único: lo comparte el `throw` de desarrollo y el aviso de producción. */

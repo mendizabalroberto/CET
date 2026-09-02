@@ -116,6 +116,30 @@ function contextoDeSesion(): Record<string, unknown> {
   };
 }
 
+/**
+ * Lo que la interfaz puede contar de la cola sin verla por dentro.
+ *
+ * Existe porque la persistencia local es INVISIBLE, y una tuberia invisible que
+ * nadie puede observar es indistinguible de una rota. Durante meses la ingesta
+ * respondia 403 y descartaba cada lote en silencio: no habia bucle, ni error, ni
+ * filas, ni forma de notarlo desde la pantalla. Esto es lo que faltaba entonces.
+ */
+export interface EstadoDeCola {
+  /** Eventos escritos aqui y todavia no confirmados por el servidor. */
+  readonly pendientes: number;
+  /** Hay un lote en vuelo ahora mismo. */
+  readonly enviando: boolean;
+  /** El navegador dice que no hay red, o los ultimos envios han fallado. */
+  readonly sinConexion: boolean;
+  /**
+   * Marca del ultimo lote que el servidor ACEPTO, o `null` si aun ninguno.
+   * Es lo que permite decir «guardado» y no «enviado»: enviado lo sabe el
+   * cliente, guardado lo sabe la base.
+   */
+  readonly ultimoEnvioMs: number | null;
+}
+
+
 export class TelemetryQueue {
   private readonly sessionId: string;
   private seq = 0;
@@ -148,6 +172,46 @@ export class TelemetryQueue {
   get pending(): number {
     return this.queue.length;
   }
+
+  private readonly observadores = new Set<(e: EstadoDeCola) => void>();
+  private fallando = false;
+  private ultimoEnvioMs: number | null = null;
+
+  /** El estado ahora mismo. Barato: no toca red ni almacenamiento. */
+  estado(): EstadoDeCola {
+    return {
+      pendientes: this.queue.length,
+      enviando: this.sending,
+      // `navigator.onLine` miente en un sentido -dice `true` con un wifi
+      // conectado a un router sin salida-, asi que no basta con el. Se combina
+      // con lo que de verdad pasa: si los envios estan fallando, no hay red
+      // util aunque el sistema operativo opine lo contrario.
+      sinConexion:
+        this.fallando ||
+        (typeof navigator !== "undefined" && navigator.onLine === false),
+      ultimoEnvioMs: this.ultimoEnvioMs,
+    };
+  }
+
+  /**
+   * Avisa en cada cambio. Devuelve la funcion para dejar de escuchar.
+   *
+   * Se notifica DESPUES de tocar la cola y el deposito, nunca antes: quien
+   * pinte «guardado» tiene que estar viendo el estado ya asentado, no el que
+   * habra dentro de dos lineas.
+   */
+  suscribir(fn: (e: EstadoDeCola) => void): () => void {
+    this.observadores.add(fn);
+    fn(this.estado());
+    return () => void this.observadores.delete(fn);
+  }
+
+  private avisar(): void {
+    if (this.observadores.size === 0) return;
+    const e = this.estado();
+    for (const fn of this.observadores) fn(e);
+  }
+
 
   /**
    * Arranca (o REARRANCA) la cola.
@@ -297,6 +361,7 @@ export class TelemetryQueue {
     }
 
     this.persistir();
+    this.avisar();
 
     if (this.queue.length >= FLUSH_AT_COUNT) void this.flush();
   }
@@ -381,6 +446,8 @@ export class TelemetryQueue {
       this.retryTimer = null;
     }
     this.consecutiveFailures = 0;
+    this.fallando = false;
+    this.avisar();
     void this.flush();
   };
 
@@ -393,6 +460,7 @@ export class TelemetryQueue {
 
     const batch = this.queue.splice(0, MAX_EVENT_BATCH);
     this.sending = true;
+    this.avisar();
 
     try {
       const respuesta = await fetchConPlazo(
@@ -418,6 +486,7 @@ export class TelemetryQueue {
         // rechaza por falta de sesion volveria en cada arranque a intentar
         // entrar por una puerta que le seguira estando cerrada.
         this.persistir();
+        this.avisar();
         return;
       }
 
@@ -430,6 +499,7 @@ export class TelemetryQueue {
         // Igual que arriba: un lote malformado daria 400 para siempre, y
         // resucitarlo en cada arranque solo repetiria el error eternamente.
         this.persistir();
+        this.avisar();
         return;
       }
 
@@ -441,6 +511,9 @@ export class TelemetryQueue {
       // duplicaria, que es peor que perderlos: un informe con el doble de
       // tiempo de estudio no se nota roto, solo se lee mal.
       this.persistir();
+      this.fallando = false;
+      this.ultimoEnvioMs = Date.now();
+      this.avisar();
     } catch {
       // Red caída o 5xx: los eventos vuelven a la cabeza de la cola, en su
       // orden original, y se reintenta con backoff.
@@ -449,6 +522,8 @@ export class TelemetryQueue {
       // pestana muere ahora —sin red, que es cuando mas probable es— esto es lo
       // unico que queda del rato del nino.
       this.persistir();
+      this.fallando = true;
+      this.avisar();
       this.consecutiveFailures += 1;
       this.scheduleRetry();
     } finally {

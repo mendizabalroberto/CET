@@ -24,6 +24,8 @@ import { LocaleProvider } from "@/lib/i18n/provider";
 import { resolveLocale } from "@/lib/i18n/server";
 import { ROUTES } from "@/lib/routes";
 import { TelemetryProvider } from "@/lib/telemetry/provider";
+import { EstadoDeEnvio } from "@/lib/telemetry/EstadoDeEnvio";
+import { getLearnDictionary } from "@/components/learn/dictionary";
 import { UiInteractionScope } from "@/components/telemetry/UiInteractionScope";
 
 export default async function StudentLayout({ children }: { children: React.ReactNode }) {
@@ -35,6 +37,7 @@ export default async function StudentLayout({ children }: { children: React.Reac
   // compartida no debe imponerle el idioma del compañero anterior.
   const locale = await resolveLocale(student.locale);
   const t = getDictionary(locale);
+  const tl = getLearnDictionary(locale);
 
   return (
     <LocaleProvider locale={locale} dictionary={t}>
@@ -47,6 +50,9 @@ export default async function StudentLayout({ children }: { children: React.Reac
             los de los diálogos, que React monta en un portal fuera de este
             árbol del DOM. */}
         <UiInteractionScope>
+        {/* Fuera del flujo y en posicion fija: el aviso no puede empujar la
+            leccion ni moverla cuando aparece a mitad de una frase. */}
+        <EstadoDeEnvio textos={tl.envio} />
         <div className="flex min-h-dvh flex-col">
           <header className="border-b border-line bg-card">
             <div className="mx-auto flex max-w-5xl items-center gap-4 px-4 py-3">
