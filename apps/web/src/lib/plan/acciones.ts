@@ -267,6 +267,10 @@ export async function subirBoletin(_prev: PlanState, fd: FormData): Promise<Plan
     .insert({
       student_id: studentId,
       school_id: schoolId,
+      // La politica de insert exige subido_por = auth.uid(); sin esta linea el
+      // insert cae por not null antes de llegar a la RLS.
+      subido_por: tutor.id,
+      storage_path: ruta,
       checksum,
       gestion: extraido.gestion,
       trimestre: extraido.trimestre,
@@ -352,7 +356,11 @@ export async function proponerPlan(_prev: PlanState, fd: FormData): Promise<Plan
     minutosObservados(studentId),
   ]);
   if (perfilRes.error !== null) {
-    console.error("[cet] proponerPlan profiles.select", perfilRes.error.code, perfilRes.error.message);
+    console.error(
+      "[cet] proponerPlan profiles.select",
+      perfilRes.error.code,
+      perfilRes.error.message,
+    );
     return fail("generic");
   }
   const fullName = columnaTexto(perfilRes.data as Fila | null, "full_name") ?? "";
@@ -544,7 +552,10 @@ export async function fijarPlan(_prev: PlanState, fd: FormData): Promise<PlanSta
     const { error: tareasError } = await admin.from("plan_tareas").insert(lote);
     if (tareasError !== null) {
       console.error("[cet] fijarPlan plan_tareas.insert", tareasError.code, tareasError.message);
-      const { error: rollbackError } = await admin.from("planes_de_estudio").delete().eq("id", planId);
+      const { error: rollbackError } = await admin
+        .from("planes_de_estudio")
+        .delete()
+        .eq("id", planId);
       if (rollbackError !== null) {
         console.error("[cet] fijarPlan rollback", rollbackError.code, rollbackError.message);
       }
