@@ -5,6 +5,9 @@
     "jsx": "preserve",
     "allowJs": false,
     "noEmit": true,
+    // `@cet/content` importa con extension `.ts` (como `@cet/engine`); sin esto el
+    // typecheck de web se niega a seguir esos imports. Solo vale con noEmit.
+    "allowImportingTsExtensions": true,
     "declaration": false,
     "declarationMap": false,
     "incremental": true,

@@ -27,6 +27,8 @@ export const ROUTES = {
   /** Cambio obligatorio de contrasena del personal en el primer acceso. */
   passwordChange: "/account/password",
   studentHome: "/learn",
+  /** El día del alumno según su plan de estudio. */
+  studentToday: "/learn/hoy",
   /** Portada del tutor: sus hijos. */
   tutorHome: "/tutor",
   staffHome: "/teach",

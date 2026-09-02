@@ -100,6 +100,27 @@ export const learnEn = {
     pendiente: "Saved here, it will send on its own.",
     guardado: "Saved.",
   },
+  /**
+   * /learn/hoy — el día del alumno según su plan de estudio.
+   * El niño NO ve brecha, tendencia ni atraso (decisión del propietario,
+   * 2026-09-02): solo sus tareas de hoy, o una frase honesta si no hay.
+   */
+  today: {
+    title: "Your day",
+    subtitle: "What's planned for you today.",
+    noPlanTitle: "There's no plan yet",
+    noPlanBody: "When your family sets one up, your tasks will show up here.",
+    freeDayTitle: "Nothing planned for today",
+    freeDayBody: "Enjoy the day. Your next tasks will be here when they come.",
+    errorTitle: "We couldn't load your day",
+    errorBody: "It's not your fault. Try again in a moment.",
+    minutes: "{count} min",
+    lesson: "Lesson",
+    practice: "Practice",
+    open: "Start",
+    taskOf: "Task {n} of {total}",
+    backToLessons: "All my lessons",
+  },
   practice: {
     title: "Practice",
     subtitle: "Pick a topic. You get a new question every time, and you find out straight away.",

@@ -105,7 +105,7 @@ const nextConfig: NextConfig = {
 
   // El monorepo comparte TypeScript sin compilar: Next debe transpilar estos
   // paquetes en lugar de esperar un `dist/`.
-  transpilePackages: ["@cet/ui", "@cet/engine", "@cet/shared"],
+  transpilePackages: ["@cet/ui", "@cet/engine", "@cet/shared", "@cet/content"],
 
   /**
    * Los paquetes internos son TypeScript ESM y se importan entre si con

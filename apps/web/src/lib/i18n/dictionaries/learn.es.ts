@@ -99,6 +99,22 @@ export const learnEs: LearnDictionary = {
     // sabe la base de datos, y solo se dice cuando el servidor lo acepta.
     guardado: "Guardado.",
   },
+  today: {
+    title: "Tu día",
+    subtitle: "Lo que tienes planeado para hoy.",
+    noPlanTitle: "Todavía no hay plan",
+    noPlanBody: "Cuando tu familia lo prepare, tus tareas aparecerán aquí.",
+    freeDayTitle: "Hoy no hay nada planeado",
+    freeDayBody: "Disfruta el día. Tus próximas tareas estarán aquí cuando toquen.",
+    errorTitle: "No hemos podido cargar tu día",
+    errorBody: "No es culpa tuya. Prueba otra vez en un momento.",
+    minutes: "{count} min",
+    lesson: "Lección",
+    practice: "Práctica",
+    open: "Empezar",
+    taskOf: "Tarea {n} de {total}",
+    backToLessons: "Todas mis lecciones",
+  },
   practice: {
     title: "Práctica",
     subtitle: "Elige un tema. Cada pregunta es nueva y sabes al momento si la has acertado.",

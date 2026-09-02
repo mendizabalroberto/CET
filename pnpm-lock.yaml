@@ -53,6 +53,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@cet/content':
+        specifier: workspace:*
+        version: link:../../packages/content
       '@cet/engine':
         specifier: workspace:*
         version: link:../../packages/engine
