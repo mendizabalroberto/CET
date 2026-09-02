@@ -41,7 +41,42 @@ export interface SessionClaims {
   readonly schoolId: string | null;
 }
 
-const VALID_ROLES: readonly string[] = ["superadmin", "school_admin", "teacher", "student"];
+/**
+ * Los CINCO roles de `public.user_role`. Si uno falta aqui, su claim se lee como
+ * `null` y el borde deja de saber quien es esa persona.
+ *
+ * `guardian` faltaba. Llego con 0055, cuando el producto gano los tutores, y
+ * nunca subio hasta esta lista. Consecuencias, las dos silenciosas:
+ *
+ *  1. `homeForRole(null)` devuelve la PORTADA PUBLICA. Un tutor al que el
+ *     middleware tuviera que reencaminar acababa en la landing en vez de en
+ *     `/tutor`, sin ningun error por medio.
+ *  2. La denegacion barata del borde no se aplicaba a un tutor: entraba en
+ *     `/admin` y solo lo paraba el `requireRole` del layout. Acababa en el
+ *     mismo 404, asi que el agujero no se veia — pero la defensa de fuera
+ *     estaba apagada para el unico rol que ademas es un adulto ajeno al centro.
+ *
+ * Es el fallo que este mismo fichero documenta como AUSENTE NO ES DENEGADO,
+ * cometido por omision en vez de por decision: el borde no lo sabia porque
+ * nadie se lo dijo.
+ *
+ * `roles-del-borde.test.ts` compara esta lista con el enum de las migraciones
+ * para que el sexto rol que alguien anada no vuelva a quedarse fuera.
+ */
+const VALID_ROLES: readonly string[] = [
+  "superadmin",
+  "school_admin",
+  "teacher",
+  "student",
+  "guardian",
+];
+
+/**
+ * La misma lista, expuesta para que `roles-del-borde.test.ts` la compare con el
+ * enum de las migraciones. Se exporta el VALOR y no una copia: una copia escrita
+ * para la prueba es exactamente lo que dejaría pasar el fallo que vigila.
+ */
+export const rolesConocidosPorElBorde: readonly string[] = VALID_ROLES;
 
 function readClaims(raw: unknown): SessionClaims | null {
   if (typeof raw !== "object" || raw === null) return null;
