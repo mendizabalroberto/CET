@@ -104,14 +104,14 @@ interface Caso {
 const CASOS: readonly Caso[] = [
   {
     titulo: "Con plan activo, un boletín anterior y fechas por delante",
-    nota: "Lo que ve un padre a mitad de trimestre. Pulsa «Cancelar el plan»: tiene que aparecer la confirmación en la misma tarjeta, nunca un diálogo del navegador. El hito de Movers (Y4) va apagado porque el hijo es de Y6.",
+    nota: "Lo que ve un padre a mitad de trimestre. Pulsa «Borrar el plan»: tiene que aparecer la confirmación en la misma tarjeta, nunca un diálogo del navegador. «Editar el plan» despliega minutos y reparto en porcentajes enteros. El hito de Movers (Y4) va apagado porque el hijo es de Y6.",
     boletines: [boletinConfirmado, boletinAnterior],
     plan: planActivo,
     eventos,
   },
   {
-    titulo: "Boletín recién leído, sin confirmar",
-    nota: "Las notas son editables, se puede confirmar o descartar. Sin plan todavía.",
+    titulo: "Boletín guardado, sin plan todavía",
+    nota: "Las notas son editables y «Guardar notas y regenerar el plan» dispara la propuesta de la IA. Como no hay sesión real, cualquier envío en esta vista vuelve con un error de «no encontrado»: es entonces cuando se ve el acuse arriba con «Volver a intentar» si el error trae el boletinId, o el botón «Generar otro plan» de la tarjeta «Todavía no hay plan». También se puede descartar este boletín porque aún no tiene plan.",
     boletines: [boletinExtraido, boletinConfirmado, boletinAnterior],
     plan: null,
     eventos: [],

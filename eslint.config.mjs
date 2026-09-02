@@ -85,6 +85,22 @@ export default tseslint.config(
     settings: { react: { version: "detect" } },
   },
   {
+    // Ficheros .cjs/.mjs sueltos (preloads de Node, mocks de e2e, scripts):
+    // no están en ningún tsconfig, así que las reglas con tipos no pueden
+    // correr sobre ellos. Se lintan con las reglas sin tipos.
+    files: ["**/*.cjs", "**/*.mjs"],
+    ...tseslint.configs.disableTypeChecked,
+  },
+  {
+    // Un .cjs es CommonJS por definición: `require` y `module` son suyos.
+    files: ["**/*.cjs"],
+    languageOptions: {
+      sourceType: "commonjs",
+      globals: { require: "readonly", module: "writable", __dirname: "readonly", process: "readonly" },
+    },
+    rules: { "@typescript-eslint/no-require-imports": "off" },
+  },
+  {
     // La ÚNICA excepción del repositorio. Si esta lista crece, es un fallo de
     // arquitectura, no una necesidad.
     files: ["packages/ui/src/lib/safe-html.tsx"],

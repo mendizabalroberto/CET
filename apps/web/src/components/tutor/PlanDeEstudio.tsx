@@ -5,11 +5,10 @@ import { useActionState, useRef, useState } from "react";
 import { useI18n } from "@/lib/i18n/provider";
 import {
   cancelarPlan,
-  confirmarBoletin,
   descartarBoletin,
-  fijarPlan,
-  proponerPlan,
-  subirBoletin,
+  editarPlan,
+  generarPlan,
+  regenerarPlan,
   type PlanState,
 } from "@/lib/plan/acciones";
 import type { BoletinResumen, EventoProximo, PlanResumen } from "@/lib/plan/consultas";
@@ -22,13 +21,7 @@ type TechoVisible = {
 };
 
 type Valores = Record<string, string | number>;
-type AccionDeEscritura =
-  | "subir"
-  | "confirmar"
-  | "proponer"
-  | "fijar"
-  | "cancelar"
-  | "descartar";
+type AccionDeEscritura = "generar" | "regenerar" | "editar" | "cancelar" | "descartar";
 
 interface Props {
   readonly studentId: string;
@@ -50,33 +43,6 @@ function textoDe(valores: Valores | undefined, clave: string): string | null {
 function numeroDe(valores: Valores | undefined, clave: string): number | null {
   const valor = valores?.[clave];
   return typeof valor === "number" ? valor : null;
-}
-
-function parsearPesos(valores: Valores | undefined): Record<string, number> {
-  const crudo = textoDe(valores, "pesos");
-  if (crudo === null) return {};
-  try {
-    const resultado = JSON.parse(crudo) as Partial<Record<string, number>> | null;
-    if (resultado === null) return {};
-    return Object.fromEntries(
-      Object.entries(resultado).filter(([, v]) => typeof v === "number"),
-    ) as Record<string, number>;
-  } catch {
-    return {};
-  }
-}
-
-function parsearRecomendaciones(valores: Valores | undefined): string[] {
-  const crudo = textoDe(valores, "recomendaciones");
-  if (crudo === null) return [];
-  try {
-    const resultado: unknown = JSON.parse(crudo);
-    return Array.isArray(resultado)
-      ? resultado.filter((x): x is string => typeof x === "string")
-      : [];
-  } catch {
-    return [];
-  }
 }
 
 function parsearTechos(valores: Valores | undefined): TechoVisible[] {
@@ -120,20 +86,22 @@ export function PlanDeEstudio({
   const { t, fmt, locale } = useI18n();
   const P = t.tutor.child.plan;
 
-  const [subida, accionSubir, subiendo] = useActionState(subirBoletin, ESTADO_INICIAL);
-  const [confirmacion, accionConfirmar, confirmando] = useActionState(
-    confirmarBoletin,
+  const [generacion, accionGenerar, generando] = useActionState(generarPlan, ESTADO_INICIAL);
+  const [regeneracion, accionRegenerar, regenerando] = useActionState(
+    regenerarPlan,
     ESTADO_INICIAL,
   );
-  const [propuesta, accionProponer, proponiendo] = useActionState(proponerPlan, ESTADO_INICIAL);
-  const [fijacion, accionFijar, fijando] = useActionState(fijarPlan, ESTADO_INICIAL);
+  const [edicion, accionEditar, editando] = useActionState(editarPlan, ESTADO_INICIAL);
   const [cancelacion, accionCancelar, cancelando] = useActionState(cancelarPlan, ESTADO_INICIAL);
   const [descarte, accionDescartar, descartando] = useActionState(
     descartarBoletin,
     ESTADO_INICIAL,
   );
 
-  const [pidiendoConfirmacionDeCancelar, setPidiendoConfirmacionDeCancelar] = useState(false);
+  const [pidiendoConfirmacionDeBorrar, setPidiendoConfirmacionDeBorrar] = useState(false);
+  const [mostrandoEdicion, setMostrandoEdicion] = useState(false);
+  const [pesosEdit, setPesosEdit] = useState<Record<string, number>>({});
+  const [minutosEdit, setMinutosEdit] = useState(10);
 
   const ultimaAccion = useRef<AccionDeEscritura | null>(null);
   const marcar = (accion: AccionDeEscritura) => () => {
@@ -141,10 +109,9 @@ export function PlanDeEstudio({
   };
 
   const estados: Record<AccionDeEscritura, PlanState> = {
-    subir: subida,
-    confirmar: confirmacion,
-    proponer: propuesta,
-    fijar: fijacion,
+    generar: generacion,
+    regenerar: regeneracion,
+    editar: edicion,
     cancelar: cancelacion,
     descartar: descarte,
   };
@@ -160,6 +127,7 @@ export function PlanDeEstudio({
 
   const errorKey = estadoActivo.ok ? undefined : estadoActivo.errorKey;
   const successKey = estadoActivo.ok ? estadoActivo.successKey : undefined;
+  const boletinIdParaReintentar = estadoActivo.ok ? null : textoDe(estadoActivo.values, "boletinId");
 
   const mensajeDeError =
     errorKey === undefined
@@ -173,20 +141,23 @@ export function PlanDeEstudio({
       ? null
       : fmt(P.success[successKey as keyof typeof P.success], { name: nombre });
 
-  const valoresPropuesta = propuesta.ok ? propuesta.values : undefined;
-  const hayPropuesta = valoresPropuesta !== undefined;
-  const pesosPropuesta = parsearPesos(valoresPropuesta);
-  const recomendacionesPropuesta = parsearRecomendaciones(valoresPropuesta);
-  const minutosPropuesta = numeroDe(valoresPropuesta, "minutosPorDia") ?? 10;
-  const desdePropuesta = textoDe(valoresPropuesta, "desde") ?? "";
-  const hastaPropuesta = textoDe(valoresPropuesta, "hasta") ?? "";
-  const hitoPropuesta = textoDe(valoresPropuesta, "hito") ?? "";
+  // Un plan recién generado o regenerado se ve de inmediato con lo que trae
+  // el `PlanState` (tareas, techos), sin esperar al `revalidatePath`.
+  const valoresPlanNuevo =
+    (generacion.ok && generacion.successKey === "planGenerado" ? generacion.values : undefined) ??
+    (regeneracion.ok && regeneracion.successKey === "planGenerado"
+      ? regeneracion.values
+      : undefined) ??
+    (edicion.ok && edicion.successKey === "planEditado" ? edicion.values : undefined);
 
-  const techosFijados = parsearTechos(fijacion.ok ? fijacion.values : undefined);
-  const tareasFijadas = numeroDe(fijacion.ok ? fijacion.values : undefined, "tareas");
-  const hayPlan = plan !== null || fijacion.ok;
+  const hayPlan = plan !== null || valoresPlanNuevo !== undefined;
+  const techosFijados = parsearTechos(valoresPlanNuevo);
+  const tareasFijadas = numeroDe(valoresPlanNuevo, "tareas");
   const techosVisibles: readonly TechoVisible[] =
     plan !== null ? plan.reparto.techos : techosFijados;
+
+  const planIdVisible = plan !== null ? plan.id : (textoDe(valoresPlanNuevo, "planId") ?? null);
+  const boletinIdParaRegenerar = (plan !== null ? plan.boletinId : boletin?.id) ?? null;
 
   const nombrePorCode = new Map<string, string>();
   const notas = boletin?.notas ?? [];
@@ -202,6 +173,22 @@ export function PlanDeEstudio({
       : null;
 
   const historial = boletin === null ? boletines : boletines.slice(1);
+
+  const puedeDescartarBoletin = boletin !== null && boletin.estado === "extraido" && !hayPlan;
+
+  const sumaPesosEdit = Object.values(pesosEdit).reduce((total, valor) => total + valor, 0);
+  const sumaPesosValida = sumaPesosEdit === 100;
+
+  function abrirEdicion() {
+    if (plan === null) return;
+    const iniciales: Record<string, number> = {};
+    for (const [code, peso] of Object.entries(plan.reparto.pesos)) {
+      iniciales[code] = Math.round(peso * 100);
+    }
+    setPesosEdit(iniciales);
+    setMinutosEdit(plan.minutosPorDia);
+    setMostrandoEdicion(true);
+  }
 
   const tablaDeNotas = (
     <div className="overflow-x-auto">
@@ -229,18 +216,14 @@ export function PlanDeEstudio({
                 ) : null}
               </th>
               <td className="px-4 py-3 text-right">
-                {boletin?.estado === "extraido" ? (
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    name={`nota:${indice}`}
-                    defaultValue={nota.nota}
-                    className="border-line bg-bg text-ink w-20 rounded-lg border-2 px-2 py-1 text-right"
-                  />
-                ) : (
-                  <span className="text-ink font-semibold">{nota.nota}</span>
-                )}
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  name={`nota:${indice}`}
+                  defaultValue={nota.nota}
+                  className="border-line bg-bg text-ink w-20 rounded-lg border-2 px-2 py-1 text-right"
+                />
               </td>
               <td className="text-ink px-4 py-3 font-medium">{P.bands[nota.banda]}</td>
             </tr>
@@ -283,27 +266,52 @@ export function PlanDeEstudio({
     );
   }
 
+  const bloqueAnalizando = (
+    <div aria-live="polite" className="mt-4 space-y-3">
+      <div className="flex items-center gap-3">
+        <div
+          aria-hidden
+          className="border-line border-t-brand h-5 w-5 shrink-0 animate-spin rounded-full border-2 motion-reduce:animate-none"
+        />
+        <p className="text-ink font-semibold">{P.analyzingTitle}</p>
+      </div>
+      <ol className="text-ink ml-5 list-decimal space-y-1 text-[15px]">
+        {P.analyzingSteps.map((paso, indice) => (
+          <li key={`${indice}-${paso}`}>{paso}</li>
+        ))}
+      </ol>
+      <p className="text-muted text-[15px]">{P.analyzingHelp}</p>
+    </div>
+  );
+
   const formularioDeSubida = (
-    <form action={accionSubir} onSubmit={marcar("subir")} className="mt-4 space-y-3">
-      <label htmlFor="plan-archivo" className="text-ink block font-semibold">
-        {P.uploadLabel}
-      </label>
-      <input
-        id="plan-archivo"
-        type="file"
-        accept="application/pdf"
-        name="archivo"
-        className="text-ink block w-full text-sm"
-      />
-      <input type="hidden" name="studentId" value={studentId} />
-      <button
-        type="submit"
-        disabled={subiendo}
-        className="bg-brand text-on-brand rounded-xl px-5 py-3 font-semibold disabled:opacity-60"
-      >
-        {subiendo ? P.uploading : P.uploadButton}
-      </button>
-      <p className="text-muted text-[15px]">{P.uploadHelp}</p>
+    <form action={accionGenerar} onSubmit={marcar("generar")} className="mt-4 space-y-3">
+      {!generando ? (
+        <>
+          <label htmlFor="plan-archivo" className="text-ink block font-semibold">
+            {P.uploadLabel}
+          </label>
+          <input
+            id="plan-archivo"
+            type="file"
+            accept="application/pdf"
+            name="archivo"
+            disabled={generando}
+            className="text-ink block w-full text-sm"
+          />
+          <input type="hidden" name="studentId" value={studentId} />
+          <button
+            type="submit"
+            disabled={generando}
+            className="bg-brand text-on-brand rounded-xl px-5 py-3 font-semibold disabled:opacity-60"
+          >
+            {P.uploadButton}
+          </button>
+          <p className="text-muted text-[15px]">{P.uploadHelp}</p>
+        </>
+      ) : (
+        bloqueAnalizando
+      )}
     </form>
   );
 
@@ -311,10 +319,43 @@ export function PlanDeEstudio({
     <div className="space-y-6">
       <h2 className="text-ink text-xl font-bold">{fmt(P.title, { name: nombre })}</h2>
 
+      {mensajeDeExito !== null ? (
+        <p
+          role="status"
+          className="border-brand bg-brand/10 text-ink rounded-lg border-l-4 px-4 py-3 text-[15px]"
+        >
+          {mensajeDeExito}
+        </p>
+      ) : null}
+
+      {mensajeDeError !== null ? (
+        <div
+          role="alert"
+          className="border-danger bg-danger/10 text-ink space-y-3 rounded-lg border-l-4 px-4 py-3 text-[15px]"
+        >
+          <p>{mensajeDeError}</p>
+          {boletinIdParaReintentar !== null ? (
+            <form action={accionRegenerar} onSubmit={marcar("regenerar")}>
+              <input type="hidden" name="studentId" value={studentId} />
+              <input type="hidden" name="boletinId" value={boletinIdParaReintentar} />
+              <button
+                type="submit"
+                disabled={regenerando}
+                className="border-danger text-ink rounded-xl border-2 px-5 py-3 font-semibold disabled:opacity-60"
+              >
+                {regenerando ? P.regenerating : P.retryButton}
+              </button>
+            </form>
+          ) : null}
+        </div>
+      ) : null}
+
       <section className="border-line bg-card rounded-2xl border-2 p-5">
-        <h2 className="text-ink text-lg font-bold">{P.uploadTitle}</h2>
+        <h2 className="text-ink text-lg font-bold">
+          {boletin === null ? P.uploadTitle : P.uploadAnotherTitle}
+        </h2>
         <p className="text-muted mt-2">{P.intro}</p>
-        {boletin === null ? formularioDeSubida : null}
+        {formularioDeSubida}
       </section>
 
       {boletin !== null ? (
@@ -325,158 +366,39 @@ export function PlanDeEstudio({
               ? fmt(P.termUnknown, { year: boletin.gestion })
               : fmt(P.term, { n: boletin.trimestre, year: boletin.gestion })}
           </p>
-          {boletin.estado === "extraido" ? (
-            <>
-              <form
-                action={accionConfirmar}
-                onSubmit={marcar("confirmar")}
-                className="mt-4 space-y-3"
-              >
-                <input type="hidden" name="studentId" value={studentId} />
-                <input type="hidden" name="boletinId" value={boletin.id} />
-                {tablaDeNotas}
-                <button
-                  type="submit"
-                  disabled={confirmando}
-                  className="bg-brand text-on-brand rounded-xl px-5 py-3 font-semibold disabled:opacity-60"
-                >
-                  {confirmando ? P.confirming : P.confirmButton}
-                </button>
-                <p className="text-muted text-[15px]">{P.extractedHelp}</p>
-              </form>
-              <form
-                action={accionDescartar}
-                onSubmit={marcar("descartar")}
-                className="mt-4 space-y-2"
-              >
-                <input type="hidden" name="studentId" value={studentId} />
-                <input type="hidden" name="boletinId" value={boletin.id} />
-                <button
-                  type="submit"
-                  disabled={descartando}
-                  className="border-line text-ink rounded-xl border-2 px-5 py-3 font-semibold disabled:opacity-60"
-                >
-                  {descartando ? P.discarding : P.discardButton}
-                </button>
-                <p className="text-muted text-[15px]">{P.discardHelp}</p>
-              </form>
-            </>
-          ) : (
-            <div className="mt-4 space-y-3">
-              {tablaDeNotas}
-              {fechaConfirmado !== null ? (
-                <p className="text-muted text-[15px]">
-                  {fmt(P.confirmed, { date: fechaConfirmado })}
-                </p>
-              ) : null}
-            </div>
-          )}
-          {formularioDeSubida}
-        </section>
-      ) : null}
-
-      {boletin !== null && boletin.estado === "confirmado" ? (
-        <section className="border-line bg-card rounded-2xl border-2 p-5">
-          <h2 className="text-ink text-lg font-bold">{P.proposalTitle}</h2>
-          {!hayPropuesta ? (
-            <form action={accionProponer} onSubmit={marcar("proponer")} className="mt-4">
+          <form action={accionRegenerar} onSubmit={marcar("regenerar")} className="mt-4 space-y-3">
+            <input type="hidden" name="studentId" value={studentId} />
+            <input type="hidden" name="boletinId" value={boletin.id} />
+            {tablaDeNotas}
+            {fechaConfirmado !== null ? (
+              <p className="text-muted text-[15px]">{fmt(P.confirmed, { date: fechaConfirmado })}</p>
+            ) : null}
+            <button
+              type="submit"
+              disabled={regenerando}
+              className="bg-brand text-on-brand rounded-xl px-5 py-3 font-semibold disabled:opacity-60"
+            >
+              {regenerando ? P.regenerating : P.gradesSave}
+            </button>
+          </form>
+          {puedeDescartarBoletin ? (
+            <form
+              action={accionDescartar}
+              onSubmit={marcar("descartar")}
+              className="mt-4 space-y-2"
+            >
               <input type="hidden" name="studentId" value={studentId} />
               <input type="hidden" name="boletinId" value={boletin.id} />
               <button
                 type="submit"
-                disabled={proponiendo}
-                className="bg-brand text-on-brand rounded-xl px-5 py-3 font-semibold disabled:opacity-60"
+                disabled={descartando}
+                className="border-line text-ink rounded-xl border-2 px-5 py-3 font-semibold disabled:opacity-60"
               >
-                {proponiendo ? P.proposing : P.proposeButton}
+                {descartando ? P.discarding : P.discardButton}
               </button>
+              <p className="text-muted text-[15px]">{P.discardHelp}</p>
             </form>
-          ) : (
-            <form action={accionFijar} onSubmit={marcar("fijar")} className="mt-4 space-y-4">
-              <input type="hidden" name="studentId" value={studentId} />
-              <input type="hidden" name="boletinId" value={boletin.id} />
-              <input type="hidden" name="pesos" value={textoDe(valoresPropuesta, "pesos") ?? ""} />
-              <input
-                type="hidden"
-                name="recomendaciones"
-                value={textoDe(valoresPropuesta, "recomendaciones") ?? ""}
-              />
-              <input
-                type="hidden"
-                name="modelo"
-                value={textoDe(valoresPropuesta, "modelo") ?? ""}
-              />
-              <input
-                type="hidden"
-                name="tokensIn"
-                value={numeroDe(valoresPropuesta, "tokensIn") ?? 0}
-              />
-              <input
-                type="hidden"
-                name="tokensOut"
-                value={numeroDe(valoresPropuesta, "tokensOut") ?? 0}
-              />
-              <input type="hidden" name="desde" value={desdePropuesta} />
-              <input type="hidden" name="hasta" value={hastaPropuesta} />
-              <p className="text-ink text-[15px]">
-                {fmt(P.windowLine, {
-                  from: fechaLegible(desdePropuesta, locale),
-                  to: fechaLegible(hastaPropuesta, locale),
-                  milestone: hitoPropuesta,
-                })}
-              </p>
-              <div>
-                <label htmlFor="plan-minutos" className="text-ink block font-semibold">
-                  {P.minutesLabel}
-                </label>
-                <input
-                  id="plan-minutos"
-                  type="number"
-                  name="minutosPorDia"
-                  min={10}
-                  max={180}
-                  defaultValue={minutosPropuesta}
-                  className="border-line bg-bg text-ink w-32 rounded-lg border-2 px-3 py-2"
-                />
-                <p className="text-muted mt-1 text-[15px]">{P.minutesHelp}</p>
-              </div>
-              <div>
-                <h3 className="text-ink font-semibold">{P.weightsTitle}</h3>
-                <ul className="text-ink mt-1 list-inside list-disc text-[15px]">
-                  {Object.entries(pesosPropuesta).map(([code, peso]) => {
-                    const nombreMateria = nombrePorCode.get(code) ?? code;
-                    return (
-                      <li key={code}>
-                        {nombreMateria} → {Math.round(peso * 100)}%
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-              {recomendacionesPropuesta.length > 0 ? (
-                <div>
-                  <h3 className="text-ink font-semibold">{P.recommendationsTitle}</h3>
-                  <p className="text-muted text-[15px]">{P.recommendationsNote}</p>
-                  <ul className="text-ink mt-1 list-inside list-disc text-[15px]">
-                    {recomendacionesPropuesta.map((recomendacion, indice) => (
-                      <li key={`${indice}-${recomendacion}`}>{recomendacion}</li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-              {plan !== null ? (
-                <p className="bg-bg text-ink rounded-lg px-4 py-3 text-[15px]">
-                  {P.replaceWarning}
-                </p>
-              ) : null}
-              <button
-                type="submit"
-                disabled={fijando}
-                className="bg-brand text-on-brand rounded-xl px-5 py-3 font-semibold disabled:opacity-60"
-              >
-                {fijando ? P.creating : P.createButton}
-              </button>
-            </form>
-          )}
+          ) : null}
         </section>
       ) : null}
 
@@ -549,39 +471,137 @@ export function PlanDeEstudio({
               <p className="text-muted mt-1 text-[15px]">{P.reportsEmpty}</p>
             )}
           </div>
+
           {plan !== null ? (
-            <div className="border-line mt-4 rounded-xl border-2 p-4">
-              <h3 className="text-ink font-semibold">{P.cancelTitle}</h3>
-              <p className="text-muted mt-1 text-[15px]">
-                {fmt(P.cancelBody, { name: nombre })}
-              </p>
-              {!pidiendoConfirmacionDeCancelar ? (
+            <div className="mt-4 flex flex-wrap gap-3">
+              {!mostrandoEdicion ? (
                 <button
                   type="button"
-                  onClick={() => setPidiendoConfirmacionDeCancelar(true)}
+                  onClick={abrirEdicion}
+                  className="border-line text-ink rounded-xl border-2 px-5 py-3 font-semibold"
+                >
+                  {P.editButton}
+                </button>
+              ) : null}
+              {boletinIdParaRegenerar !== null ? (
+                <form action={accionRegenerar} onSubmit={marcar("regenerar")}>
+                  <input type="hidden" name="studentId" value={studentId} />
+                  <input type="hidden" name="boletinId" value={boletinIdParaRegenerar} />
+                  <button
+                    type="submit"
+                    disabled={regenerando}
+                    className="border-line text-ink rounded-xl border-2 px-5 py-3 font-semibold disabled:opacity-60"
+                  >
+                    {regenerando ? P.regenerating : P.regenerateButton}
+                  </button>
+                </form>
+              ) : null}
+            </div>
+          ) : null}
+
+          {plan !== null && mostrandoEdicion ? (
+            <form action={accionEditar} onSubmit={marcar("editar")} className="border-line mt-4 space-y-4 rounded-xl border-2 p-4">
+              <input type="hidden" name="studentId" value={studentId} />
+              <input type="hidden" name="planId" value={plan.id} />
+              <input type="hidden" name="pesos" value={JSON.stringify(pesosEdit)} />
+              <div>
+                <label htmlFor="plan-minutos-edit" className="text-ink block font-semibold">
+                  {P.minutesLabel}
+                </label>
+                <input
+                  id="plan-minutos-edit"
+                  type="number"
+                  name="minutosPorDia"
+                  min={10}
+                  max={180}
+                  value={minutosEdit}
+                  onChange={(evento) => setMinutosEdit(Number(evento.target.value))}
+                  className="border-line bg-bg text-ink w-32 rounded-lg border-2 px-3 py-2"
+                />
+              </div>
+              <div>
+                <h3 className="text-ink font-semibold">{P.weightsTitle}</h3>
+                <ul className="mt-2 space-y-2">
+                  {Object.keys(pesosEdit).map((code) => {
+                    const nombreMateria = nombrePorCode.get(code) ?? code;
+                    return (
+                      <li key={code} className="flex items-center gap-3">
+                        <label htmlFor={`plan-peso-${code}`} className="text-ink flex-1 text-[15px]">
+                          {nombreMateria}
+                        </label>
+                        <input
+                          id={`plan-peso-${code}`}
+                          type="number"
+                          min={0}
+                          max={100}
+                          value={pesosEdit[code]}
+                          onChange={(evento) =>
+                            setPesosEdit((anterior) => ({
+                              ...anterior,
+                              [code]: Number(evento.target.value),
+                            }))
+                          }
+                          className="border-line bg-bg text-ink w-20 rounded-lg border-2 px-2 py-1 text-right"
+                        />
+                        <span className="text-muted text-[15px]">%</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+                {!sumaPesosValida ? (
+                  <p className="text-danger mt-2 text-[15px]">{P.weightsSum}</p>
+                ) : null}
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="submit"
+                  disabled={editando || !sumaPesosValida}
+                  className="bg-brand text-on-brand rounded-xl px-5 py-3 font-semibold disabled:opacity-60"
+                >
+                  {editando ? P.regenerating : P.editSave}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMostrandoEdicion(false)}
+                  className="text-ink px-5 py-3 font-semibold"
+                >
+                  {P.editCancel}
+                </button>
+              </div>
+            </form>
+          ) : null}
+
+          {planIdVisible !== null ? (
+            <div className="border-line mt-4 rounded-xl border-2 p-4">
+              <h3 className="text-ink font-semibold">{P.deleteTitle}</h3>
+              <p className="text-muted mt-1 text-[15px]">{fmt(P.deleteBody, { name: nombre })}</p>
+              {!pidiendoConfirmacionDeBorrar ? (
+                <button
+                  type="button"
+                  onClick={() => setPidiendoConfirmacionDeBorrar(true)}
                   className="border-line text-ink mt-3 rounded-xl border-2 px-5 py-3 font-semibold"
                 >
-                  {P.cancelButton}
+                  {P.deleteButton}
                 </button>
               ) : (
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <form action={accionCancelar} onSubmit={marcar("cancelar")}>
-                    <input type="hidden" name="planId" value={plan.id} />
+                    <input type="hidden" name="planId" value={planIdVisible} />
                     <input type="hidden" name="studentId" value={studentId} />
                     <button
                       type="submit"
                       disabled={cancelando}
                       className="border-danger text-ink rounded-xl border-2 px-5 py-3 font-semibold disabled:opacity-60"
                     >
-                      {cancelando ? P.cancelling : P.cancelConfirm}
+                      {cancelando ? P.deleting : P.deleteConfirm}
                     </button>
                   </form>
                   <button
                     type="button"
-                    onClick={() => setPidiendoConfirmacionDeCancelar(false)}
+                    onClick={() => setPidiendoConfirmacionDeBorrar(false)}
                     className="text-ink px-5 py-3 font-semibold"
                   >
-                    {P.cancelKeep}
+                    {P.deleteKeep}
                   </button>
                 </div>
               )}
@@ -597,6 +617,17 @@ export function PlanDeEstudio({
         <section className="border-line bg-card rounded-2xl border-2 p-5">
           <h2 className="text-ink text-lg font-bold">{P.noPlanTitle}</h2>
           <p className="text-muted mt-2">{P.noPlanBody}</p>
+          <form action={accionRegenerar} onSubmit={marcar("regenerar")} className="mt-4">
+            <input type="hidden" name="studentId" value={studentId} />
+            <input type="hidden" name="boletinId" value={boletin.id} />
+            <button
+              type="submit"
+              disabled={regenerando}
+              className="bg-brand text-on-brand rounded-xl px-5 py-3 font-semibold disabled:opacity-60"
+            >
+              {regenerando ? P.regenerating : P.regenerateButton}
+            </button>
+          </form>
         </section>
       )}
 
@@ -662,24 +693,6 @@ export function PlanDeEstudio({
           </ul>
         )}
       </section>
-
-      {mensajeDeExito !== null ? (
-        <p
-          role="status"
-          className="border-brand bg-brand/10 text-ink rounded-lg border-l-4 px-4 py-3 text-[15px]"
-        >
-          {mensajeDeExito}
-        </p>
-      ) : null}
-
-      {mensajeDeError !== null ? (
-        <p
-          role="alert"
-          className="border-danger bg-danger/10 text-ink rounded-lg border-l-4 px-4 py-3 text-[15px]"
-        >
-          {mensajeDeError}
-        </p>
-      ) : null}
     </div>
   );
 }

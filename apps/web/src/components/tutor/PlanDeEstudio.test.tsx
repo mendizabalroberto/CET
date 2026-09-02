@@ -7,12 +7,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { PlanDeEstudio, fechaLegible } from "./PlanDeEstudio";
 
 vi.mock("@/lib/plan/acciones", () => ({
+  generarPlan: vi.fn(),
+  regenerarPlan: vi.fn(),
+  editarPlan: vi.fn(),
   cancelarPlan: vi.fn(),
-  confirmarBoletin: vi.fn(),
   descartarBoletin: vi.fn(),
-  fijarPlan: vi.fn(),
-  proponerPlan: vi.fn(),
-  subirBoletin: vi.fn(),
 }));
 
 vi.mock("@/lib/i18n/provider", async () => {
@@ -111,40 +110,46 @@ describe("PlanDeEstudio", () => {
   it("sin boletín muestra el aviso y el formulario de subida", () => {
     renderizar();
     expect(screen.getByText(/Start by uploading the report card/)).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Read the report card/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Generate the plan with AI/ })).toBeTruthy();
   });
 
-  it("con boletín extraído edita las notas y permite confirmarlas", () => {
+  it("con cualquier boletín las notas ya vienen editables", () => {
     renderizar({ boletin: boletinExtraido, boletines: [boletinExtraido] });
     const input0 = screen.getByDisplayValue("85");
     const input1 = screen.getByDisplayValue("90");
     expect(input0.getAttribute("name")).toBe("nota:0");
     expect(input1.getAttribute("name")).toBe("nota:1");
     expect(screen.getAllByText(/Not planned/)).toHaveLength(1);
-    expect(screen.getByRole("button", { name: /Confirm the grades/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Save grades and regenerate the plan/ })).toBeTruthy();
+
+    cleanup();
+    renderizar({ boletin: boletinConfirmado, boletines: [boletinConfirmado] });
+    expect(screen.getByDisplayValue("85").getAttribute("name")).toBe("nota:0");
   });
 
-  it("con boletín extraído ofrece descartarlo, y con uno confirmado no", () => {
-    const { rerender } = renderizar({ boletin: boletinExtraido, boletines: [boletinExtraido] });
+  it("con boletín extraído y sin plan ofrece descartarlo", () => {
+    renderizar({ boletin: boletinExtraido, boletines: [boletinExtraido] });
     expect(screen.getByRole("button", { name: /Discard this report card/ })).toBeTruthy();
-    rerender(
-      <PlanDeEstudio
-        studentId="student-1"
-        boletin={boletinConfirmado}
-        boletines={[boletinConfirmado]}
-        plan={null}
-        nombre="Leo"
-        eventos={[]}
-        yearLevel={null}
-      />,
-    );
+  });
+
+  it("con boletín confirmado no ofrece descartarlo", () => {
+    renderizar({ boletin: boletinConfirmado, boletines: [boletinConfirmado] });
     expect(screen.queryByRole("button", { name: /Discard this report card/ })).toBeNull();
   });
 
-  it("con boletín confirmado no edita notas y ofrece proponer un plan", () => {
+  it("con boletín extraído pero con plan activo no ofrece descartarlo", () => {
+    renderizar({
+      boletin: boletinExtraido,
+      boletines: [boletinExtraido],
+      plan: planConTecho,
+    });
+    expect(screen.queryByRole("button", { name: /Discard this report card/ })).toBeNull();
+  });
+
+  it("sin boletín ni plan invita a subir uno; con boletín y sin plan ofrece generar otro", () => {
     renderizar({ boletin: boletinConfirmado, boletines: [boletinConfirmado] });
-    expect(screen.queryByRole("spinbutton")).toBeNull();
-    expect(screen.getByRole("button", { name: /Propose a plan/ })).toBeTruthy();
+    expect(screen.getByText(/No plan yet/)).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^Generate another plan$/ })).toBeTruthy();
   });
 
   it("con plan activo muestra los techos de contenido", () => {
@@ -156,18 +161,29 @@ describe("PlanDeEstudio", () => {
     expect(screen.getByText("Where the content runs out")).toBeTruthy();
   });
 
-  it("con plan activo, cancelar pide confirmación antes de enviar el formulario", () => {
+  it("con plan activo, editar despliega minutos y reparto por materia", () => {
     renderizar({
       boletin: boletinConfirmado,
       boletines: [boletinConfirmado],
       plan: planConTecho,
     });
-    expect(screen.queryByRole("button", { name: /^Yes, cancel$/ })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /^Edit the plan$/ }));
+    expect(screen.getByRole("button", { name: /^Save changes$/ })).toBeTruthy();
+    expect(screen.getByDisplayValue("50")).toBeTruthy();
+  });
+
+  it("con plan activo, borrar pide confirmación antes de enviar el formulario", () => {
+    renderizar({
+      boletin: boletinConfirmado,
+      boletines: [boletinConfirmado],
+      plan: planConTecho,
+    });
+    expect(screen.queryByRole("button", { name: /^Yes, delete$/ })).toBeNull();
     expect(screen.queryByRole("button", { name: /^No, keep it$/ })).toBeNull();
 
-    fireEvent.click(screen.getByRole("button", { name: /^Cancel the plan$/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^Delete the plan$/ }));
 
-    expect(screen.getByRole("button", { name: /^Yes, cancel$/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^Yes, delete$/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: /^No, keep it$/ })).toBeTruthy();
   });
 
@@ -203,17 +219,32 @@ describe("PlanDeEstudio", () => {
     expect(screen.getByText(/No marked dates in the next two months/)).toBeTruthy();
   });
 
-  it("un successKey devuelto por una acción mockeada aparece en el acuse", async () => {
-    const { subirBoletin } = await import("@/lib/plan/acciones");
-    vi.mocked(subirBoletin).mockResolvedValue({ ok: true, successKey: "planBoletinExtraido" });
+  it("un successKey devuelto por generarPlan aparece en el acuse", async () => {
+    const { generarPlan } = await import("@/lib/plan/acciones");
+    vi.mocked(generarPlan).mockResolvedValue({ ok: true, successKey: "planGenerado" });
 
     renderizar();
-    fireEvent.click(screen.getByRole("button", { name: /Read the report card/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Generate the plan with AI/ }));
 
     expect(await screen.findByRole("status")).toHaveProperty(
       "textContent",
-      expect.stringContaining("We've read"),
+      expect.stringContaining("Plan created by the assistant"),
     );
+  });
+
+  it("un error con boletinId ofrece «Volver a intentar»", async () => {
+    const { generarPlan } = await import("@/lib/plan/acciones");
+    vi.mocked(generarPlan).mockResolvedValue({
+      ok: false,
+      errorKey: "planModeloCaido",
+      values: { boletinId: "b-recien-subido" },
+    });
+
+    renderizar();
+    fireEvent.click(screen.getByRole("button", { name: /Generate the plan with AI/ }));
+
+    expect(await screen.findByRole("alert")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^Try again$/ })).toBeTruthy();
   });
 });
 

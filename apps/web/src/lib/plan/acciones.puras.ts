@@ -125,3 +125,38 @@ export function leerPesos(texto: string): Partial<Record<CodigoMateria, number>>
   if (Math.abs(suma - 1) > 0.01) return null;
   return pesos;
 }
+
+/**
+ * Valida el JSON de pesos que manda la UI en `editarPlan`: un objeto
+ * `{code: porcentajeEntero}` con solo materias con contenido publicado,
+ * enteros ≥ 0 que suman 100 ± 1. Devuelve los pesos normalizados a fracciones
+ * que suman 1 (dividiendo por la suma real, no por 100, para que cuadren
+ * exacto pese al margen de redondeo); las materias en 0% no aparecen.
+ */
+export function leerPesosEditados(texto: string): Partial<Record<CodigoMateria, number>> | null {
+  let crudo: unknown;
+  try {
+    crudo = JSON.parse(texto) as unknown;
+  } catch {
+    return null;
+  }
+  if (typeof crudo !== "object" || crudo === null || Array.isArray(crudo)) return null;
+
+  const enteros: Partial<Record<CodigoMateria, number>> = {};
+  let suma = 0;
+  for (const [clave, valor] of Object.entries(crudo as Record<string, unknown>)) {
+    if (!CODIGOS_DE_MATERIA.has(clave)) return null;
+    if (typeof valor !== "number" || !Number.isInteger(valor) || valor < 0) return null;
+    enteros[clave as CodigoMateria] = valor;
+    suma += valor;
+  }
+  if (suma <= 0 || Math.abs(suma - 100) > 1) return null;
+
+  const normalizados: Partial<Record<CodigoMateria, number>> = {};
+  for (const [clave, valor] of Object.entries(enteros)) {
+    if (valor === 0) continue;
+    normalizados[clave as CodigoMateria] = valor / suma;
+  }
+  if (Object.keys(normalizados).length === 0) return null;
+  return normalizados;
+}

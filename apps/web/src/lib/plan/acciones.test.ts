@@ -8,6 +8,7 @@ import {
   leerIdsDeDescarte,
   leerNotasCorregidas,
   leerPesos,
+  leerPesosEditados,
 } from "./acciones.puras";
 
 describe("hitoMasCercano", () => {
@@ -110,6 +111,28 @@ describe("leerPesos", () => {
 
   it("rechaza una suma distinta de 1", () => {
     expect(leerPesos('{"math": 0.6, "science": 0.6}')).toBeNull();
+  });
+});
+
+describe("leerPesosEditados", () => {
+  it("acepta porcentajes enteros que suman 100 y los normaliza a fracciones", () => {
+    expect(leerPesosEditados('{"math": 40, "science": 30, "spanish": 30}')).toEqual({
+      math: 0.4,
+      science: 0.3,
+      spanish: 0.3,
+    });
+  });
+
+  it("rechaza una suma que se aleja de 100 en más de 1", () => {
+    expect(leerPesosEditados('{"math": 50, "science": 40}')).toBeNull();
+  });
+
+  it("rechaza claves que no son materias con contenido", () => {
+    expect(leerPesosEditados('{"art": 100}')).toBeNull();
+  });
+
+  it("rechaza un porcentaje que no es entero", () => {
+    expect(leerPesosEditados('{"math": 60.5, "science": 39.5}')).toBeNull();
   });
 });
 

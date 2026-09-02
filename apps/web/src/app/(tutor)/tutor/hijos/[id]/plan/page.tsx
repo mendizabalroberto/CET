@@ -16,6 +16,10 @@ import { hoyEnZona } from "@/lib/plan/fecha";
 import { createClient } from "@/lib/supabase/server";
 import { alcanceDeHijo } from "@/lib/tutor/queries";
 
+// Dos llamadas a DeepSeek (hasta 60 s cada una) más el PDF: el límite por
+// defecto de la función no basta para `generarPlan`/`regenerarPlan`.
+export const maxDuration = 300;
+
 interface PageProps {
   readonly params: Promise<{ id: string }>;
 }

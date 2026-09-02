@@ -1,13 +1,18 @@
 "use server";
 
 /**
- * Las cuatro acciones del tutor sobre el plan de estudio (§7–§8).
+ * Las acciones del tutor sobre el plan de estudio (§7–§8, plan automático §3).
  * © 2026 Roberto Mendizabal. Todos los derechos reservados.
  *
  * La forma es la de `lib/tutor/actions.ts`: rol en el servidor, Zod sobre el
  * FormData, pertenencia explicita contra `guardian_students` y escritura con
  * la sesion donde la RLS alcanza. Storage, actualizaciones y `plan_tareas`
  * escalan a `service_role` solo despues de comprobar que el hijo es suyo.
+ *
+ * `generarPlan`, `regenerarPlan` y `editarPlan` son la interfaz publica: cada
+ * una encadena los pasos (subir/extraer, confirmar notas, proponer con IA,
+ * fijar) a traves de helpers internos no exportados. `cancelarPlan` y
+ * `descartarBoletin` no cambian.
  *
  * Ningun `console.*` recibe el texto del PDF, el prompt ni la respuesta del
  * modelo: son datos de un menor.
@@ -19,6 +24,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
 import { repartir } from "@cet/engine";
+import type { TechoDeMateria } from "@cet/engine";
 import { PdfSinTextoError, pdfToSpans } from "@cet/content/pdf";
 
 import { requireRole } from "@/lib/auth/session";
@@ -30,7 +36,7 @@ import {
   leerIdsDeCancelacion,
   leerIdsDeDescarte,
   leerNotasCorregidas,
-  leerPesos,
+  leerPesosEditados,
 } from "./acciones.puras";
 import { ExtraccionInvalidaError, promptDeExtraccion, validarExtraccion } from "./boletin";
 import {
@@ -53,7 +59,7 @@ import {
   type EntradaEstratega,
 } from "./estratega";
 import { hoyEnZona } from "./fecha";
-import type { BoletinExtraido, Propuesta } from "./tipos";
+import type { BoletinExtraido, CodigoMateria } from "./tipos";
 
 export interface PlanState {
   readonly ok: boolean;
@@ -68,6 +74,12 @@ function fail(errorKey: string, values?: Record<string, string | number>): PlanS
 
 function done(successKey: string, values?: Record<string, string | number>): PlanState {
   return values === undefined ? { ok: true, successKey } : { ok: true, successKey, values };
+}
+
+/** Añade `boletinId` a un `PlanState` de error, para que la interfaz ofrezca «Volver a intentar». */
+function conBoletinId(estado: PlanState, boletinId: string): PlanState {
+  if (estado.ok) return estado;
+  return { ...estado, values: { ...(estado.values ?? {}), boletinId } };
 }
 
 const MAX_PDF_BYTES = 10 * 1024 * 1024;
@@ -137,33 +149,34 @@ function leerUuid(fd: FormData, campo: string): string | null {
   return parse.success ? parse.data : null;
 }
 
-const schemaDeFijarPlan = z.object({
-  studentId: z.string().uuid(),
-  boletinId: z.string().uuid(),
-  minutosPorDia: z.number().int().min(10).max(180),
-  pesos: z.string().min(1),
-  recomendaciones: z.string().min(1),
-  modelo: z.string().min(1),
-  tokensIn: z.number().int().min(0),
-  tokensOut: z.number().int().min(0),
-  desde: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  hasta: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-});
-
 const schemaDeRecomendaciones = z.array(z.string().trim().min(1).max(400)).max(6);
 
-export async function subirBoletin(_prev: PlanState, fd: FormData): Promise<PlanState> {
-  const tutor = await requireRole(["guardian"], { onDeny: "not-found" });
+/** ¿Trae el FormData al menos una corrección de nota (`nota:<i>`)? */
+function tieneNotasCorregidas(fd: FormData): boolean {
+  for (const clave of fd.keys()) {
+    if (clave.startsWith("nota:")) return true;
+  }
+  return false;
+}
 
-  const studentId = leerUuid(fd, "studentId");
-  if (studentId === null) return fail("notFound");
+// ---------------------------------------------------------------------------
+// Helpers internos (no exportados): cada uno hace un paso del flujo y
+// devuelve sus datos o un `PlanState` de error.
+// ---------------------------------------------------------------------------
 
-  const archivo = fd.get("archivo");
-  if (!esArchivoPdf(archivo)) return fail("planPdfInvalido");
+type ResultadoExtraccion = { readonly ok: true; readonly boletinId: string } | { readonly ok: false; readonly estado: PlanState };
 
-  const supabase = await createClient();
-  if (!(await esHijoSuyo(supabase, tutor.id, studentId))) return fail("notFound");
-
+/**
+ * Sube el PDF, lo extrae con DeepSeek y guarda el boletín `extraido`. Si el
+ * mismo PDF (mismo checksum) ya existía para el hijo, no falla: localiza el
+ * boletín existente y sigue con él, como si fuera `regenerarPlan`.
+ */
+async function extraerBoletin(
+  tutorId: string,
+  supabase: SupabaseClient,
+  studentId: string,
+  archivo: File,
+): Promise<ResultadoExtraccion> {
   const buffer = Buffer.from(await archivo.arrayBuffer());
   const checksum = createHash("sha256").update(buffer).digest("hex");
 
@@ -177,8 +190,8 @@ export async function subirBoletin(_prev: PlanState, fd: FormData): Promise<Plan
     upsert: false,
   });
   if (subidaError !== null && !esErrorDeStorageDuplicado(subidaError)) {
-    console.error("[cet] subirBoletin storage.upload", subidaError.message);
-    return fail("generic");
+    console.error("[cet] extraerBoletin storage.upload", subidaError.message);
+    return { ok: false, estado: fail("generic") };
   }
 
   let texto: string;
@@ -186,12 +199,12 @@ export async function subirBoletin(_prev: PlanState, fd: FormData): Promise<Plan
     const { spans } = await pdfToSpans(buffer);
     texto = spans.map((span) => span.text).join("\n");
   } catch (causa) {
-    if (causa instanceof PdfSinTextoError) return fail("planPdfSinTexto");
+    if (causa instanceof PdfSinTextoError) return { ok: false, estado: fail("planPdfSinTexto") };
     console.error(
-      "[cet] subirBoletin pdfToSpans",
+      "[cet] extraerBoletin pdfToSpans",
       causa instanceof Error ? causa.message : String(causa),
     );
-    return fail("generic");
+    return { ok: false, estado: fail("generic") };
   }
 
   let respuesta: RespuestaDeepSeek;
@@ -199,26 +212,28 @@ export async function subirBoletin(_prev: PlanState, fd: FormData): Promise<Plan
     respuesta = await llamarDeepSeek(promptDeExtraccion(texto));
   } catch (causa) {
     if (causa instanceof DeepSeekError) {
-      console.error("[cet] subirBoletin deepseek", causa.motivo, causa.message);
-      return fail("planModeloCaido");
+      console.error("[cet] extraerBoletin deepseek", causa.motivo, causa.message);
+      return { ok: false, estado: fail("planModeloCaido") };
     }
     console.error(
-      "[cet] subirBoletin deepseek",
+      "[cet] extraerBoletin deepseek",
       causa instanceof Error ? causa.message : String(causa),
     );
-    return fail("generic");
+    return { ok: false, estado: fail("generic") };
   }
 
   let extraido: BoletinExtraido;
   try {
     extraido = validarExtraccion(texto, respuesta.json);
   } catch (causa) {
-    if (causa instanceof ExtraccionInvalidaError) return fail("planExtraccionInvalida");
+    if (causa instanceof ExtraccionInvalidaError) {
+      return { ok: false, estado: fail("planExtraccionInvalida") };
+    }
     console.error(
-      "[cet] subirBoletin validarExtraccion",
+      "[cet] extraerBoletin validarExtraccion",
       causa instanceof Error ? causa.message : String(causa),
     );
-    return fail("generic");
+    return { ok: false, estado: fail("generic") };
   }
 
   const codigos = [
@@ -234,11 +249,11 @@ export async function subirBoletin(_prev: PlanState, fd: FormData): Promise<Plan
       .in("code", codigos);
     if (materiasError !== null || materias === null) {
       console.error(
-        "[cet] subirBoletin subjects.select",
+        "[cet] extraerBoletin subjects.select",
         materiasError?.code,
         materiasError?.message,
       );
-      return fail("generic");
+      return { ok: false, estado: fail("generic") };
     }
     for (const bruta of materias) {
       if (!esFila(bruta)) continue;
@@ -246,7 +261,9 @@ export async function subirBoletin(_prev: PlanState, fd: FormData): Promise<Plan
       const code = columnaTexto(bruta, "code");
       if (id !== null && code !== null) subjectIdPorCode.set(code, id);
     }
-    if (codigos.some((code) => !subjectIdPorCode.has(code))) return fail("generic");
+    if (codigos.some((code) => !subjectIdPorCode.has(code))) {
+      return { ok: false, estado: fail("generic") };
+    }
   }
 
   const notas: NotaGuardada[] = extraido.notas.map((nota) => ({
@@ -263,8 +280,8 @@ export async function subirBoletin(_prev: PlanState, fd: FormData): Promise<Plan
     .eq("id", studentId)
     .maybeSingle();
   if (perfilError !== null) {
-    console.error("[cet] subirBoletin profiles.select", perfilError.code, perfilError.message);
-    return fail("generic");
+    console.error("[cet] extraerBoletin profiles.select", perfilError.code, perfilError.message);
+    return { ok: false, estado: fail("generic") };
   }
   const schoolId = columnaTexto(perfil as Fila | null, "school_id");
 
@@ -275,7 +292,7 @@ export async function subirBoletin(_prev: PlanState, fd: FormData): Promise<Plan
       school_id: schoolId,
       // La politica de insert exige subido_por = auth.uid(); sin esta linea el
       // insert cae por not null antes de llegar a la RLS.
-      subido_por: tutor.id,
+      subido_por: tutorId,
       storage_path: ruta,
       checksum,
       gestion: extraido.gestion,
@@ -290,32 +307,60 @@ export async function subirBoletin(_prev: PlanState, fd: FormData): Promise<Plan
     .single();
 
   if (insertError !== null) {
-    if (insertError.code === "23505") return fail("planBoletinRepetido");
-    console.error("[cet] subirBoletin boletines.insert", insertError.code, insertError.message);
-    return fail("generic");
+    if (insertError.code === "23505") {
+      // Mismo checksum para este hijo: ya existe. En vez de fallar, seguimos
+      // con el boletín existente (como si fuera `regenerarPlan`).
+      const { data: existente, error: existenteError } = await admin
+        .from("boletines")
+        .select("id")
+        .eq("student_id", studentId)
+        .eq("checksum", checksum)
+        .maybeSingle();
+      const idExistente = columnaTexto(existente as Fila | null, "id");
+      if (existenteError !== null || idExistente === null) {
+        console.error(
+          "[cet] extraerBoletin boletines.select (duplicado)",
+          existenteError?.code,
+          existenteError?.message,
+        );
+        return { ok: false, estado: fail("planBoletinRepetido") };
+      }
+      return { ok: true, boletinId: idExistente };
+    }
+    console.error("[cet] extraerBoletin boletines.insert", insertError.code, insertError.message);
+    return { ok: false, estado: fail("generic") };
   }
   const boletinId = columnaTexto(insertado as Fila | null, "id");
-  if (boletinId === null) return fail("generic");
+  if (boletinId === null) return { ok: false, estado: fail("generic") };
 
-  revalidatePath(rutasDeHijo(studentId).plan);
-  return done("planBoletinExtraido", { boletinId });
+  return { ok: true, boletinId };
 }
 
-export async function confirmarBoletin(_prev: PlanState, fd: FormData): Promise<PlanState> {
-  const tutor = await requireRole(["guardian"], { onDeny: "not-found" });
+type ResultadoConfirmacion =
+  | { readonly ok: true; readonly boletin: BoletinResumen }
+  | { readonly ok: false; readonly estado: PlanState };
 
-  const studentId = leerUuid(fd, "studentId");
-  const boletinId = leerUuid(fd, "boletinId");
-  if (studentId === null || boletinId === null) return fail("notFound");
+/**
+ * Confirma las notas del boletín: si `notasNuevas` viene, las guarda (y
+ * re-banda, ya lo hace `leerNotasCorregidas`); si el boletín seguía
+ * `extraido`, lo pasa a `confirmado`. Si no hay nada que cambiar, no toca la
+ * base.
+ */
+async function confirmarNotas(
+  studentId: string,
+  boletin: BoletinResumen,
+  notasNuevas: readonly NotaGuardada[] | null,
+): Promise<ResultadoConfirmacion> {
+  const necesitaConfirmar = boletin.estado === "extraido";
+  if (notasNuevas === null && !necesitaConfirmar) return { ok: true, boletin };
 
-  const supabase = await createClient();
-  if (!(await esHijoSuyo(supabase, tutor.id, studentId))) return fail("notFound");
-
-  const boletin = await boletinDeHijo(studentId, boletinId);
-  if (boletin === null) return fail("notFound");
-
-  const notasCorregidas = leerNotasCorregidas(fd, boletin.notas);
-  if (notasCorregidas === null) return fail("planNotaInvalida");
+  const confirmadoAt = new Date().toISOString();
+  const cambios: Record<string, unknown> = {};
+  if (notasNuevas !== null) cambios["notas"] = notasNuevas;
+  if (necesitaConfirmar) {
+    cambios["estado"] = "confirmado";
+    cambios["confirmado_at"] = confirmadoAt;
+  }
 
   const { createAdminClient } = await import("@/lib/supabase/admin");
   const admin = createAdminClient(
@@ -323,37 +368,51 @@ export async function confirmarBoletin(_prev: PlanState, fd: FormData): Promise<
   );
   const { error: updateError } = await admin
     .from("boletines")
-    .update({
-      notas: notasCorregidas,
-      estado: "confirmado",
-      confirmado_at: new Date().toISOString(),
-    })
-    .eq("id", boletinId)
+    .update(cambios)
+    .eq("id", boletin.id)
     .eq("student_id", studentId);
 
   if (updateError !== null) {
-    console.error("[cet] confirmarBoletin boletines.update", updateError.code, updateError.message);
-    return fail("generic");
+    console.error("[cet] confirmarNotas boletines.update", updateError.code, updateError.message);
+    return { ok: false, estado: fail("generic") };
   }
 
-  revalidatePath(rutasDeHijo(studentId).plan);
-  return done("planBoletinConfirmado");
+  return {
+    ok: true,
+    boletin: {
+      ...boletin,
+      notas: notasNuevas ?? boletin.notas,
+      estado: "confirmado",
+      confirmadoAt: necesitaConfirmar ? confirmadoAt : boletin.confirmadoAt,
+    },
+  };
 }
 
-export async function proponerPlan(_prev: PlanState, fd: FormData): Promise<PlanState> {
-  const tutor = await requireRole(["guardian"], { onDeny: "not-found" });
+interface PropuestaLista {
+  readonly minutosPorDia: number;
+  readonly pesos: Partial<Record<CodigoMateria, number>>;
+  readonly recomendaciones: readonly string[];
+  readonly modelo: string;
+  readonly tokensIn: number;
+  readonly tokensOut: number;
+  readonly desde: string;
+  readonly hasta: string;
+}
 
-  const studentId = leerUuid(fd, "studentId");
-  const boletinId = leerUuid(fd, "boletinId");
-  if (studentId === null || boletinId === null) return fail("notFound");
+type ResultadoPropuesta =
+  | { readonly ok: true; readonly propuesta: PropuestaLista }
+  | { readonly ok: false; readonly estado: PlanState };
 
-  const supabase = await createClient();
-  if (!(await esHijoSuyo(supabase, tutor.id, studentId))) return fail("notFound");
-
-  const boletin = await boletinDeHijo(studentId, boletinId);
-  if (boletin === null) return fail("notFound");
-  if (boletin.estado !== "confirmado") return fail("planSinConfirmar");
-  if (!boletin.notas.some((nota) => nota.code !== null)) return fail("planSinContenido");
+/** Pide al estratega (DeepSeek) el reparto para un boletín ya confirmado. */
+async function proponer(
+  supabase: SupabaseClient,
+  studentId: string,
+  boletin: BoletinResumen,
+): Promise<ResultadoPropuesta> {
+  if (boletin.estado !== "confirmado") return { ok: false, estado: fail("planSinConfirmar") };
+  if (!boletin.notas.some((nota) => nota.code !== null)) {
+    return { ok: false, estado: fail("planSinContenido") };
+  }
 
   const [perfilRes, yearLevelRes, inventario, completadas, minutos] = await Promise.all([
     supabase.from("profiles").select("full_name").eq("id", studentId).maybeSingle(),
@@ -363,12 +422,8 @@ export async function proponerPlan(_prev: PlanState, fd: FormData): Promise<Plan
     minutosObservados(studentId),
   ]);
   if (perfilRes.error !== null) {
-    console.error(
-      "[cet] proponerPlan profiles.select",
-      perfilRes.error.code,
-      perfilRes.error.message,
-    );
-    return fail("generic");
+    console.error("[cet] proponer profiles.select", perfilRes.error.code, perfilRes.error.message);
+    return { ok: false, estado: fail("generic") };
   }
   const fullName = columnaTexto(perfilRes.data as Fila | null, "full_name") ?? "";
   const nombreDePila = fullName.trim().split(/\s+/)[0] ?? "";
@@ -405,104 +460,94 @@ export async function proponerPlan(_prev: PlanState, fd: FormData): Promise<Plan
     respuesta = await llamarDeepSeek(promptDeEstratega(entrada));
   } catch (causa) {
     if (causa instanceof DeepSeekError) {
-      console.error("[cet] proponerPlan deepseek", causa.motivo, causa.message);
-      return fail("planModeloCaido");
+      console.error("[cet] proponer deepseek", causa.motivo, causa.message);
+      return { ok: false, estado: fail("planModeloCaido") };
     }
-    console.error(
-      "[cet] proponerPlan deepseek",
-      causa instanceof Error ? causa.message : String(causa),
-    );
-    return fail("generic");
+    console.error("[cet] proponer deepseek", causa instanceof Error ? causa.message : String(causa));
+    return { ok: false, estado: fail("generic") };
   }
 
-  let propuesta: Propuesta;
   try {
-    propuesta = validarPropuesta(respuesta.json);
+    const propuesta = validarPropuesta(respuesta.json);
+    return {
+      ok: true,
+      propuesta: {
+        minutosPorDia: propuesta.minutosPorDia,
+        pesos: propuesta.reparto,
+        recomendaciones: propuesta.recomendaciones,
+        modelo: respuesta.modelo,
+        tokensIn: respuesta.tokensIn,
+        tokensOut: respuesta.tokensOut,
+        desde: hoy,
+        hasta: ventana.hasta,
+      },
+    };
   } catch (causa) {
-    if (causa instanceof PropuestaInvalidaError) return fail("planModeloCaido");
+    if (causa instanceof PropuestaInvalidaError) return { ok: false, estado: fail("planModeloCaido") };
     console.error(
-      "[cet] proponerPlan validarPropuesta",
+      "[cet] proponer validarPropuesta",
       causa instanceof Error ? causa.message : String(causa),
     );
-    return fail("generic");
+    return { ok: false, estado: fail("generic") };
   }
-
-  return done("planPropuesto", {
-    minutosPorDia: propuesta.minutosPorDia,
-    pesos: JSON.stringify(propuesta.reparto),
-    recomendaciones: JSON.stringify(propuesta.recomendaciones),
-    modelo: respuesta.modelo,
-    tokensIn: respuesta.tokensIn,
-    tokensOut: respuesta.tokensOut,
-    desde: hoy,
-    hasta: ventana.hasta,
-    hito: ventana.hito,
-  });
 }
 
-export async function fijarPlan(_prev: PlanState, fd: FormData): Promise<PlanState> {
-  const tutor = await requireRole(["guardian"], { onDeny: "not-found" });
+interface OpcionesFijar {
+  readonly minutosPorDia: number;
+  readonly pesos: Partial<Record<CodigoMateria, number>>;
+  readonly recomendaciones: readonly string[];
+  readonly modelo: string;
+  readonly tokensIn: number;
+  readonly tokensOut: number;
+  readonly desde: string;
+  readonly hasta: string;
+}
 
-  const parsed = schemaDeFijarPlan.safeParse({
-    studentId: fd.get("studentId"),
-    boletinId: fd.get("boletinId"),
-    minutosPorDia: Number(fd.get("minutosPorDia") ?? ""),
-    pesos: fd.get("pesos"),
-    recomendaciones: fd.get("recomendaciones"),
-    modelo: fd.get("modelo"),
-    tokensIn: Number(fd.get("tokensIn") ?? ""),
-    tokensOut: Number(fd.get("tokensOut") ?? ""),
-    desde: fd.get("desde"),
-    hasta: fd.get("hasta"),
-  });
-  if (!parsed.success) {
-    const campo = parsed.error.issues[0]?.path[0];
-    if (campo === "studentId" || campo === "boletinId") return fail("notFound");
-    return fail("generic");
-  }
-  const datos = parsed.data;
+interface PlanFijado {
+  readonly planId: string;
+  readonly tareas: number;
+  readonly techos: readonly TechoDeMateria[];
+}
 
-  const supabase = await createClient();
-  if (!(await esHijoSuyo(supabase, tutor.id, datos.studentId))) return fail("notFound");
+type ResultadoFijado =
+  | { readonly ok: true; readonly plan: PlanFijado }
+  | { readonly ok: false; readonly estado: PlanState };
 
-  const boletin = await boletinDeHijo(datos.studentId, datos.boletinId);
-  if (boletin === null) return fail("notFound");
-  if (boletin.estado !== "confirmado") return fail("planSinConfirmar");
-
-  const pesos = leerPesos(datos.pesos);
-  if (pesos === null) return fail("generic");
-
-  let recomendaciones: string[];
-  try {
-    const crudo = JSON.parse(datos.recomendaciones) as unknown;
-    const parse = schemaDeRecomendaciones.safeParse(crudo);
-    if (!parse.success) return fail("generic");
-    recomendaciones = parse.data;
-  } catch {
-    return fail("generic");
-  }
-
-  if (datos.desde > datos.hasta) return fail("generic");
+/**
+ * Desactiva el plan activo del hijo (si lo hay), calcula el reparto con el
+ * motor y crea el plan y sus tareas. Mismo rollback que antes si falla a
+ * mitad de la inserción de tareas.
+ */
+async function fijar(
+  tutorId: string,
+  studentId: string,
+  boletinId: string,
+  opciones: OpcionesFijar,
+): Promise<ResultadoFijado> {
+  const boletin = await boletinDeHijo(studentId, boletinId);
+  if (boletin === null) return { ok: false, estado: fail("notFound") };
+  if (boletin.estado !== "confirmado") return { ok: false, estado: fail("planSinConfirmar") };
+  if (opciones.desde > opciones.hasta) return { ok: false, estado: fail("generic") };
 
   const [inventario, completadas, mastery, calendario] = await Promise.all([
     inventarioDeContenido(),
-    leccionesCompletadas(datos.studentId),
-    masteryDeAlumno(datos.studentId),
-    calendarioDelPlan(Number(datos.desde.slice(0, 4))),
+    leccionesCompletadas(studentId),
+    masteryDeAlumno(studentId),
+    calendarioDelPlan(Number(opciones.desde.slice(0, 4))),
   ]);
 
   const entradaReparto = armarEntradaReparto({
-    desde: datos.desde,
-    hasta: datos.hasta,
-    minutosPorDia: datos.minutosPorDia,
-    pesos,
+    desde: opciones.desde,
+    hasta: opciones.hasta,
+    minutosPorDia: opciones.minutosPorDia,
+    pesos: opciones.pesos,
     inventario,
     completadas,
     mastery,
     calendario,
   });
   const reparto = repartir(entradaReparto);
-  if (reparto.tareas.length === 0) return fail("planSinContenido");
+  if (reparto.tareas.length === 0) return { ok: false, estado: fail("planSinContenido") };
 
   const { createAdminClient } = await import("@/lib/supabase/admin");
   const admin = createAdminClient(
@@ -512,15 +557,15 @@ export async function fijarPlan(_prev: PlanState, fd: FormData): Promise<PlanSta
   const { data: activosPrevios, error: activosError } = await admin
     .from("planes_de_estudio")
     .select("id")
-    .eq("student_id", datos.studentId)
+    .eq("student_id", studentId)
     .eq("activo", true);
   if (activosError !== null) {
     console.error(
-      "[cet] fijarPlan planes_de_estudio.select",
+      "[cet] fijar planes_de_estudio.select",
       activosError.code,
       activosError.message,
     );
-    return fail("generic");
+    return { ok: false, estado: fail("generic") };
   }
   const idsPreviosActivos = (activosPrevios ?? [])
     .filter(esFila)
@@ -530,47 +575,47 @@ export async function fijarPlan(_prev: PlanState, fd: FormData): Promise<PlanSta
   const { error: desactivarError } = await admin
     .from("planes_de_estudio")
     .update({ activo: false })
-    .eq("student_id", datos.studentId)
+    .eq("student_id", studentId)
     .eq("activo", true);
   if (desactivarError !== null) {
     console.error(
-      "[cet] fijarPlan planes_de_estudio.update",
+      "[cet] fijar planes_de_estudio.update",
       desactivarError.code,
       desactivarError.message,
     );
-    return fail("generic");
+    return { ok: false, estado: fail("generic") };
   }
 
   const { data: planFila, error: planError } = await admin
     .from("planes_de_estudio")
     .insert({
-      student_id: datos.studentId,
-      boletin_id: datos.boletinId,
-      desde: datos.desde,
-      hasta: datos.hasta,
-      minutos_por_dia: datos.minutosPorDia,
-      reparto: { pesos, techos: reparto.techos },
-      recomendaciones,
-      creado_por: tutor.id,
-      modelo: datos.modelo,
-      tokens_in: datos.tokensIn,
-      tokens_out: datos.tokensOut,
+      student_id: studentId,
+      boletin_id: boletinId,
+      desde: opciones.desde,
+      hasta: opciones.hasta,
+      minutos_por_dia: opciones.minutosPorDia,
+      reparto: { pesos: opciones.pesos, techos: reparto.techos },
+      recomendaciones: opciones.recomendaciones,
+      creado_por: tutorId,
+      modelo: opciones.modelo,
+      tokens_in: opciones.tokensIn,
+      tokens_out: opciones.tokensOut,
       activo: true,
     })
     .select("id")
     .single();
 
   if (planError !== null) {
-    console.error("[cet] fijarPlan planes_de_estudio.insert", planError.code, planError.message);
-    return fail("generic");
+    console.error("[cet] fijar planes_de_estudio.insert", planError.code, planError.message);
+    return { ok: false, estado: fail("generic") };
   }
   const planId = columnaTexto(planFila as Fila | null, "id");
-  if (planId === null) return fail("generic");
+  if (planId === null) return { ok: false, estado: fail("generic") };
 
   for (let inicio = 0; inicio < reparto.tareas.length; inicio += TAMANO_LOTE_TAREAS) {
     const lote = reparto.tareas.slice(inicio, inicio + TAMANO_LOTE_TAREAS).map((tarea) => ({
       plan_id: planId,
-      student_id: datos.studentId,
+      student_id: studentId,
       fecha: tarea.fecha,
       ord: tarea.ord,
       subject_id: tarea.subjectId,
@@ -582,13 +627,13 @@ export async function fijarPlan(_prev: PlanState, fd: FormData): Promise<PlanSta
 
     const { error: tareasError } = await admin.from("plan_tareas").insert(lote);
     if (tareasError !== null) {
-      console.error("[cet] fijarPlan plan_tareas.insert", tareasError.code, tareasError.message);
+      console.error("[cet] fijar plan_tareas.insert", tareasError.code, tareasError.message);
       const { error: rollbackError } = await admin
         .from("planes_de_estudio")
         .delete()
         .eq("id", planId);
       if (rollbackError !== null) {
-        console.error("[cet] fijarPlan rollback", rollbackError.code, rollbackError.message);
+        console.error("[cet] fijar rollback", rollbackError.code, rollbackError.message);
       }
       if (idsPreviosActivos.length > 0) {
         const { error: reactivarError } = await admin
@@ -597,21 +642,202 @@ export async function fijarPlan(_prev: PlanState, fd: FormData): Promise<PlanSta
           .in("id", idsPreviosActivos);
         if (reactivarError !== null) {
           console.error(
-            "[cet] fijarPlan rollback reactivar",
+            "[cet] fijar rollback reactivar",
             reactivarError.code,
             reactivarError.message,
           );
         }
       }
-      return fail("generic");
+      return { ok: false, estado: fail("generic") };
     }
   }
 
+  return {
+    ok: true,
+    plan: { planId, tareas: reparto.tareas.length, techos: reparto.techos },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Acciones exportadas
+// ---------------------------------------------------------------------------
+
+/**
+ * Sube un boletín y, en una sola pasada, extrae → confirma → propone (IA) →
+ * fija el plan. Si el PDF ya se había subido para este hijo, sigue con el
+ * boletín existente en vez de fallar.
+ */
+export async function generarPlan(_prev: PlanState, fd: FormData): Promise<PlanState> {
+  const tutor = await requireRole(["guardian"], { onDeny: "not-found" });
+
+  const studentId = leerUuid(fd, "studentId");
+  if (studentId === null) return fail("notFound");
+
+  const archivo = fd.get("archivo");
+  if (!esArchivoPdf(archivo)) return fail("planPdfInvalido");
+
+  const supabase = await createClient();
+  if (!(await esHijoSuyo(supabase, tutor.id, studentId))) return fail("notFound");
+
+  const extraccion = await extraerBoletin(tutor.id, supabase, studentId, archivo);
+  if (!extraccion.ok) return extraccion.estado;
+  const { boletinId } = extraccion;
+
+  const boletin = await boletinDeHijo(studentId, boletinId);
+  if (boletin === null) return conBoletinId(fail("generic"), boletinId);
+
+  const confirmacion = await confirmarNotas(studentId, boletin, null);
+  if (!confirmacion.ok) return conBoletinId(confirmacion.estado, boletinId);
+
+  const propuesta = await proponer(supabase, studentId, confirmacion.boletin);
+  if (!propuesta.ok) return conBoletinId(propuesta.estado, boletinId);
+
+  const fijado = await fijar(tutor.id, studentId, boletinId, propuesta.propuesta);
+  if (!fijado.ok) return conBoletinId(fijado.estado, boletinId);
+
+  revalidatePath(rutasDeHijo(studentId).plan);
+  return done("planGenerado", {
+    boletinId,
+    planId: fijado.plan.planId,
+    tareas: fijado.plan.tareas,
+    techos: JSON.stringify(fijado.plan.techos),
+  });
+}
+
+/**
+ * Regenera el plan de un boletín ya subido: corrige notas si vienen en el
+ * FormData, confirma si hacía falta, propone (IA) y fija — sustituye al plan
+ * activo.
+ */
+export async function regenerarPlan(_prev: PlanState, fd: FormData): Promise<PlanState> {
+  const tutor = await requireRole(["guardian"], { onDeny: "not-found" });
+
+  const studentId = leerUuid(fd, "studentId");
+  const boletinId = leerUuid(fd, "boletinId");
+  if (studentId === null || boletinId === null) return fail("notFound");
+
+  const supabase = await createClient();
+  if (!(await esHijoSuyo(supabase, tutor.id, studentId))) return fail("notFound");
+
+  const boletin = await boletinDeHijo(studentId, boletinId);
+  if (boletin === null) return fail("notFound");
+
+  let notasNuevas: NotaGuardada[] | null = null;
+  if (tieneNotasCorregidas(fd)) {
+    notasNuevas = leerNotasCorregidas(fd, boletin.notas);
+    if (notasNuevas === null) return conBoletinId(fail("planNotaInvalida"), boletinId);
+  }
+
+  const confirmacion = await confirmarNotas(studentId, boletin, notasNuevas);
+  if (!confirmacion.ok) return conBoletinId(confirmacion.estado, boletinId);
+
+  const propuesta = await proponer(supabase, studentId, confirmacion.boletin);
+  if (!propuesta.ok) return conBoletinId(propuesta.estado, boletinId);
+
+  const fijado = await fijar(tutor.id, studentId, boletinId, propuesta.propuesta);
+  if (!fijado.ok) return conBoletinId(fijado.estado, boletinId);
+
+  revalidatePath(rutasDeHijo(studentId).plan);
+  return done("planGenerado", {
+    boletinId,
+    planId: fijado.plan.planId,
+    tareas: fijado.plan.tareas,
+    techos: JSON.stringify(fijado.plan.techos),
+  });
+}
+
+const schemaDeEditarPlan = z.object({
+  studentId: z.string().uuid(),
+  planId: z.string().uuid(),
+  minutosPorDia: z.number().int().min(10).max(180),
+  pesos: z.string().min(1),
+});
+
+/**
+ * Cambia minutos/día y el reparto por materia del plan activo, y lo re-fija
+ * con el mismo boletín, ventana, recomendaciones y modelo.
+ */
+export async function editarPlan(_prev: PlanState, fd: FormData): Promise<PlanState> {
+  const tutor = await requireRole(["guardian"], { onDeny: "not-found" });
+
+  const parsed = schemaDeEditarPlan.safeParse({
+    studentId: fd.get("studentId"),
+    planId: fd.get("planId"),
+    minutosPorDia: Number(fd.get("minutosPorDia") ?? ""),
+    pesos: fd.get("pesos"),
+  });
+  if (!parsed.success) {
+    const campo = parsed.error.issues[0]?.path[0];
+    if (campo === "studentId" || campo === "planId") return fail("notFound");
+    return fail("generic");
+  }
+  const datos = parsed.data;
+
+  const supabase = await createClient();
+  if (!(await esHijoSuyo(supabase, tutor.id, datos.studentId))) return fail("notFound");
+
+  const pesos = leerPesosEditados(datos.pesos);
+  if (pesos === null) return fail("generic");
+
+  const { createAdminClient } = await import("@/lib/supabase/admin");
+  const admin = createAdminClient(
+    "Editar plan: leer el plan activo para re-fijarlo con el mismo boletín",
+  );
+  const { data: planFila, error: planError } = await admin
+    .from("planes_de_estudio")
+    .select("boletin_id, desde, hasta, recomendaciones, modelo, tokens_in, tokens_out")
+    .eq("id", datos.planId)
+    .eq("student_id", datos.studentId)
+    .eq("activo", true)
+    .maybeSingle();
+  if (planError !== null) {
+    console.error(
+      "[cet] editarPlan planes_de_estudio.select",
+      planError.code,
+      planError.message,
+    );
+    return fail("generic");
+  }
+  const fila = planFila as Fila | null;
+  const boletinId = columnaTexto(fila, "boletin_id");
+  const desde = columnaTexto(fila, "desde");
+  const hasta = columnaTexto(fila, "hasta");
+  const modelo = columnaTexto(fila, "modelo");
+  const tokensInBruto = fila?.["tokens_in"];
+  const tokensOutBruto = fila?.["tokens_out"];
+  const recomendacionesParse = schemaDeRecomendaciones.safeParse(fila?.["recomendaciones"]);
+  if (
+    boletinId === null ||
+    desde === null ||
+    hasta === null ||
+    modelo === null ||
+    typeof tokensInBruto !== "number" ||
+    typeof tokensOutBruto !== "number" ||
+    !recomendacionesParse.success
+  ) {
+    return fail("notFound");
+  }
+
+  const hoy = hoyEnZona();
+  const desdeEfectivo = desde < hoy ? hoy : desde;
+
+  const fijado = await fijar(tutor.id, datos.studentId, boletinId, {
+    minutosPorDia: datos.minutosPorDia,
+    pesos,
+    recomendaciones: recomendacionesParse.data,
+    modelo,
+    tokensIn: tokensInBruto,
+    tokensOut: tokensOutBruto,
+    desde: desdeEfectivo,
+    hasta,
+  });
+  if (!fijado.ok) return fijado.estado;
+
   revalidatePath(rutasDeHijo(datos.studentId).plan);
-  return done("planCreado", {
-    planId,
-    tareas: reparto.tareas.length,
-    techos: JSON.stringify(reparto.techos),
+  return done("planEditado", {
+    planId: fijado.plan.planId,
+    tareas: fijado.plan.tareas,
+    techos: JSON.stringify(fijado.plan.techos),
   });
 }
 
