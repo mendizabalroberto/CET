@@ -46,6 +46,7 @@ import { groupCoursesBySubject } from "@/components/learn/subject-grouping";
 import { UiLocaleProvider } from "@/components/learn/UiLocaleProvider";
 import { requireStudent } from "@/lib/auth/session";
 import { resolveLocale } from "@/lib/i18n/server";
+import { ROUTES } from "@/lib/routes";
 
 /**
  * Los seis rótulos que la tarjeta espera de la aplicación.
@@ -68,6 +69,7 @@ export default async function LearnPage() {
   const locale = await resolveLocale(student.locale);
   const t = getLearnDictionary(locale).index;
   const s = getLearnDictionary(locale).subject;
+  const hoy = getLearnDictionary(locale).today;
 
   // En paralelo: el catálogo y el avance son independientes, y que el avance
   // falle no puede retrasar ni impedir que se vean las lecciones.
@@ -99,6 +101,20 @@ export default async function LearnPage() {
           <h1 className="text-2xl font-bold text-ink">{t.title}</h1>
           <p className="mt-2 max-w-prose text-muted">{t.subtitle}</p>
         </header>
+
+        {/* EL DÍA VA PRIMERO. Con un plan de estudio, la pregunta que trae aquí
+            al niño ya no es «¿qué materia?» sino «¿qué me toca hoy?». Sin plan,
+            /learn/hoy lo dice con una frase y no inventa tareas. */}
+        <section className="rounded-2xl border border-line bg-card p-5">
+          <h2 className="text-lg font-bold text-ink">{hoy.title}</h2>
+          <p className="mt-1 max-w-prose text-sm text-muted">{hoy.subtitle}</p>
+          <Link
+            href={ROUTES.studentToday}
+            className="mt-3 inline-flex min-h-11 items-center rounded-lg bg-ink px-4 text-sm font-semibold text-card focus-visible:outline-2 focus-visible:outline-offset-2"
+          >
+            {hoy.open}
+          </Link>
+        </section>
 
         <section className="rounded-2xl border border-line bg-card p-5">
           <h2 className="text-lg font-bold text-ink">{t.practiceCta}</h2>
