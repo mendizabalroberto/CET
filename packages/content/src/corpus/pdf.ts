@@ -302,6 +302,21 @@ export async function pdfToSpans(buf: Buffer): Promise<PdfResult> {
   asegurarDomMatrix();
   const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
 
+  // Sin Worker de verdad, pdfjs carga su "fake worker" con
+  // `import(/*webpackIgnore*/ "./pdf.worker.mjs")`, relativo a su propio
+  // fichero. Empaquetado por webpack (Next.js), ese fichero pasa a buscarse
+  // junto al CHUNK, donde no existe: en producción fallaba con «Setting up
+  // fake worker failed: Cannot find module '.../chunks/pdf.worker.mjs'»
+  // (2026-09-02). pdfjs tiene un gancho para esto: si `globalThis.pdfjsWorker`
+  // trae un `WorkerMessageHandler`, lo usa en el hilo principal y no importa
+  // nada dinámicamente. Importar el worker aquí, con un import normal que el
+  // bundler sí ve, es lo que lo hace funcionar en Node, en Vitest y en
+  // cualquier chunk de webpack por igual.
+  // @ts-expect-error -- pdfjs-dist no publica tipos para el worker; solo se
+  // le pasa entero a pdfjs, que es quien conoce su forma.
+  const worker: unknown = await import("pdfjs-dist/legacy/build/pdf.worker.mjs");
+  (globalThis as { pdfjsWorker?: unknown }).pdfjsWorker = worker;
+
   const tarea = pdfjs.getDocument({
     data: new Uint8Array(buf),
     // Sin worker: esto corre en Node, en un solo proceso, y el worker solo
