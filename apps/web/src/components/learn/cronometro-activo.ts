@@ -82,6 +82,42 @@ export function arrancar(ahoraMs: number): Cronometro {
 }
 
 /**
+ * Arranca CONTINUANDO un tiempo que ya se habia acumulado antes.
+ *
+ * EL FALLO QUE ESTO CIERRA: el cronometro vivia solo en memoria, asi que
+ * recargar la pagina lo ponia a cero. El nino que lleva doce minutos en una
+ * leccion, actualiza, y ve «0:00» no esta viendo un contador: esta viendo una
+ * mentira que ademas le quita el merito de lo que ya ha hecho.
+ *
+ * Se reconstruye desplazando el ORIGEN en vez de guardar un total aparte:
+ * `msBrutos` se define como `ahora - inicioMs`, asi que retrasar `inicioMs` lo
+ * que ya se llevaba deja la formula intacta. Sumar por fuera habria creado un
+ * segundo camino para calcular lo mismo, y dos caminos divergen.
+ *
+ * `activoDelUltimoLatidoMs` arranca igualado al activo recuperado, y no en
+ * cero, para que reanudar NO dispare de inmediato un latido por un tiempo que
+ * ya se habia reportado antes de la recarga. Sin eso, cada F5 mandaria un
+ * evento duplicado con el acumulado entero.
+ */
+export function reanudarDesde(
+  ahoraMs: number,
+  msActivosPrevios: number,
+  msBrutosPrevios: number,
+): Cronometro {
+  const activos = Math.max(0, msActivosPrevios);
+  // Lo bruto nunca puede ser menor que lo activo: si el deposito viniera
+  // manipulado o a medio escribir, se toma lo activo como suelo en vez de
+  // producir un cronometro que se contradice a si mismo.
+  const brutos = Math.max(activos, Math.max(0, msBrutosPrevios));
+  return {
+    inicioMs: ahoraMs - brutos,
+    activoCerradoMs: activos,
+    corriendoDesdeMs: ahoraMs,
+    activoDelUltimoLatidoMs: activos,
+  };
+}
+
+/**
  * Cierra el tramo abierto. Idempotente A PROPÓSITO: ocultar la pestaña y perder
  * el foco de la ventana son dos sucesos distintos que llegan casi siempre
  * juntos y en cualquier orden. Si la segunda pausa volviera a acumular, el

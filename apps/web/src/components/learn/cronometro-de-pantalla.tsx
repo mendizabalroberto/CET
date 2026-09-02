@@ -50,6 +50,7 @@ import { useTelemetry } from "@/lib/telemetry/provider";
 import {
   ahoraMonotono,
   arrancar,
+  reanudarDesde,
   debeLatir,
   marcarLatido,
   msActivos,
@@ -58,6 +59,7 @@ import {
   reanudar,
   type Cronometro,
 } from "./cronometro-activo";
+import { guardarTiempo, leerTiempo } from "./cronometro-guardado";
 
 /** Las tres pantallas que miden tiempo. Coincide con el enum de `@cet/shared`. */
 export type PantallaCronometrada = "leccion" | "practica" | "examen";
@@ -126,7 +128,16 @@ export function useCronometroActivo(opciones: OpcionesDeCronometro): LecturaDeCr
   useEffect(() => {
     if (id === null || typeof window === "undefined") return;
 
-    const crono = arrancar(ahoraMonotono());
+    // CONTINUA lo que esta actividad ya llevaba. El cronometro vivia solo en
+    // memoria y recargar la pagina lo ponia a cero: el nino que llevaba doce
+    // minutos veia «0:00», que no es un contador sino una mentira que ademas le
+    // quita el merito de lo que ya habia hecho.
+    const guardado = leerTiempo(pantalla, id);
+    const inicio = ahoraMonotono();
+    const crono =
+      guardado === null
+        ? arrancar(inicio)
+        : reanudarDesde(inicio, guardado.msActivos, guardado.msBrutos);
     cronoRef.current = crono;
     let inactivo: ReturnType<typeof setTimeout> | null = null;
 
@@ -154,6 +165,18 @@ export function useCronometroActivo(opciones: OpcionesDeCronometro): LecturaDeCr
 
     const parar = (): void => {
       cronoRef.current = pausar(cronoRef.current ?? crono, ahoraMonotono());
+      // Y se vuelca lo ultimo ANTES de emitir: si la pestana muere en este
+      // instante, el navegador conserva el total y la proxima visita continua.
+      {
+        const fin = ahoraMonotono();
+        const c = cronoRef.current;
+        if (c) {
+          guardarTiempo(pantalla, id, {
+            msActivos: Math.round(msActivos(c, fin)),
+            msBrutos: Math.round(msBrutos(c, fin)),
+          });
+        }
+      }
       if (inactivo) clearTimeout(inactivo);
       inactivo = null;
     };
@@ -193,6 +216,13 @@ export function useCronometroActivo(opciones: OpcionesDeCronometro): LecturaDeCr
       const ahora = ahoraMonotono();
       if (!debeLatir(actual, ahora)) return;
       cronoRef.current = marcarLatido(actual, ahora);
+      // Se vuelca al MISMO ritmo que el latido: el deposito no necesita mas
+      // resolucion que la telemetria, y escribir en cada tic de refresco seria
+      // tocar `localStorage` varias veces por segundo por nada.
+      guardarTiempo(pantalla, id, {
+        msActivos: Math.round(msActivos(cronoRef.current, ahora)),
+        msBrutos: Math.round(msBrutos(cronoRef.current, ahora)),
+      });
       emitir("latido");
     };
 

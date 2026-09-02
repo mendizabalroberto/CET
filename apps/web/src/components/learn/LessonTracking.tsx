@@ -25,6 +25,7 @@ import { Button, Icono, cn } from "@cet/ui";
 import { useTelemetry } from "@/lib/telemetry/provider";
 
 import { useCronometroDePantalla } from "./cronometro-de-pantalla";
+import { olvidarTiempo } from "./cronometro-guardado";
 import { ResumenDeTiempo } from "./TiempoEnPantalla";
 
 /** Debajo de esto, el bloque pasó por delante de los ojos pero no se leyó. */
@@ -172,6 +173,11 @@ export function LessonCompleteButton({
     setDone(true);
     setMsAlTerminar(cronometro?.leerMsActivos() ?? null);
     track({ eventType: "lesson_completed", lessonId, payload: {} });
+    // Se acabo esta leccion: su contador guardado deja de existir. El
+    // cronometro persiste entre recargas por `(pantalla, id)`, asi que sin este
+    // olvido el nino que repite la leccion la veria arrancar con el tiempo de la
+    // vez anterior y no sabria si va rapido o lento.
+    olvidarTiempo("leccion", lessonId);
     // Vaciado inmediato: terminar una lección es justo el momento en que el
     // alumno cierra la pestaña o se va a practicar.
     flush();
