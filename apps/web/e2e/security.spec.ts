@@ -75,7 +75,7 @@ test.describe("cabeceras de seguridad", () => {
 test.describe("protección de rutas sin sesión", () => {
   // Las áreas privilegiadas responden 404 y NO 403: un 403 confirma que la ruta
   // existe, y con eso ya se puede mapear la aplicación desde fuera.
-  for (const ruta of ["/admin", "/teach"]) {
+  for (const ruta of ["/admin", "/teach", "/tutor/hijos/cualquiera/plan"]) {
     test(`${ruta} responde 404, no 403`, async ({ page }) => {
       const response = await page.goto(ruta);
       expect(response!.status()).toBe(404);
@@ -84,7 +84,7 @@ test.describe("protección de rutas sin sesión", () => {
 
   // Las áreas de alumno mandan al login: aquí no hay nada que ocultar y
   // castigar a un niño con un 404 sería cruel además de inútil.
-  for (const ruta of ["/learn", "/practice", "/exam"]) {
+  for (const ruta of ["/learn", "/learn/hoy", "/practice", "/exam"]) {
     test(`${ruta} redirige al login`, async ({ page }) => {
       await page.goto(ruta);
       await expect(page).toHaveURL(/\/login/);

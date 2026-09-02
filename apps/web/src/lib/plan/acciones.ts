@@ -163,7 +163,7 @@ export async function subirBoletin(_prev: PlanState, fd: FormData): Promise<Plan
 
   const { createAdminClient } = await import("@/lib/supabase/admin");
   const admin = createAdminClient(
-    "Subir el boletin a Storage y resolver codigos de materia del catalogo global",
+    "Subir el boletín a Storage y resolver códigos de materia del catálogo global",
   );
   const ruta = `${studentId}/${checksum}.pdf`;
   const { error: subidaError } = await admin.storage.from("boletines").upload(ruta, buffer, {
@@ -313,7 +313,7 @@ export async function confirmarBoletin(_prev: PlanState, fd: FormData): Promise<
 
   const { createAdminClient } = await import("@/lib/supabase/admin");
   const admin = createAdminClient(
-    "Confirmar boletin: el tutor no puede actualizar boletines con su sesion",
+    "Confirmar boletín: el tutor no puede actualizar boletines con su sesión",
   );
   const { error: updateError } = await admin
     .from("boletines")
