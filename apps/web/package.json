@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:plan": "playwright test --config=playwright.plan.config.ts"
   },
   "dependencies": {
     "@cet/content": "workspace:*",

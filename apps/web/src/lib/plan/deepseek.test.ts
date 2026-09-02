@@ -1,6 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PlazoAgotadoError } from "../net/plazo";
-import { DeepSeekError, MODELO_DEEPSEEK, PLAZO_DEEPSEEK_MS, llamarDeepSeek, type Transporte } from "./deepseek";
+import {
+  DeepSeekError,
+  MODELO_DEEPSEEK,
+  PLAZO_DEEPSEEK_MS,
+  llamarDeepSeek,
+  urlDeepSeek,
+  type Transporte,
+} from "./deepseek";
 
 describe("llamarDeepSeek", () => {
   let urlVista = "";
@@ -97,6 +104,30 @@ describe("llamarDeepSeek", () => {
     const error = await errorDe(llamarDeepSeek({ system: "s", user: "u" }, transporte));
     expect(error).toBeInstanceOf(DeepSeekError);
     expect((error as DeepSeekError).motivo).toBe("plazo");
+  });
+
+  it("urlDeepSeek usa la URL real por defecto, sin DEEP_SEEK_URL", () => {
+    expect(urlDeepSeek({} as NodeJS.ProcessEnv)).toBe("https://api.deepseek.com/chat/completions");
+  });
+
+  it("DEEP_SEEK_URL sustituye la URL real: es el mock del e2e el que la fija", async () => {
+    vi.stubEnv("DEEP_SEEK_URL", "http://127.0.0.1:9999/chat/completions");
+    expect(urlDeepSeek()).toBe("http://127.0.0.1:9999/chat/completions");
+
+    const transporte = transporteConCuerpo({
+      choices: [{ message: { content: "{}" } }],
+    });
+    await llamarDeepSeek({ system: "s", user: "u" }, transporte);
+    expect(urlVista).toBe("http://127.0.0.1:9999/chat/completions");
+  });
+
+  it("DEEP_SEEK_URL vacía o solo espacios no sustituye la URL real", () => {
+    expect(urlDeepSeek({ DEEP_SEEK_URL: "" } as unknown as NodeJS.ProcessEnv)).toBe(
+      "https://api.deepseek.com/chat/completions",
+    );
+    expect(urlDeepSeek({ DEEP_SEEK_URL: "   " } as unknown as NodeJS.ProcessEnv)).toBe(
+      "https://api.deepseek.com/chat/completions",
+    );
   });
 
   it("sin DEEP_SEEK_API lanza sin_clave antes de usar el transporte", async () => {

@@ -2,7 +2,19 @@ import { fetchConPlazo, PlazoAgotadoError } from "../net/plazo";
 
 export const MODELO_DEEPSEEK = "deepseek-chat";
 export const PLAZO_DEEPSEEK_MS = 60_000;
-const URL_DEEPSEEK = "https://api.deepseek.com/chat/completions";
+const URL_DEEPSEEK_POR_DEFECTO = "https://api.deepseek.com/chat/completions";
+
+/**
+ * La URL real por defecto; solo el e2e la sustituye, apuntando a un servidor
+ * HTTP local que responde con la forma exacta de chat completions
+ * (`apps/web/e2e/mock-deepseek.mjs`). En producción `DEEP_SEEK_URL` no se
+ * define, así que esta función siempre devuelve la URL real — no hay bandera
+ * que cambie el comportamiento por defecto.
+ */
+export function urlDeepSeek(env: NodeJS.ProcessEnv = process.env): string {
+  const url = env["DEEP_SEEK_URL"]?.trim();
+  return url === undefined || url === "" ? URL_DEEPSEEK_POR_DEFECTO : url;
+}
 
 export class DeepSeekError extends Error {
   readonly motivo: "sin_clave" | "http" | "sin_json" | "plazo";
@@ -46,7 +58,7 @@ export async function llamarDeepSeek(
   const clave = claveDeepSeek();
   try {
     const r = await transporte(
-      URL_DEEPSEEK,
+      urlDeepSeek(),
       {
         method: "POST",
         headers: {

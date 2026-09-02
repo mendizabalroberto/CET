@@ -14,6 +14,11 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${PORT}`;
 
 export default defineConfig({
   testDir: "./e2e",
+  // plan.spec.ts necesita el mock de DeepSeek y next dev con DEEP_SEEK_URL
+  // apuntando a él: tiene su propio config (playwright.plan.config.ts) y su
+  // propio script (`pnpm test:e2e:plan`). Aquí, contra `pnpm start` y sin ese
+  // mock, llamaría a la DeepSeek real o fallaría por falta de clave.
+  testIgnore: ["**/plan.spec.ts"],
   fullyParallel: true,
   // Un `test.only` olvidado en un PR haría pasar el CI sin ejecutar la suite.
   forbidOnly: !!process.env.CI,

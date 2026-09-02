@@ -17,6 +17,7 @@
  * declara el propio formato.
  */
 
+import { asegurarDomMatrix } from "./dom-matrix.ts";
 import { makeSpan, type SourceSpan } from "./spans.ts";
 
 /** Diferencia máxima en Y (puntos PDF) para considerar dos trozos la misma línea. */
@@ -294,6 +295,11 @@ export class PdfSinTextoError extends Error {
 export async function pdfToSpans(buf: Buffer): Promise<PdfResult> {
   // Import perezoso: quien solo ingiere .docx no debería pagar la carga de
   // pdfjs, que no es pequeña.
+  //
+  // Antes del import, y no después: pdfjs evalúa `new DOMMatrix()` al cargar
+  // el módulo, y en un Node sin `@napi-rs/canvas` (la función de Vercel, por
+  // ejemplo) ese global no existe. Ver `dom-matrix.ts`.
+  asegurarDomMatrix();
   const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
 
   const tarea = pdfjs.getDocument({
