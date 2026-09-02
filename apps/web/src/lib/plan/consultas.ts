@@ -538,7 +538,7 @@ export async function calendarioDelPlan(gestion: number): Promise<EventoCalendar
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("calendario_eventos")
-    .select("desde, hasta, tipo")
+    .select("desde, hasta, tipo, year_levels")
     .eq("gestion", gestion)
     .order("desde", { ascending: true });
 
@@ -547,7 +547,20 @@ export async function calendarioDelPlan(gestion: number): Promise<EventoCalendar
   for (const bruta of data) {
     if (!esFila(bruta)) continue;
     const parse = eventoCalendarioSchema.safeParse(bruta);
-    if (parse.success) resultado.push(parse.data);
+    if (!parse.success) continue;
+    // Un hito Cambridge de OTRO curso (Movers de Y4, Flyers de Y5) no es el
+    // hito de este alumno: sin este filtro, `hitoMasCercano` cerraria la
+    // ventana de LEO en la fecha de un examen que no es suyo. `EventoCalendario`
+    // no lleva year_levels a proposito: el motor solo necesita fechas y tipo.
+    const yearLevels = bruta["year_levels"];
+    if (
+      parse.data.tipo === "hito_cambridge" &&
+      Array.isArray(yearLevels) &&
+      yearLevels.length > 0
+    ) {
+      continue;
+    }
+    resultado.push(parse.data);
   }
   return resultado;
 }
