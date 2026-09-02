@@ -6,7 +6,17 @@
  * REGLAS QUE NO SE NEGOCIAN EN ESTE FICHERO
  * ===========================================================================
  * 1. Se usa SIEMPRE el cliente de sesión (`@/lib/supabase/server`), nunca
- *    `createAdminClient`. RLS es la última palabra (modules/admin §6.1).
+ *    `createAdminClient`. RLS es la última palabra (modules/admin §6.1). La
+ *    regla sigue siendo absoluta, y el lint la vigila: este fichero no está en
+ *    la lista de excepciones tasadas de `apps/web/eslint.config.mjs`.
+ *
+ *    `loadFamiliesData()` necesita una tabla que NINGUNA sesión alcanza
+ *    —`guardian_invites` no tiene ni una política RLS, por diseño de 0065— y no
+ *    la lee aquí: la pide a `invitacionesPendientes()`, que vive en
+ *    `@/lib/tutor/queries`, que ya es una de esas excepciones tasadas y es
+ *    además el módulo que escribe esa misma tabla. La alternativa era ampliar
+ *    la lista del lint, y la cabecera de ese fichero dice por qué eso sería un
+ *    fallo de arquitectura y no una necesidad.
  * 2. Aun así, TODA consulta filtra por `school_id` a mano. RLS y el `where`
  *    son dos sistemas independientes: si una política se relaja mañana en una
  *    migración, el filtro explícito sigue en pie. Y a la inversa.
@@ -21,6 +31,7 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
+import { invitacionesPendientes, type InvitacionPendiente } from "@/lib/tutor/queries";
 import type { SessionProfile } from "@/lib/auth/session";
 
 import { effectiveGrading, type GradingRow } from "./grading-chain";
@@ -1120,6 +1131,254 @@ export async function loadAdminData(
     registrations,
     audit,
     auditAvailable: auditRes.error === null,
+  };
+}
+
+/* ========================================================================== */
+/* Familias — el bloque que no es de ningún colegio                           */
+/* ========================================================================== */
+
+/**
+ * UN HIJO, VISTO DESDE LA ADMINISTRACIÓN.
+ *
+ * Lo que NO lleva es tan deliberado como lo que lleva: ni `pin_hash`, ni
+ * `token_hash`, ni la IP desde la que se generó ningún enlace, ni el
+ * user-agent del aparato. `hayDispositivo` y `hayEnlaceVivo` son booleanos y
+ * no listas por el mismo motivo: al superadmin le basta saber SI el niño puede
+ * entrar; cuál es el aparato concreto es asunto de su tutor, y para eso ya
+ * existe la pantalla del tutor.
+ */
+export interface FamiliaHijo {
+  readonly profileId: string;
+  readonly fullName: string;
+  readonly studentCode: string;
+  readonly yearLevel: number;
+  readonly stage: string;
+  readonly hayDispositivo: boolean;
+  readonly hayEnlaceVivo: boolean;
+  /**
+   * `max(student_devices.last_seen_at)`, y NO la última fila de
+   * `accesos_de_alumno`.
+   *
+   * Las dos responden a la pregunta —`auth-pin` sella `last_seen_at` en cada
+   * entrada válida (functions/auth-pin/index.ts:595)—, pero `accesos_de_alumno`
+   * es «la tabla más sensible del sistema» por decisión escrita en 0078: guarda
+   * la IP en claro y sin caducidad. Abrirla para pintar una columna de fecha
+   * sería pasearse por ese dato sin necesitarlo. Se le pregunta a la tabla
+   * barata, que además ya se estaba consultando para saber si hay dispositivo.
+   */
+  readonly ultimoAccesoAt: string | null;
+}
+
+export interface Familia {
+  readonly guardianId: string;
+  readonly guardianName: string;
+  readonly guardianEmail: string | null;
+  readonly hijos: readonly FamiliaHijo[];
+}
+
+/**
+ * Se reexporta para que la pantalla que la pinta importe sus tipos de un solo
+ * sitio. La forma la define `@/lib/tutor/queries`, que es donde vive la única
+ * lectura posible de `guardian_invites`.
+ */
+export type { InvitacionPendiente };
+
+export interface FamiliesData {
+  readonly familias: readonly Familia[];
+  readonly invitaciones: readonly InvitacionPendiente[];
+  /**
+   * `false` si la cola de invitaciones no se pudo leer (falta la clave de
+   * servicio en el entorno, o PostgREST devolvió error). Se distingue de «no
+   * hay ninguna» a propósito: una lista vacía por un fallo de consulta se lee
+   * en pantalla como «no queda nadie por canjear», que es un mensaje falso.
+   */
+  readonly invitacionesDisponibles: boolean;
+}
+
+const FAMILIAS_LIMITE = 500;
+
+/**
+ * Las familias del sistema, para el superadmin.
+ *
+ * ===========================================================================
+ * POR QUÉ ESTA CONSULTA NO PASA POR `school_id`
+ * ===========================================================================
+ * El resto de este fichero filtra por colegio a mano, además de lo que haga
+ * RLS (regla 2 de la cabecera). Aquí no hay nada que filtrar, y no es un
+ * descuido: desde `0066` un hijo dado de alta por su tutor NACE con
+ * `school_id = null`, y `profiles_alcance_por_rol` obliga a que un `guardian`
+ * tampoco tenga colegio. Una familia no pertenece a ningún tenant, así que un
+ * `where school_id = …` no la encontraría nunca — que es exactamente el motivo
+ * por el que los dos únicos alumnos reales de producción eran invisibles desde
+ * `/admin`, se eligiera el colegio que se eligiera.
+ *
+ * Lo que sustituye al filtro de tenant es el rol: esta función solo devuelve
+ * datos al superadmin, y lo comprueba ella misma en vez de fiarse de que la
+ * página lo haya hecho antes.
+ *
+ * ===========================================================================
+ * QUÉ SE LEE CON LA SESIÓN Y QUÉ NO
+ * ===========================================================================
+ * Todo menos la cola de invitaciones. Con la sesión del superadmin llegan
+ * `profiles` (0012, `profiles_select_superadmin`), `guardian_students` (0075,
+ * `vinculos_select_superadmin`), `students` (0012, `students_select_superadmin`),
+ * `student_devices` (0065) y `student_access_links` (0075) — estas dos por el
+ * cuarto camino de `app.puede_ver_alumno`. Comprobado contra la base real antes
+ * de escribir esto, no supuesto.
+ *
+ * `guardian_invites` es la única excepción, y está documentada en
+ * `invitacionesPendientes()`.
+ */
+export async function loadFamiliesData(viewer: SessionProfile): Promise<FamiliesData | null> {
+  // El rol PRIMERO. Que la página no pinte esta sección para un school_admin no
+  // es una garantía: esta función se exporta, y mañana la llama otro sitio.
+  if (viewer.role !== "superadmin") return null;
+
+  const supabase = await createClient();
+
+  const { data: tutoresRaw, error: tutoresError } = await supabase
+    .from("profiles")
+    .select("id, full_name, email")
+    .eq("role", "guardian")
+    .order("full_name", { ascending: true })
+    .limit(FAMILIAS_LIMITE);
+
+  if (tutoresError !== null) {
+    // Ruidoso (R4): devolver la lista vacía en silencio pintaría «todavía no
+    // hay familias» encima de un fallo de consulta.
+    console.error("[cet] loadFamiliesData profiles", tutoresError.code, tutoresError.message);
+    return { familias: [], invitaciones: [], invitacionesDisponibles: false };
+  }
+
+  const tutores = (tutoresRaw ?? []) as Record<string, unknown>[];
+  const tutorIds = tutores.map((row) => asString(row["id"])).filter(isNonNullString);
+
+  const vinculosRes =
+    tutorIds.length === 0
+      ? { data: [] as Record<string, unknown>[] }
+      : await supabase
+          .from("guardian_students")
+          .select("guardian_id, student_id")
+          .in("guardian_id", tutorIds)
+          .is("revoked_at", null);
+
+  const vinculos = (vinculosRes.data ?? []) as Record<string, unknown>[];
+  const hijoIds = [
+    ...new Set(vinculos.map((row) => asString(row["student_id"])).filter(isNonNullString)),
+  ];
+
+  // `expires_at > ahora` se compara contra el reloj de esta aplicación y no
+  // contra el de la base. La regla 4 de la cabecera prohíbe eso para DECIDIR
+  // PERMISOS; aquí no se decide ninguno, solo se pinta un sí o un no
+  // informativo. Un enlace que caduque dentro de un segundo puede salir como
+  // vivo, y no rompe nada. Es la misma cuenta que ya hace `listarHijos()`.
+  const ahora = new Date().toISOString();
+
+  const [perfilesRes, fichasRes, dispositivosRes, enlacesRes] = await Promise.all(
+    hijoIds.length === 0
+      ? [
+          Promise.resolve({ data: [] }),
+          Promise.resolve({ data: [] }),
+          Promise.resolve({ data: [] }),
+          Promise.resolve({ data: [] }),
+        ]
+      : [
+          supabase.from("profiles").select("id, full_name").in("id", hijoIds),
+          supabase
+            .from("students")
+            .select("profile_id, student_code, year_level, stage")
+            .in("profile_id", hijoIds),
+          supabase
+            .from("student_devices")
+            .select("student_id, last_seen_at")
+            .in("student_id", hijoIds)
+            .is("revoked_at", null),
+          supabase
+            .from("student_access_links")
+            .select("student_id")
+            .in("student_id", hijoIds)
+            .is("revoked_at", null)
+            .gt("expires_at", ahora),
+        ],
+  );
+
+  const nombrePorId = new Map<string, string>();
+  for (const fila of (perfilesRes.data ?? []) as Record<string, unknown>[]) {
+    const id = asString(fila["id"]);
+    if (id !== null) nombrePorId.set(id, asString(fila["full_name"]) ?? "");
+  }
+
+  const fichaPorId = new Map<string, Record<string, unknown>>();
+  for (const fila of (fichasRes.data ?? []) as Record<string, unknown>[]) {
+    const id = asString(fila["profile_id"]);
+    if (id !== null) fichaPorId.set(id, fila);
+  }
+
+  const conDispositivo = new Set<string>();
+  const ultimoAccesoPorId = new Map<string, string>();
+  for (const fila of (dispositivosRes.data ?? []) as Record<string, unknown>[]) {
+    const id = asString(fila["student_id"]);
+    if (id === null) continue;
+    conDispositivo.add(id);
+    const visto = asString(fila["last_seen_at"]);
+    // El más reciente de todos sus aparatos: un niño con tablet y portátil
+    // «accedió por última vez» cuando entró por cualquiera de los dos. Comparar
+    // como texto ordena igual que comparar instantes porque PostgREST devuelve
+    // siempre `timestamptz` en ISO-8601 y con el mismo desplazamiento.
+    if (visto !== null && visto > (ultimoAccesoPorId.get(id) ?? "")) {
+      ultimoAccesoPorId.set(id, visto);
+    }
+  }
+
+  const conEnlaceVivo = new Set(
+    ((enlacesRes.data ?? []) as Record<string, unknown>[])
+      .map((fila) => asString(fila["student_id"]))
+      .filter(isNonNullString),
+  );
+
+  const hijosPorTutor = groupBy(
+    vinculos
+      .map((fila) => ({
+        guardianId: asString(fila["guardian_id"]) ?? "",
+        studentId: asString(fila["student_id"]) ?? "",
+      }))
+      .filter((v) => v.guardianId !== "" && v.studentId !== ""),
+    (v) => v.guardianId,
+  );
+
+  const familias: Familia[] = tutores.map((fila) => {
+    const guardianId = asString(fila["id"]) ?? "";
+    const hijos: FamiliaHijo[] = (hijosPorTutor.get(guardianId) ?? []).map((vinculo) => {
+      const ficha = fichaPorId.get(vinculo.studentId) ?? {};
+      return {
+        profileId: vinculo.studentId,
+        fullName: nombrePorId.get(vinculo.studentId) ?? "",
+        studentCode: asString(ficha["student_code"]) ?? "",
+        yearLevel: numberOr(ficha["year_level"], 0),
+        stage: asString(ficha["stage"]) ?? "",
+        hayDispositivo: conDispositivo.has(vinculo.studentId),
+        hayEnlaceVivo: conEnlaceVivo.has(vinculo.studentId),
+        ultimoAccesoAt: ultimoAccesoPorId.get(vinculo.studentId) ?? null,
+      };
+    });
+
+    hijos.sort((a, b) => a.fullName.localeCompare(b.fullName));
+
+    return {
+      guardianId,
+      guardianName: asString(fila["full_name"]) ?? "",
+      guardianEmail: asString(fila["email"]),
+      hijos,
+    };
+  });
+
+  const cola = await invitacionesPendientes();
+
+  return {
+    familias,
+    invitaciones: cola.filas,
+    invitacionesDisponibles: cola.disponible,
   };
 }
 

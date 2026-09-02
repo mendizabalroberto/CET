@@ -22,14 +22,24 @@
  * mensaje que además de inútil era FALSO: sugería una denegación de permisos
  * donde solo faltaba elegir. Un mensaje que miente sobre la causa cuesta más
  * caro que no tener mensaje: manda a quien lo lee a depurar el sitio erróneo.
+ *
+ * LO QUE NO ES DE NINGÚN COLEGIO
+ * ---------------------------------------------------------------------------
+ * Esa misma pantalla —la del superadmin que aún no ha elegido colegio— es donde
+ * viven `InvitarTutor` y `Familias`, y no por comodidad: ni una invitación de
+ * tutor ni una familia pertenecen a ningún colegio, así que preguntarles «¿de
+ * cuál?» no tiene respuesta. Poner `Familias` detrás del selector la habría
+ * dejado tan invisible como estaba: eligiendo colegio, los hijos de un tutor
+ * —que nacen con `school_id = null` desde 0066— no salen en ninguna tabla.
  */
 import Link from "next/link";
 
 import { AdminPanel } from "@/components/staff/AdminPanel";
+import { Familias } from "@/components/staff/Familias";
 import { InvitarTutor } from "@/components/staff/InvitarTutor";
 import { resolveAdminSchool } from "@/components/staff/admin-school";
 import { getStaffDictionary } from "@/components/staff/i18n";
-import { loadAdminData } from "@/components/staff/queries";
+import { loadAdminData, loadFamiliesData } from "@/components/staff/queries";
 import { requireRole } from "@/lib/auth/session";
 import { listActiveSchools } from "@/lib/data/schools";
 import { resolveLocale } from "@/lib/i18n/server";
@@ -57,6 +67,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
   const data = schoolId === null ? null : await loadAdminData(profile, schoolId);
 
+  // Las familias NO dependen del colegio elegido, así que se cargan cuando no
+  // hay ninguno elegido — que es justo la pantalla donde se pintan. Para un
+  // school_admin `loadFamiliesData` devuelve `null` por su cuenta, y de todas
+  // formas esa rama no llega hasta aquí.
+  const familias = data === null && profile.role === "superadmin" ? await loadFamiliesData(profile) : null;
+
   if (data === null) {
     const P = t.admin.schoolPicker;
 
@@ -72,6 +88,21 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             <div className="mt-6">
               <InvitarTutor t={t} />
             </div>
+
+            {/* Y aquí mismo, por el MISMO motivo: una familia no pertenece a
+                ningún colegio. Mientras esto no existió, los únicos alumnos
+                reales del sistema —los que un tutor da de alta en casa, sin
+                colegio desde 0066— no aparecían en ninguna pantalla, se
+                eligiera el colegio que se eligiera. `null` solo llega si el
+                observador no es superadmin, y en esa rama no estamos. */}
+            {familias === null ? null : (
+              <div className="mt-8">
+                <Familias data={familias} locale={locale} t={t} />
+              </div>
+            )}
+
+            {/* La frontera con lo que SÍ es por colegio. */}
+            <hr className="mt-10 border-line" />
 
             <p className="mt-8 max-w-prose text-muted">{P.body}</p>
 

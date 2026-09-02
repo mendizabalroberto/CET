@@ -14,6 +14,7 @@
  */
 import "server-only";
 
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { I18nText } from "@cet/shared";
 
 import { requireRole } from "@/lib/auth/session";
@@ -772,4 +773,99 @@ export async function estadoDeTelegram(): Promise<EstadoDeTelegram> {
   // lo determina no se puede leer desde aqui, y las dos columnas se escriben y
   // se borran juntas, en la misma sentencia, siempre.
   return { disponible: true, vinculado: fecha !== null, vinculadoAt: fecha };
+}
+
+/* ========================================================================== */
+/* La cola de invitaciones — la lee la administracion, vive aqui              */
+/* ========================================================================== */
+
+/** Una invitacion emitida y todavia sin canjear. Nunca su `token_hash`. */
+export interface InvitacionPendiente {
+  readonly id: string;
+  readonly email: string;
+  readonly createdAt: string;
+  readonly expiresAt: string;
+}
+
+/**
+ * Las invitaciones de tutor emitidas que nadie ha canjeado todavia.
+ *
+ * ===========================================================================
+ * QUIEN LA LLAMA NO ES UN TUTOR: ES EL SUPERADMIN, DESDE /admin
+ * ===========================================================================
+ * Y sin embargo la funcion vive AQUI y no en `components/staff/queries.ts`,
+ * que es donde se pinta. El motivo es que `guardian_invites` no tiene NI UNA
+ * politica RLS —para nadie, tampoco para el superadmin— y ademas `0065` le
+ * retira todo privilegio a `authenticated` y a `anon`. No es un olvido: la
+ * cabecera de aquella migracion lo escribe con todas las letras — la tabla
+ * guarda credenciales de alta, y «para todos los demas es inalcanzable, que es
+ * el fallo seguro correcto».
+ *
+ * Asi que hay dos formas de leerla, y las dos son malas de distinta manera:
+ *
+ *   a) Escribir una politica que deje entrar al superadmin. Seria deshacer la
+ *      decision de 0065 desde el lado equivocado: volveria alcanzable por
+ *      sesion una tabla que hoy solo alcanza el proceso que la escribe, y todo
+ *      para pintar una lista.
+ *   b) Escalar a `service_role`, que es lo que hace esta funcion.
+ *
+ * (b) gana, y ademas gana SIN ampliar la superficie: este modulo YA es una de
+ * las excepciones tasadas de `apps/web/eslint.config.mjs`, y es el mismo
+ * modulo cuyo `actions.ts` INSERTA en esta tabla desde `invitarTutor`. Meter
+ * la lectura en `components/staff/queries.ts` habria obligado a añadir una
+ * quinta entrada a esa lista, y la cabecera del fichero de lint dice que si esa
+ * lista crece es un fallo de arquitectura y no una necesidad.
+ *
+ * NO COMPRUEBA EL ROL, y eso es deliberado: no es una Server Action, no hay
+ * endpoint HTTP que apunte aqui, y quien la llama —`loadFamiliesData`— ya
+ * devuelve `null` a todo el que no sea superadmin antes de invocarla. Si algun
+ * dia se convierte en accion, la comprobacion va DELANTE de la escalada.
+ *
+ * SE PIDEN CUATRO COLUMNAS Y NINGUNA MAS. `token_hash` no aparece ni en la
+ * lista: es el hash de una credencial y no hace falta para pintar nada. Con
+ * `service_role` no hay grant por columna que lo impida, asi que lo impide la
+ * revision de este `select` — por eso esta escrito columna a columna y jamas
+ * como un `*`.
+ *
+ * @returns `disponible: false` cuando la consulta falla. Quien llama decide que
+ *   enseñar; esta funcion NO LANZA.
+ */
+export async function invitacionesPendientes(): Promise<{
+  readonly filas: readonly InvitacionPendiente[];
+  readonly disponible: boolean;
+}> {
+  let admin: SupabaseClient;
+  try {
+    admin = createAdminClient(
+      "Leer la cola de invitaciones de tutor: guardian_invites no tiene ninguna politica RLS, por diseño (0065)",
+    );
+  } catch (causa) {
+    // Sin `SUPABASE_SERVICE_ROLE_KEY` el constructor lanza. La pantalla que la
+    // llama no se cae por eso: pinta el resto y avisa de que esto no se leyo.
+    console.error("[cet] invitacionesPendientes sin cliente de servicio", causa);
+    return { filas: [], disponible: false };
+  }
+
+  const { data, error } = await admin
+    .from("guardian_invites")
+    .select("id, email, created_at, expires_at")
+    .is("used_at", null)
+    .is("revoked_at", null)
+    .order("created_at", { ascending: false })
+    .limit(200);
+
+  if (error !== null) {
+    console.error("[cet] invitacionesPendientes select", error.code, error.message);
+    return { filas: [], disponible: false };
+  }
+
+  const filas: InvitacionPendiente[] = ((data ?? []) as Fila[]).map((fila) => ({
+    id: texto(fila, "id"),
+    // `email` es `citext`: PostgREST lo devuelve como cadena igualmente.
+    email: texto(fila, "email"),
+    createdAt: texto(fila, "created_at"),
+    expiresAt: texto(fila, "expires_at"),
+  }));
+
+  return { filas, disponible: true };
 }
