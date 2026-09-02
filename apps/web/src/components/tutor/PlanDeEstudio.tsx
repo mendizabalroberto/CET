@@ -3,12 +3,7 @@
 import { useActionState, useRef } from "react";
 
 import { useI18n } from "@/lib/i18n/provider";
-import {
-  confirmarBoletin,
-  fijarPlan,
-  proponerPlan,
-  subirBoletin,
-} from "@/lib/plan/acciones";
+import { confirmarBoletin, fijarPlan, proponerPlan, subirBoletin } from "@/lib/plan/acciones";
 import type { BoletinResumen, PlanResumen } from "@/lib/plan/consultas";
 
 type TechoVisible = {
@@ -149,19 +144,25 @@ export function PlanDeEstudio({ studentId, boletin, plan }: Props) {
     <div className="overflow-x-auto">
       <table className="w-full border-collapse text-sm">
         <thead>
-          <tr className="border-b border-line text-left text-muted">
-            <th scope="col" className="px-4 py-3 font-semibold">{P.colSubject}</th>
-            <th scope="col" className="px-4 py-3 text-right font-semibold">{P.colGrade}</th>
-            <th scope="col" className="px-4 py-3 text-right font-semibold">{P.colBand}</th>
+          <tr className="border-line text-muted border-b text-left">
+            <th scope="col" className="px-4 py-3 font-semibold">
+              {P.colSubject}
+            </th>
+            <th scope="col" className="px-4 py-3 text-right font-semibold">
+              {P.colGrade}
+            </th>
+            <th scope="col" className="px-4 py-3 text-right font-semibold">
+              {P.colBand}
+            </th>
           </tr>
         </thead>
         <tbody>
           {notas.map((nota, indice) => (
-            <tr key={`${nota.materia}-${indice}`} className="border-b border-line last:border-0">
-              <th scope="row" className="px-4 py-3 text-left font-semibold text-ink">
+            <tr key={`${nota.materia}-${indice}`} className="border-line border-b last:border-0">
+              <th scope="row" className="text-ink px-4 py-3 text-left font-semibold">
                 {nota.materia}
                 {nota.code === null ? (
-                  <p className="mt-1 text-[13px] text-muted">{P.notPlanned}</p>
+                  <p className="text-muted mt-1 text-[13px]">{P.notPlanned}</p>
                 ) : null}
               </th>
               <td className="px-4 py-3 text-right">
@@ -172,13 +173,13 @@ export function PlanDeEstudio({ studentId, boletin, plan }: Props) {
                     max={100}
                     name={`nota:${indice}`}
                     defaultValue={nota.nota}
-                    className="w-20 rounded-lg border-2 border-line bg-bg px-2 py-1 text-right text-ink"
+                    className="border-line bg-bg text-ink w-20 rounded-lg border-2 px-2 py-1 text-right"
                   />
                 ) : (
-                  <span className="font-semibold text-ink">{nota.nota}</span>
+                  <span className="text-ink font-semibold">{nota.nota}</span>
                 )}
               </td>
-              <td className="px-4 py-3 font-medium text-ink">{P.bands[nota.banda]}</td>
+              <td className="text-ink px-4 py-3 font-medium">{P.bands[nota.banda]}</td>
             </tr>
           ))}
         </tbody>
@@ -188,7 +189,7 @@ export function PlanDeEstudio({ studentId, boletin, plan }: Props) {
 
   const formularioDeSubida = (
     <form action={accionSubir} onSubmit={marcar("subir")} className="mt-4 space-y-3">
-      <label htmlFor="plan-archivo" className="block font-semibold text-ink">
+      <label htmlFor="plan-archivo" className="text-ink block font-semibold">
         {P.uploadLabel}
       </label>
       <input
@@ -196,55 +197,59 @@ export function PlanDeEstudio({ studentId, boletin, plan }: Props) {
         type="file"
         accept="application/pdf"
         name="archivo"
-        className="block w-full text-sm text-ink"
+        className="text-ink block w-full text-sm"
       />
       <input type="hidden" name="studentId" value={studentId} />
       <button
         type="submit"
         disabled={subiendo}
-        className="rounded-xl bg-brand px-5 py-3 font-semibold text-on-brand disabled:opacity-60"
+        className="bg-brand text-on-brand rounded-xl px-5 py-3 font-semibold disabled:opacity-60"
       >
         {subiendo ? P.uploading : P.uploadButton}
       </button>
-      <p className="text-[15px] text-muted">{P.uploadHelp}</p>
+      <p className="text-muted text-[15px]">{P.uploadHelp}</p>
     </form>
   );
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border-2 border-line bg-card p-5">
-        <h2 className="text-lg font-bold text-ink">{P.uploadTitle}</h2>
-        <p className="mt-2 text-muted">{P.intro}</p>
+      <section className="border-line bg-card rounded-2xl border-2 p-5">
+        <h2 className="text-ink text-lg font-bold">{P.uploadTitle}</h2>
+        <p className="text-muted mt-2">{P.intro}</p>
         {boletin === null ? formularioDeSubida : null}
       </section>
 
       {boletin !== null ? (
-        <section className="rounded-2xl border-2 border-line bg-card p-5">
-          <h2 className="text-lg font-bold text-ink">{P.extractedTitle}</h2>
-          <p className="mt-2 text-muted">
+        <section className="border-line bg-card rounded-2xl border-2 p-5">
+          <h2 className="text-ink text-lg font-bold">{P.extractedTitle}</h2>
+          <p className="text-muted mt-2">
             {boletin.trimestre === null
               ? fmt(P.termUnknown, { year: boletin.gestion })
               : fmt(P.term, { n: boletin.trimestre, year: boletin.gestion })}
           </p>
           {boletin.estado === "extraido" ? (
-            <form action={accionConfirmar} onSubmit={marcar("confirmar")} className="mt-4 space-y-3">
+            <form
+              action={accionConfirmar}
+              onSubmit={marcar("confirmar")}
+              className="mt-4 space-y-3"
+            >
               <input type="hidden" name="studentId" value={studentId} />
               <input type="hidden" name="boletinId" value={boletin.id} />
               {tablaDeNotas}
               <button
                 type="submit"
                 disabled={confirmando}
-                className="rounded-xl bg-brand px-5 py-3 font-semibold text-on-brand disabled:opacity-60"
+                className="bg-brand text-on-brand rounded-xl px-5 py-3 font-semibold disabled:opacity-60"
               >
                 {confirmando ? P.confirming : P.confirmButton}
               </button>
-              <p className="text-[15px] text-muted">{P.extractedHelp}</p>
+              <p className="text-muted text-[15px]">{P.extractedHelp}</p>
             </form>
           ) : (
             <div className="mt-4 space-y-3">
               {tablaDeNotas}
               {fechaConfirmado !== null ? (
-                <p className="text-[15px] text-muted">
+                <p className="text-muted text-[15px]">
                   {fmt(P.confirmed, { date: fechaConfirmado })}
                 </p>
               ) : null}
@@ -255,8 +260,8 @@ export function PlanDeEstudio({ studentId, boletin, plan }: Props) {
       ) : null}
 
       {boletin !== null && boletin.estado === "confirmado" ? (
-        <section className="rounded-2xl border-2 border-line bg-card p-5">
-          <h2 className="text-lg font-bold text-ink">{P.proposalTitle}</h2>
+        <section className="border-line bg-card rounded-2xl border-2 p-5">
+          <h2 className="text-ink text-lg font-bold">{P.proposalTitle}</h2>
           {!hayPropuesta ? (
             <form action={accionProponer} onSubmit={marcar("proponer")} className="mt-4">
               <input type="hidden" name="studentId" value={studentId} />
@@ -264,7 +269,7 @@ export function PlanDeEstudio({ studentId, boletin, plan }: Props) {
               <button
                 type="submit"
                 disabled={proponiendo}
-                className="rounded-xl bg-brand px-5 py-3 font-semibold text-on-brand disabled:opacity-60"
+                className="bg-brand text-on-brand rounded-xl px-5 py-3 font-semibold disabled:opacity-60"
               >
                 {proponiendo ? P.proposing : P.proposeButton}
               </button>
@@ -279,8 +284,16 @@ export function PlanDeEstudio({ studentId, boletin, plan }: Props) {
                 name="recomendaciones"
                 value={textoDe(valoresPropuesta, "recomendaciones") ?? ""}
               />
-              <input type="hidden" name="modelo" value={textoDe(valoresPropuesta, "modelo") ?? ""} />
-              <input type="hidden" name="tokensIn" value={numeroDe(valoresPropuesta, "tokensIn") ?? 0} />
+              <input
+                type="hidden"
+                name="modelo"
+                value={textoDe(valoresPropuesta, "modelo") ?? ""}
+              />
+              <input
+                type="hidden"
+                name="tokensIn"
+                value={numeroDe(valoresPropuesta, "tokensIn") ?? 0}
+              />
               <input
                 type="hidden"
                 name="tokensOut"
@@ -288,7 +301,7 @@ export function PlanDeEstudio({ studentId, boletin, plan }: Props) {
               />
               <input type="hidden" name="desde" value={desdePropuesta} />
               <input type="hidden" name="hasta" value={hastaPropuesta} />
-              <p className="text-[15px] text-ink">
+              <p className="text-ink text-[15px]">
                 {fmt(P.windowLine, {
                   from: fechaLegible(desdePropuesta, locale),
                   to: fechaLegible(hastaPropuesta, locale),
@@ -296,7 +309,7 @@ export function PlanDeEstudio({ studentId, boletin, plan }: Props) {
                 })}
               </p>
               <div>
-                <label htmlFor="plan-minutos" className="block font-semibold text-ink">
+                <label htmlFor="plan-minutos" className="text-ink block font-semibold">
                   {P.minutesLabel}
                 </label>
                 <input
@@ -306,24 +319,28 @@ export function PlanDeEstudio({ studentId, boletin, plan }: Props) {
                   min={10}
                   max={180}
                   defaultValue={minutosPropuesta}
-                  className="w-32 rounded-lg border-2 border-line bg-bg px-3 py-2 text-ink"
+                  className="border-line bg-bg text-ink w-32 rounded-lg border-2 px-3 py-2"
                 />
-                <p className="mt-1 text-[15px] text-muted">{P.minutesHelp}</p>
+                <p className="text-muted mt-1 text-[15px]">{P.minutesHelp}</p>
               </div>
               <div>
-                <h3 className="font-semibold text-ink">{P.weightsTitle}</h3>
-                <ul className="mt-1 list-inside list-disc text-[15px] text-ink">
+                <h3 className="text-ink font-semibold">{P.weightsTitle}</h3>
+                <ul className="text-ink mt-1 list-inside list-disc text-[15px]">
                   {Object.entries(pesosPropuesta).map(([code, peso]) => {
                     const nombre = nombrePorCode.get(code) ?? code;
-                    return <li key={code}>{nombre} → {Math.round(peso * 100)}%</li>;
+                    return (
+                      <li key={code}>
+                        {nombre} → {Math.round(peso * 100)}%
+                      </li>
+                    );
                   })}
                 </ul>
               </div>
               {recomendacionesPropuesta.length > 0 ? (
                 <div>
-                  <h3 className="font-semibold text-ink">{P.recommendationsTitle}</h3>
-                  <p className="text-[15px] text-muted">{P.recommendationsNote}</p>
-                  <ul className="mt-1 list-inside list-disc text-[15px] text-ink">
+                  <h3 className="text-ink font-semibold">{P.recommendationsTitle}</h3>
+                  <p className="text-muted text-[15px]">{P.recommendationsNote}</p>
+                  <ul className="text-ink mt-1 list-inside list-disc text-[15px]">
                     {recomendacionesPropuesta.map((recomendacion, indice) => (
                       <li key={`${indice}-${recomendacion}`}>{recomendacion}</li>
                     ))}
@@ -331,12 +348,14 @@ export function PlanDeEstudio({ studentId, boletin, plan }: Props) {
                 </div>
               ) : null}
               {plan !== null ? (
-                <p className="rounded-lg bg-bg px-4 py-3 text-[15px] text-ink">{P.replaceWarning}</p>
+                <p className="bg-bg text-ink rounded-lg px-4 py-3 text-[15px]">
+                  {P.replaceWarning}
+                </p>
               ) : null}
               <button
                 type="submit"
                 disabled={fijando}
-                className="rounded-xl bg-brand px-5 py-3 font-semibold text-on-brand disabled:opacity-60"
+                className="bg-brand text-on-brand rounded-xl px-5 py-3 font-semibold disabled:opacity-60"
               >
                 {fijando ? P.creating : P.createButton}
               </button>
@@ -346,32 +365,32 @@ export function PlanDeEstudio({ studentId, boletin, plan }: Props) {
       ) : null}
 
       {hayPlan ? (
-        <section className="rounded-2xl border-2 border-line bg-card p-5">
-          <h2 className="text-lg font-bold text-ink">{P.activeTitle}</h2>
+        <section className="border-line bg-card rounded-2xl border-2 p-5">
+          <h2 className="text-ink text-lg font-bold">{P.activeTitle}</h2>
           {plan !== null ? (
             <>
-              <p className="mt-2 text-[15px] text-ink">
+              <p className="text-ink mt-2 text-[15px]">
                 {fmt(P.activeRange, {
                   from: fechaLegible(plan.desde, locale),
                   to: fechaLegible(plan.hasta, locale),
                 })}
               </p>
-              <p className="mt-1 text-[15px] text-ink">
+              <p className="text-ink mt-1 text-[15px]">
                 {fmt(P.activeMinutes, { count: plan.minutosPorDia })}
               </p>
-              <p className="mt-1 text-[15px] text-ink">
+              <p className="text-ink mt-1 text-[15px]">
                 {fmt(P.activeTasks, { count: plan.tareas })}
               </p>
             </>
           ) : tareasFijadas !== null ? (
-            <p className="mt-2 text-[15px] text-ink">
+            <p className="text-ink mt-2 text-[15px]">
               {fmt(P.activeTasks, { count: tareasFijadas })}
             </p>
           ) : null}
           {techosVisibles.length > 0 ? (
             <div className="mt-4">
-              <h3 className="font-semibold text-ink">{P.ceilingsTitle}</h3>
-              <ul className="mt-1 space-y-1 text-[15px] text-ink">
+              <h3 className="text-ink font-semibold">{P.ceilingsTitle}</h3>
+              <ul className="text-ink mt-1 space-y-1 text-[15px]">
                 {techosVisibles.map((techo) => (
                   <li key={techo.subjectId}>
                     {fmt(P.ceilingLine, {
@@ -386,8 +405,8 @@ export function PlanDeEstudio({ studentId, boletin, plan }: Props) {
           ) : null}
           {plan !== null && plan.recomendaciones.length > 0 ? (
             <div className="mt-4">
-              <h3 className="font-semibold text-ink">{P.recommendationsTitle}</h3>
-              <ul className="mt-1 list-inside list-disc text-[15px] text-ink">
+              <h3 className="text-ink font-semibold">{P.recommendationsTitle}</h3>
+              <ul className="text-ink mt-1 list-inside list-disc text-[15px]">
                 {plan.recomendaciones.map((recomendacion, indice) => (
                   <li key={`${indice}-${recomendacion}`}>{recomendacion}</li>
                 ))}
@@ -395,9 +414,9 @@ export function PlanDeEstudio({ studentId, boletin, plan }: Props) {
             </div>
           ) : null}
           <div className="mt-4">
-            <h3 className="font-semibold text-ink">{P.reportsTitle}</h3>
+            <h3 className="text-ink font-semibold">{P.reportsTitle}</h3>
             {plan !== null && plan.partes.length > 0 ? (
-              <ul className="mt-1 space-y-1 text-[15px] text-ink">
+              <ul className="text-ink mt-1 space-y-1 text-[15px]">
                 {plan.partes.map((parte, indice) => (
                   <li key={`${parte.fecha}-${indice}`}>
                     {fmt(P.reportLine, {
@@ -411,26 +430,26 @@ export function PlanDeEstudio({ studentId, boletin, plan }: Props) {
                 ))}
               </ul>
             ) : (
-              <p className="mt-1 text-[15px] text-muted">{P.reportsEmpty}</p>
+              <p className="text-muted mt-1 text-[15px]">{P.reportsEmpty}</p>
             )}
           </div>
         </section>
       ) : boletin === null ? (
-        <section className="rounded-2xl border-2 border-line bg-card p-5">
-          <h2 className="text-lg font-bold text-ink">{P.noPlanTitle}</h2>
-          <p className="mt-2 text-muted">{P.noReportCard}</p>
+        <section className="border-line bg-card rounded-2xl border-2 p-5">
+          <h2 className="text-ink text-lg font-bold">{P.noPlanTitle}</h2>
+          <p className="text-muted mt-2">{P.noReportCard}</p>
         </section>
       ) : (
-        <section className="rounded-2xl border-2 border-line bg-card p-5">
-          <h2 className="text-lg font-bold text-ink">{P.noPlanTitle}</h2>
-          <p className="mt-2 text-muted">{P.noPlanBody}</p>
+        <section className="border-line bg-card rounded-2xl border-2 p-5">
+          <h2 className="text-ink text-lg font-bold">{P.noPlanTitle}</h2>
+          <p className="text-muted mt-2">{P.noPlanBody}</p>
         </section>
       )}
 
       {mensaje !== null ? (
         <p
           role="alert"
-          className="rounded-lg border-l-4 border-danger bg-danger/10 px-4 py-3 text-[15px] text-ink"
+          className="border-danger bg-danger/10 text-ink rounded-lg border-l-4 px-4 py-3 text-[15px]"
         >
           {mensaje}
         </p>
