@@ -651,12 +651,90 @@ describe("seguimiento — el reparto por materia", () => {
     const conMaterias: SeguimientoDeHijo = {
       ...UNA_TARDE,
       materias: [
-        { subjectId: "s1", code: "math", nombre: { es: "Matemáticas", en: "Maths" }, minutos: 60 },
+        {
+          subjectId: "s1",
+          code: "math",
+          nombre: { es: "Matemáticas", en: "Maths" },
+          minutos: 60,
+          itemsRespondidos: 0,
+          porcentajeAcierto: null,
+          leccionesCompletadas: 0,
+        },
       ],
     };
     const items = propsDeSeguimiento(conMaterias, "Leo", "es")?.subjects?.items ?? [];
     expect(items).toEqual([
       { subjectCode: "math", name: "Matemáticas", minutes: 60, minutesText: "1 h 00 min" },
     ]);
+  });
+
+  it("con items respondidos, la fila trae el acierto", () => {
+    const conMaterias: SeguimientoDeHijo = {
+      ...UNA_TARDE,
+      materias: [
+        {
+          subjectId: "s1",
+          code: "math",
+          nombre: { es: "Matemáticas", en: "Maths" },
+          minutos: 60,
+          itemsRespondidos: 4,
+          porcentajeAcierto: 75,
+          leccionesCompletadas: 0,
+        },
+      ],
+    };
+    const fila = propsDeSeguimiento(conMaterias, "Leo", "es")?.subjects?.items[0];
+    expect(fila?.accuracyText).toBe("75 %");
+    expect(fila?.lessonsText).toBeUndefined();
+  });
+
+  it("sin items respondidos no se escribe '0 %', ni siquiera si porcentajeAcierto llegara a 0", () => {
+    const conMaterias: SeguimientoDeHijo = {
+      ...UNA_TARDE,
+      materias: [
+        {
+          subjectId: "s1",
+          code: "math",
+          nombre: { es: "Matemáticas", en: "Maths" },
+          minutos: 60,
+          itemsRespondidos: 0,
+          porcentajeAcierto: null,
+          leccionesCompletadas: 0,
+        },
+      ],
+    };
+    const fila = propsDeSeguimiento(conMaterias, "Leo", "es")?.subjects?.items[0];
+    expect(fila?.accuracyText).toBeUndefined();
+  });
+
+  it("con lecciones completadas, la fila trae la cuenta; sin ninguna, no se escribe '0 lecciones'", () => {
+    const conMaterias: SeguimientoDeHijo = {
+      ...UNA_TARDE,
+      materias: [
+        {
+          subjectId: "s1",
+          code: "math",
+          nombre: { es: "Matemáticas", en: "Maths" },
+          minutos: 60,
+          itemsRespondidos: 0,
+          porcentajeAcierto: null,
+          leccionesCompletadas: 1,
+        },
+        {
+          subjectId: "s2",
+          code: "english",
+          nombre: { es: "Inglés", en: "English" },
+          minutos: 20,
+          itemsRespondidos: 0,
+          porcentajeAcierto: null,
+          leccionesCompletadas: 0,
+        },
+      ],
+    };
+    const items = propsDeSeguimiento(conMaterias, "Leo", "es")?.subjects?.items ?? [];
+    const math = items.find((i) => i.subjectCode === "math");
+    const english = items.find((i) => i.subjectCode === "english");
+    expect(math?.lessonsText).toBe("1 lección");
+    expect(english?.lessonsText).toBeUndefined();
   });
 });

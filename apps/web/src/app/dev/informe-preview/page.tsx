@@ -122,8 +122,26 @@ function casos(): readonly Caso[] {
   ];
 
   const materias: SeguimientoDeHijo["materias"] = [
-    { subjectId: "s-math", code: "math", nombre: { es: "Matemáticas", en: "Maths" }, minutos: 108 },
-    { subjectId: "s-eng", code: "english", nombre: { es: "Inglés", en: "English" }, minutos: 85 },
+    {
+      subjectId: "s-math",
+      code: "math",
+      nombre: { es: "Matemáticas", en: "Maths" },
+      minutos: 108,
+      itemsRespondidos: 96,
+      porcentajeAcierto: 78,
+      leccionesCompletadas: 2,
+    },
+    {
+      subjectId: "s-eng",
+      code: "english",
+      nombre: { es: "Inglés", en: "English" },
+      minutos: 85,
+      // Sin ningún item respondido esta semana: la fila no lleva acierto. Es
+      // el «cero que no significa cero» aplicado a una materia entera.
+      itemsRespondidos: 0,
+      porcentajeAcierto: null,
+      leccionesCompletadas: 1,
+    },
   ];
 
   const minutosNormales = [22, 0, 45, 38, 0, 61, 27];

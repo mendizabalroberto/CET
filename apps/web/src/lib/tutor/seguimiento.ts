@@ -493,7 +493,24 @@ function adherenciaAlPlan(
   };
 }
 
-/** El reparto por materia, listo para `SubjectBreakdown`. Ver `MateriaDeHijo`. */
+/** «1 lección» / «5 lecciones», en el idioma que se pida. Misma forma que `textoDeDias`. */
+function textoDeLecciones(cuantas: number, locale: Locale): string {
+  const textos = getDictionary(locale).tutor.child.progress;
+  return cuantas === 1 ? textos.lessonOne : interpolate(textos.lessonMany, { count: cuantas });
+}
+
+/**
+ * El reparto por materia, listo para `SubjectBreakdown`. Ver `MateriaDeHijo`.
+ *
+ * ACIERTO Y LECCIONES, LA MISMA REGLA DEL CERO QUE NO ES CERO. `accuracyText`
+ * solo se rellena con `itemsRespondidos > 0` — `porcentajeAcierto` puede venir
+ * `null` de la base (sin items) o, en teoría, `0` de verdad (todo fallado);
+ * comprobar los items y no el porcentaje es lo que distingue «no hubo
+ * preguntas» de «las falló todas», que son dos frases distintas y la segunda
+ * sí hay que poder escribirla. `lessonsText` solo con lecciones completadas:
+ * una materia con cero lecciones terminadas no se rotula «0 lecciones», que
+ * leído junto a los minutos parece un reproche.
+ */
 function desgloseDeMaterias(
   seguimiento: SeguimientoDeHijo,
   locale: Locale,
@@ -503,6 +520,12 @@ function desgloseDeMaterias(
     name: resolveI18n(m.nombre, locale),
     minutes: m.minutos,
     minutesText: textoDeMinutos(m.minutos, locale),
+    ...(m.itemsRespondidos > 0 && m.porcentajeAcierto !== null
+      ? { accuracyText: textoDePorcentaje(m.porcentajeAcierto, locale) }
+      : {}),
+    ...(m.leccionesCompletadas > 0
+      ? { lessonsText: textoDeLecciones(m.leccionesCompletadas, locale) }
+      : {}),
   }));
 }
 
