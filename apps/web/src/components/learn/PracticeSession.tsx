@@ -53,7 +53,9 @@ import {
 
 import { useTelemetry } from "@/lib/telemetry/provider";
 
+import { ProveedorDeCronometro } from "./cronometro-de-pantalla";
 import { getLearnDictionary, learnI18n, learnI18nWith } from "./dictionary";
+import { TiempoEnPantalla } from "./TiempoEnPantalla";
 import {
   accuracyPercent,
   initialPracticeState,
@@ -379,6 +381,11 @@ export function PracticeSession({ topicId, locale, levels }: PracticeSessionProp
         );
 
   return (
+    // El `id` es el TEMA, no la pantalla: cambiar de tema cierra la visita con
+    // su total y abre otra. Un nino que pasa por cinco temas en media hora hizo
+    // cinco cosas, y medirlas como una sola sesion larga de «practica» borraria
+    // justo el dato que dice donde se atasca.
+    <ProveedorDeCronometro pantalla="practica" id={topic.id}>
     <div className="flex flex-col gap-6">
       <TopicChips topics={topics} activeId={topic.id} locale={locale} levels={levels} />
 
@@ -389,6 +396,10 @@ export function PracticeSession({ topicId, locale, levels }: PracticeSessionProp
       ) : null}
 
       <section aria-label={t.title} className="flex flex-col gap-4">
+        {/* Arriba del todo y a la derecha: acompana, no compite con la racha ni
+            con el enunciado. Es el mismo reloj que mide, no un segundo calculo. */}
+        <TiempoEnPantalla className="self-end" />
+
         {/* DOS indicadores, no cuatro. Había seis en total y dos parejas medían
             exactamente el mismo número: el StatTile «Acierto» decía lo mismo que
             la ProgressBar de acierto, y el StatTile «Mejor» lo mismo que el
@@ -614,6 +625,7 @@ export function PracticeSession({ topicId, locale, levels }: PracticeSessionProp
 
       <LiveRegion message={live} />
     </div>
+    </ProveedorDeCronometro>
   );
 }
 

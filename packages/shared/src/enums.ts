@@ -131,3 +131,24 @@ export type SectionRole = z.infer<typeof sectionRole>;
  */
 export const membershipStatus = z.enum(["solicitada", "activa", "rechazada", "terminada"]);
 export type MembershipStatus = z.infer<typeof membershipStatus>;
+
+/**
+ * Qué clase de acceso registra una fila de `accesos_de_alumno` (migración 0078).
+ *
+ * El orden es el de la migración y no se toca: en Postgres el orden de
+ * declaración de un enum ES su orden de comparación, así que reordenarlo aquí
+ * para que quede alfabético cambiaría el significado de un `order by` allí.
+ *
+ * Este enum llegó a producción sin pasar por aquí, y `enum-parity.test.ts` lo
+ * cazó con el mensaje exacto: «estos tipos existen en Postgres pero no en
+ * @cet/shared: acceso_tipo». Es el segundo caso después de `membershipStatus`,
+ * y el mismo descuido: la migración se escribe mirando la base y nadie se
+ * acuerda de que el contrato compartido también describe esa base.
+ */
+export const accesoTipo = z.enum([
+  "enlace_canjeado",
+  "login_ok",
+  "login_fallido",
+  "dispositivo_olvidado",
+]);
+export type AccesoTipo = z.infer<typeof accesoTipo>;

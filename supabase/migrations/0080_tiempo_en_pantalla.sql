@@ -1,0 +1,48 @@
+-- =============================================================================
+-- 0080_tiempo_en_pantalla.sql
+-- Cambridge Exam Trainer · © 2026 Roberto Mendizabal.
+-- =============================================================================
+-- EL NINO NO SABE CUANTO LLEVA, Y NOSOTROS TAMPOCO SE LO PODEMOS DECIR
+--
+-- No hay ni un solo reloj en la leccion ni en la practica. Un nino de once anos
+-- no tiene forma de saber si lleva cuatro minutos o veinte, y el tutor solo lo
+-- sabe por agregados que se calculan a posteriori.
+--
+-- `lessons.estimated_minutes` no sirve para decirselo: esta relleno en las 33
+-- lecciones con el valor 20. Minimo 20, maximo 20. No es una estimacion, es un
+-- valor por defecto que nadie llego a rellenar, y pintarlo en pantalla seria
+-- mentirle al nino con la precision de un dato inventado. Por eso de momento
+-- solo se muestra el tiempo TRANSCURRIDO, y este evento es lo que permitira
+-- que algun dia esa estimacion salga de la mediana real en vez de a ojo.
+--
+-- POR QUE UN EVENTO NUEVO Y NO UN CAMPO EN LOS QUE YA HAY
+--
+-- `lesson_block_viewed` ya lleva el dwell de cada bloque, pero se emite al
+-- CAMBIAR de bloque: el nino que se queda veinte minutos en el mismo bloque no
+-- genera ninguno. Y `lesson_completed` solo llega si termina. El tiempo de
+-- pantalla necesita su propio evento porque su unidad no es el bloque ni la
+-- leccion terminada, es el rato.
+--
+-- EL LATIDO, Y POR QUE NO BASTA CON EMITIR AL SALIR
+--
+-- Este evento se emite cada 60 s de tiempo ACTIVO, no solo al abandonar la
+-- pantalla. Si solo se emitiera al salir, el portatil que se cierra de golpe se
+-- llevaria la sesion entera —y esa es EXACTAMENTE la forma en que se rompio el
+-- calculo de 0064, donde una pestana olvidada produjo 429 minutos de «estudio»
+-- en un nino de primaria, el 94 % en un solo dia—. Con latido, lo peor que se
+-- pierde son sesenta segundos.
+--
+-- POR QUE EL PAYLOAD LLEVA DOS RELOJES
+--
+-- `msActivos` descuenta pestana oculta, ventana sin foco e inactividad, con el
+-- MISMO criterio que 0064 aplica al informe del tutor. `msBrutos` es el reloj
+-- de pared. Guardar los dos permite responder «cuanto tardo» y «cuanto estuvo
+-- delante sin hacer nada», que son preguntas distintas y las dos importan.
+--
+-- Si algun dia el cronometro de la pantalla y el informe del tutor no cuadran,
+-- la comparacion de estos dos numeros es la que dice cual de los dos miente.
+-- =============================================================================
+
+-- `if not exists` porque un enum no se puede anadir dos veces y esta migracion
+-- tiene que poder reaplicarse sin dejar la cadena a medias.
+alter type public.learning_event_type add value if not exists 'tiempo_en_pantalla';

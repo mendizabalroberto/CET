@@ -82,6 +82,14 @@ export const learnEs: LearnDictionary = {
     tableCaption: "Tabla",
     unsupportedBlock: "Esta parte de la lección todavía no se puede ver en este dispositivo.",
   },
+  /** Ver la nota de `learn.en.ts`: solo se dice el tiempo TRANSCURRIDO. */
+  time: {
+    label: "Tiempo en esta pantalla",
+    minutesSoFar: "Llevas {count} minutos",
+    minuteSoFar: "Llevas 1 minuto",
+    summary: "Has estado {count} minutos.",
+    summaryOne: "Has estado 1 minuto.",
+  },
   practice: {
     title: "Práctica",
     subtitle: "Elige un tema. Cada pregunta es nueva y sabes al momento si la has acertado.",

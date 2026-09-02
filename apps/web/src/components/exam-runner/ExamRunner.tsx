@@ -41,6 +41,7 @@ import {
   type NavigatorEntry,
 } from "@cet/ui";
 
+import { useCronometroActivo } from "@/components/learn/cronometro-de-pantalla";
 import { useTelemetry } from "@/lib/telemetry/provider";
 
 import { AnswerInput } from "./AnswerInput";
@@ -52,6 +53,7 @@ import { recoverResponses } from "./recovery";
 import { isAnswered, responsesEqual, unansweredOrdinals } from "./responses";
 import { saveAnswer, startAttempt, submitAttempt } from "./api";
 import { SubmitGuard } from "./submit-guard";
+import { guardarTiempoDelIntento } from "./tiempo-del-intento";
 import { ApiError, type AttemptItemStudent, type StartAttemptResponse, type SubmitReason } from "./types";
 
 /** Sin interacción durante este tiempo, se cuenta como distraído. */
@@ -125,6 +127,22 @@ export function ExamRunner({ assignmentId, locale, resultHref }: ExamRunnerProps
   // reejecutaba en cada pintado. En la pantalla del examen eso significa
   // recrear el autosave y recalcular la navegacion mientras el alumno teclea,
   // con el cronometro corriendo.
+  /**
+   * El tiempo ACTIVO del intento. SIN reloj en pantalla: el examen ya tiene su
+   * cuenta atras, cuya verdad esta en `server_deadline_at`, y dos cronometros a
+   * la vez es como se agobia a un nino de once anos. Se mide igual que en la
+   * leccion y en la practica —misma definicion, un solo concepto de «tiempo»—,
+   * se almacena igual, y solo se ENSENA en el resumen final.
+   *
+   * `id` es `null` hasta que el servidor devuelve el intento: sin intento no hay
+   * nada que medir y el cronometro no arranca.
+   */
+  const cronometro = useCronometroActivo({
+    pantalla: "examen",
+    id: attempt?.attemptId ?? null,
+    ...(attempt ? { attemptId: attempt.attemptId } : {}),
+  });
+
   const items = useMemo<readonly AttemptItemStudent[]>(() => attempt?.items ?? [], [attempt]);
   const total = items.length;
   const currentItem: AttemptItemStudent | undefined = items[current - 1];
@@ -336,6 +354,9 @@ export function ExamRunner({ assignmentId, locale, resultHref }: ExamRunnerProps
         queueRef.current?.clearPersisted();
         queueRef.current?.stop();
         track({ eventType: "attempt_submitted", attemptId: id, payload: { reason } });
+        // Se congela ANTES de navegar: al cambiar de ruta el corredor se
+        // desmonta y con el se va el cronometro. Ver `tiempo-del-intento.ts`.
+        guardarTiempoDelIntento(id, cronometro.leerMsActivos());
         setPhase("submitted");
         router.replace(resultHref);
       } catch (error) {
@@ -344,6 +365,7 @@ export function ExamRunner({ assignmentId, locale, resultHref }: ExamRunnerProps
           // que devuelve un submit idempotente, y el resultado ya existe.
           guardRef.current.markCompleted();
           queueRef.current?.clearPersisted();
+          guardarTiempoDelIntento(id, cronometro.leerMsActivos());
           setPhase("submitted");
           router.replace(resultHref);
           return;
@@ -363,7 +385,7 @@ export function ExamRunner({ assignmentId, locale, resultHref }: ExamRunnerProps
         return;
       }
     },
-    [resultHref, router, track],
+    [resultHref, router, track, cronometro],
   );
   doSubmitRef.current = doSubmit;
 

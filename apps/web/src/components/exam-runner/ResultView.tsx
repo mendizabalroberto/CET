@@ -18,11 +18,14 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import type { Locale } from "@cet/shared";
 import { Badge, Card, ErrorState, LocaleProvider, ScoreRing } from "@cet/ui";
 
+import { ResumenDeTiempo } from "@/components/learn/TiempoEnPantalla";
+
 import { fetchResult } from "./api";
 import { ApiError } from "./types";
 import { fmt, getExamDictionary } from "./dictionary";
 import { reviewItemsFor, shouldShowReview, shouldShowScore } from "./feedback";
 import { describeResponse } from "./responses";
+import { leerTiempoDelIntento } from "./tiempo-del-intento";
 import type { AttemptResult } from "./types";
 
 export interface ResultViewProps {
@@ -107,6 +110,18 @@ export function ResultView({ attemptId, locale, initial }: ResultViewProps): Rea
     );
   }
 
+  /**
+   * Cuanto estuvo de verdad en el examen, medido por el cronometro activo del
+   * corredor y traido de la mano por `sessionStorage`. NO se calcula aqui a
+   * partir de las fechas del intento: eso seria una SEGUNDA definicion de
+   * «tiempo» —incluiria la pestana oculta— y este producto tiene una sola.
+   *
+   * `null` es lo normal si se llega al resultado por un enlace o al dia
+   * siguiente. Entonces no se pinta nada: un cero seria mentir sobre el trabajo
+   * de un nino. El dato de verdad esta en `learning_events`, no aqui.
+   */
+  const msEnPantalla = leerTiempoDelIntento(attemptId);
+
   const scoreRaw = result.scoreRaw ?? 0;
   const scoreMax = result.scoreMax ?? 0;
   const pct = result.scorePct ?? (scoreMax > 0 ? Math.round((scoreRaw / scoreMax) * 100) : 0);
@@ -126,6 +141,10 @@ export function ResultView({ attemptId, locale, initial }: ResultViewProps): Rea
               {result.passed ? t.result.passed : t.result.notPassed}
             </Badge>
           )}
+          {/* La frase sale del mismo componente que la de la leccion y la
+              practica, a proposito: el nino oye la misma frase en las tres
+              pantallas porque detras hay una sola forma de contar el tiempo. */}
+          {msEnPantalla === null ? null : <ResumenDeTiempo msActivos={msEnPantalla} />}
         </Card>
 
         {showReview ? (

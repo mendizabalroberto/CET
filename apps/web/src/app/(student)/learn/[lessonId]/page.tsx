@@ -15,6 +15,7 @@ import Link from "next/link";
 import { resolveI18n } from "@cet/shared";
 import { Button, EmptyState, ErrorState, LessonBlock } from "@cet/ui";
 
+import { ProveedorDeCronometro } from "@/components/learn/cronometro-de-pantalla";
 import { getLearnDictionary, learnI18n } from "@/components/learn/dictionary";
 import {
   LessonBlockObserver,
@@ -24,6 +25,7 @@ import {
 import { getLesson } from "@/components/learn/queries";
 import { Migas, type Miga } from "@/components/nav/Migas";
 import { findPracticeTopic } from "@/components/learn/practice-topics";
+import { TiempoEnPantalla } from "@/components/learn/TiempoEnPantalla";
 import { UiLocaleProvider } from "@/components/learn/UiLocaleProvider";
 import { requireStudent } from "@/lib/auth/session";
 import { interpolate } from "@/lib/i18n";
@@ -83,6 +85,12 @@ export default async function LessonPage({
     <UiLocaleProvider locale={locale}>
       <LessonOpened lessonId={lesson.id} blockCount={lesson.blocks.length} />
 
+      {/* El cronometro envuelve la leccion ENTERA y no solo la cabecera: mide
+          mientras el alumno lee, y el boton de terminar —que esta en el pie—
+          necesita leer el total para el resumen. Los bloques siguen pintandose
+          en el servidor; este proveedor los recibe ya renderizados como
+          `children` y no toca ni uno. */}
+      <ProveedorDeCronometro pantalla="leccion" id={lesson.id} lessonId={lesson.id}>
       <article className="flex flex-col gap-6">
         <header className="flex flex-col gap-2">
           {/* Las migas sustituyen a DOS cosas: el enlace gris de "volver", que
@@ -96,6 +104,12 @@ export default async function LessonPage({
               {interpolate(t.estimated, { count: lesson.estimatedMinutes })}
             </p>
           )}
+          {/* En SU PROPIA linea, no al lado de la estimacion. Puestos uno junto
+              a otro, «Unos 20 min · 4:12» se lee como una barra de progreso
+              hacia los 20 —que es justo lo que este encargo prohibe, porque el
+              20 esta en las 33 lecciones y no lo midio nadie—. Separados, el
+              reloj dice lo unico que sabe: cuanto llevas. */}
+          <TiempoEnPantalla />
         </header>
 
         {lesson.blocks.length === 0 ? (
@@ -142,6 +156,7 @@ export default async function LessonPage({
           ) : null}
         </footer>
       </article>
+      </ProveedorDeCronometro>
     </UiLocaleProvider>
   );
 }

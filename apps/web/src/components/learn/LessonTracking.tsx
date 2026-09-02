@@ -24,6 +24,9 @@ import { Button, Icono, cn } from "@cet/ui";
 
 import { useTelemetry } from "@/lib/telemetry/provider";
 
+import { useCronometroDePantalla } from "./cronometro-de-pantalla";
+import { ResumenDeTiempo } from "./TiempoEnPantalla";
+
 /** Debajo de esto, el bloque pasó por delante de los ojos pero no se leyó. */
 const MIN_DWELL_MS = 300;
 /** Un bloque cuenta como "visto" cuando entra al menos este porcentaje. */
@@ -152,23 +155,38 @@ export function LessonCompleteButton({
   readonly className?: string | undefined;
 }) {
   const { track, flush } = useTelemetry();
+  const cronometro = useCronometroDePantalla();
   const [done, setDone] = useState(false);
+  /**
+   * El tiempo se CONGELA en el clic, no se sigue leyendo después.
+   *
+   * Si el resumen leyera el cronómetro en cada pintado, un niño que se queda
+   * mirando la pantalla vería su «has estado 7 minutos» convertirse en ocho y
+   * luego en nueve sin haber hecho nada. El resumen habla de lo que duró la
+   * lección, y la lección terminó al pulsar.
+   */
+  const [msAlTerminar, setMsAlTerminar] = useState<number | null>(null);
 
   const onClick = useCallback(() => {
     if (done) return;
     setDone(true);
+    setMsAlTerminar(cronometro?.leerMsActivos() ?? null);
     track({ eventType: "lesson_completed", lessonId, payload: {} });
     // Vaciado inmediato: terminar una lección es justo el momento en que el
     // alumno cierra la pestaña o se va a practicar.
     flush();
-  }, [done, track, flush, lessonId]);
+  }, [done, track, flush, lessonId, cronometro]);
 
   if (done) {
     return (
-      <p role="status" className={cn("inline-flex items-center gap-2", className)}>
-        <Icono nombre="terminado" />
-        {doneLabel}
-      </p>
+      <div className={cn("flex flex-col gap-1", className)}>
+        <p role="status" className="inline-flex items-center gap-2">
+          <Icono nombre="terminado" />
+          {doneLabel}
+        </p>
+        {/* Sin cronómetro por encima no se inventa un número: se calla. */}
+        {msAlTerminar === null ? null : <ResumenDeTiempo msActivos={msAlTerminar} />}
+      </div>
     );
   }
 

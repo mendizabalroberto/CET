@@ -63,6 +63,11 @@ export const learningEventType = z.enum([
   "session_context",
   "ui_interaction",
   "nav_route_changed",
+  // Cuánto lleva el alumno en la pantalla que tiene delante. Va el ÚLTIMO por
+  // la misma razón que los tres de arriba, y porque así lo aplicó la migración
+  // 0080 (`add value` sin `before`/`after`, que en Postgres significa «al
+  // final»): este orden y el del enum de la base tienen que ser el mismo.
+  "tiempo_en_pantalla",
 ]);
 export type LearningEventType = z.infer<typeof learningEventType>;
 
@@ -219,6 +224,43 @@ export const eventPayloads = {
     /** Milisegundos desde el acto ANTERIOR. El ritmo: duda, tanteo o automatismo. */
     sinceLastMs: z.number().int().nonnegative(),
     modality: z.enum(["touch", "mouse", "keyboard", "pen", "unknown"]),
+  }),
+
+  /**
+   * Cuánto lleva el alumno en la pantalla que tiene delante.
+   *
+   * DOS RELOJES, Y LOS DOS HACEN FALTA. `msActivos` descuenta pestaña oculta,
+   * ventana sin foco e inactividad, con el MISMO criterio que
+   * `supabase/migrations/0064_tiempo_de_estudio.sql` aplica al informe del
+   * tutor: hay una sola definición de «tiempo» en este producto y esta es.
+   * `msBrutos` es el reloj de pared desde que se abrió la pantalla. La
+   * diferencia entre los dos responde «cuánto estuvo delante sin hacer nada»,
+   * y el día que el cronómetro de la pantalla y el informe del tutor no
+   * cuadren, es la comparación que dice cuál de los dos miente.
+   *
+   * SE EMITE DE DOS MANERAS, y `motivo` distingue cuál. `latido` llega cada 60 s
+   * de tiempo ACTIVO —no de reloj de pared, o una pestaña olvidada volvería a
+   * inflarse sola— y `salida` al abandonar la pantalla, con el total. El latido
+   * no es un lujo: si solo se emitiera al salir, el portátil que se cierra de
+   * golpe se llevaría la sesión entera, que es exactamente cómo se rompió el
+   * cálculo de 0064. Con latido, lo peor que se pierde son sesenta segundos.
+   *
+   * AMBOS son ACUMULADOS desde la apertura de la pantalla, no incrementos. Quien
+   * agregue tiene que quedarse con el MÁXIMO por visita, nunca sumarlos: sumar
+   * los latidos de una visita de tres minutos daría seis.
+   */
+  tiempo_en_pantalla: z.object({
+    pantalla: z.enum(["leccion", "practica", "examen"]),
+    /**
+     * El id de aquello en lo que está: la lección, el tema de práctica o el
+     * intento. Viaja TAMBIÉN en la columna dedicada (`lessonId`, `attemptId`)
+     * cuando existe, para que los informes que agrupan por lección lo vean sin
+     * abrir el payload; el tema de práctica no tiene columna y solo vive aquí.
+     */
+    id: z.string().min(1).max(80),
+    msActivos: z.number().int().nonnegative(),
+    msBrutos: z.number().int().nonnegative(),
+    motivo: z.enum(["latido", "salida"]),
   }),
 
   /** Cambio de pantalla. `dwellMs` es lo que estuvo en la que deja. */

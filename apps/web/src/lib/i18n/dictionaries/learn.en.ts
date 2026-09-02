@@ -76,6 +76,25 @@ export const learnEn = {
     tableCaption: "Table",
     unsupportedBlock: "This part of the lesson cannot be shown on this device yet.",
   },
+  /**
+   * The screen clock. It only ever says how long you HAVE BEEN here — never how
+   * long it should take. `lessons.estimated_minutes` holds 20 in all 33 lessons,
+   * minimum 20 and maximum 20: it is a default nobody filled in, not an
+   * estimate, and painting it would lie to a child with the precision of an
+   * invented number.
+   *
+   * `summary` and `summaryOne` are two whole sentences and not "You spent" plus
+   * a number: Spanish agrees the noun ("1 minuto" / "7 minutos"), and a sentence
+   * built from pieces is where a locale bug hides best.
+   */
+  time: {
+    label: "Time on this screen",
+    /** Read out to a screen reader instead of the ticking digits. */
+    minutesSoFar: "{count} minutes so far",
+    minuteSoFar: "1 minute so far",
+    summary: "You spent {count} minutes on this.",
+    summaryOne: "You spent 1 minute on this.",
+  },
   practice: {
     title: "Practice",
     subtitle: "Pick a topic. You get a new question every time, and you find out straight away.",

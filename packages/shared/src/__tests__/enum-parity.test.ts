@@ -22,6 +22,7 @@ import { describe, expect, it } from "vitest";
 import { type z } from "zod";
 
 import {
+  accesoTipo,
   attemptStatus,
   blockKind,
   blueprintSectionSource,
@@ -149,6 +150,7 @@ const PAIRS: ReadonlyArray<readonly [string, z.ZodEnum<[string, ...string[]]>]> 
   ["blueprint_section_source", blueprintSectionSource],
   ["section_role", sectionRole],
   ["membership_status", membershipStatus],
+  ["acceso_tipo", accesoTipo],
   ["learning_event_type", learningEventType],
 ];
 
