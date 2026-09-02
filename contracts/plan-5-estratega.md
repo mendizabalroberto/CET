@@ -1,6 +1,6 @@
 ---
 id: plan-5-estratega
-model: chat
+model: reasoner
 territory: [apps/web/src/lib/plan/estratega*]
 forbidden: [apps/web/src/lib/plan/tipos.ts, apps/web/src/lib/tutor/schemas.ts]
 context: [apps/web/src/lib/plan/tipos.ts, apps/web/src/lib/tutor/schemas.ts]
@@ -103,6 +103,11 @@ Pruebas mínimas en `estratega.test.ts`:
 
 ## 4 · Qué NO cuenta como resuelto
 
+- **Un diff cortado.** Un intento anterior agotó el tope de salida y los dos
+  ficheros llegaron truncados (`error TS1005: '}' expected` en la última
+  línea). Escribe código compacto: comentarios de una línea, sin cabeceras
+  largas, sin repetir en el test lo que ya dice el contrato. Los dos ficheros
+  juntos no deberían pasar de 250 líneas.
 - Llamar a `fetch` o a cualquier red.
 - Modificar `tipos.ts`.
 - Dejar pasar una clave ajena a las seis materias, o un reparto que no sume 1.

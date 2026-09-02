@@ -37,6 +37,13 @@ paralelo: no crees nada con ese número ni dependas de él.
   `begin; … rollback;` contra la base real y resuelve `\ir ruta` relativo al
   fichero. La migración Y el seed se aplican dentro del test con `\ir` y el
   rollback los deshace.
+- **Un intento anterior se quedó a un assert de verde**, y conviene que no
+  repitas su fallo: el assert «el 2026-11-02 es feriado» hacía
+  `select tipo … where desde <= '2026-11-02' and hasta >= '2026-11-02'` y
+  obtuvo `hito_cambridge`, porque el tramo de Movers (10-29 → 11-06) también
+  contiene esa fecha. Cuando preguntes por una fecha, filtra también por
+  `tipo` (o usa `ok(exists(...))` con el tipo en el `where`). Y su `plan(11)`
+  tenía solo 10 asserts: cuenta los tuyos antes de escribir el número.
 - Fechas de 2026 extraídas del calendario oficial del colegio (Bolivia), de
   septiembre en adelante:
 
@@ -107,7 +114,11 @@ Cambridge en 2026.
 2. El 2026-09-24 es `feriado` y el 2026-11-02 también (dos asserts).
 3. Existe un tramo `examenes_finales` que contiene el 2026-11-15.
 4. No hay ningún `hito_cambridge` de 2026 cuyo `year_levels` contenga 6.
-5. Aplicar el seed una segunda vez (`\ir` otra vez) deja 11 filas: idempotencia.
+5. Idempotencia: **no incluyas el seed dos veces** — `db-test.mjs` rechaza un
+   segundo `\ir` del mismo fichero como «circular» (el intento anterior murió
+   por eso). En su lugar, repite en el propio test UN `insert … on conflict do
+   nothing` copiado literal del seed (por ejemplo la fila del 2026-09-24) y
+   comprueba que siguen siendo 11 filas.
 6. Un evento con `hasta < desde` falla con `23514`.
 7. Un tutor (sembrado como en `rls_tutor.sql`, `school_id` null), suplantado con
    `set local role authenticated` + claims, ve las 11 filas globales.

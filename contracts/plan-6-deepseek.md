@@ -1,6 +1,6 @@
 ---
 id: plan-6-deepseek
-model: chat
+model: reasoner
 territory: [apps/web/src/lib/plan/deepseek*]
 forbidden: [apps/web/src/lib/net/plazo.ts, apps/web/src/lib/telegram/bot.ts, apps/web/src/lib/peticion-sin-plazo.test.ts]
 context: [apps/web/src/lib/net/plazo.ts, apps/web/src/lib/telegram/bot.ts]
@@ -91,6 +91,10 @@ registra `url`, `init` y devuelve lo que el test quiera):
 
 ## 4 · Qué NO cuenta como resuelto
 
+- **Un diff cortado.** Un intento anterior agotó el tope de salida y los dos
+  ficheros llegaron truncados (`error TS1005: '}' expected` en la última
+  línea). Escribe código compacto: comentarios de una línea, sin cabeceras
+  largas. Los dos ficheros juntos no deberían pasar de 220 líneas.
 - Un `fetch(` directo. El test de invariante lo caza.
 - Tocar `plazo.ts` o `bot.ts`.
 - Un plazo distinto de `PLAZO_DEEPSEEK_MS` o ausente.

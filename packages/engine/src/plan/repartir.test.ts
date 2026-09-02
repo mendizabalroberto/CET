@@ -1,11 +1,38 @@
 import { describe, expect, it } from "vitest";
 import { repartir } from "./repartir.js";
-import type { EntradaReparto, EventoCalendario, LeccionDisponible, MateriaDelPlan, SkillDisponible } from "./tipos.js";
-const leccion = (lessonId: string, moduloOrd: number, ord: number, minutos: number): LeccionDisponible => ({ lessonId, moduloOrd, ord, minutos, completada: false });
-const skill = (skillId: string, ord: number, preguntas: number, mastery: number | null = null): SkillDisponible => ({ skillId, ord, preguntas, mastery });
-const evento = (desde: string, hasta: string, tipo: EventoCalendario["tipo"]): EventoCalendario => ({ desde, hasta, tipo });
-const materia = (subjectId: string, code: string, peso: number, lecciones: readonly LeccionDisponible[], skills: readonly SkillDisponible[]): MateriaDelPlan => ({ subjectId, code, peso, lecciones, skills });
-const varias = (base: string, minutos: number[]): LeccionDisponible[] => minutos.map((minuto, indice) => leccion(`${base}-${indice + 1}`, 0, indice, minuto));
+import type {
+  EntradaReparto,
+  EventoCalendario,
+  LeccionDisponible,
+  MateriaDelPlan,
+  SkillDisponible,
+} from "./tipos.js";
+const leccion = (
+  lessonId: string,
+  moduloOrd: number,
+  ord: number,
+  minutos: number,
+): LeccionDisponible => ({ lessonId, moduloOrd, ord, minutos, completada: false });
+const skill = (
+  skillId: string,
+  ord: number,
+  preguntas: number,
+  mastery: number | null = null,
+): SkillDisponible => ({ skillId, ord, preguntas, mastery });
+const evento = (
+  desde: string,
+  hasta: string,
+  tipo: EventoCalendario["tipo"],
+): EventoCalendario => ({ desde, hasta, tipo });
+const materia = (
+  subjectId: string,
+  code: string,
+  peso: number,
+  lecciones: readonly LeccionDisponible[],
+  skills: readonly SkillDisponible[],
+): MateriaDelPlan => ({ subjectId, code, peso, lecciones, skills });
+const varias = (base: string, minutos: number[]): LeccionDisponible[] =>
+  minutos.map((minuto, indice) => leccion(`${base}-${indice + 1}`, 0, indice, minuto));
 const conPractica = (id: string): SkillDisponible => skill(id, 0, 1000, null);
 describe("repartir", () => {
   it("descarta feriados y sin_clases", () => {
@@ -36,7 +63,8 @@ describe("repartir", () => {
     } satisfies EntradaReparto);
     expect(reparto.minutosPresupuestados).toBe(120);
     const porFecha = new Map<string, number>();
-    for (const tarea of reparto.tareas) porFecha.set(tarea.fecha, (porFecha.get(tarea.fecha) ?? 0) + tarea.minutos);
+    for (const tarea of reparto.tareas)
+      porFecha.set(tarea.fecha, (porFecha.get(tarea.fecha) ?? 0) + tarea.minutos);
     expect(porFecha.get("2026-09-03")).toBe(40);
     expect(porFecha.get("2026-09-04")).toBe(60);
     expect(porFecha.get("2026-09-05")).toBe(20);
@@ -71,11 +99,13 @@ describe("repartir", () => {
       minutosPorDia: 30,
       calendario: [],
       materias: [
-        materia("math", "math", 1, [leccion("l1", 0, 0, 10)], [
-          skill("cero", 0, 0, 0.1),
-          skill("floja", 1, 30, 0.2),
-          skill("fuerte", 2, 30, 0.9),
-        ]),
+        materia(
+          "math",
+          "math",
+          1,
+          [leccion("l1", 0, 0, 10)],
+          [skill("cero", 0, 0, 0.1), skill("floja", 1, 30, 0.2), skill("fuerte", 2, 30, 0.9)],
+        ),
       ],
     } satisfies EntradaReparto).tareas;
     expect(tareas[0]).toMatchObject({ tipo: "leccion", lessonId: "l1", minutos: 10 });
@@ -104,7 +134,11 @@ describe("repartir", () => {
     expect(reparto.minutosPresupuestados).toBe(2710);
     expect(reparto.minutosPlanificados).toBe(2710);
     expect(reparto.techos).toHaveLength(1);
-    expect(reparto.techos[0]).toMatchObject({ subjectId: "math", code: "math", minutosDisponibles: 108 });
+    expect(reparto.techos[0]).toMatchObject({
+      subjectId: "math",
+      code: "math",
+      minutosDisponibles: 108,
+    });
   });
   it("LEO: dos materias por día y bloques entre 5 y 25", () => {
     const entrada = {
@@ -120,11 +154,21 @@ describe("repartir", () => {
         evento("2026-11-13", "2026-11-20", "examenes_finales"),
       ],
       materias: [
-        materia("english", "english", 0.35, varias("english-l", [20, 20, 20, 20, 12]), [skill("english-s", 0, 86, 0.4)]),
-        materia("math", "math", 0.25, varias("math-l", [12, 12, 12, 12, 12, 12, 12, 12]), [skill("math-s", 0, 16, 0.3)]),
-        materia("spanish", "spanish", 0.2, varias("spanish-l", [20, 20, 19]), [skill("spanish-s", 0, 93, 0.5)]),
-        materia("science", "science", 0.1, varias("science-l", [15, 15, 14, 14, 14]), [skill("science-s", 0, 78, 0.6)]),
-        materia("socials", "socials", 0.1, varias("socials-l", [20, 20, 20, 20, 20, 19]), [skill("socials-s", 0, 165, 0.8)]),
+        materia("english", "english", 0.35, varias("english-l", [20, 20, 20, 20, 12]), [
+          skill("english-s", 0, 86, 0.4),
+        ]),
+        materia("math", "math", 0.25, varias("math-l", [12, 12, 12, 12, 12, 12, 12, 12]), [
+          skill("math-s", 0, 16, 0.3),
+        ]),
+        materia("spanish", "spanish", 0.2, varias("spanish-l", [20, 20, 19]), [
+          skill("spanish-s", 0, 93, 0.5),
+        ]),
+        materia("science", "science", 0.1, varias("science-l", [15, 15, 14, 14, 14]), [
+          skill("science-s", 0, 78, 0.6),
+        ]),
+        materia("socials", "socials", 0.1, varias("socials-l", [20, 20, 20, 20, 20, 19]), [
+          skill("socials-s", 0, 165, 0.8),
+        ]),
       ],
     } satisfies EntradaReparto;
     const reparto = repartir(entrada);

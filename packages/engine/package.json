@@ -13,7 +13,8 @@
     "./rng": "./src/rng.ts",
     "./fraction": "./src/fraction.ts",
     "./grading": "./src/grading/index.ts",
-    "./blueprint": "./src/blueprint.ts"
+    "./blueprint": "./src/blueprint.ts",
+    "./plan": "./src/plan/repartir.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
