@@ -363,6 +363,42 @@ export const en = {
       pinBody: "If they've forgotten it, create a new link and they'll choose another one.",
       back: "Back to my children",
       /**
+       * EL CONTENIDO DEL HIJO, VISTO POR SU PADRE.
+       *
+       * REGISTRO. Todo va en segunda persona y sobre el niño, no sobre el
+       * sistema: «lo que estudia Leo», no «catálogo asignado». Y en ningún
+       * sitio se dice «solo lectura», que es una palabra de informático: se
+       * dice lo único que le importa a un padre, que mirar no le toca nada a su
+       * hijo.
+       */
+      content: {
+        cardTitle: "What they're studying",
+        cardBody:
+          "Open the same lessons your child has, and see which ones they've finished.",
+        open: "See their lessons",
+        title: "What {name} is studying",
+        subtitle: "The same lessons they have, with what they've finished marked.",
+        readOnly: "You're just looking. Nothing here counts as your child's work.",
+        back: "Back to {name}",
+        trailLabel: "Path",
+        trailRoot: "Their lessons",
+        emptyTitle: "There are no lessons here yet",
+        emptyBody: "When your child has lessons, they'll show up here too.",
+        errorTitle: "We couldn't load the lessons",
+        errorBody: "Try again in a moment.",
+        lessonMissingTitle: "That lesson isn't here",
+        lessonMissingBody: "It may have been moved. Go back and pick another one.",
+        /**
+         * El aviso del catálogo parcial. Un padre que no pertenece al colegio
+         * de su hijo NO puede leer el contenido propio de ese centro: las
+         * políticas de contenido miran el colegio del lector. Decirlo es la
+         * diferencia entre «faltan lecciones» y «esta pantalla está rota».
+         */
+        partialTitle: "You may not see everything",
+        partialBody:
+          "Your child studies at a school, and some of what that school adds is only for the school. Here you'll see the lessons everyone gets.",
+      },
+      /**
        * El seguimiento. Lo redacta `lib/tutor/seguimiento.ts`, que compone las
        * frases en los DOS idiomas a la vez porque los componentes de informe
        * piden `I18nText` para todo lo que lleva nombre accesible.

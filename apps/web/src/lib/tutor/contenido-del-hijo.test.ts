@@ -1,0 +1,131 @@
+/**
+ * INVARIANTES de las pantallas de contenido del tutor.
+ * © 2026 Roberto Mendizabal. Todos los derechos reservados.
+ *
+ * ===========================================================================
+ * QUÉ SE PROTEGE AQUÍ, Y POR QUÉ NO BASTA CON MIRARLO
+ * ===========================================================================
+ * El padre lee las lecciones de su hijo con el MISMO código que las pinta para
+ * el niño. Es la decisión correcta —dos catálogos divergen, y entonces una de
+ * las dos pantallas miente sobre lo que el niño tiene delante— y trae consigo
+ * un riesgo concreto: que alguien, arreglando algo en la pantalla del alumno,
+ * copie de vuelta a la del tutor una pieza que allí es veneno.
+ *
+ * La pieza es la TELEMETRÍA. Si esta zona emitiera `lesson_opened`, el informe
+ * del hijo contaría como estudio suyo el rato que pasó leyendo su padre — y ese
+ * informe es exactamente lo que el padre viene a leer dos pantallas más arriba.
+ * Se envenenaría a sí mismo, en silencio, y el síntoma —«mi hijo estudia más de
+ * lo que yo creía»— no señalaría nunca a su causa.
+ *
+ * Un `git grep` lo vería hoy. Este test lo ve en cada `pnpm verify`, que es la
+ * diferencia entre una convención y una garantía.
+ *
+ * Se lee el TEXTO de los ficheros a propósito: importar las páginas arrastraría
+ * `server-only` y medio Next, y lo que hay que comprobar no es lo que hacen en
+ * ejecución sino lo que se han traído.
+ */
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { describe, expect, it } from "vitest";
+
+import { findProtectedArea } from "@/lib/routes";
+
+import { rutasDeHijo } from "./rutas";
+
+const BASE = join(process.cwd(), "src", "app", "(tutor)", "tutor", "hijos", "[id]");
+
+const PANTALLAS = [
+  { nombre: "índice de materias", fichero: join(BASE, "contenido", "page.tsx") },
+  { nombre: "materia", fichero: join(BASE, "contenido", "materia", "[key]", "page.tsx") },
+  { nombre: "lección", fichero: join(BASE, "contenido", "leccion", "[lessonId]", "page.tsx") },
+] as const;
+
+/**
+ * Todo lo que MIDE al alumno. Ninguna de estas piezas puede aparecer en la zona
+ * del tutor: las cuatro primeras escriben `learning_events` sobre el hijo, y la
+ * quinta abre la cola que las envía.
+ */
+const MIDEN_AL_ALUMNO = [
+  "LessonTracking",
+  "cronometro-de-pantalla",
+  "TiempoEnPantalla",
+  "UiInteractionScope",
+  "TelemetryProvider",
+] as const;
+
+function fuente(fichero: string): string {
+  return readFileSync(fichero, "utf8");
+}
+
+describe("el contenido del hijo, visto por su padre", () => {
+  for (const { nombre, fichero } of PANTALLAS) {
+    describe(nombre, () => {
+      it("no mide al alumno", () => {
+        const texto = fuente(fichero);
+        for (const pieza of MIDEN_AL_ALUMNO) {
+          expect(texto, `${nombre} importa ${pieza}, que escribe el informe del hijo`).not.toContain(
+            pieza,
+          );
+        }
+      });
+
+      it("autoriza con el alcance del hijo y no con una sesión de alumno", () => {
+        const texto = fuente(fichero);
+        // `requireStudent()` daría el alcance del LECTOR, y el lector es el
+        // padre: la pantalla enseñaría el catálogo de un adulto sin ficha de
+        // alumno, que es ninguno, y el 404 resultante parecería un permiso mal
+        // puesto.
+        expect(texto).not.toContain("requireStudent");
+        expect(texto).toContain("alcanceDeHijo");
+      });
+
+      it("no ofrece nada que altere el trabajo del niño", () => {
+        const texto = fuente(fichero);
+        // Marcar una lección como terminada, o mandar al padre a practicar en
+        // nombre de su hijo. Lo segundo además sería un 404 mudo, porque esa
+        // zona es de `student`.
+        //
+        // Se nombran las PIEZAS y no la ruta: las cabeceras de estas pantallas
+        // explican por qué no está el enlace de practicar, y un test que
+        // prohibiera la cadena castigaría al comentario que documenta la
+        // decisión. El mecanismo es lo que no puede volver.
+        expect(texto).not.toContain("LessonCompleteButton");
+        expect(texto).not.toContain("findPracticeTopic");
+        expect(texto).not.toContain("practiceThis");
+      });
+    });
+  }
+});
+
+describe("las rutas del hijo", () => {
+  const rutas = rutasDeHijo("11111111-2222-3333-4444-555555555555");
+
+  it("viven todas bajo la zona del tutor, que solo alcanza un guardian", () => {
+    const destinos = [
+      rutas.ficha,
+      rutas.contenido,
+      rutas.materia("math"),
+      rutas.leccion("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+    ];
+
+    for (const destino of destinos) {
+      const area = findProtectedArea(destino);
+      // Sin área, el middleware manda a un 404 por «ruta no catalogada»: la
+      // lista blanca de `routes.ts` es la que cierra, y una ruta nueva fuera de
+      // ella no se abre sola. Aquí se comprueba que sí está catalogada y con
+      // quién.
+      expect(area, `${destino} no cae en ninguna área protegida`).toBeDefined();
+      expect(area?.allow).toEqual(["guardian"]);
+      // 404 y no 403: un 403 le confirmaría a quien sondea que esa ficha de
+      // menor existe.
+      expect(area?.onDeny).toBe("not-found");
+    }
+  });
+
+  it("codifica los segmentos variables", () => {
+    // `subjects.code` es dato de contenido, editable desde el panel. Un `/`
+    // dentro partiría la URL en dos y la materia dejaría de existir.
+    expect(rutas.materia("a/b")).toContain("a%2Fb");
+    expect(rutas.materia("a/b")).not.toContain("a/b");
+  });
+});

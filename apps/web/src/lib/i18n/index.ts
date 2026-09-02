@@ -6,7 +6,7 @@
  * AD-7: cero strings hardcodeados. Un componente que escriba texto literal es un
  * bug, no una simplificación.
  */
-import { DEFAULT_LOCALE, LOCALES, type Locale } from "@cet/shared";
+import { DEFAULT_LOCALE, LOCALES, type I18nText, type Locale } from "@cet/shared";
 
 import { en, type Dictionary } from "./dictionaries/en";
 import { es } from "./dictionaries/es";
@@ -19,6 +19,20 @@ const DICTIONARIES: Record<Locale, Dictionary> = { en, es };
 
 export function getDictionary(locale: Locale): Dictionary {
   return DICTIONARIES[locale];
+}
+
+/**
+ * Un rótulo del diccionario principal en LOS DOS IDIOMAS a la vez.
+ *
+ * Los componentes de `@cet/ui` no reciben cadenas ya resueltas: reciben
+ * `I18nText` y lo resuelven ellos con su propio `LocaleProvider` (ver
+ * `UiLocaleProvider`). Es el mismo puente que `learnI18n` tiende desde el
+ * diccionario de learn; esto lo tiende desde el general, para las pantallas que
+ * mezclan las dos cosas —la zona del tutor pinta `EmptyState` y `ErrorState`
+ * con texto suyo, no con el del alumno—.
+ */
+export function dictI18n(select: (d: Dictionary) => string): I18nText {
+  return { en: select(en), es: select(es) };
 }
 
 export function isLocale(value: unknown): value is Locale {

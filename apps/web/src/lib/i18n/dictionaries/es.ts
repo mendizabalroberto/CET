@@ -352,6 +352,27 @@ export const es: Dictionary = {
       pinTitle: "Su PIN",
       pinBody: "Si se le ha olvidado, crea un enlace nuevo y elegir\u00e1 otro.",
       back: "Volver a mis hijos",
+      content: {
+        cardTitle: "Lo que está estudiando",
+        cardBody:
+          "Abre las mismas lecciones que tiene tu hijo y mira cuáles ha terminado.",
+        open: "Ver sus lecciones",
+        title: "Lo que estudia {name}",
+        subtitle: "Las mismas lecciones que tiene él, con lo que ha terminado señalado.",
+        readOnly: "Solo estás mirando. Nada de aquí cuenta como trabajo de tu hijo.",
+        back: "Volver a {name}",
+        trailLabel: "Ruta",
+        trailRoot: "Sus lecciones",
+        emptyTitle: "Aquí todavía no hay lecciones",
+        emptyBody: "Cuando tu hijo tenga lecciones, aparecerán también aquí.",
+        errorTitle: "No hemos podido cargar las lecciones",
+        errorBody: "Inténtalo dentro de un momento.",
+        lessonMissingTitle: "Esa lección no está aquí",
+        lessonMissingBody: "Puede que la hayan movido. Vuelve atrás y elige otra.",
+        partialTitle: "Puede que no lo veas todo",
+        partialBody:
+          "Tu hijo estudia en un colegio, y parte de lo que ese colegio añade es solo para el colegio. Aquí verás las lecciones que tiene todo el mundo.",
+      },
       progress: {
         statsTitle: "Estos d\u00edas",
         effortTitle: "D\u00eda a d\u00eda",

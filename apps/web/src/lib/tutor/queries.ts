@@ -365,6 +365,92 @@ export async function detalleDeHijo(studentId: string): Promise<DetalleDeHijo | 
 }
 
 /* ===========================================================================
+ * EL ALCANCE DEL HIJO: qué biblioteca es la suya
+ * =========================================================================== */
+
+export interface AlcanceDeHijo {
+  readonly id: string;
+  readonly nombre: string;
+  /**
+   * `students.school_id`, que es lo que decide QUÉ CONTENIDO es el suyo (AD-2:
+   * `null` = solo la biblioteca global, con valor = global más el del centro).
+   *
+   * Sale de `students` y NO de `profiles`: desde la refundación de la tenencia,
+   * `profiles.school_id` es NULL para todo alumno y la matrícula vive en
+   * `student_school_memberships`, de la que `students.school_id` es la caché
+   * (DATA_MODEL §3.3). Es la misma columna que lee `requireStudent()`, así que
+   * el padre mira EXACTAMENTE el mismo catálogo que su hijo y no una
+   * aproximación que un día divergiría.
+   */
+  readonly schoolId: string | null;
+}
+
+/**
+ * Quién es este hijo y cuál es su biblioteca, para poder enseñarle al padre el
+ * contenido que su hijo tiene delante.
+ *
+ * Va con la SESIÓN DEL TUTOR, como todo lo demás de esta casa: `profiles` y
+ * `students` se leen bajo `app.puede_ver_alumno`, así que un id que no sea de
+ * un hijo suyo devuelve `null` y su página responde 404. Aquí no se escribe
+ * ninguna comprobación de pertenencia.
+ *
+ * OJO A LO QUE ESTA FUNCIÓN NO CONCEDE. Devolver el `school_id` de un colegio
+ * no le abre a este adulto el contenido de ese colegio: las políticas de
+ * contenido (`app.can_read_content`, 0004) miran el colegio DEL LECTOR, no el
+ * que traiga un argumento. Para un tutor sin centro, el filtro `.or(...)` de
+ * `getStudentCourses` puede nombrar el colegio del hijo y la base seguirá
+ * devolviéndole solo lo global. Es el resultado correcto —ve menos, nunca
+ * más—, y la pantalla lo dice en vez de fingir un catálogo vacío.
+ */
+export async function alcanceDeHijo(studentId: string): Promise<AlcanceDeHijo | null> {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(studentId)) {
+    return null;
+  }
+
+  const supabase = await createClient();
+
+  const { data: perfil, error: perfilError } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("id", studentId)
+    .maybeSingle();
+
+  // RUIDOSO A PROPÓSITO (R4), igual que `detalleDeHijo`: un `null` por permisos
+  // y un `null` por «no es tuyo» producen el mismo 404, y solo el registro los
+  // distingue.
+  if (perfilError !== null) {
+    console.error("[cet] alcanceDeHijo profiles", perfilError.code, perfilError.message);
+    return null;
+  }
+
+  const nombre = (perfil as Fila | null)?.["full_name"];
+  if (typeof nombre !== "string") return null;
+
+  const { data: alumno, error: alumnoError } = await supabase
+    .from("students")
+    .select("school_id")
+    .eq("profile_id", studentId)
+    .maybeSingle();
+
+  if (alumnoError !== null) {
+    console.error("[cet] alcanceDeHijo students", alumnoError.code, alumnoError.message);
+    return null;
+  }
+
+  // Un perfil con rol `student` sin ficha en `students` es un estado imposible
+  // (DATA_MODEL §1). No se adivina un alcance: se corta.
+  if (alumno === null) return null;
+
+  const colegio = (alumno as Fila)["school_id"];
+
+  return {
+    id: studentId,
+    nombre,
+    schoolId: typeof colegio === "string" ? colegio : null,
+  };
+}
+
+/* ===========================================================================
  * EL SEGUIMIENTO: cómo va el hijo
  * =========================================================================== */
 

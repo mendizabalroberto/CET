@@ -42,6 +42,7 @@ import { Seguimiento } from "@/components/tutor/Seguimiento";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { ROUTES } from "@/lib/routes";
 import { detalleDeHijo, seguimientoDeHijo } from "@/lib/tutor/queries";
+import { rutasDeHijo } from "@/lib/tutor/rutas";
 import { propsDeSeguimiento } from "@/lib/tutor/seguimiento";
 
 interface PageProps {
@@ -89,6 +90,27 @@ export default async function HijoPage({ params }: PageProps) {
       ) : (
         <Seguimiento locale={locale} scorecard={scorecard} />
       )}
+
+      {/* «¿ESTUDIANDO QUÉ?» VA JUSTO DEBAJO DE «¿ESTÁ ESTUDIANDO?».
+          El informe de arriba dice cuántos minutos y en qué lecciones, pero
+          nombrarlas no es enseñarlas: un padre que lee «45 min en Fracciones»
+          quiere abrir Fracciones. Este es el único sitio de la pantalla donde
+          esa pregunta está viva; más abajo empieza la administración —enlace,
+          aparatos, PIN—, que se hace una vez y no cada semana.
+
+          Y va ANTES del enlace a propósito, aunque el enlace sea lo primero que
+          usa un padre nuevo: quien vuelve a esta página ya tiene a su hijo
+          dentro y viene a mirar, no a dar de alta. */}
+      <Link
+        href={rutasDeHijo(hijo.id).contenido}
+        className="block rounded-2xl border-2 border-line bg-card p-5 transition-colors hover:border-teal"
+      >
+        <h2 className="text-lg font-bold text-ink">{C.content.cardTitle}</h2>
+        <p className="mt-2 text-muted">{C.content.cardBody}</p>
+        <span aria-hidden="true" className="mt-3 inline-block font-semibold text-teal">
+          {C.content.open} →
+        </span>
+      </Link>
 
       <EnlaceDeAcceso studentId={hijo.id} yaTieneEnlace={hijo.enlaceActivo} />
 
