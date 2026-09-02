@@ -71,10 +71,9 @@ export interface RepartoGuardado {
   readonly techos: readonly TechoDeMateria[];
 }
 
-const pesoGuardadoSchema = z.number().refine(
-  (v) => Number.isFinite(v) && v > 0,
-  { message: "peso_invalido" },
-);
+const pesoGuardadoSchema = z
+  .number()
+  .refine((v) => Number.isFinite(v) && v > 0, { message: "peso_invalido" });
 
 const pesosGuardadosSchema = z
   .object({
@@ -153,18 +152,12 @@ const notasGuardadasSchema = z.array(notaGuardadaSchema);
 
 function ventanaDeInforme(dias: number): { desde: string; hasta: string } {
   const ahora = new Date();
-  const medianocheDeHoy = Date.UTC(
-    ahora.getUTCFullYear(),
-    ahora.getUTCMonth(),
-    ahora.getUTCDate(),
-  );
+  const medianocheDeHoy = Date.UTC(ahora.getUTCFullYear(), ahora.getUTCMonth(), ahora.getUTCDate());
   const inicio = medianocheDeHoy - (dias - 1) * 24 * 60 * 60 * 1000;
   return { desde: new Date(inicio).toISOString(), hasta: ahora.toISOString() };
 }
 
-export async function boletinesDeHijo(
-  studentId: string,
-): Promise<BoletinResumen[]> {
+export async function boletinesDeHijo(studentId: string): Promise<BoletinResumen[]> {
   const { createClient } = await import("@/lib/supabase/server");
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -184,8 +177,7 @@ export async function boletinesDeHijo(
     const estado = bruta["estado"];
     const createdAt = texto(bruta["created_at"]);
     const confirmadoBruto = bruta["confirmado_at"];
-    const confirmadoAt =
-      typeof confirmadoBruto === "string" ? confirmadoBruto : null;
+    const confirmadoAt = typeof confirmadoBruto === "string" ? confirmadoBruto : null;
 
     if (
       id === null ||
@@ -215,16 +207,12 @@ export async function boletinesDeHijo(
   return resultado;
 }
 
-export async function planActivoDeHijo(
-  studentId: string,
-): Promise<PlanResumen | null> {
+export async function planActivoDeHijo(studentId: string): Promise<PlanResumen | null> {
   const { createClient } = await import("@/lib/supabase/server");
   const supabase = await createClient();
   const { data: planFila, error: planError } = await supabase
     .from("planes_de_estudio")
-    .select(
-      "id, boletin_id, desde, hasta, minutos_por_dia, reparto, recomendaciones, created_at",
-    )
+    .select("id, boletin_id, desde, hasta, minutos_por_dia, reparto, recomendaciones, created_at")
     .eq("student_id", studentId)
     .eq("activo", true)
     .order("created_at", { ascending: false })
@@ -260,15 +248,10 @@ export async function planActivoDeHijo(
   const haceCatorceDias = sumarDias(hoy, -13);
 
   const [{ count: conteoTareas }, { data: partesBrutas }] = await Promise.all([
-    supabase
-      .from("plan_tareas")
-      .select("id", { count: "exact", head: true })
-      .eq("plan_id", id),
+    supabase.from("plan_tareas").select("id", { count: "exact", head: true }).eq("plan_id", id),
     supabase
       .from("plan_partes")
-      .select(
-        "fecha, minutos_previstos, minutos_medidos, items_respondidos, aciertos, enviado_at",
-      )
+      .select("fecha, minutos_previstos, minutos_medidos, items_respondidos, aciertos, enviado_at")
       .eq("plan_id", id)
       .gte("fecha", haceCatorceDias)
       .lte("fecha", hoy)
@@ -348,20 +331,14 @@ export async function inventarioDeContenido(): Promise<MateriaInventario[]> {
   const subjectIds = cursos.map((c) => c.subjectId);
 
   const [materiasRes, modulosRes, skillsRes] = await Promise.all([
+    supabase.from("subjects").select("id, code, ord").is("school_id", null).in("id", subjectIds),
+    supabase.from("course_modules").select("id, course_id, ord").in("course_id", courseIds),
     supabase
-      .from("subjects")
-      .select("id, code, ord")
-      .is("school_id", null)
-      .in("id", subjectIds),
-    supabase
-      .from("course_modules")
-      .select("id, course_id, ord")
-      .in("course_id", courseIds),
-    supabase
+      // `skills` no tiene `status`: la skill existe o no; lo publicado son
+      // sus preguntas, que se cuentan mas abajo.
       .from("skills")
       .select("id, course_id, code, ord")
-      .in("course_id", courseIds)
-      .eq("status", "published"),
+      .in("course_id", courseIds),
   ]);
 
   if (materiasRes.error !== null || modulosRes.error !== null || skillsRes.error !== null) {
@@ -393,8 +370,7 @@ export async function inventarioDeContenido(): Promise<MateriaInventario[]> {
   const moduloPorId = new Map<string, { courseId: string; ord: number }>();
   for (const m of modulos) moduloPorId.set(m.id, m);
 
-  const skills: { id: string; courseId: string; code: string; ord: number }[] =
-    [];
+  const skills: { id: string; courseId: string; code: string; ord: number }[] = [];
   for (const bruta of skillsRes.data ?? []) {
     if (!esFila(bruta)) continue;
     const id = texto(bruta["id"]);
@@ -477,9 +453,7 @@ export async function inventarioDeContenido(): Promise<MateriaInventario[]> {
         },
       ];
     });
-    leccionesDeMateria.sort(
-      (a, b) => a.moduloOrd - b.moduloOrd || a.ord - b.ord,
-    );
+    leccionesDeMateria.sort((a, b) => a.moduloOrd - b.moduloOrd || a.ord - b.ord);
 
     const skillsDeMateria = skills
       .filter((skill) => skill.courseId === curso.id)
@@ -502,9 +476,7 @@ export async function inventarioDeContenido(): Promise<MateriaInventario[]> {
   return resultado;
 }
 
-export async function leccionesCompletadas(
-  studentId: string,
-): Promise<ReadonlySet<string>> {
+export async function leccionesCompletadas(studentId: string): Promise<ReadonlySet<string>> {
   const { createAdminClient } = await import("@/lib/supabase/admin");
   const supabase = createAdminClient(
     "Leer learning_events para saber que lecciones termino el alumno",
@@ -525,9 +497,7 @@ export async function leccionesCompletadas(
   return resultado;
 }
 
-export async function masteryDeAlumno(
-  studentId: string,
-): Promise<ReadonlyMap<string, number>> {
+export async function masteryDeAlumno(studentId: string): Promise<ReadonlyMap<string, number>> {
   const { createAdminClient } = await import("@/lib/supabase/admin");
   const supabase = createAdminClient(
     "Leer skill_mastery del alumno para armar la entrada del plan",
@@ -563,9 +533,7 @@ const eventoCalendarioSchema = z.object({
   ]),
 });
 
-export async function calendarioDelPlan(
-  gestion: number,
-): Promise<EventoCalendario[]> {
+export async function calendarioDelPlan(gestion: number): Promise<EventoCalendario[]> {
   const { createClient } = await import("@/lib/supabase/server");
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -584,9 +552,7 @@ export async function calendarioDelPlan(
   return resultado;
 }
 
-export async function minutosObservados(
-  studentId: string,
-): Promise<number | null> {
+export async function minutosObservados(studentId: string): Promise<number | null> {
   const { createClient } = await import("@/lib/supabase/server");
   const supabase = await createClient();
   const { desde, hasta } = ventanaDeInforme(28);
@@ -625,14 +591,8 @@ export function armarInventarioEstratega(
       (n, leccion) => n + (completadas.has(leccion.lessonId) ? 1 : 0),
       0,
     ),
-    minutosEstimados: materia.lecciones.reduce(
-      (n, leccion) => n + leccion.minutos,
-      0,
-    ),
-    preguntasPublicadas: materia.skills.reduce(
-      (n, skill) => n + skill.preguntas,
-      0,
-    ),
+    minutosEstimados: materia.lecciones.reduce((n, leccion) => n + leccion.minutos, 0),
+    preguntasPublicadas: materia.skills.reduce((n, skill) => n + skill.preguntas, 0),
   }));
 }
 

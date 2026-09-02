@@ -35,9 +35,7 @@ const materiaScience: MateriaInventario = {
   skills: [],
 };
 
-const calendario = [
-  { desde: "2026-09-07", hasta: "2026-09-07", tipo: "feriado" },
-] as const;
+const calendario = [{ desde: "2026-09-07", hasta: "2026-09-07", tipo: "feriado" }] as const;
 
 describe("notaGuardadaSchema", () => {
   it("acepta una nota válida", () => {
@@ -141,12 +139,8 @@ describe("armarEntradaReparto", () => {
     expect(entrada.materias[0]?.lecciones[1]?.completada).toBe(false);
     expect(entrada.materias[0]?.skills[0]?.mastery).toBe(0.8);
     expect(entrada.materias[0]?.skills[1]?.mastery).toBeNull();
-    expect(entrada.materias.some((materia) => materia.code === "science")).toBe(
-      false,
-    );
-    expect(entrada.materias.some((materia) => materia.code === "math")).toBe(
-      true,
-    );
+    expect(entrada.materias.some((materia) => materia.code === "science")).toBe(false);
+    expect(entrada.materias.some((materia) => materia.code === "math")).toBe(true);
     expect(entrada.calendario).toEqual(calendario);
     expect(entrada.minutosPorDia).toBe(30);
   });
