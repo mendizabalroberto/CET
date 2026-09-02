@@ -13,7 +13,6 @@ import Link from "next/link";
 
 import { sesionYaAbierta } from "@/lib/auth/session";
 import { SesionAbierta } from "@/components/auth/SesionAbierta";
-import { ROUTES } from "@/lib/routes";
 import { getServerDictionary } from "@/lib/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -45,7 +44,6 @@ export default async function LoginRolePage() {
           <SesionAbierta
             nombre={sesion.profile.fullName}
             casa={sesion.casa}
-            rutaDeSalida={ROUTES.logout}
             textos={t.auth.sesionAbierta}
           />
         </div>

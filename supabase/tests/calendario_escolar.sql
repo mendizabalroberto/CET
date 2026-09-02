@@ -3,7 +3,8 @@
 begin;
 select plan(9);
 
-\ir ../migrations/0092_calendario_escolar.sql
+-- La migracion 0092_calendario_escolar ya esta aplicada en la base: incluirla aqui con \ir
+-- rompia con «type ... already exists» (02/09/2026). Se prueba lo desplegado.
 \ir ../seed/calendario_2026.sql
 
 -- 1 · Hay exactamente 11 filas globales de 2026.

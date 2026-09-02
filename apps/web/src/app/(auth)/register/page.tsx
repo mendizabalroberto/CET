@@ -84,7 +84,6 @@ export default async function RegisterPage({ searchParams }: PageProps) {
           <SesionAbierta
             nombre={sesion.profile.fullName}
             casa={sesion.casa}
-            rutaDeSalida={ROUTES.logout}
             textos={t.auth.sesionAbierta}
           />
         </div>

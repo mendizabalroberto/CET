@@ -5,7 +5,8 @@
 begin;
 select plan(22);
 
-\ir ../migrations/0091_plan_de_estudio.sql
+-- La migracion 0091_plan_de_estudio ya esta aplicada en la base: incluirla aqui con \ir
+-- rompia con «type ... already exists» (02/09/2026). Se prueba lo desplegado.
 
 -- La migracion rellena estimated_minutes. En este punto el fixture no ha
 -- creado sus lecciones, asi que el cero solo puede venir de las 33 reales.

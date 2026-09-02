@@ -30,8 +30,21 @@
  * menores. Entrar con otra cuenta desde el formulario ya reemplaza la sesión,
  * así que el enlace de salir solo hace falta cuando alguien quiere dejar el
  * navegador limpio.
+ *
+ * ===========================================================================
+ * «SALIR» ES UN FORMULARIO, NO UN <Link> A /logout
+ * ===========================================================================
+ * Lo fue, y CERRABA LA SESIÓN SIN QUE NADIE PULSARA NADA: Next prefetcha los
+ * enlaces que entran en pantalla, y prefetchar `/logout` es ejecutarlo. La
+ * secuencia medida en producción el 02/09/2026: abrir `/login` con sesión
+ * viva, ver «Ya has entrado como…», pulsar «Continuar» y aterrizar en un 404
+ * porque la cookie ya no existía. El layout del tutor cayó en la misma trampa
+ * antes (ver su cabecera). Cerrar sesión va por POST con la Server Action
+ * `signOut`, como en `(staff)`, `(student)` y `(tutor)`.
  */
 import Link from "next/link";
+
+import { signOut } from "@/lib/auth/actions";
 
 export interface TextosDeSesionAbierta {
   /** «Ya has entrado como {name}.» */
@@ -48,11 +61,10 @@ export interface SesionAbiertaProps {
   readonly nombre: string;
   /** A dónde lleva «Continuar»: la portada del rol que ya tiene. */
   readonly casa: string;
-  readonly rutaDeSalida: string;
   readonly textos: TextosDeSesionAbierta;
 }
 
-export function SesionAbierta({ nombre, casa, rutaDeSalida, textos }: SesionAbiertaProps) {
+export function SesionAbierta({ nombre, casa, textos }: SesionAbiertaProps) {
   return (
     <div
       // `status` y no `alert`: es contexto, no una interrupción. Un lector de
@@ -70,13 +82,15 @@ export function SesionAbierta({ nombre, casa, rutaDeSalida, textos }: SesionAbie
         >
           {textos.continuar}
         </Link>
-        <Link
-          href={rutaDeSalida}
-          data-cet-id="sesion.salir"
-          className="text-sm font-medium text-muted underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-        >
-          {textos.salir}
-        </Link>
+        <form action={signOut}>
+          <button
+            type="submit"
+            data-cet-id="sesion.salir"
+            className="text-sm font-medium text-muted underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          >
+            {textos.salir}
+          </button>
+        </form>
       </div>
 
       {/* Separa el aviso del formulario que viene debajo y explica qué es ese
