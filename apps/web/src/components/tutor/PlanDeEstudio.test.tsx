@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { BoletinResumen, EventoProximo, PlanResumen } from "@/lib/plan/consultas";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { PlanDeEstudio } from "./PlanDeEstudio";
+import { PlanDeEstudio, fechaLegible } from "./PlanDeEstudio";
 
 vi.mock("@/lib/plan/acciones", () => ({
   cancelarPlan: vi.fn(),
@@ -214,5 +214,18 @@ describe("PlanDeEstudio", () => {
       "textContent",
       expect.stringContaining("We've read"),
     );
+  });
+});
+
+describe("fechaLegible", () => {
+  it("una fecha civil no retrocede un dia en zonas al oeste de UTC", () => {
+    // El proceso de test corre en la zona de la maquina; la fecha civil debe
+    // salir igual en todas.
+    expect(fechaLegible("2026-08-24", "es")).toBe("24/8/2026");
+    expect(fechaLegible("2026-09-24", "en")).toBe("24/09/2026");
+  });
+
+  it("un texto que no es fecha se devuelve tal cual", () => {
+    expect(fechaLegible("ayer", "es")).toBe("ayer");
   });
 });
