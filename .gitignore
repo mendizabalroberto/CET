@@ -52,3 +52,11 @@ Thumbs.db
 
 .vercel
 .env*
+
+# ---- Documentos personales y de trabajo local ----
+# `docs/academico/` guarda boletines y calendarios reales del colegio (datos de
+# un menor): se usan en local para probar el plan, nunca se publican.
+docs/academico/
+invitaciones/
+.playwright-mcp/
+%TEMP%/
