@@ -101,7 +101,8 @@ export default async function LeccionDelHijoPage({ params }: PageProps) {
       <article className="flex flex-col gap-6">
         <header className="flex flex-col gap-2">
           <Migas label={C.trailLabel} items={migas} />
-          <h1 className="text-2xl font-bold text-ink">{resolveI18n(lesson.title, locale)}</h1>
+          {/* `h2`: el `h1` del área es el nombre del hijo y lo pone el layout. */}
+          <h2 className="text-xl font-bold text-ink">{resolveI18n(lesson.title, locale)}</h2>
           {/* La estimación es la que ve el niño. NO se pinta ningún reloj: el
               tiempo que pasa el padre en esta pantalla no se mide, y un reloj
               corriendo daría a entender que sí. */}

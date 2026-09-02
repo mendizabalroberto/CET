@@ -28,6 +28,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
+import { estaActivo } from "@/components/tutor/NavDelHijo";
 import { findProtectedArea } from "@/lib/routes";
 
 import { rutasDeHijo } from "./rutas";
@@ -120,6 +121,24 @@ describe("las rutas del hijo", () => {
       // menor existe.
       expect(area?.onDeny).toBe("not-found");
     }
+  });
+
+  it("la pestaña de la ficha no se come a las demás", () => {
+    // `/tutor/hijos/<id>` es prefijo de TODO lo que hay bajo ese hijo. Si se
+    // comparase por prefijo, «Cómo va» saldría marcada mientras el padre lee
+    // una lección, y las pestañas dejarían de responder «¿dónde estoy?» justo
+    // en las pantallas profundas, que son las únicas donde uno se pierde.
+    const ficha = { href: rutas.ficha, label: "Cómo va", exacto: true } as const;
+    const contenido = { href: rutas.contenido, label: "Sus lecciones" } as const;
+
+    expect(estaActivo(rutas.ficha, ficha)).toBe(true);
+    expect(estaActivo(rutas.contenido, ficha)).toBe(false);
+    expect(estaActivo(rutas.leccion("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"), ficha)).toBe(false);
+
+    // Y al revés: una pestaña normal SÍ sigue activa en sus subrutas.
+    expect(estaActivo(rutas.contenido, contenido)).toBe(true);
+    expect(estaActivo(rutas.materia("math"), contenido)).toBe(true);
+    expect(estaActivo(rutas.ficha, contenido)).toBe(false);
   });
 
   it("codifica los segmentos variables", () => {

@@ -363,6 +363,19 @@ export const en = {
       pinBody: "If they've forgotten it, create a new link and they'll choose another one.",
       back: "Back to my children",
       /**
+       * LAS PESTAÑAS DEL ÁREA DE UN HIJO.
+       *
+       * Dos, y ninguna dice una palabra de sistema: un padre no navega por
+       * «seguimiento» y «contenido», navega por cómo va su hijo y por lo que su
+       * hijo estudia.
+       */
+      nav: {
+        label: "About this child",
+        progress: "How they're doing",
+        content: "Their lessons",
+        current: "you are here",
+      },
+      /**
        * EL CONTENIDO DEL HIJO, VISTO POR SU PADRE.
        *
        * REGISTRO. Todo va en segunda persona y sobre el niño, no sobre el
@@ -372,14 +385,11 @@ export const en = {
        * hijo.
        */
       content: {
+        /** Titula la pestaña del navegador; el rótulo de la pestaña de dentro es `nav.content`. */
         cardTitle: "What they're studying",
-        cardBody:
-          "Open the same lessons your child has, and see which ones they've finished.",
-        open: "See their lessons",
         title: "What {name} is studying",
         subtitle: "The same lessons they have, with what they've finished marked.",
         readOnly: "You're just looking. Nothing here counts as your child's work.",
-        back: "Back to {name}",
         trailLabel: "Path",
         trailRoot: "Their lessons",
         emptyTitle: "There are no lessons here yet",

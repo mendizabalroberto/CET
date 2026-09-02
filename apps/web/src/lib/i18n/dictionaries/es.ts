@@ -352,15 +352,17 @@ export const es: Dictionary = {
       pinTitle: "Su PIN",
       pinBody: "Si se le ha olvidado, crea un enlace nuevo y elegir\u00e1 otro.",
       back: "Volver a mis hijos",
+      nav: {
+        label: "Sobre este hijo",
+        progress: "Cómo va",
+        content: "Sus lecciones",
+        current: "estás aquí",
+      },
       content: {
         cardTitle: "Lo que está estudiando",
-        cardBody:
-          "Abre las mismas lecciones que tiene tu hijo y mira cuáles ha terminado.",
-        open: "Ver sus lecciones",
         title: "Lo que estudia {name}",
         subtitle: "Las mismas lecciones que tiene él, con lo que ha terminado señalado.",
         readOnly: "Solo estás mirando. Nada de aquí cuenta como trabajo de tu hijo.",
-        back: "Volver a {name}",
         trailLabel: "Ruta",
         trailRoot: "Sus lecciones",
         emptyTitle: "Aquí todavía no hay lecciones",

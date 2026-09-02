@@ -26,23 +26,20 @@
  * saca de ahí es que el producto no funciona.
  *
  * EL INFORME LO ENCABEZA EL NOMBRE DE PILA y no el nombre completo. El completo
- * ya es el `h1` de esta página, dos renglones más arriba; repetirlo entero
- * debajo no añade nada y deja dos títulos casi idénticos pegados. «Leo» debajo
+ * ya es el `h1` del layout del área, justo encima de las pestañas; repetirlo
+ * entero debajo no añade nada y deja dos títulos casi idénticos pegados. «Leo» debajo
  * de «Leo Mendizabal García» se lee como el principio de su informe, que es
  * justo lo que es. Es el mismo `nombreDePila` que ya usan el enlace y el
  * dispositivo en `lib/tutor/queries.ts`.
  */
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Dispositivos } from "@/components/tutor/Dispositivos";
 import { EnlaceDeAcceso } from "@/components/tutor/EnlaceDeAcceso";
 import { Seguimiento } from "@/components/tutor/Seguimiento";
 import { getServerDictionary } from "@/lib/i18n/server";
-import { ROUTES } from "@/lib/routes";
 import { detalleDeHijo, seguimientoDeHijo } from "@/lib/tutor/queries";
-import { rutasDeHijo } from "@/lib/tutor/rutas";
 import { propsDeSeguimiento } from "@/lib/tutor/seguimiento";
 
 interface PageProps {
@@ -76,12 +73,11 @@ export default async function HijoPage({ params }: PageProps) {
 
   return (
     <section className="space-y-6">
-      <Link href={ROUTES.tutorHome} className="text-sm font-semibold text-teal">
-        ← {C.back}
-      </Link>
-
-      <h1 className="text-2xl font-bold text-ink">{hijo.nombre}</h1>
-
+      {/* SIN «VOLVER» Y SIN `h1`: los pone el layout del área del hijo, que es
+          quien sabe quién es y qué pantallas hay de él. Vivieron aquí mientras
+          esta era la única pantalla suya; con las lecciones al lado, copiarlos
+          en cada página era la forma segura de que un día dijeran cosas
+          distintas. */}
       {scorecard === null ? (
         <section className="rounded-2xl border-2 border-line bg-card p-5">
           <h2 className="text-lg font-bold text-ink">{C.progress.emptyTitle}</h2>
@@ -90,27 +86,6 @@ export default async function HijoPage({ params }: PageProps) {
       ) : (
         <Seguimiento locale={locale} scorecard={scorecard} />
       )}
-
-      {/* «¿ESTUDIANDO QUÉ?» VA JUSTO DEBAJO DE «¿ESTÁ ESTUDIANDO?».
-          El informe de arriba dice cuántos minutos y en qué lecciones, pero
-          nombrarlas no es enseñarlas: un padre que lee «45 min en Fracciones»
-          quiere abrir Fracciones. Este es el único sitio de la pantalla donde
-          esa pregunta está viva; más abajo empieza la administración —enlace,
-          aparatos, PIN—, que se hace una vez y no cada semana.
-
-          Y va ANTES del enlace a propósito, aunque el enlace sea lo primero que
-          usa un padre nuevo: quien vuelve a esta página ya tiene a su hijo
-          dentro y viene a mirar, no a dar de alta. */}
-      <Link
-        href={rutasDeHijo(hijo.id).contenido}
-        className="block rounded-2xl border-2 border-line bg-card p-5 transition-colors hover:border-teal"
-      >
-        <h2 className="text-lg font-bold text-ink">{C.content.cardTitle}</h2>
-        <p className="mt-2 text-muted">{C.content.cardBody}</p>
-        <span aria-hidden="true" className="mt-3 inline-block font-semibold text-teal">
-          {C.content.open} →
-        </span>
-      </Link>
 
       <EnlaceDeAcceso studentId={hijo.id} yaTieneEnlace={hijo.enlaceActivo} />
 

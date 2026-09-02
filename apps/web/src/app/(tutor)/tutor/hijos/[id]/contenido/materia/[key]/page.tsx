@@ -120,7 +120,8 @@ export default async function MateriaDelHijoPage({ params }: PageProps) {
             <SubjectIcon code={group.code} className="h-8 w-8" />
           </span>
           <div className="min-w-0">
-            <h1 className="text-2xl font-bold text-ink">{name}</h1>
+            {/* `h2`: el `h1` del área es el nombre del hijo y lo pone el layout. */}
+            <h2 className="text-xl font-bold text-ink">{name}</h2>
             <p className="mt-1 text-sm text-muted">
               {counted === null
                 ? s.progressUnavailable
@@ -134,7 +135,7 @@ export default async function MateriaDelHijoPage({ params }: PageProps) {
             {/* El título del curso solo aparece cuando hay más de uno: con uno
                 repetiría el nombre de la materia que ya está en el <h1>. */}
             {varios ? (
-              <h2 className="text-lg font-bold text-ink">{resolveI18n(course.title, locale)}</h2>
+              <h3 className="text-lg font-bold text-ink">{resolveI18n(course.title, locale)}</h3>
             ) : null}
 
             {course.modules.length === 0 ? (

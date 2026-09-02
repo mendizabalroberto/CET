@@ -37,7 +37,6 @@
  * Ver la cabecera de `alcanceDeHijo` en `lib/tutor/queries.ts`.
  */
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { resolveI18n } from "@cet/shared";
 import { EmptyState, ErrorState, SubjectGrid, type SubjectCardProps } from "@cet/ui";
@@ -117,14 +116,11 @@ export default async function ContenidoDelHijoPage({ params }: PageProps) {
   return (
     <UiLocaleProvider locale={locale}>
       <section className="space-y-6">
-        <Link href={rutas.ficha} className="text-sm font-semibold text-teal">
-          ← {interpolate(C.back, { name: pila })}
-        </Link>
-
+        {/* `h2` Y NO `h1`: el `h1` de esta área es el nombre del hijo, y lo pone
+            el layout junto a las pestañas. Dos `h1` en la misma página dejan a
+            quien navega por encabezados sin saber cuál es el título. */}
         <header>
-          <h1 className="text-2xl font-bold text-ink">
-            {interpolate(C.title, { name: pila })}
-          </h1>
+          <h2 className="text-xl font-bold text-ink">{interpolate(C.title, { name: pila })}</h2>
           <p className="mt-2 text-muted">{C.subtitle}</p>
         </header>
 
@@ -142,7 +138,10 @@ export default async function ContenidoDelHijoPage({ params }: PageProps) {
             advertir. */}
         {hijo.schoolId !== null ? (
           <section className="rounded-2xl border-2 border-line bg-card p-5">
-            <h2 className="text-lg font-bold text-ink">{C.partialTitle}</h2>
+            {/* `h3`: cuelga del `h2` de esta pantalla, que a su vez cuelga del
+                `h1` del área. Saltarse un nivel rompe el índice que construye
+                un lector de pantalla. */}
+            <h3 className="text-lg font-bold text-ink">{C.partialTitle}</h3>
             <p className="mt-2 text-muted">{C.partialBody}</p>
           </section>
         ) : null}

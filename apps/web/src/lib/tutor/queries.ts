@@ -14,6 +14,8 @@
  */
 import "server-only";
 
+import { cache } from "react";
+
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { I18nText } from "@cet/shared";
 
@@ -402,7 +404,22 @@ export interface AlcanceDeHijo {
  * devolviéndole solo lo global. Es el resultado correcto —ve menos, nunca
  * más—, y la pantalla lo dice en vez de fingir un catálogo vacío.
  */
-export async function alcanceDeHijo(studentId: string): Promise<AlcanceDeHijo | null> {
+/**
+ * ENVUELTA EN `cache()` DE REACT, y no por ahorrar milisegundos.
+ *
+ * El layout del área del hijo la llama para pintar su nombre y decidir el 404,
+ * y la página de dentro vuelve a llamarla para lo mismo. Esa segunda llamada es
+ * deliberada —un layout no es una barrera de autorización— pero sin `cache()`
+ * serían DOS pares de consultas idénticas por cada navegación, y el número
+ * crecería con cada pantalla nueva que se añadiera al área.
+ *
+ * `cache()` memoiza por argumentos DENTRO de una misma petición, así que no hay
+ * riesgo de servirle a un tutor la fila que se leyó para otro: dos peticiones
+ * son dos cachés. Es el mecanismo que Next documenta justo para este caso.
+ */
+export const alcanceDeHijo = cache(async function alcanceDeHijo(
+  studentId: string,
+): Promise<AlcanceDeHijo | null> {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(studentId)) {
     return null;
   }
@@ -448,7 +465,7 @@ export async function alcanceDeHijo(studentId: string): Promise<AlcanceDeHijo | 
     nombre,
     schoolId: typeof colegio === "string" ? colegio : null,
   };
-}
+});
 
 /* ===========================================================================
  * EL SEGUIMIENTO: cómo va el hijo
