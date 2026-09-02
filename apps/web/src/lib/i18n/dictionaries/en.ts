@@ -640,6 +640,19 @@ export const en = {
         activeDaysLabel: "Days with study",
         activeDaysValue: "{active} of {total}",
         daysRowLabel: "Days in a row",
+        /* --- The KPI row's variation against last week ---------------------- */
+        trendMoreSr: "{value} more than last week.",
+        trendLessSr: "{value} less than last week.",
+        trendSameSr: "The same as last week.",
+        trendSameText: "same",
+        weeklyTrendSummary: "Minutes per week, last {count} weeks.",
+        /* --- Study plan adherence -------------------------------------------- */
+        adherenceLabel: "Plan adherence",
+        adherenceProgressText: "{done} of {target}",
+        adherenceSummary: "Did {percent} of what was planned over the last few days.",
+        adherenceSummaryOver: "Went past the plan: {percent} of what was planned over the last few days.",
+        /* --- The breakdown by subject ----------------------------------------- */
+        subjectsTitle: "By subject",
       },
     },
     signUp: {

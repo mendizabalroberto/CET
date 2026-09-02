@@ -47,7 +47,7 @@ import { notFound } from "next/navigation";
 import { Seguimiento } from "@/components/tutor/Seguimiento";
 import { resolveLocale } from "@/lib/i18n/server";
 import type { SeguimientoDeHijo } from "@/lib/tutor/queries";
-import { propsDeSeguimiento } from "@/lib/tutor/seguimiento";
+import { propsDeSeguimiento, type PlanDeHijo } from "@/lib/tutor/seguimiento";
 
 /** Siete días consecutivos terminados en hoy, en `YYYY-MM-DD`. */
 function ultimosDias(cuantos: number): readonly string[] {
@@ -73,13 +73,29 @@ interface Caso {
   readonly nota: string;
   readonly seguimiento: SeguimientoDeHijo;
   readonly nombre: string;
+  /** Solo en el caso «con plan activo»: pasa por la misma `propsDeSeguimiento()`. */
+  readonly plan?: PlanDeHijo;
+}
+
+/** Cuatro semanas de 28 días, la más reciente con la silueta de `minutosNormales`. */
+function serie28De(dias28: readonly string[], ultimaSemana: readonly number[]): SeguimientoDeHijo["serie28"] {
+  return dias28.map((fecha, i) => {
+    if (i >= dias28.length - 7) {
+      return { fecha, minutos: ultimaSemana[i - (dias28.length - 7)] ?? 0 };
+    }
+    // Tendencia creciente hacia la semana actual, para que el sparkline no
+    // sea cuatro barras iguales en la vista previa.
+    const semana = Math.floor(i / 7);
+    return { fecha, minutos: 15 + semana * 8 };
+  });
 }
 
 function casos(): readonly Caso[] {
   const dias = ultimosDias(7);
+  const dias28 = ultimosDias(28);
   const dia = (i: number): string => dias[i] ?? (dias[0] as string);
 
-  /** Destrezas y lecciones son iguales en los tres casos: aquí no se miden. */
+  /** Destrezas y lecciones son iguales en la mayoría de los casos: aquí no se miden. */
   const destrezas: SeguimientoDeHijo["destrezas"] = [
     { id: "math.simplify", nombre: { es: "Simplificar fracciones", en: "Simplify fractions" }, mastery: 0.92 },
     {
@@ -105,6 +121,11 @@ function casos(): readonly Caso[] {
     { id: "l4", nombre: { es: "Fracciones equivalentes", en: "Equivalent fractions" }, minutos: 7 },
   ];
 
+  const materias: SeguimientoDeHijo["materias"] = [
+    { subjectId: "s-math", code: "math", nombre: { es: "Matemáticas", en: "Maths" }, minutos: 108 },
+    { subjectId: "s-eng", code: "english", nombre: { es: "Inglés", en: "English" }, minutos: 85 },
+  ];
+
   const minutosNormales = [22, 0, 45, 38, 0, 61, 27];
 
   return [
@@ -128,9 +149,22 @@ function casos(): readonly Caso[] {
           pistasPedidas: 11,
           rachaMaxima: 3,
         },
+        resumenAnterior: {
+          minutosEstudio: 151,
+          sesiones: 7,
+          leccionesAbiertas: 4,
+          leccionesCompletadas: 2,
+          itemsRespondidos: 96,
+          porcentajeAcierto: 70,
+          examenesEntregados: 0,
+          pistasPedidas: 9,
+          rachaMaxima: 2,
+        },
         serie: dias.map((fecha, i) => ({ fecha, minutos: minutosNormales[i] ?? 0 })),
+        serie28: serie28De(dias28, minutosNormales),
         destrezas,
         lecciones,
+        materias,
         horas: reloj({ 17: 12, 18: 34, 19: 41, 20: 18, 21: 9, 8: 6 }),
         logro: dias.map((fecha, i) => ({
           fecha,
@@ -161,12 +195,15 @@ function casos(): readonly Caso[] {
           pistasPedidas: 8,
           rachaMaxima: 1,
         },
+        resumenAnterior: null,
         serie: dias.map((fecha, i) => ({
           fecha,
           minutos: [31, null, null, 0, 43, null, 0][i] ?? null,
         })),
+        serie28: [],
         destrezas,
         lecciones: lecciones.slice(0, 2),
+        materias: [],
         horas: reloj({ 16: 22, 17: 31, 22: 21 }),
         logro: [
           { fecha: dia(0), leccionesCompletadas: 1, itemsRespondidos: 22, aciertos: 14 },
@@ -195,11 +232,141 @@ function casos(): readonly Caso[] {
           pistasPedidas: 0,
           rachaMaxima: 0,
         },
+        resumenAnterior: null,
         serie: dias.map((fecha) => ({ fecha, minutos: 0 })),
+        serie28: [],
         destrezas,
         lecciones: [],
+        materias: [],
         horas: reloj({}),
         logro: [],
+      },
+    },
+    {
+      titulo: "Con plan activo",
+      nota:
+        "La baldosa de cumplimiento del plan solo aparece con plan activo: 96 de 140 min " +
+        "planificados en la ventana (20 min/día × 7 días), un 69 %. Compárala con el reparto " +
+        "por materia, que viene de las mismas lecciones.",
+      nombre: "Nico",
+      seguimiento: {
+        dias: 7,
+        resumen: {
+          minutosEstudio: 96,
+          sesiones: 6,
+          leccionesAbiertas: 4,
+          leccionesCompletadas: 2,
+          itemsRespondidos: 40,
+          porcentajeAcierto: 68,
+          examenesEntregados: 0,
+          pistasPedidas: 5,
+          rachaMaxima: 2,
+        },
+        resumenAnterior: null,
+        serie: dias.map((fecha, i) => ({ fecha, minutos: [20, 0, 18, 15, 0, 25, 18][i] ?? 0 })),
+        serie28: serie28De(dias28, [20, 0, 18, 15, 0, 25, 18]),
+        destrezas,
+        lecciones,
+        materias,
+        horas: reloj({ 18: 20, 19: 25 }),
+        logro: dias.map((fecha, i) => ({
+          fecha,
+          leccionesCompletadas: [1, 0, 0, 1, 0, 0, 0][i] ?? 0,
+          itemsRespondidos: [8, 0, 6, 5, 0, 10, 11][i] ?? 0,
+          aciertos: [6, 0, 4, 3, 0, 7, 7][i] ?? 0,
+        })),
+      },
+      plan: {
+        minutosPorDia: 20,
+        partes: dias.map((fecha, i) => ({ fecha, minutosMedidos: [20, 0, 18, 15, 0, 25, 18][i] ?? 0 })),
+      },
+    },
+    {
+      titulo: "Con periodo anterior: una semana mejor y otra peor",
+      nota:
+        "Dos hijos con la misma cifra de hoy y una historia distinta detrás: Vera mejoró en todo " +
+        "—tiempo, sesiones, lecciones y acierto en teal, con flecha hacia arriba—; Tom empeoró en " +
+        "todo —en rojo, flecha hacia abajo—. Compruébalo también en escala de grises: la flecha y " +
+        "el signo tienen que seguir leyéndose sin el color.",
+      nombre: "Vera",
+      seguimiento: {
+        dias: 7,
+        resumen: {
+          minutosEstudio: 193,
+          sesiones: 9,
+          leccionesAbiertas: 5,
+          leccionesCompletadas: 4,
+          itemsRespondidos: 128,
+          porcentajeAcierto: 82,
+          examenesEntregados: 1,
+          pistasPedidas: 11,
+          rachaMaxima: 3,
+        },
+        resumenAnterior: {
+          minutosEstudio: 90,
+          sesiones: 5,
+          leccionesAbiertas: 3,
+          leccionesCompletadas: 1,
+          itemsRespondidos: 80,
+          porcentajeAcierto: 60,
+          examenesEntregados: 0,
+          pistasPedidas: 14,
+          rachaMaxima: 1,
+        },
+        serie: dias.map((fecha, i) => ({ fecha, minutos: minutosNormales[i] ?? 0 })),
+        serie28: serie28De(dias28, minutosNormales),
+        destrezas,
+        lecciones,
+        materias,
+        horas: reloj({ 17: 12, 18: 34, 19: 41 }),
+        logro: dias.map((fecha, i) => ({
+          fecha,
+          leccionesCompletadas: [1, 0, 2, 1, 0, 3, 1][i] ?? 0,
+          itemsRespondidos: [14, 0, 31, 22, 0, 38, 19][i] ?? 0,
+          aciertos: [11, 0, 24, 15, 0, 30, 13][i] ?? 0,
+        })),
+      },
+    },
+    {
+      titulo: "Con periodo anterior: peor que la semana pasada",
+      nota: "El mismo caso, en su lado oscuro: Tom estudió más la semana pasada que esta.",
+      nombre: "Tom",
+      seguimiento: {
+        dias: 7,
+        resumen: {
+          minutosEstudio: 60,
+          sesiones: 3,
+          leccionesAbiertas: 2,
+          leccionesCompletadas: 0,
+          itemsRespondidos: 20,
+          porcentajeAcierto: 40,
+          examenesEntregados: 0,
+          pistasPedidas: 6,
+          rachaMaxima: 0,
+        },
+        resumenAnterior: {
+          minutosEstudio: 150,
+          sesiones: 8,
+          leccionesAbiertas: 5,
+          leccionesCompletadas: 3,
+          itemsRespondidos: 90,
+          porcentajeAcierto: 70,
+          examenesEntregados: 1,
+          pistasPedidas: 4,
+          rachaMaxima: 2,
+        },
+        serie: dias.map((fecha, i) => ({ fecha, minutos: [10, 0, 20, 0, 0, 15, 15][i] ?? 0 })),
+        serie28: serie28De(dias28, [10, 0, 20, 0, 0, 15, 15]),
+        destrezas,
+        lecciones: lecciones.slice(0, 1),
+        materias: materias.slice(0, 1),
+        horas: reloj({ 19: 15, 20: 15 }),
+        logro: dias.map((fecha, i) => ({
+          fecha,
+          leccionesCompletadas: 0,
+          itemsRespondidos: [3, 0, 5, 0, 0, 6, 6][i] ?? 0,
+          aciertos: [1, 0, 2, 0, 0, 3, 2][i] ?? 0,
+        })),
       },
     },
   ];
@@ -226,7 +393,7 @@ export default async function InformePreviewPage() {
       </header>
 
       {casos().map((caso) => {
-        const scorecard = propsDeSeguimiento(caso.seguimiento, caso.nombre, locale);
+        const scorecard = propsDeSeguimiento(caso.seguimiento, caso.nombre, locale, caso.plan);
         return (
           <section key={caso.titulo} className="flex flex-col gap-3">
             <h2 className="text-sm font-bold uppercase tracking-wide text-muted">{caso.titulo}</h2>

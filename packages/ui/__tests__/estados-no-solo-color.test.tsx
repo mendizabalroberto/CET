@@ -237,6 +237,13 @@ const CANALES: Readonly<Record<string, Canal>> = {
     tipo: "decorativo",
     razon: "El aviso lleva siempre titulo y, si procede, accion. El borde de color acompana a un texto obligatorio.",
   },
+  "reports/KpiTile.tsx#TINTA_DE_TENDENCIA": {
+    tipo: "decorativo",
+    razon:
+      "El color solo reeforza: `trend.text` ya llega de la aplicacion con la flecha y el signo distintos por estado " +
+      "(▲/▼/=), y `trend.srText` da ademas la frase completa para quien no ve ninguno de los dos. El mapa " +
+      "de tinta nunca es el unico canal que dice si la cifra mejoro, empeoro o siguio igual.",
+  },
 };
 
 /**

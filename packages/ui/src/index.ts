@@ -244,6 +244,20 @@ export {
 export { SkillList, type SkillListProps } from "./reports/SkillList.js";
 export { CohortComparison, type CohortComparisonProps } from "./reports/CohortComparison.js";
 export {
+  KpiTile,
+  type KpiTileProps,
+  type KpiTrend,
+  type KpiSparkline,
+  type TendenciaKpi,
+} from "./reports/KpiTile.js";
+export { PlanAdherence, type PlanAdherenceProps } from "./reports/PlanAdherence.js";
+export {
+  SubjectBreakdown,
+  type SubjectBreakdownProps,
+  type SubjectBreakdownRow,
+  haySubjectBreakdown,
+} from "./reports/SubjectBreakdown.js";
+export {
   LessonTimeBreakdown,
   type LessonTimeBreakdownProps,
   type LessonTimeRow,

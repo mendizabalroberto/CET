@@ -54,15 +54,20 @@ import type {
   EffortDay,
   EffortOutcomePoint,
   HourActivity,
+  KpiTileProps,
+  KpiTrend,
   LessonTime,
+  PlanAdherenceProps,
   ScorecardStat,
   SkillEntry,
   StudyScorecardProps,
+  SubjectBreakdownRow,
+  TendenciaKpi,
 } from "@cet/ui";
 
 import { getDictionary, interpolate, type Dictionary } from "@/lib/i18n";
 
-import type { SeguimientoDeHijo } from "./queries";
+import type { DiaDeEstudio, SeguimientoDeHijo } from "./queries";
 
 /** El trozo del diccionario que redacta este informe. */
 type TextosDeProgreso = Dictionary["tutor"]["child"]["progress"];
@@ -225,45 +230,33 @@ export function hayAlgoQueContar(seguimiento: SeguimientoDeHijo): boolean {
   return seguimiento.lecciones.some((l) => l.minutos > 0);
 }
 
-/** Las baldosas de cabecera. Ver «un cero que no significa cero» arriba. */
+/**
+ * Las baldosas SECUNDARIAS. Ver «un cero que no significa cero» arriba.
+ *
+ * El tiempo, las sesiones, los días activos, las lecciones terminadas y el
+ * acierto —las cinco que el padre lee primero— viven ahora en
+ * `kpisPrincipales`, con su variación contra la semana anterior. Esta función
+ * se queda con el resto: lo que completa la respuesta, no lo que la abre.
+ */
 function cifras(seguimiento: SeguimientoDeHijo, locale: Locale): readonly ScorecardStat[] {
   const r = seguimiento.resumen;
   if (r === null) return [];
 
-  const salida: ScorecardStat[] = [
-    {
-      value: textoDeMinutos(r.minutosEstudio, locale),
-      label: enDosIdiomas((x) => x.minutes),
-    },
-    {
-      value: String(r.sesiones),
-      label: enDosIdiomas((x) => x.sessions),
-    },
-  ];
+  const salida: ScorecardStat[] = [];
 
   /** Añade una cifra solo si de verdad ha ocurrido. */
   const siHay = (valor: number, etiqueta: (x: TextosDeProgreso) => string): void => {
     if (valor > 0) salida.push({ value: String(valor), label: enDosIdiomas(etiqueta) });
   };
 
-  /* LAS CIFRAS DEL PERIODO VAN PEGADAS AL TIEMPO Y NO AL FINAL. Las tres
-     hablan de la misma magnitud que la primera baldosa —cuánto y con qué
-     constancia—, y separarlas con las lecciones y el acierto obligaría al
-     padre a saltar de un lado a otro de la fila para responder una sola
-     pregunta. Ninguna se pinta sin un día de estudio detrás: «un día normal:
-     0 min» es el valor de inicialización disfrazado de medida. */
+  /* La mediana y el mejor día completan la fila de tiempo con el detalle de un
+     día normal; ninguna se pinta sin un día de estudio detrás: «un día
+     normal: 0 min» es el valor de inicialización disfrazado de medida. */
   const periodo = cifrasDelPeriodo(seguimiento);
   if (periodo.mediana !== null && periodo.mejorDia !== null) {
     salida.push(
       { value: textoDeMinutos(periodo.mediana, locale), label: enDosIdiomas((x) => x.medianLabel) },
       { value: textoDeMinutos(periodo.mejorDia, locale), label: enDosIdiomas((x) => x.bestDayLabel) },
-      {
-        value: interpolate(getDictionary(locale).tutor.child.progress.activeDaysValue, {
-          active: periodo.diasActivos,
-          total: periodo.diasDeVentana,
-        }),
-        label: enDosIdiomas((x) => x.activeDaysLabel),
-      },
     );
   }
   // La racha de DÍAS no es la `rachaMaxima` del resumen, que cuenta aciertos
@@ -272,24 +265,245 @@ function cifras(seguimiento: SeguimientoDeHijo, locale: Locale): readonly Scorec
   siHay(periodo.rachaDeDias, (x) => x.daysRowLabel);
 
   siHay(r.leccionesAbiertas, (x) => x.lessonsOpened);
-  siHay(r.leccionesCompletadas, (x) => x.lessonsCompleted);
   siHay(r.itemsRespondidos, (x) => x.answered);
-
-  // El acierto solo existe si hubo preguntas. Ver la cabecera.
-  if (r.itemsRespondidos > 0) {
-    salida.push({
-      value: interpolate(getDictionary(locale).tutor.child.progress.percentValue, {
-        value: Math.round(r.porcentajeAcierto),
-      }),
-      label: enDosIdiomas((x) => x.accuracy),
-    });
-  }
-
   siHay(r.rachaMaxima, (x) => x.streak);
   siHay(r.pistasPedidas, (x) => x.hints);
   siHay(r.examenesEntregados, (x) => x.exams);
 
   return salida;
+}
+
+/**
+ * ===========================================================================
+ * LA FILA DE KPI PRINCIPAL, Y SU VARIACIÓN CONTRA LA SEMANA ANTERIOR
+ * ===========================================================================
+ * Cinco cifras, siempre en el mismo orden: tiempo, sesiones, días activos,
+ * lecciones terminadas y —solo con preguntas contestadas— el acierto. Las
+ * cuatro primeras se pintan SIEMPRE, cero incluido: a diferencia de las
+ * accesorias de `cifras()`, aquí cero es una respuesta real («no ha terminado
+ * ninguna lección esta semana»), no el valor con el que se inicializa un
+ * cálculo. El acierto sigue la regla del cero que no es cero: sin preguntas
+ * no hay porcentaje que enseñar.
+ *
+ * LA VARIACIÓN SOLO EXISTE CON PERIODO ANTERIOR. `resumenAnterior` es `null`
+ * cuando la RPC no devolvió fila —niño dado de alta hace menos de una
+ * semana—, y entonces la baldosa se pinta sin flecha: no hay «0 min la semana
+ * pasada» que inventar. Los DÍAS ACTIVOS son la única excepción sin variación
+ * NUNCA: solo se sabe el recuento de un periodo mirando su serie día a día, y
+ * esta ronda solo pide el RESUMEN agregado de la semana anterior.
+ */
+function kpisPrincipales(seguimiento: SeguimientoDeHijo, locale: Locale): readonly KpiTileProps[] {
+  const r = seguimiento.resumen;
+  if (r === null) return [];
+  const anterior = seguimiento.resumenAnterior;
+  const periodo = cifrasDelPeriodo(seguimiento);
+  const textos = getDictionary(locale).tutor.child.progress;
+
+  const salida: KpiTileProps[] = [];
+
+  const semanas = semanasDeMinutos(seguimiento.serie28);
+  salida.push({
+    value: textoDeMinutos(r.minutosEstudio, locale),
+    label: enDosIdiomas((x) => x.minutes),
+    trend: calcularTendencia(r.minutosEstudio, anterior?.minutosEstudio ?? null, textoDeMinutos, locale),
+    ...(semanas.length > 0
+      ? {
+          sparkline: {
+            weeks: semanas,
+            summary: enDosIdiomas((x) => x.weeklyTrendSummary, { count: semanas.length }),
+          },
+        }
+      : {}),
+  });
+
+  salida.push({
+    value: String(r.sesiones),
+    label: enDosIdiomas((x) => x.sessions),
+    trend: calcularTendencia(r.sesiones, anterior?.sesiones ?? null, contador, locale),
+  });
+
+  if (periodo.diasDeVentana > 0) {
+    salida.push({
+      value: interpolate(textos.activeDaysValue, {
+        active: periodo.diasActivos,
+        total: periodo.diasDeVentana,
+      }),
+      label: enDosIdiomas((x) => x.activeDaysLabel),
+    });
+  }
+
+  salida.push({
+    value: String(r.leccionesCompletadas),
+    label: enDosIdiomas((x) => x.lessonsCompleted),
+    trend: calcularTendencia(
+      r.leccionesCompletadas,
+      anterior?.leccionesCompletadas ?? null,
+      contador,
+      locale,
+    ),
+  });
+
+  if (r.itemsRespondidos > 0) {
+    salida.push({
+      value: textoDePorcentaje(r.porcentajeAcierto, locale),
+      label: enDosIdiomas((x) => x.accuracy),
+      trend:
+        anterior !== null && anterior.itemsRespondidos > 0
+          ? calcularTendencia(r.porcentajeAcierto, anterior.porcentajeAcierto, textoDePorcentaje, locale)
+          : undefined,
+    });
+  }
+
+  return salida;
+}
+
+/** Un número entero escrito sin unidad. Sirve para sesiones y lecciones. */
+function contador(valor: number): string {
+  return String(Math.round(valor));
+}
+
+/** Un porcentaje ya formateado, en el idioma que se pida. */
+function textoDePorcentaje(valor: number, locale: Locale): string {
+  return interpolate(getDictionary(locale).tutor.child.progress.percentValue, {
+    value: Math.round(valor),
+  });
+}
+
+/**
+ * La variación de una cifra contra su periodo anterior, o `undefined` si no
+ * hay con qué comparar. El texto visible (flecha + signo + magnitud) sale
+ * SIEMPRE en el idioma de la petición; la frase accesible (`srText`) viaja en
+ * los dos, porque es lo que entra en el árbol de accesibilidad sea cual sea
+ * el idioma del lector de pantalla.
+ */
+function calcularTendencia(
+  actual: number,
+  anterior: number | null,
+  formatear: (valor: number, locale: Locale) => string,
+  locale: Locale,
+): KpiTrend | undefined {
+  if (anterior === null) return undefined;
+  const delta = actual - anterior;
+
+  if (delta === 0) {
+    return {
+      direction: "igual",
+      text: `= ${getDictionary(locale).tutor.child.progress.trendSameText}`,
+      srText: enDosIdiomas((x) => x.trendSameSr),
+    };
+  }
+
+  const direction: TendenciaKpi = delta > 0 ? "mejora" : "empeora";
+  const flecha = direction === "mejora" ? "▲" : "▼";
+  // Signo menos matemático (U+2212), no el guion del teclado: es el mismo que
+  // ya usa `EffortOutcomeScatter` en sus rótulos negativos de esta casa.
+  const signo = direction === "mejora" ? "+" : "−";
+
+  return {
+    direction,
+    text: `${flecha} ${signo}${formatear(Math.abs(delta), locale)}`,
+    srText: enCadaIdioma(
+      (x) => (direction === "mejora" ? x.trendMoreSr : x.trendLessSr),
+      (l) => ({ value: formatear(Math.abs(delta), l) }),
+    ),
+  };
+}
+
+/**
+ * Los minutos de las últimas cuatro semanas, en bloques de siete días, de la
+ * más antigua a la más reciente. Sale de `serie28` (ventana de 28 días, ver
+ * `queries.ts`); un día sin registro (`null`) cuenta como cero para la
+ * tendencia semanal — aquí no se distingue «no estudió» de «no hay dato»,
+ * porque el bloque es de siete días y una ausencia suelta no cambia la altura
+ * de la barra de forma perceptible.
+ *
+ * Con menos de 28 días disponibles (un niño recién dado de alta) se devuelven
+ * los bloques que sí caben, nunca menos de cero ni un bloque inventado.
+ */
+function semanasDeMinutos(serie28: readonly DiaDeEstudio[]): readonly number[] {
+  if (serie28.length === 0) return [];
+  const semanas: number[] = [];
+  let fin = serie28.length;
+  while (fin > 0 && semanas.length < 4) {
+    const inicio = Math.max(0, fin - 7);
+    const bloque = serie28.slice(inicio, fin);
+    semanas.push(bloque.reduce((suma, dia) => suma + (dia.minutos ?? 0), 0));
+    fin = inicio;
+  }
+  return semanas.reverse();
+}
+
+/**
+ * ===========================================================================
+ * LA ADHERENCIA AL PLAN
+ * ===========================================================================
+ * Lo justo de `PlanResumen` (`lib/plan/consultas.ts`) para calcular cuánto de
+ * lo planificado se ha hecho en la MISMA ventana que el resto del informe: las
+ * fechas de `partes` se filtran contra las fechas que trae `seguimiento.serie`
+ * —no se recalcula «hoy» aquí ni se abre una tercera definición de ventana—,
+ * así que la adherencia habla siempre de la semana que el padre está mirando.
+ *
+ * SIN PLAN, NINGÚN CÁLCULO: la función se llama con `undefined` y no hay
+ * baldosa. Con objetivo cero (`minutosPorDia` inválido, aunque
+ * `planActivoDeHijo` ya lo descarta) tampoco: dividir por cero no es un 0 %,
+ * es una comparación sin sentido.
+ */
+export interface PlanDeHijo {
+  readonly minutosPorDia: number;
+  readonly partes: readonly { readonly fecha: string; readonly minutosMedidos: number }[];
+}
+
+function adherenciaAlPlan(
+  plan: PlanDeHijo | undefined,
+  seguimiento: SeguimientoDeHijo,
+  locale: Locale,
+): PlanAdherenceProps | undefined {
+  if (plan === undefined) return undefined;
+
+  const fechasDeLaVentana = new Set(seguimiento.serie.map((d) => d.fecha));
+  const diasDeVentana = fechasDeLaVentana.size > 0 ? fechasDeLaVentana.size : seguimiento.dias;
+  const objetivo = plan.minutosPorDia * diasDeVentana;
+  if (!(objetivo > 0)) return undefined;
+
+  const hecho = plan.partes
+    .filter((p) => fechasDeLaVentana.has(p.fecha))
+    .reduce((suma, p) => suma + p.minutosMedidos, 0);
+
+  const ratioReal = hecho / objetivo;
+  const ratioCapado = Math.min(1, Math.max(0, ratioReal));
+  const porcentajeCapado = Math.round(ratioCapado * 100);
+  const porcentajeReal = Math.round(Math.max(0, ratioReal) * 100);
+  // Por encima del 100 % se cala la barra y la cifra real viaja aparte. Ver
+  // `PlanAdherence` en @cet/ui.
+  const conExceso = porcentajeReal > porcentajeCapado;
+
+  return {
+    label: enDosIdiomas((x) => x.adherenceLabel),
+    percentText: textoDePorcentaje(porcentajeCapado, locale),
+    ratio: ratioReal,
+    ...(conExceso ? { overText: textoDePorcentaje(porcentajeReal, locale) } : {}),
+    progressText: interpolate(getDictionary(locale).tutor.child.progress.adherenceProgressText, {
+      done: textoDeMinutos(hecho, locale),
+      target: textoDeMinutos(objetivo, locale),
+    }),
+    summary: enCadaIdioma(
+      (x) => (conExceso ? x.adherenceSummaryOver : x.adherenceSummary),
+      (l) => ({ percent: textoDePorcentaje(conExceso ? porcentajeReal : porcentajeCapado, l) }),
+    ),
+  };
+}
+
+/** El reparto por materia, listo para `SubjectBreakdown`. Ver `MateriaDeHijo`. */
+function desgloseDeMaterias(
+  seguimiento: SeguimientoDeHijo,
+  locale: Locale,
+): readonly SubjectBreakdownRow[] {
+  return seguimiento.materias.map((m): SubjectBreakdownRow => ({
+    subjectCode: m.code,
+    name: resolveI18n(m.nombre, locale),
+    minutes: m.minutos,
+    minutesText: textoDeMinutos(m.minutos, locale),
+  }));
 }
 
 /**
@@ -701,6 +915,8 @@ export function propsDeSeguimiento(
   seguimiento: SeguimientoDeHijo,
   nombreDelAlumno: string,
   locale: Locale,
+  /** El plan activo del hijo, si tiene uno. Sin él no hay baldosa de adherencia. */
+  plan?: PlanDeHijo,
 ): StudyScorecardProps | null {
   if (!hayAlgoQueContar(seguimiento)) return null;
 
@@ -719,9 +935,17 @@ export function propsDeSeguimiento(
   );
   const picoDeLaHora = horas.reduce((mayor, h) => Math.max(mayor, h.minutes), 0);
 
+  const adherencia = adherenciaAlPlan(plan, seguimiento, locale);
+  const materias = desgloseDeMaterias(seguimiento, locale);
+
   return {
     subjectCode: UNKNOWN_SUBJECT,
     studentName: nombreDelAlumno,
+    kpis: { items: kpisPrincipales(seguimiento, locale) },
+    ...(adherencia === undefined ? {} : { planAdherence: adherencia }),
+    ...(materias.length > 0
+      ? { subjects: { title: enDosIdiomas((x) => x.subjectsTitle), items: materias } }
+      : {}),
     statsTitle: enDosIdiomas((x) => x.statsTitle),
     stats: cifras(seguimiento, locale),
     effort: {

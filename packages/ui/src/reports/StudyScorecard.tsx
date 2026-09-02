@@ -79,6 +79,9 @@ import { cn } from "../lib/cn.js";
 import { StatTile } from "../data/StatTile.js";
 
 import { ScorecardPanel } from "./ScorecardPanel.js";
+import { KpiTile, type KpiTileProps } from "./KpiTile.js";
+import { PlanAdherence, type PlanAdherenceProps } from "./PlanAdherence.js";
+import { SubjectBreakdown, type SubjectBreakdownProps, haySubjectBreakdown } from "./SubjectBreakdown.js";
 import { EffortTrend, type EffortTrendProps } from "./EffortTrend.js";
 import { DailyRhythm, type DailyRhythmProps } from "./DailyRhythm.js";
 import {
@@ -114,9 +117,19 @@ export interface StudyScorecardProps {
   readonly subjectCode: string;
   /** Nombre del alumno, ya resuelto por la aplicacion. Encabeza el informe. */
   readonly studentName: string;
+  /**
+   * La fila de KPI principal: cifra grande, variacion contra el periodo
+   * anterior y —solo en la de tiempo, normalmente— su tendencia semanal. Va
+   * ANTES que `stats`, y es lo primero que se lee del informe.
+   */
+  readonly kpis?: ConTitulo<{ readonly items: readonly KpiTileProps[] }> | undefined;
+  /** Cumplimiento del plan de estudio. Se omite ENTERA si no hay plan activo. */
+  readonly planAdherence?: ConTitulo<PlanAdherenceProps> | undefined;
+  /** El reparto del informe por materia. */
+  readonly subjects?: ConTitulo<SubjectBreakdownProps> | undefined;
   /** Titulo del panel de cifras. */
   readonly statsTitle?: I18nText | undefined;
-  /** Minutos, sesiones, lecciones abiertas y terminadas, acierto, racha maxima. */
+  /** Cifras secundarias: lecciones, acierto, racha, pistas, examenes... */
   readonly stats?: readonly ScorecardStat[] | undefined;
   /** La constancia diaria. */
   readonly effort?: ConTitulo<EffortTrendProps> | undefined;
@@ -136,6 +149,9 @@ export interface StudyScorecardProps {
 export function StudyScorecard({
   subjectCode,
   studentName,
+  kpis,
+  planAdherence,
+  subjects,
   statsTitle,
   stats,
   effort,
@@ -147,6 +163,8 @@ export function StudyScorecard({
   className,
 }: StudyScorecardProps): ReactNode {
   /* Las mismas condiciones que usan los hijos para callarse. Ver la cabecera. */
+  const hayKpis = kpis !== undefined && kpis.items.length > 0;
+  const haySubjectsPanel = subjects !== undefined && haySubjectBreakdown(subjects.items);
   const hayCifras = stats !== undefined && stats.length > 0;
   const hayEsfuerzo = effort !== undefined && haySerieDeEsfuerzo(effort.series);
   const hayHoras = rhythm !== undefined && hayRitmoDiario(rhythm.hours);
@@ -170,6 +188,38 @@ export function StudyScorecard({
       {/* La cabecera: el nombre, y nada mas en su fila. Ver la cabecera del
           fichero. Va fuera de los paneles porque encabeza a todos. */}
       <h2 className="m-0 text-body-lg font-bold leading-tight">{studentName}</h2>
+
+      {/* LA FILA DE KPI PRINCIPAL. Va suelta, sin `ScorecardPanel`: son las
+          cifras más grandes del informe y una caja con lavado de materia
+          alrededor competiría por atención con la caja de dentro. */}
+      {hayKpis ? (
+        <div data-cet-fila="kpis" className="grid grid-cols-[repeat(auto-fit,minmax(8.75rem,1fr))] items-stretch gap-2">
+          {kpis.items.map((kpi, index) => (
+            <KpiTile key={`${index}-${kpi.value}`} {...kpi} />
+          ))}
+        </div>
+      ) : null}
+
+      {/* La adherencia al plan y el reparto por materia van en la misma fila
+          secundaria cuando las dos existen, para no alargar el informe con
+          dos paneles de una sola caja cada uno. */}
+      {planAdherence !== undefined || haySubjectsPanel ? (
+        <div
+          data-cet-fila="plan-y-materias"
+          className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2"
+        >
+          {planAdherence !== undefined ? (
+            <ScorecardPanel subjectCode={subjectCode} title={planAdherence.label} className="h-full">
+              <PlanAdherence {...planAdherence} />
+            </ScorecardPanel>
+          ) : null}
+          {haySubjectsPanel ? (
+            <ScorecardPanel subjectCode={subjectCode} title={subjects.title} className="h-full">
+              <SubjectBreakdown items={subjects.items} />
+            </ScorecardPanel>
+          ) : null}
+        </div>
+      ) : null}
 
       {hayCifras ? (
         <ScorecardPanel subjectCode={subjectCode} title={statsTitle}>

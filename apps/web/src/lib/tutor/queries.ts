@@ -493,6 +493,28 @@ export interface LeccionDeHijo {
   readonly minutos: number;
 }
 
+/**
+ * Los minutos de la ventana, agrupados por materia.
+ *
+ * Sale de encadenar `lessons -> course_modules -> courses -> subjects` a partir
+ * de las mismas filas que ya trae `informe_alumno_tiempo_por_leccion`: no hay
+ * ningún RPC que devuelva materia directamente, así que el agrupado lo hace
+ * esta capa (`materiasDeLecciones`, más abajo), nunca SQL nuevo.
+ *
+ * SOLO MINUTOS. `informe_alumno_resumen` y `informe_alumno_skills` dan acierto
+ * y dominio agregados de TODO el niño, no por materia: no hay de dónde sacar
+ * «74 % de acierto en Matemáticas» sin una función nueva que reparta los ítems
+ * respondidos por materia, y esta ronda no abre migraciones. Por eso
+ * `SubjectBreakdownRow` en `@cet/ui` admite acierto y lecciones terminadas
+ * opcionales, y aquí nunca se rellenan.
+ */
+export interface MateriaDeHijo {
+  readonly subjectId: string;
+  readonly code: string;
+  readonly nombre: I18nText;
+  readonly minutos: number;
+}
+
 /** Las nueve cifras de cabecera. `porcentajeAcierto` viene en 0..100. */
 export interface ResumenDeEstudio {
   readonly minutosEstudio: number;
@@ -543,9 +565,26 @@ export interface SeguimientoDeHijo {
   readonly dias: number;
   /** `null` cuando la consulta no devolvió fila: no es lo mismo que «todo a cero». */
   readonly resumen: ResumenDeEstudio | null;
+  /**
+   * El MISMO resumen, pero de los `dias` inmediatamente anteriores a la
+   * ventana (p. ej. `[hoy-14, hoy-7)` cuando `resumen` es `[hoy-7, hoy]`). Sirve
+   * SOLO para calcular la variación de las cifras de cabecera; `null` cuando no
+   * hay fila —sin periodo anterior no hay variación que enseñar, y no se
+   * inventa un cero contra el que comparar.
+   */
+  readonly resumenAnterior: ResumenDeEstudio | null;
   readonly serie: readonly DiaDeEstudio[];
+  /**
+   * Los últimos 28 días, día a día, para la tendencia semanal de la baldosa de
+   * tiempo. Ventana distinta de `serie` a propósito: la constancia diaria
+   * necesita columnas legibles y 28 se emborronarían; la tendencia semanal
+   * necesita cuatro semanas completas y 7 días no alcanzan para una sola.
+   */
+  readonly serie28: readonly DiaDeEstudio[];
   readonly destrezas: readonly DestrezaDeHijo[];
   readonly lecciones: readonly LeccionDeHijo[];
+  /** El reparto de `lecciones` por materia. Ver `MateriaDeHijo`. */
+  readonly materias: readonly MateriaDeHijo[];
   /** El reloj del día. Vacío cuando la consulta falla o no hay medición. */
   readonly horas: readonly HoraDeEstudio[];
   /** Lo logrado cada día, para cruzarlo con los minutos de `serie`. */
@@ -610,6 +649,23 @@ function ventanaDeInforme(dias: number): { readonly desde: string; readonly hast
   return { desde: new Date(inicio).toISOString(), hasta: ahora.toISOString() };
 }
 
+/**
+ * Los `dias` inmediatamente ANTERIORES al `desde` de la ventana actual.
+ *
+ * `hasta` de esta ventana es el `desde` de la actual, sin tocar: como las seis
+ * funciones de informe leen `[p_desde, p_hasta)` —semiabierto—, el instante en
+ * el que empieza «esta semana» queda excluido de «la semana anterior», y las
+ * dos ventanas ni se solapan ni dejan un hueco de un microsegundo entre ellas.
+ */
+function ventanaAnterior(
+  desdeActual: string,
+  dias: number,
+): { readonly desde: string; readonly hasta: string } {
+  const hasta = desdeActual;
+  const desde = new Date(new Date(desdeActual).getTime() - dias * 24 * 60 * 60 * 1000).toISOString();
+  return { desde, hasta };
+}
+
 /** `jsonb` de la base a `I18nText`, o `null` si no trae ningún idioma con texto. */
 function leerI18n(valor: unknown): I18nText | null {
   if (typeof valor === "string" && valor.trim() !== "") return { en: valor, es: valor };
@@ -657,9 +713,12 @@ export async function seguimientoDeHijo(
   const vacio: SeguimientoDeHijo = {
     dias,
     resumen: null,
+    resumenAnterior: null,
     serie: [],
+    serie28: [],
     destrezas: [],
     lecciones: [],
+    materias: [],
     horas: [],
     logro: [],
   };
@@ -671,10 +730,19 @@ export async function seguimientoDeHijo(
   const supabase = await createClient();
   const { desde, hasta } = ventanaDeInforme(dias);
   const args = { p_student_id: studentId, p_desde: desde, p_hasta: hasta };
+  const anterior = ventanaAnterior(desde, dias);
+  const argsAnterior = { p_student_id: studentId, p_desde: anterior.desde, p_hasta: anterior.hasta };
+  // Ventana de 28 días para la tendencia semanal de la baldosa de tiempo. Ver
+  // `SeguimientoDeHijo.serie28` y `minutosObservados` en `lib/plan/consultas.ts`,
+  // que reparte la misma ventana para el mismo RPC.
+  const ventana28 = ventanaDeInforme(28);
+  const args28 = { p_student_id: studentId, p_desde: ventana28.desde, p_hasta: ventana28.hasta };
 
-  const [resumen, serie, skills, tiempo, horas, logro] = await Promise.all([
+  const [resumen, resumenAnterior, serie, serie28Res, skills, tiempo, horas, logro] = await Promise.all([
     supabase.rpc("informe_alumno_resumen", args),
+    supabase.rpc("informe_alumno_resumen", argsAnterior),
     supabase.rpc("informe_alumno_serie_diaria", args),
+    supabase.rpc("informe_alumno_serie_diaria", args28),
     supabase.rpc("informe_alumno_skills", args),
     supabase.rpc("informe_alumno_tiempo_por_leccion", args),
     supabase.rpc("informe_alumno_actividad_por_hora", args),
@@ -686,7 +754,9 @@ export async function seguimientoDeHijo(
   // no tiene forma de distinguirlos. En el registro sí se distinguen.
   const respuestas = [
     { parte: "resumen", error: resumen.error },
+    { parte: "resumenAnterior", error: resumenAnterior.error },
     { parte: "serie", error: serie.error },
+    { parte: "serie28", error: serie28Res.error },
     { parte: "skills", error: skills.error },
     { parte: "tiempo", error: tiempo.error },
     { parte: "horas", error: horas.error },
@@ -698,21 +768,33 @@ export async function seguimientoDeHijo(
     }
   }
 
-  const filaResumen = ((resumen.data ?? []) as Fila[])[0];
-  const cifras: ResumenDeEstudio | null =
-    filaResumen === undefined
-      ? null
-      : {
-          minutosEstudio: numero(filaResumen["minutos_estudio"]) ?? 0,
-          sesiones: entero(filaResumen["sesiones"]),
-          leccionesAbiertas: entero(filaResumen["lecciones_abiertas"]),
-          leccionesCompletadas: entero(filaResumen["lecciones_completadas"]),
-          itemsRespondidos: entero(filaResumen["items_respondidos"]),
-          porcentajeAcierto: numero(filaResumen["porcentaje_acierto"]) ?? 0,
-          examenesEntregados: entero(filaResumen["examenes_entregados"]),
-          pistasPedidas: entero(filaResumen["pistas_pedidas"]),
-          rachaMaxima: entero(filaResumen["racha_maxima"]),
-        };
+  /** Una fila de `informe_alumno_resumen` a `ResumenDeEstudio`, o `null` sin fila. */
+  function leerResumen(filas: readonly Fila[]): ResumenDeEstudio | null {
+    const fila = filas[0];
+    if (fila === undefined) return null;
+    return {
+      minutosEstudio: numero(fila["minutos_estudio"]) ?? 0,
+      sesiones: entero(fila["sesiones"]),
+      leccionesAbiertas: entero(fila["lecciones_abiertas"]),
+      leccionesCompletadas: entero(fila["lecciones_completadas"]),
+      itemsRespondidos: entero(fila["items_respondidos"]),
+      porcentajeAcierto: numero(fila["porcentaje_acierto"]) ?? 0,
+      examenesEntregados: entero(fila["examenes_entregados"]),
+      pistasPedidas: entero(fila["pistas_pedidas"]),
+      rachaMaxima: entero(fila["racha_maxima"]),
+    };
+  }
+
+  const cifras = leerResumen((resumen.data ?? []) as Fila[]);
+  const cifrasAnteriores = leerResumen((resumenAnterior.data ?? []) as Fila[]);
+
+  const serie28 = ((serie28Res.data ?? []) as Fila[])
+    .map((fila): DiaDeEstudio | null => {
+      const fecha = fila["fecha"];
+      if (typeof fecha !== "string") return null;
+      return { fecha, minutos: numero(fila["minutos_estudio"]) };
+    })
+    .filter((d): d is DiaDeEstudio => d !== null);
 
   const serieDeDias = ((serie.data ?? []) as Fila[])
     .map((fila): DiaDeEstudio | null => {
@@ -766,12 +848,17 @@ export async function seguimientoDeHijo(
     })
     .filter((l): l is LogroDelDia => l !== null);
 
+  const { lecciones, filas: filasDeLecciones } = await nombrarLecciones(supabase, minutosPorLeccion);
+
   return {
     dias,
     resumen: cifras,
+    resumenAnterior: cifrasAnteriores,
     serie: serieDeDias,
+    serie28,
     destrezas,
-    lecciones: await nombrarLecciones(supabase, minutosPorLeccion),
+    lecciones,
+    materias: await materiasDeLecciones(supabase, lecciones, filasDeLecciones),
     horas: relojDelDia,
     logro: logroPorDia,
   };
@@ -789,22 +876,31 @@ export async function seguimientoDeHijo(
  * pertenece a un colegio ajeno, la RLS no devuelve su fila, y pintar «45 min»
  * junto a un renglón vacío —o junto a un uuid— sería enseñarle a este adulto un
  * dato de un centro al que no pertenece. Mejor una lista más corta y cierta.
+ *
+ * Devuelve también las filas CRUDAS —con `module_id`— para que
+ * `materiasDeLecciones` no tenga que volver a pedir `lessons`: es la misma
+ * fila, y una segunda vuelta a la base por el mismo dato sería la clase de
+ * duplicado que esta casa evita.
  */
 async function nombrarLecciones(
   supabase: Awaited<ReturnType<typeof createClient>>,
   minutosPorLeccion: ReadonlyMap<string, number>,
-): Promise<readonly LeccionDeHijo[]> {
+): Promise<{ readonly lecciones: readonly LeccionDeHijo[]; readonly filas: readonly Fila[] }> {
   const ids = [...minutosPorLeccion.keys()];
-  if (ids.length === 0) return [];
+  if (ids.length === 0) return { lecciones: [], filas: [] };
 
-  const { data, error } = await supabase.from("lessons").select("id, title").in("id", ids);
+  const { data, error } = await supabase
+    .from("lessons")
+    .select("id, title, module_id")
+    .in("id", ids);
   if (error !== null) {
     console.error("[cet] seguimientoDeHijo lessons", error.code, error.message);
-    return [];
+    return { lecciones: [], filas: [] };
   }
+  const filas = (data ?? []) as Fila[];
 
   const salida: LeccionDeHijo[] = [];
-  for (const fila of (data ?? []) as Fila[]) {
+  for (const fila of filas) {
     const id = fila["id"];
     const nombre = leerI18n(fila["title"]);
     if (typeof id !== "string" || nombre === null) continue;
@@ -812,7 +908,106 @@ async function nombrarLecciones(
     if (minutos === undefined) continue;
     salida.push({ id, nombre, minutos });
   }
-  return salida;
+  return { lecciones: salida, filas };
+}
+
+/**
+ * Agrupa los minutos de `lecciones` por materia, encadenando
+ * `lessons.module_id -> course_modules.course_id -> courses.subject_id ->
+ * subjects`. Ver la cabecera de `MateriaDeHijo`: SOLO minutos, nunca acierto
+ * ni lecciones terminadas, que ningún RPC reparte por materia todavía.
+ *
+ * Sin lecciones no hay materias que agrupar, y una lección cuya cadena no
+ * llegue hasta una materia reconocida —RLS de otro colegio, módulo huérfano—
+ * se descarta en vez de inventar una fila con datos a medias.
+ */
+async function materiasDeLecciones(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  lecciones: readonly LeccionDeHijo[],
+  filasDeLecciones: readonly Fila[],
+): Promise<readonly MateriaDeHijo[]> {
+  if (lecciones.length === 0) return [];
+
+  const moduloPorLeccion = new Map<string, string>();
+  for (const fila of filasDeLecciones) {
+    const id = fila["id"];
+    const moduleId = fila["module_id"];
+    if (typeof id === "string" && typeof moduleId === "string") moduloPorLeccion.set(id, moduleId);
+  }
+
+  const moduleIds = [...new Set(moduloPorLeccion.values())];
+  if (moduleIds.length === 0) return [];
+
+  const { data: modulosData, error: modulosError } = await supabase
+    .from("course_modules")
+    .select("id, course_id")
+    .in("id", moduleIds);
+  if (modulosError !== null || modulosData === null) return [];
+
+  const cursoPorModulo = new Map<string, string>();
+  for (const fila of modulosData as Fila[]) {
+    const id = fila["id"];
+    const courseId = fila["course_id"];
+    if (typeof id === "string" && typeof courseId === "string") cursoPorModulo.set(id, courseId);
+  }
+
+  const courseIds = [...new Set(cursoPorModulo.values())];
+  if (courseIds.length === 0) return [];
+
+  const { data: cursosData, error: cursosError } = await supabase
+    .from("courses")
+    .select("id, subject_id")
+    .in("id", courseIds);
+  if (cursosError !== null || cursosData === null) return [];
+
+  const materiaPorCurso = new Map<string, string>();
+  for (const fila of cursosData as Fila[]) {
+    const id = fila["id"];
+    const subjectId = fila["subject_id"];
+    if (typeof id === "string" && typeof subjectId === "string") materiaPorCurso.set(id, subjectId);
+  }
+
+  const subjectIds = [...new Set(materiaPorCurso.values())];
+  if (subjectIds.length === 0) return [];
+
+  const { data: materiasData, error: materiasError } = await supabase
+    .from("subjects")
+    .select("id, code, name")
+    .in("id", subjectIds);
+  if (materiasError !== null || materiasData === null) return [];
+
+  const materiaPorId = new Map<string, { code: string; nombre: I18nText }>();
+  for (const fila of materiasData as Fila[]) {
+    const id = fila["id"];
+    const code = fila["code"];
+    const nombre = leerI18n(fila["name"]);
+    if (typeof id === "string" && typeof code === "string" && nombre !== null) {
+      materiaPorId.set(id, { code, nombre });
+    }
+  }
+
+  const minutosPorMateria = new Map<string, { code: string; nombre: I18nText; minutos: number }>();
+  for (const leccion of lecciones) {
+    const moduleId = moduloPorLeccion.get(leccion.id);
+    const courseId = moduleId === undefined ? undefined : cursoPorModulo.get(moduleId);
+    const subjectId = courseId === undefined ? undefined : materiaPorCurso.get(courseId);
+    const materia = subjectId === undefined ? undefined : materiaPorId.get(subjectId);
+    if (materia === undefined || subjectId === undefined) continue;
+
+    const actual = minutosPorMateria.get(subjectId);
+    minutosPorMateria.set(subjectId, {
+      code: materia.code,
+      nombre: materia.nombre,
+      minutos: (actual?.minutos ?? 0) + leccion.minutos,
+    });
+  }
+
+  return [...minutosPorMateria.entries()].map(([subjectId, m]) => ({
+    subjectId,
+    code: m.code,
+    nombre: m.nombre,
+    minutos: m.minutos,
+  }));
 }
 
 /* ========================================================================== */

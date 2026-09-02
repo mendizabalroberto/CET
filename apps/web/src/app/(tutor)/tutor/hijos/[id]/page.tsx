@@ -39,8 +39,9 @@ import { Dispositivos } from "@/components/tutor/Dispositivos";
 import { EnlaceDeAcceso } from "@/components/tutor/EnlaceDeAcceso";
 import { Seguimiento } from "@/components/tutor/Seguimiento";
 import { getServerDictionary } from "@/lib/i18n/server";
+import { planActivoDeHijo } from "@/lib/plan/consultas";
 import { detalleDeHijo, seguimientoDeHijo } from "@/lib/tutor/queries";
-import { propsDeSeguimiento } from "@/lib/tutor/seguimiento";
+import { propsDeSeguimiento, type PlanDeHijo } from "@/lib/tutor/seguimiento";
 
 interface PageProps {
   readonly params: Promise<{ id: string }>;
@@ -68,8 +69,17 @@ export default async function HijoPage({ params }: PageProps) {
   // Después del 404: no se consulta el informe de un id que ni siquiera es de
   // un hijo suyo. La función tiene su propio guardián dentro (la RLS decide),
   // pero pedirlo igualmente sería trabajo que se sabe inútil.
-  const seguimiento = await seguimientoDeHijo(hijo.id);
-  const scorecard = propsDeSeguimiento(seguimiento, nombreDePila(hijo.nombre), locale);
+  //
+  // Las dos consultas van en paralelo: el informe y el plan activo no dependen
+  // entre sí, y `planActivoDeHijo` devuelve `null` sin plan, que es la señal
+  // con la que `propsDeSeguimiento` decide no montar la baldosa de adherencia.
+  const [seguimiento, plan] = await Promise.all([
+    seguimientoDeHijo(hijo.id),
+    planActivoDeHijo(hijo.id),
+  ]);
+  const planDeHijo: PlanDeHijo | undefined =
+    plan === null ? undefined : { minutosPorDia: plan.minutosPorDia, partes: plan.partes };
+  const scorecard = propsDeSeguimiento(seguimiento, nombreDePila(hijo.nombre), locale, planDeHijo);
 
   return (
     <section className="space-y-6">

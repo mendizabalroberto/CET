@@ -571,6 +571,19 @@ export const es: Dictionary = {
         activeDaysLabel: "Días con estudio",
         activeDaysValue: "{active} de {total}",
         daysRowLabel: "Días seguidos",
+        /* --- La variación de la fila de KPI contra la semana anterior ------- */
+        trendMoreSr: "{value} más que la semana anterior.",
+        trendLessSr: "{value} menos que la semana anterior.",
+        trendSameSr: "Igual que la semana anterior.",
+        trendSameText: "igual",
+        weeklyTrendSummary: "Minutos por semana, últimas {count} semanas.",
+        /* --- La adherencia al plan de estudio -------------------------------- */
+        adherenceLabel: "Cumplimiento del plan",
+        adherenceProgressText: "{done} de {target}",
+        adherenceSummary: "Ha hecho el {percent} de lo planificado en los últimos días.",
+        adherenceSummaryOver: "Ha superado lo planificado: {percent} de lo previsto en los últimos días.",
+        /* --- El reparto por materia ------------------------------------------ */
+        subjectsTitle: "Reparto por materia",
       },
     },
     signUp: {

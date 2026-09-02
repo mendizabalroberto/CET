@@ -36,9 +36,12 @@ import {
 const VACIO: SeguimientoDeHijo = {
   dias: 7,
   resumen: null,
+  resumenAnterior: null,
   serie: [],
+  serie28: [],
   destrezas: [],
   lecciones: [],
+  materias: [],
   horas: [],
   logro: [],
 };
@@ -60,6 +63,7 @@ const CEROS = {
 const UNA_TARDE: SeguimientoDeHijo = {
   dias: 7,
   resumen: { ...CEROS, minutosEstudio: 43.78, sesiones: 11, leccionesAbiertas: 3 },
+  resumenAnterior: null,
   serie: [
     { fecha: "2026-08-26", minutos: 0 },
     { fecha: "2026-08-27", minutos: 0 },
@@ -69,8 +73,10 @@ const UNA_TARDE: SeguimientoDeHijo = {
     { fecha: "2026-08-31", minutos: 0 },
     { fecha: "2026-09-01", minutos: 43.78 },
   ],
+  serie28: [],
   destrezas: [],
   lecciones: [],
+  materias: [],
   horas: [],
   logro: [],
 };
@@ -106,9 +112,9 @@ describe("seguimiento — sin datos no se monta el informe", () => {
 });
 
 describe("seguimiento — un cero que no significa cero no se pinta", () => {
-  it("sin preguntas contestadas no hay baldosa de acierto", () => {
+  it("sin preguntas contestadas no hay baldosa de acierto en la fila de KPI", () => {
     const props = propsDeSeguimiento(UNA_TARDE, "Leo", "es");
-    const etiquetas = (props?.stats ?? []).map((s) => s.label.es);
+    const etiquetas = (props?.kpis?.items ?? []).map((s) => s.label.es);
     expect(etiquetas).not.toContain("Acertadas");
   });
 
@@ -118,18 +124,22 @@ describe("seguimiento — un cero que no significa cero no se pinta", () => {
       resumen: { ...CEROS, minutosEstudio: 43.78, sesiones: 11, itemsRespondidos: 12, porcentajeAcierto: 75 },
     };
     const props = propsDeSeguimiento(conRespuestas, "Leo", "es");
-    const acierto = (props?.stats ?? []).find((s) => s.label.es === "Acertadas");
+    const acierto = (props?.kpis?.items ?? []).find((s) => s.label.es === "Acertadas");
     expect(acierto?.value).toBe("75 %");
   });
 
-  it("las cifras accesorias a cero no ocupan sitio; el tiempo y las entradas sí", () => {
+  it("las cifras accesorias a cero no ocupan sitio en las secundarias", () => {
     const props = propsDeSeguimiento(UNA_TARDE, "Leo", "es");
     const etiquetas = (props?.stats ?? []).map((s) => s.label.es);
     // Los exámenes, las pistas y la racha están a cero: fuera.
     expect(etiquetas).not.toContain("Exámenes entregados");
     expect(etiquetas).not.toContain("Pistas pedidas");
     expect(etiquetas).not.toContain("Mejor racha");
-    // El tiempo y las veces que ha entrado se pintan pase lo que pase.
+  });
+
+  it("el tiempo y las veces que ha entrado se pintan pase lo que pase, en la fila de KPI", () => {
+    const props = propsDeSeguimiento(UNA_TARDE, "Leo", "es");
+    const etiquetas = (props?.kpis?.items ?? []).map((s) => s.label.es);
     expect(etiquetas).toContain("Tiempo de estudio");
     expect(etiquetas).toContain("Veces que ha entrado");
   });
@@ -465,12 +475,188 @@ describe("seguimiento — las cifras del periodo salen de la serie que ya se con
   });
 
   it("con un día de estudio sí se pintan, y dicen lo mismo que la gráfica", () => {
-    const stats = propsDeSeguimiento(UNA_TARDE, "Leo", "es")?.stats ?? [];
-    const valor = (etiqueta: string): string | undefined =>
-      stats.find((s) => s.label.es === etiqueta)?.value;
-    expect(valor("Un día normal")).toBe("44 min");
-    expect(valor("Su mejor día")).toBe("44 min");
-    expect(valor("Días con estudio")).toBe("1 de 7");
-    expect(valor("Días seguidos")).toBe("1");
+    const props = propsDeSeguimiento(UNA_TARDE, "Leo", "es");
+    const stats = props?.stats ?? [];
+    const kpis = props?.kpis?.items ?? [];
+    const valor = (
+      lista: readonly { readonly label: { readonly es?: string | undefined }; readonly value: string }[],
+      etiqueta: string,
+    ): string | undefined => lista.find((s) => s.label.es === etiqueta)?.value;
+    expect(valor(stats, "Un día normal")).toBe("44 min");
+    expect(valor(stats, "Su mejor día")).toBe("44 min");
+    // «Días con estudio» vive ahora en la fila de KPI, junto al tiempo.
+    expect(valor(kpis, "Días con estudio")).toBe("1 de 7");
+    expect(valor(stats, "Días seguidos")).toBe("1");
+  });
+});
+
+/**
+ * ===========================================================================
+ * LA VARIACIÓN CONTRA LA SEMANA ANTERIOR
+ * ===========================================================================
+ * `resumenAnterior` es lo único que decide si una baldosa lleva flecha. Sin
+ * él no se inventa un cero contra el que comparar, y con él el signo sale de
+ * la resta, nunca del texto que se pinta.
+ */
+describe("seguimiento — la variación de la fila de KPI", () => {
+  const kpi = (seguimiento: SeguimientoDeHijo, etiqueta: string) =>
+    propsDeSeguimiento(seguimiento, "Leo", "es")?.kpis?.items.find((k) => k.label.es === etiqueta);
+
+  it("sin periodo anterior no hay variación: no se inventa un cero", () => {
+    expect(kpi(UNA_TARDE, "Tiempo de estudio")?.trend).toBeUndefined();
+  });
+
+  it("más minutos que la semana anterior es una mejora, en teal y con flecha arriba", () => {
+    const mejor: SeguimientoDeHijo = {
+      ...UNA_TARDE,
+      resumen: { ...UNA_TARDE.resumen!, minutosEstudio: 100 },
+      resumenAnterior: { ...CEROS, minutosEstudio: 58 },
+    };
+    const tendencia = kpi(mejor, "Tiempo de estudio")?.trend;
+    expect(tendencia?.direction).toBe("mejora");
+    expect(tendencia?.text).toBe("▲ +42 min");
+    expect(tendencia?.srText.es).toBe("42 min más que la semana anterior.");
+    expect(tendencia?.srText.en).toBe("42 min more than last week.");
+  });
+
+  it("menos sesiones que la semana anterior es un empeoramiento, con flecha abajo", () => {
+    const peor: SeguimientoDeHijo = {
+      ...UNA_TARDE,
+      resumen: { ...UNA_TARDE.resumen!, sesiones: 3 },
+      resumenAnterior: { ...CEROS, sesiones: 8 },
+    };
+    const tendencia = kpi(peor, "Veces que ha entrado")?.trend;
+    expect(tendencia?.direction).toBe("empeora");
+    expect(tendencia?.text).toBe("▼ −5");
+    expect(tendencia?.srText.es).toBe("5 menos que la semana anterior.");
+  });
+
+  it("la misma cifra que la semana anterior es «igual», sin signo ni cifra", () => {
+    const igual: SeguimientoDeHijo = {
+      ...UNA_TARDE,
+      resumen: { ...UNA_TARDE.resumen!, sesiones: 5 },
+      resumenAnterior: { ...CEROS, sesiones: 5 },
+    };
+    const tendencia = kpi(igual, "Veces que ha entrado")?.trend;
+    expect(tendencia?.direction).toBe("igual");
+    expect(tendencia?.text).toBe("= igual");
+    expect(tendencia?.srText.es).toBe("Igual que la semana anterior.");
+  });
+
+  it("los días activos nunca llevan variación: no hay serie del periodo anterior", () => {
+    const conAnterior: SeguimientoDeHijo = {
+      ...UNA_TARDE,
+      resumenAnterior: { ...CEROS, minutosEstudio: 10 },
+    };
+    expect(kpi(conAnterior, "Días con estudio")?.trend).toBeUndefined();
+  });
+
+  it("el acierto solo compara si las dos semanas tuvieron preguntas contestadas", () => {
+    const conRespuestasHoy: SeguimientoDeHijo = {
+      ...UNA_TARDE,
+      resumen: { ...UNA_TARDE.resumen!, itemsRespondidos: 10, porcentajeAcierto: 80 },
+      resumenAnterior: { ...CEROS, minutosEstudio: 10 }, // sin preguntas la semana pasada
+    };
+    expect(kpi(conRespuestasHoy, "Acertadas")?.trend).toBeUndefined();
+
+    const conLasDos: SeguimientoDeHijo = {
+      ...conRespuestasHoy,
+      resumenAnterior: { ...CEROS, minutosEstudio: 10, itemsRespondidos: 8, porcentajeAcierto: 60 },
+    };
+    expect(kpi(conLasDos, "Acertadas")?.trend?.text).toBe("▲ +20 %");
+  });
+
+  it("el sparkline de cuatro semanas viaja en la baldosa de tiempo, y solo ahí", () => {
+    const conSerie28: SeguimientoDeHijo = {
+      ...UNA_TARDE,
+      serie28: [
+        ...Array.from({ length: 21 }, (_, i) => ({ fecha: `2026-08-${i + 1}`, minutos: 10 })),
+        ...UNA_TARDE.serie,
+      ],
+    };
+    const props = propsDeSeguimiento(conSerie28, "Leo", "es");
+    const tiempo = props?.kpis?.items.find((k) => k.label.es === "Tiempo de estudio");
+    expect(tiempo?.sparkline?.weeks).toHaveLength(4);
+    // La última semana es la de `UNA_TARDE`: 43,78 minutos en un solo día.
+    expect(tiempo?.sparkline?.weeks.at(-1)).toBeCloseTo(43.78);
+    expect(props?.kpis?.items.find((k) => k.label.es === "Veces que ha entrado")?.sparkline).toBeUndefined();
+  });
+
+  it("sin datos de 28 días no hay sparkline: no se inventan cuatro barras", () => {
+    const tiempo = propsDeSeguimiento(UNA_TARDE, "Leo", "es")?.kpis?.items.find(
+      (k) => k.label.es === "Tiempo de estudio",
+    );
+    expect(tiempo?.sparkline).toBeUndefined();
+  });
+});
+
+/**
+ * ===========================================================================
+ * LA ADHERENCIA AL PLAN
+ * ===========================================================================
+ */
+describe("seguimiento — la adherencia al plan de estudio", () => {
+  it("sin plan activo no hay baldosa de adherencia", () => {
+    expect(propsDeSeguimiento(UNA_TARDE, "Leo", "es")?.planAdherence).toBeUndefined();
+  });
+
+  it("con plan activo, el porcentaje sale de lo hecho sobre lo planificado en la ventana", () => {
+    const plan = {
+      minutosPorDia: 20,
+      partes: UNA_TARDE.serie.map((d) => ({ fecha: d.fecha, minutosMedidos: d.minutos ?? 0 })),
+    };
+    // 43.78 min hechos de 7 * 20 = 140 min planificados.
+    const adherencia = propsDeSeguimiento(UNA_TARDE, "Leo", "es", plan)?.planAdherence;
+    expect(adherencia?.percentText).toBe("31 %");
+    expect(adherencia?.ratio).toBeCloseTo(43.78 / 140);
+    expect(adherencia?.overText).toBeUndefined();
+  });
+
+  it("más del 100 % se capa a 100, con la cifra real escrita al lado", () => {
+    const plan = {
+      minutosPorDia: 5,
+      partes: UNA_TARDE.serie.map((d) => ({ fecha: d.fecha, minutosMedidos: d.minutos ?? 0 })),
+    };
+    // 43.78 min hechos de 7 * 5 = 35 min planificados: 125 % real.
+    const adherencia = propsDeSeguimiento(UNA_TARDE, "Leo", "es", plan)?.planAdherence;
+    expect(adherencia?.percentText).toBe("100 %");
+    expect(adherencia?.ratio).toBeGreaterThan(1);
+    expect(adherencia?.overText).toBe("125 %");
+  });
+
+  it("solo se cuentan las partes de fechas dentro de la ventana del informe", () => {
+    const plan = {
+      minutosPorDia: 20,
+      partes: [
+        ...UNA_TARDE.serie.map((d) => ({ fecha: d.fecha, minutosMedidos: d.minutos ?? 0 })),
+        { fecha: "2020-01-01", minutosMedidos: 999 },
+      ],
+    };
+    const adherencia = propsDeSeguimiento(UNA_TARDE, "Leo", "es", plan)?.planAdherence;
+    expect(adherencia?.ratio).toBeCloseTo(43.78 / 140);
+  });
+});
+
+/**
+ * ===========================================================================
+ * EL DESGLOSE POR MATERIA
+ * ===========================================================================
+ */
+describe("seguimiento — el reparto por materia", () => {
+  it("sin ninguna materia no hay panel", () => {
+    expect(propsDeSeguimiento(UNA_TARDE, "Leo", "es")?.subjects).toBeUndefined();
+  });
+
+  it("con materias, cada fila trae su código, su nombre y sus minutos", () => {
+    const conMaterias: SeguimientoDeHijo = {
+      ...UNA_TARDE,
+      materias: [
+        { subjectId: "s1", code: "math", nombre: { es: "Matemáticas", en: "Maths" }, minutos: 60 },
+      ],
+    };
+    const items = propsDeSeguimiento(conMaterias, "Leo", "es")?.subjects?.items ?? [];
+    expect(items).toEqual([
+      { subjectCode: "math", name: "Matemáticas", minutes: 60, minutesText: "1 h 00 min" },
+    ]);
   });
 });
