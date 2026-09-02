@@ -77,7 +77,6 @@ function guardados(): number {
 beforeEach(() => {
   almacen = new Map();
   vi.stubGlobal("window", ventanaFalsa());
-  vi.unstubAllGlobals;
 });
 
 describe("purga del depósito local tras subir a la base", () => {

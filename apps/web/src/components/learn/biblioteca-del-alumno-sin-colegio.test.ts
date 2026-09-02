@@ -203,3 +203,42 @@ describe("getLesson · abrir una leccion sin colegio", () => {
     expect(await getLesson(LECCION, "11111111-1111-4111-8111-111111111111", "es")).toBeNull();
   });
 });
+
+describe("getLesson · la miga del curso lleva a su materia", () => {
+  const LECCION = "aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa";
+
+  function sembrarLeccion(): void {
+    respuestas["lessons"] = [
+      { id: LECCION, module_id: "m1", title: { es: "Simplificar" }, estimated_minutes: 20 },
+    ];
+    respuestas["course_modules"] = [{ id: "m1", course_id: "c1", title: { es: "Fracciones" } }];
+    respuestas["courses"] = [{ id: "c1", name: { es: "Matematicas" }, subject_id: "s1" }];
+    respuestas["lesson_blocks"] = [];
+  }
+
+  it("EL FALLO REPORTADO: desde una leccion se puede subir un nivel", async () => {
+    // «Learn > Mathematics - Year 6 > ...» pintaba el curso como texto muerto,
+    // asi que la unica forma de subir era el boton de atras del navegador - que
+    // no es navegacion, es deshacer.
+    sembrarLeccion();
+    respuestas["subjects"] = [{ code: "math" }];
+
+    const { getLesson } = await import("./queries");
+    const leccion = await getLesson(LECCION, null, "es");
+
+    expect(leccion?.subjectKey).toBe("math");
+  });
+
+  it("una materia que el alumno no puede leer NO deja la miga sin destino", async () => {
+    // `subjects` tiene RLS. Si la consulta no devuelve nada, la clave cae al
+    // `curso-<id>` que `subject-grouping.ts` usa para los huerfanos, que es una
+    // ruta valida de `/learn/materia/[key]`.
+    sembrarLeccion();
+    respuestas["subjects"] = [];
+
+    const { getLesson } = await import("./queries");
+    const leccion = await getLesson(LECCION, null, "es");
+
+    expect(leccion?.subjectKey).toBe("curso-c1");
+  });
+});

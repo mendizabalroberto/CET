@@ -197,7 +197,6 @@ describe("cabecerasDeContexto · lo que baja hasta auth-pin", () => {
       userAgent: "Navegador Raro/1.0 (Espana)",
     });
     for (const valor of Object.values(salida)) {
-      // eslint-disable-next-line no-control-regex
       expect(/^[ -]*$/.test(valor)).toBe(true);
     }
   });

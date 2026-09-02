@@ -71,12 +71,20 @@ export default async function LessonPage({
     .map((code) => findPracticeTopic(code, dictionary))
     .find((topic) => topic !== undefined);
 
-  // Curso y modulo van SIN `href`: todavia no tienen pagina propia. Un escalon
-  // sin destino se pinta como texto y no desaparece — que no exista la pagina no
-  // es motivo para ocultarle al alumno en que modulo esta.
+  // EL CURSO SI LLEVA A SU MATERIA. Aqui decia «curso y modulo van SIN href:
+  // todavia no tienen pagina propia», y hacia tiempo que no era verdad:
+  // `/learn/materia/[key]` existe y es la pantalla desde la que se llega a esta.
+  // El escalon se pintaba como texto muerto, asi que desde una leccion NO habia
+  // forma de subir un nivel — solo el boton de atras del navegador, que no es
+  // navegacion, es deshacer. Reportado probando en produccion el 01/09/2026.
+  //
+  // El modulo SI se queda sin destino, y eso sigue estando bien: no tiene
+  // pantalla propia. Un escalon sin destino se pinta como texto y no
+  // desaparece: que no exista la pagina no es motivo para ocultarle al alumno
+  // en que modulo esta.
   const migas: readonly Miga[] = [
     { label: t.trailRoot, href: "/learn" },
-    ...(lesson.courseTitle ? [{ label: resolveI18n(lesson.courseTitle, locale) }] : []),
+    ...(lesson.courseTitle ? [{ label: resolveI18n(lesson.courseTitle, locale), ...(lesson.subjectKey ? { href: `/learn/materia/${lesson.subjectKey}` } : {}) }] : []),
     ...(lesson.moduleTitle ? [{ label: resolveI18n(lesson.moduleTitle, locale) }] : []),
     { label: resolveI18n(lesson.title, locale) },
   ];

@@ -29,6 +29,7 @@ import {
   type LessonState,
 } from "./lesson-progress";
 import { mapLessonBlocks, readI18nText, type LessonBlockRow, type MappedLessonBlock } from "./block-mapping";
+import { ORPHAN_PREFIX } from "./subject-grouping";
 import {
   LOOKBACK_DAYS,
   MAX_EVENT_ROWS,
@@ -113,6 +114,16 @@ export interface LessonDetail {
   readonly blocks: readonly MappedLessonBlock[];
   /** Códigos de skill de la lección, para el enlace "Practicar esto". */
   readonly skillCodes: readonly string[];
+  /**
+   * La clave con la que `/learn/materia/[key]` identifica esta materia, para
+   * que la miga del curso LLEVE a algun sitio.
+   *
+   * Es la misma que calcula `subject-grouping.ts`: `subjects.code`, o
+   * `curso-<id>` cuando la materia no es visible. Se resuelve aqui y no en la
+   * pagina porque agrupar cursos por materia es la regla de ese modulo, y dos
+   * sitios calculando la misma clave es como dejan de coincidir.
+   */
+  readonly subjectKey: string | null;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -432,12 +443,12 @@ export async function getLesson(
     sinColegio
       ? supabase
           .from("courses")
-          .select("id, name")
+          .select("id, name, subject_id")
           .eq("id", courseId)
           .eq("status", "published")
           .is("school_id", null)
           .maybeSingle()
-      : supabase.from("courses").select("id, name").eq("id", courseId).or(scope).maybeSingle(),
+      : supabase.from("courses").select("id, name, subject_id").eq("id", courseId).or(scope).maybeSingle(),
   ]);
 
   // El curso no está encendido para este colegio: para el alumno, no existe.
@@ -501,6 +512,35 @@ export async function getLesson(
     })
     .filter((code): code is string => code !== null);
 
+  // LA CLAVE DE MATERIA, que es lo que hace navegable la miga del curso.
+  //
+  // Sin esto, `/learn/[lessonId]` pintaba «Mathematics — Year 6» como texto
+  // muerto, con este comentario al lado: «curso y modulo van SIN href: todavia
+  // no tienen pagina propia». Llevaba tiempo sin ser verdad —`/learn/materia/
+  // [key]` existe— asi que desde una leccion no habia forma de subir un nivel:
+  // solo el boton de atras del navegador. Reportado al probar en produccion el
+  // 01/09/2026.
+  //
+  // La clave se calcula IGUAL que en `subject-grouping.ts`: el codigo de la
+  // materia, o `curso-<id>` cuando la materia no es visible o se borro. Ese
+  // segundo caso no es teorico: `subjects` tiene RLS, y una materia que el
+  // alumno no pueda leer dejaria la miga sin destino otra vez.
+  let subjectKey: string | null = null;
+  const subjectId = (course as { subject_id?: unknown } | null)?.subject_id;
+  if (typeof subjectId === "string") {
+    const { data: subject } = await supabase
+      .from("subjects")
+      .select("code")
+      .eq("id", subjectId)
+      .or(scope)
+      .maybeSingle();
+    const code = (subject as { code?: unknown } | null)?.code;
+    subjectKey = typeof code === "string" && code.length > 0 ? code : `${ORPHAN_PREFIX}${courseId}`;
+  } else if (course) {
+    subjectKey = `${ORPHAN_PREFIX}${courseId}`;
+  }
+
+
   return {
     id: lesson.id as string,
     title,
@@ -509,6 +549,7 @@ export async function getLesson(
     courseTitle: course ? readI18nText(course.name) : null,
     blocks: mapLessonBlocks(rows, locale),
     skillCodes,
+    subjectKey,
   };
 }
 

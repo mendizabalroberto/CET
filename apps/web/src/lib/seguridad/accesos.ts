@@ -221,7 +221,6 @@ export function hashDeIp(ip: string | null): string | null {
   // este diseno la mantiene lejos. La regla existe por
   // `SUPABASE_SERVICE_ROLE_KEY`, que no es esto, y el mismo salto ya se hace en
   // `app/api/attempts/_context.ts` por el mismo motivo.
-  // eslint-disable-next-line no-restricted-properties
   const salt = process.env.CET_IP_HASH_SALT;
   if (!salt || salt.length < 16) return null;
   if (ip === null) return null;
