@@ -14,6 +14,8 @@
  */
 import "server-only";
 
+import type { I18nText } from "@cet/shared";
+
 import { requireRole } from "@/lib/auth/session";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -358,4 +360,272 @@ export async function detalleDeHijo(studentId: string): Promise<DetalleDeHijo | 
       ultimoUso: typeof fila["last_seen_at"] === "string" ? fila["last_seen_at"] : null,
     })),
   };
+}
+
+/* ===========================================================================
+ * EL SEGUIMIENTO: cómo va el hijo
+ * =========================================================================== */
+
+/** Un día de la serie de constancia, tal y como lo devuelve la base. */
+export interface DiaDeEstudio {
+  /** Día LOCAL del alumno, en `YYYY-MM-DD`. Lo decide la base, no el navegador. */
+  readonly fecha: string;
+  /** Minutos de ese día. `null` = la fila no traía un número utilizable. */
+  readonly minutos: number | null;
+}
+
+/** Una destreza medida. `mastery` viene en 0..1. */
+export interface DestrezaDeHijo {
+  readonly id: string;
+  readonly nombre: I18nText;
+  readonly mastery: number | null;
+}
+
+/** Una lección y los minutos que se le atribuyen. */
+export interface LeccionDeHijo {
+  readonly id: string;
+  readonly nombre: I18nText;
+  readonly minutos: number;
+}
+
+/** Las nueve cifras de cabecera. `porcentajeAcierto` viene en 0..100. */
+export interface ResumenDeEstudio {
+  readonly minutosEstudio: number;
+  readonly sesiones: number;
+  readonly leccionesAbiertas: number;
+  readonly leccionesCompletadas: number;
+  readonly itemsRespondidos: number;
+  readonly porcentajeAcierto: number;
+  readonly examenesEntregados: number;
+  readonly pistasPedidas: number;
+  readonly rachaMaxima: number;
+}
+
+export interface SeguimientoDeHijo {
+  /** Días que abarca la ventana, hoy incluido. Se pinta en los textos. */
+  readonly dias: number;
+  /** `null` cuando la consulta no devolvió fila: no es lo mismo que «todo a cero». */
+  readonly resumen: ResumenDeEstudio | null;
+  readonly serie: readonly DiaDeEstudio[];
+  readonly destrezas: readonly DestrezaDeHijo[];
+  readonly lecciones: readonly LeccionDeHijo[];
+}
+
+/** Ventana por defecto. Una semana cabe en una pantalla de móvil sin apretar. */
+export const DIAS_DE_SEGUIMIENTO = 7;
+
+/** Número utilizable, o `null`. PostgREST entrega los `numeric` como cadena. */
+function numero(valor: unknown): number | null {
+  if (typeof valor === "number") return Number.isFinite(valor) ? valor : null;
+  if (typeof valor === "string" && valor.trim() !== "") {
+    const n = Number(valor);
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
+/** Número utilizable o cero, para las cifras que la base garantiza no nulas. */
+function entero(valor: unknown): number {
+  const n = numero(valor);
+  return n === null ? 0 : Math.round(n);
+}
+
+/**
+ * Los dos extremos de la ventana de informe, en ISO.
+ *
+ * LA TRAMPA, ESCRITA DONDE SE CONSTRUYE. Las cuatro funciones de informe usan
+ * una ventana SEMIABIERTA `[desde, hasta)`: `server_ts >= p_desde and
+ * server_ts < p_hasta`. Pasar la medianoche de HOY como fin deja el día en
+ * curso ENTERO fuera, y un tutor que abre la ficha por la tarde, después de que
+ * su hijo haya estudiado, ve ceros en todo. El fin tiene que caer DESPUÉS del
+ * último evento de hoy — el `current_date + 1` de SQL, o cualquier instante
+ * posterior a ahora.
+ *
+ * Y EL FIN ES «AHORA», NO LA MEDIANOCHE DE MAÑANA. Este es el segundo filo de
+ * la misma navaja, y no se ve hasta que se mira la gráfica. La serie diaria
+ * genera su calendario con `generate_series` desde `desde` hasta
+ * `hasta - 1 microsegundo`, LEÍDOS EN LA ZONA HORARIA DEL ALUMNO. Un fin en la
+ * medianoche UTC de mañana son las 02:00 de mañana en Madrid, así que el
+ * calendario incluiría el día de MAÑANA: una columna a cero, en el futuro,
+ * pegada al borde derecho de la gráfica, para siempre. Es exactamente la
+ * «barra de cero permanente al borde» contra la que avisa la cabecera de la
+ * migración 0062. Con `ahora` como fin, el último día del calendario es el de
+ * hoy en la zona del niño, sea cual sea esa zona.
+ *
+ * El principio sí se ancla a la medianoche UTC, para que el primer día salga
+ * entero y no cortado por la hora a la que el tutor abra la pantalla.
+ *
+ * NINGUNO DE LOS DOS EXTREMOS INTENTA ADIVINAR LA ZONA DEL NIÑO: el día que
+ * agrupa la serie lo decide la base con `app.zona_horaria_alumno`. Aquí solo se
+ * eligen dos instantes que no recorten por el lado de hoy ni inventen mañana.
+ * Como consecuencia, la serie puede traer un día MÁS de los pedidos cuando el
+ * alumno vive al este de Greenwich; los textos cuentan los días que de verdad
+ * vienen y no los que se pidieron, así que la frase nunca contradice al dibujo.
+ */
+function ventanaDeInforme(dias: number): { readonly desde: string; readonly hasta: string } {
+  const ahora = new Date();
+  const medianocheDeHoy = Date.UTC(ahora.getUTCFullYear(), ahora.getUTCMonth(), ahora.getUTCDate());
+  const inicio = medianocheDeHoy - (dias - 1) * 24 * 60 * 60 * 1000;
+  return { desde: new Date(inicio).toISOString(), hasta: ahora.toISOString() };
+}
+
+/** `jsonb` de la base a `I18nText`, o `null` si no trae ningún idioma con texto. */
+function leerI18n(valor: unknown): I18nText | null {
+  if (typeof valor === "string" && valor.trim() !== "") return { en: valor, es: valor };
+  if (valor === null || typeof valor !== "object") return null;
+  const fila = valor as Fila;
+  const bruto = (clave: string): string | undefined => {
+    const v = fila[clave];
+    return typeof v === "string" && v.trim() !== "" ? v : undefined;
+  };
+  const en = bruto("en");
+  const es = bruto("es");
+  if (en === undefined && es === undefined) return null;
+  return { ...(en === undefined ? {} : { en }), ...(es === undefined ? {} : { es }) };
+}
+
+/**
+ * Cómo le va a UN hijo en los últimos días.
+ *
+ * Va con la SESIÓN DEL TUTOR, igual que `detalleDeHijo` y por el mismo motivo:
+ * las cuatro funciones de informe llaman a `app.puede_ver_informe()` en su
+ * primera línea, así que es el motor quien decide si este adulto alcanza a este
+ * menor. Aquí no se escribe ninguna comprobación de pertenencia — escribirla
+ * sería una segunda copia de la regla de acceso a datos de un menor, y dos
+ * copias divergen.
+ *
+ * NO LANZA, como el resto de lecturas de esta casa. Si una de las cuatro
+ * consultas falla, esa parte viene vacía y las otras tres se pintan igual: un
+ * informe incompleto es mejor que la pantalla roja de `app/error.tsx`, y quien
+ * decide qué enseñar es la página.
+ *
+ * Las cuatro van en paralelo porque son independientes entre sí; la quinta
+ * —los nombres de las lecciones— no puede: necesita los ids que devuelve la
+ * cuarta.
+ */
+export async function seguimientoDeHijo(
+  studentId: string,
+  dias: number = DIAS_DE_SEGUIMIENTO,
+): Promise<SeguimientoDeHijo> {
+  const vacio: SeguimientoDeHijo = { dias, resumen: null, serie: [], destrezas: [], lecciones: [] };
+
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(studentId)) {
+    return vacio;
+  }
+
+  const supabase = await createClient();
+  const { desde, hasta } = ventanaDeInforme(dias);
+  const args = { p_student_id: studentId, p_desde: desde, p_hasta: hasta };
+
+  const [resumen, serie, skills, tiempo] = await Promise.all([
+    supabase.rpc("informe_alumno_resumen", args),
+    supabase.rpc("informe_alumno_serie_diaria", args),
+    supabase.rpc("informe_alumno_skills", args),
+    supabase.rpc("informe_alumno_tiempo_por_leccion", args),
+  ]);
+
+  // RUIDOSO A PROPÓSITO (R4). Un informe a cero por un `grant` que falta se ve
+  // en pantalla exactamente igual que un niño que no ha estudiado, y el tutor
+  // no tiene forma de distinguirlos. En el registro sí se distinguen.
+  const respuestas = [
+    { parte: "resumen", error: resumen.error },
+    { parte: "serie", error: serie.error },
+    { parte: "skills", error: skills.error },
+    { parte: "tiempo", error: tiempo.error },
+  ];
+  for (const { parte, error } of respuestas) {
+    if (error !== null) {
+      console.error("[cet] seguimientoDeHijo", parte, error.code, error.message);
+    }
+  }
+
+  const filaResumen = ((resumen.data ?? []) as Fila[])[0];
+  const cifras: ResumenDeEstudio | null =
+    filaResumen === undefined
+      ? null
+      : {
+          minutosEstudio: numero(filaResumen["minutos_estudio"]) ?? 0,
+          sesiones: entero(filaResumen["sesiones"]),
+          leccionesAbiertas: entero(filaResumen["lecciones_abiertas"]),
+          leccionesCompletadas: entero(filaResumen["lecciones_completadas"]),
+          itemsRespondidos: entero(filaResumen["items_respondidos"]),
+          porcentajeAcierto: numero(filaResumen["porcentaje_acierto"]) ?? 0,
+          examenesEntregados: entero(filaResumen["examenes_entregados"]),
+          pistasPedidas: entero(filaResumen["pistas_pedidas"]),
+          rachaMaxima: entero(filaResumen["racha_maxima"]),
+        };
+
+  const serieDeDias = ((serie.data ?? []) as Fila[])
+    .map((fila): DiaDeEstudio | null => {
+      const fecha = fila["fecha"];
+      if (typeof fecha !== "string") return null;
+      return { fecha, minutos: numero(fila["minutos_estudio"]) };
+    })
+    .filter((d): d is DiaDeEstudio => d !== null);
+
+  const destrezas = ((skills.data ?? []) as Fila[])
+    .map((fila): DestrezaDeHijo | null => {
+      const id = fila["skill_id"];
+      const nombre = leerI18n(fila["nombre_skill"]);
+      // Sin nombre no hay renglón que pintar: una escalera sin destreza al lado
+      // no le dice nada a nadie.
+      if (typeof id !== "string" || nombre === null) return null;
+      return { id, nombre, mastery: numero(fila["mastery"]) };
+    })
+    .filter((s): s is DestrezaDeHijo => s !== null);
+
+  const minutosPorLeccion = new Map<string, number>();
+  for (const fila of (tiempo.data ?? []) as Fila[]) {
+    const id = fila["leccion_id"];
+    const minutos = numero(fila["minutos"]);
+    if (typeof id === "string" && minutos !== null && minutos > 0) {
+      minutosPorLeccion.set(id, minutos);
+    }
+  }
+
+  return {
+    dias,
+    resumen: cifras,
+    serie: serieDeDias,
+    destrezas,
+    lecciones: await nombrarLecciones(supabase, minutosPorLeccion),
+  };
+}
+
+/**
+ * Los minutos por lección, con el nombre de cada una puesto.
+ *
+ * La función de informe devuelve `leccion_id` y nada más —mide, no cataloga—,
+ * así que los títulos se leen aparte de `lessons`, y con la sesión del tutor:
+ * `lessons_select` (0012) le deja ver la biblioteca GLOBAL, que es donde está
+ * el contenido de un niño que aprende en casa.
+ *
+ * UNA LECCIÓN CUYO TÍTULO NO ALCANZA SE CAE DE LA LISTA, y es deliberado: si
+ * pertenece a un colegio ajeno, la RLS no devuelve su fila, y pintar «45 min»
+ * junto a un renglón vacío —o junto a un uuid— sería enseñarle a este adulto un
+ * dato de un centro al que no pertenece. Mejor una lista más corta y cierta.
+ */
+async function nombrarLecciones(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  minutosPorLeccion: ReadonlyMap<string, number>,
+): Promise<readonly LeccionDeHijo[]> {
+  const ids = [...minutosPorLeccion.keys()];
+  if (ids.length === 0) return [];
+
+  const { data, error } = await supabase.from("lessons").select("id, title").in("id", ids);
+  if (error !== null) {
+    console.error("[cet] seguimientoDeHijo lessons", error.code, error.message);
+    return [];
+  }
+
+  const salida: LeccionDeHijo[] = [];
+  for (const fila of (data ?? []) as Fila[]) {
+    const id = fila["id"];
+    const nombre = leerI18n(fila["title"]);
+    if (typeof id !== "string" || nombre === null) continue;
+    const minutos = minutosPorLeccion.get(id);
+    if (minutos === undefined) continue;
+    salida.push({ id, nombre, minutos });
+  }
+  return salida;
 }

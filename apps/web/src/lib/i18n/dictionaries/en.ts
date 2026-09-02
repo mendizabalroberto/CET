@@ -336,6 +336,45 @@ export const en = {
       pinTitle: "Their PIN",
       pinBody: "If they've forgotten it, create a new link and they'll choose another one.",
       back: "Back to my children",
+      /**
+       * El seguimiento. Lo redacta `lib/tutor/seguimiento.ts`, que compone las
+       * frases en los DOS idiomas a la vez porque los componentes de informe
+       * piden `I18nText` para todo lo que lleva nombre accesible.
+       *
+       * REGISTRO. Un padre no es personal docente: ni «ítems», ni «sesiones»,
+       * ni «dominio». «Veces que ha entrado» dice lo mismo que «sesiones» y no
+       * obliga a nadie a aprender una palabra nueva para leer la pantalla de su
+       * hijo.
+       */
+      progress: {
+        statsTitle: "These days",
+        effortTitle: "Day by day",
+        skillsTitle: "What they've got, and what they haven't",
+        lessonsTitle: "Where the time goes",
+        emptyTitle: "How they're doing",
+        emptyBody:
+          "Nothing to tell yet. Once your child signs in and studies for a while, this is where you'll see their time, how steady they've been and how each skill is coming along.",
+        minutes: "Study time",
+        sessions: "Times they came in",
+        lessonsOpened: "Lessons opened",
+        lessonsCompleted: "Lessons finished",
+        answered: "Questions answered",
+        accuracy: "Got right",
+        streak: "Best run",
+        hints: "Hints asked for",
+        exams: "Exams handed in",
+        /** Resumen del dibujo de constancia. Lo lee el lector de pantalla. */
+        effortSummary: "{total} over the last {window}. They studied on {active}.",
+        effortSummaryNone: "No study in the last {window}.",
+        dayOne: "1 day",
+        dayMany: "{count} days",
+        /** Lo que sale al posar el ratón sobre una columna. */
+        dayStudied: "{day}: {minutes}",
+        dayNone: "{day}: no study",
+        minutesUnit: "{count} min",
+        hoursUnit: "{hours} h {minutes} min",
+        percentValue: "{value}%",
+      },
     },
     signUp: {
       title: "Create your account",
