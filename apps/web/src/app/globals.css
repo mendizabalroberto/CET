@@ -260,3 +260,70 @@
     background-size: 44px 44px;
   }
 }
+
+/* ==========================================================================
+   El robot que lee el boletín (`components/tutor/RobotLector.tsx`).
+   Cuatro movimientos pequeños y uno de respuesta al toque. El bloque de
+   `prefers-reduced-motion` de arriba los apaga todos: sin movimiento, el
+   estado se sigue leyendo por los pasos marcados.
+   ========================================================================== */
+@keyframes cet-robot-flotar {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+@keyframes cet-robot-ojos {
+  0%,
+  10% {
+    transform: translateX(-3px);
+  }
+  45%,
+  55% {
+    transform: translateX(3px);
+  }
+  90%,
+  100% {
+    transform: translateX(-3px);
+  }
+}
+@keyframes cet-robot-antena {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes cet-robot-escaner {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.9;
+  }
+  90% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(36px);
+    opacity: 0;
+  }
+}
+@keyframes cet-robot-asentir {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-6deg) translateY(2px);
+  }
+  60% {
+    transform: rotate(5deg) translateY(1px);
+  }
+}

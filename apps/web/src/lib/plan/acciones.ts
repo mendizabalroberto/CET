@@ -143,6 +143,19 @@ async function boletinDeHijo(studentId: string, boletinId: string): Promise<Bole
   return boletines.find((boletin) => boletin.id === boletinId) ?? null;
 }
 
+/**
+ * El comentario libre del tutor al pedir el plan («¡más matemáticas!»).
+ * Recortado a 300 caracteres —es una frase, no un ensayo— y `null` si viene
+ * vacío. Solo va al prompt del estratega; no se guarda en ninguna tabla.
+ */
+const MAX_COMENTARIO = 300;
+function leerComentario(fd: FormData): string | null {
+  const valor = fd.get("comentario");
+  if (typeof valor !== "string") return null;
+  const limpio = valor.replace(/\s+/g, " ").trim().slice(0, MAX_COMENTARIO);
+  return limpio === "" ? null : limpio;
+}
+
 function leerUuid(fd: FormData, campo: string): string | null {
   const valor = fd.get(campo);
   const parse = z.string().uuid().safeParse(valor);
@@ -408,6 +421,7 @@ async function proponer(
   supabase: SupabaseClient,
   studentId: string,
   boletin: BoletinResumen,
+  indicacionDelTutor: string | null,
 ): Promise<ResultadoPropuesta> {
   if (boletin.estado !== "confirmado") return { ok: false, estado: fail("planSinConfirmar") };
   if (!boletin.notas.some((nota) => nota.code !== null)) {
@@ -453,6 +467,7 @@ async function proponer(
       hito: ventana.hito,
     },
     minutosPorDiaObservados: minutos,
+    indicacionDelTutor,
   };
 
   let respuesta: RespuestaDeepSeek;
@@ -689,7 +704,7 @@ export async function generarPlan(_prev: PlanState, fd: FormData): Promise<PlanS
   const confirmacion = await confirmarNotas(studentId, boletin, null);
   if (!confirmacion.ok) return conBoletinId(confirmacion.estado, boletinId);
 
-  const propuesta = await proponer(supabase, studentId, confirmacion.boletin);
+  const propuesta = await proponer(supabase, studentId, confirmacion.boletin, leerComentario(fd));
   if (!propuesta.ok) return conBoletinId(propuesta.estado, boletinId);
 
   const fijado = await fijar(tutor.id, studentId, boletinId, propuesta.propuesta);
@@ -731,7 +746,7 @@ export async function regenerarPlan(_prev: PlanState, fd: FormData): Promise<Pla
   const confirmacion = await confirmarNotas(studentId, boletin, notasNuevas);
   if (!confirmacion.ok) return conBoletinId(confirmacion.estado, boletinId);
 
-  const propuesta = await proponer(supabase, studentId, confirmacion.boletin);
+  const propuesta = await proponer(supabase, studentId, confirmacion.boletin, leerComentario(fd));
   if (!propuesta.ok) return conBoletinId(propuesta.estado, boletinId);
 
   const fijado = await fijar(tutor.id, studentId, boletinId, propuesta.propuesta);

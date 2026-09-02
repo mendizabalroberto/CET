@@ -17,6 +17,7 @@
 import { notFound } from "next/navigation";
 
 import { PlanDeEstudio } from "@/components/tutor/PlanDeEstudio";
+import { RobotLector } from "@/components/tutor/RobotLector";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { LocaleProvider } from "@/lib/i18n/provider";
 import type { BoletinResumen, EventoProximo, PlanResumen } from "@/lib/plan/consultas";
@@ -141,6 +142,27 @@ export default async function PlanPreviewPage() {
             «no encontrado», y eso también se ve aquí.
           </p>
         </header>
+
+        <section className="flex flex-col gap-3">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-muted">
+            Analizando: el robot que lee el boletín
+          </h2>
+          <p className="max-w-prose text-sm text-muted">
+            Lo que se ve mientras `generarPlan` trabaja. Los pasos avanzan por tiempo estimado; el
+            último no se cierra nunca aquí. Tócalo: asiente y cambia de frase. Con
+            «reducir movimiento» activado en el sistema, todo queda quieto y sigue leyéndose.
+          </p>
+          <div className="border-line bg-card rounded-2xl border-2 p-5">
+            <RobotLector
+              titulo={t.tutor.child.plan.analyzingTitle}
+              pasos={t.tutor.child.plan.analyzingSteps}
+              ayuda={t.tutor.child.plan.analyzingHelp}
+              bocadillos={t.tutor.child.plan.analyzingBubbles}
+              etiquetaRobot={t.tutor.child.plan.analyzingRobotLabel}
+              pista={t.tutor.child.plan.analyzingHint}
+            />
+          </div>
+        </section>
 
         {CASOS.map((caso) => (
           <section key={caso.titulo} className="flex flex-col gap-3">

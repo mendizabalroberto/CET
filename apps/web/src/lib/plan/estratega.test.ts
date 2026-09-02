@@ -78,6 +78,13 @@ describe("promptDeEstratega", () => {
     minutosPorDiaObservados: null,
   };
 
+  it("lleva la indicación del tutor al prompt solo cuando la hay", () => {
+    expect(promptDeEstratega(entrada).user).not.toContain("Indicación del tutor");
+    const { user, system } = promptDeEstratega({ ...entrada, indicacionDelTutor: "¡Más matemáticas!" });
+    expect(user).toContain("Indicación del tutor: \"¡Más matemáticas!\"");
+    expect(system).toContain("indicación del tutor");
+  });
+
   it("incluye los datos que ya conocemos y el aviso de no planificadas", () => {
     const { user, system } = promptDeEstratega(entrada);
     expect(user).toContain("Lucía");

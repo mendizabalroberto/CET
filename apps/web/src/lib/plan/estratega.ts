@@ -24,6 +24,12 @@ export interface EntradaEstratega {
     readonly hito: string;
   };
   readonly minutosPorDiaObservados: number | null;
+  /**
+   * Lo que el tutor escribió al pedir el plan («¡más matemáticas!»). Va al
+   * modelo como una preferencia de la familia, no como un dato medido: pesa
+   * en el reparto si el inventario lo permite. `null` si no escribió nada.
+   */
+  readonly indicacionDelTutor?: string | null;
 }
 
 const pesoNoNegativo = z
@@ -109,6 +115,7 @@ export function promptDeEstratega(entrada: EntradaEstratega): {
     "No inventes materias. No cites cifras medidas de estudio en las recomendaciones; la aritmética la hace el repartidor.",
     "Una materia con poco contenido publicado no puede absorber mucho tiempo aunque su nota sea baja.",
     "recomendaciones: de 0 a 6 frases breves para un adulto.",
+    "Si hay una indicación del tutor, dale prioridad en el reparto siempre que el inventario lo permita, y recógela en una recomendación.",
   ].join("\n");
 
   const user = [
@@ -120,6 +127,9 @@ export function promptDeEstratega(entrada: EntradaEstratega): {
     "Ventana y hito:",
     JSON.stringify(entrada.ventana, null, 2),
     `Minutos por día observados: ${historial}`,
+    ...(entrada.indicacionDelTutor
+      ? [`Indicación del tutor: ${JSON.stringify(entrada.indicacionDelTutor)}`]
+      : []),
   ].join("\n");
 
   return { system, user };

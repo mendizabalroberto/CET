@@ -13,6 +13,8 @@ import {
 } from "@/lib/plan/acciones";
 import type { BoletinResumen, EventoProximo, PlanResumen } from "@/lib/plan/consultas";
 
+import { RobotLector } from "./RobotLector";
+
 type TechoVisible = {
   readonly subjectId: string;
   readonly code: string;
@@ -100,6 +102,8 @@ export function PlanDeEstudio({
 
   const [pidiendoConfirmacionDeBorrar, setPidiendoConfirmacionDeBorrar] = useState(false);
   const [mostrandoEdicion, setMostrandoEdicion] = useState(false);
+  const [mostrandoSubida, setMostrandoSubida] = useState(false);
+  const [nombreArchivo, setNombreArchivo] = useState<string | null>(null);
   const [pesosEdit, setPesosEdit] = useState<Record<string, number>>({});
   const [minutosEdit, setMinutosEdit] = useState(10);
 
@@ -266,54 +270,134 @@ export function PlanDeEstudio({
     );
   }
 
-  const bloqueAnalizando = (
-    <div aria-live="polite" className="mt-4 space-y-3">
-      <div className="flex items-center gap-3">
-        <div
-          aria-hidden
-          className="border-line border-t-brand h-5 w-5 shrink-0 animate-spin rounded-full border-2 motion-reduce:animate-none"
-        />
-        <p className="text-ink font-semibold">{P.analyzingTitle}</p>
-      </div>
-      <ol className="text-ink ml-5 list-decimal space-y-1 text-[15px]">
-        {P.analyzingSteps.map((paso, indice) => (
-          <li key={`${indice}-${paso}`}>{paso}</li>
-        ))}
-      </ol>
-      <p className="text-muted text-[15px]">{P.analyzingHelp}</p>
+  // El robot mientras el servidor trabaja. `pasoInicial` 1 cuando no hay PDF
+  // que leer (regenerar desde un boletín guardado).
+  const robot = (pasoInicial: number) => (
+    <RobotLector
+      titulo={P.analyzingTitle}
+      pasos={P.analyzingSteps}
+      ayuda={P.analyzingHelp}
+      bocadillos={P.analyzingBubbles}
+      etiquetaRobot={P.analyzingRobotLabel}
+      pista={P.analyzingHint}
+      pasoInicial={pasoInicial}
+    />
+  );
+
+  const campoComentario = (
+    <div>
+      <label htmlFor="plan-comentario" className="text-ink block font-semibold">
+        {P.commentLabel}
+      </label>
+      <textarea
+        id="plan-comentario"
+        name="comentario"
+        rows={2}
+        maxLength={300}
+        placeholder={P.commentPlaceholder}
+        className="border-line bg-bg text-ink mt-1 block w-full rounded-lg border-2 px-3 py-2 text-[15px]"
+      />
+      <p className="text-muted mt-1 text-[15px]">{P.commentHelp}</p>
     </div>
   );
 
+  // El input de fichero nativo va oculto (sr-only: sigue siendo accesible y
+  // el e2e lo encuentra por `name`); lo que se ve es un botón con etiqueta
+  // clara y el nombre del PDF elegido.
   const formularioDeSubida = (
-    <form action={accionGenerar} onSubmit={marcar("generar")} className="mt-4 space-y-3">
-      {!generando ? (
-        <>
-          <label htmlFor="plan-archivo" className="text-ink block font-semibold">
-            {P.uploadLabel}
-          </label>
-          <input
-            id="plan-archivo"
-            type="file"
-            accept="application/pdf"
-            name="archivo"
-            disabled={generando}
-            className="text-ink block w-full text-sm"
-          />
-          <input type="hidden" name="studentId" value={studentId} />
-          <button
-            type="submit"
-            disabled={generando}
-            className="bg-brand text-on-brand rounded-xl px-5 py-3 font-semibold disabled:opacity-60"
+    <form action={accionGenerar} onSubmit={marcar("generar")} className="mt-4 space-y-4">
+      <div>
+        <p className="text-ink font-semibold">{P.uploadLabel}</p>
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          <label
+            htmlFor="plan-archivo"
+            className="border-brand text-ink cursor-pointer rounded-xl border-2 px-5 py-3 font-semibold focus-within:ring-4 focus-within:ring-[var(--ring)]"
           >
-            {P.uploadButton}
+            {P.choosePdf}
+            <input
+              id="plan-archivo"
+              type="file"
+              accept="application/pdf"
+              name="archivo"
+              onChange={(e) => setNombreArchivo(e.currentTarget.files?.[0]?.name ?? null)}
+              className="sr-only"
+            />
+          </label>
+          <span className="text-muted text-[15px]" aria-live="polite">
+            {nombreArchivo ?? P.noFileChosen}
+          </span>
+        </div>
+        <p className="text-muted mt-2 text-[15px]">{P.uploadHelp}</p>
+      </div>
+      <input type="hidden" name="studentId" value={studentId} />
+      {campoComentario}
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="submit"
+          className="bg-brand text-on-brand rounded-xl px-5 py-3 font-semibold disabled:opacity-60"
+        >
+          {P.uploadButton}
+        </button>
+        {boletin !== null ? (
+          <button
+            type="button"
+            onClick={() => setMostrandoSubida(false)}
+            className="text-ink px-5 py-3 font-semibold"
+          >
+            {P.editCancel}
           </button>
-          <p className="text-muted text-[15px]">{P.uploadHelp}</p>
-        </>
-      ) : (
-        bloqueAnalizando
-      )}
+        ) : null}
+      </div>
     </form>
   );
+
+  // Con un boletín ya guardado, lo primero es él: cuál es, y «Generar nuevo
+  // plan» con un comentario para el asistente. Subir otro PDF es la segunda
+  // opción, con su propio botón, no un input suelto.
+  const bloqueUltimoBoletin =
+    boletin === null ? null : (
+      <div className="mt-4 space-y-4">
+        <p className="bg-surface-alt text-ink rounded-xl px-4 py-3 font-semibold">
+          {fmt(P.lastReportLine, {
+            term:
+              boletin.trimestre === null
+                ? fmt(P.termUnknown, { year: boletin.gestion })
+                : fmt(P.term, { n: boletin.trimestre, year: boletin.gestion }),
+            count: boletin.notas.length,
+            date: fechaLegible(boletin.createdAt, locale),
+          })}
+        </p>
+        <form action={accionRegenerar} onSubmit={marcar("regenerar")} className="space-y-3">
+          <input type="hidden" name="studentId" value={studentId} />
+          <input type="hidden" name="boletinId" value={boletin.id} />
+          {campoComentario}
+          <button
+            type="submit"
+            className="bg-brand text-on-brand rounded-xl px-5 py-3 font-semibold disabled:opacity-60"
+          >
+            {P.newPlanButton}
+          </button>
+        </form>
+        <div className="border-line border-t pt-4">
+          <button
+            type="button"
+            onClick={() => setMostrandoSubida(true)}
+            className="border-line text-ink rounded-xl border-2 px-5 py-3 font-semibold"
+          >
+            {P.uploadNewButton}
+          </button>
+          <p className="text-muted mt-2 text-[15px]">{P.uploadNewHelp}</p>
+        </div>
+      </div>
+    );
+
+  const cuerpoDeLaTarjetaDelBoletin = generando
+    ? robot(0)
+    : regenerando
+      ? robot(1)
+      : boletin === null || mostrandoSubida
+        ? formularioDeSubida
+        : bloqueUltimoBoletin;
 
   return (
     <div className="space-y-6">
@@ -352,10 +436,10 @@ export function PlanDeEstudio({
 
       <section className="border-line bg-card rounded-2xl border-2 p-5">
         <h2 className="text-ink text-lg font-bold">
-          {boletin === null ? P.uploadTitle : P.uploadAnotherTitle}
+          {boletin === null ? P.uploadTitle : P.lastReportTitle}
         </h2>
-        <p className="text-muted mt-2">{P.intro}</p>
-        {formularioDeSubida}
+        {boletin === null ? <p className="text-muted mt-2">{P.intro}</p> : null}
+        {cuerpoDeLaTarjetaDelBoletin}
       </section>
 
       {boletin !== null ? (
