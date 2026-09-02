@@ -50,9 +50,7 @@ export async function GET(request: Request): Promise<NextResponse> {
   }
 
   const cabecera = request.headers.get("authorization") ?? "";
-  const presentado = cabecera.startsWith("Bearer ")
-    ? cabecera.slice("Bearer ".length)
-    : "";
+  const presentado = cabecera.startsWith("Bearer ") ? cabecera.slice("Bearer ".length) : "";
   if (!igualEnTiempoConstante(presentado, esperado)) {
     console.error("[parte-diario] secreto de cron incorrecto");
     return NextResponse.json({ error: "no autorizado" }, { status: 401 });
@@ -87,9 +85,7 @@ export async function GET(request: Request): Promise<NextResponse> {
         .eq("id", plan.student_id)
         .maybeSingle();
       if (errorPerfil) throw errorPerfil;
-      const nombre = nombreDePila(
-        (perfilData as { full_name?: string | null } | null)?.full_name,
-      );
+      const nombre = nombreDePila((perfilData as { full_name?: string | null } | null)?.full_name);
       if (nombre === null) throw new Error("perfil sin full_name");
 
       const { data: tareasData, error: errorTareas } = await admin
@@ -101,11 +97,7 @@ export async function GET(request: Request): Promise<NextResponse> {
       const tareas = (tareasData ?? []) as TareaPlan[];
 
       const subjectIds = [
-        ...new Set(
-          tareas
-            .map((t) => t.subject_id)
-            .filter((id): id is string => id !== null),
-        ),
+        ...new Set(tareas.map((t) => t.subject_id).filter((id): id is string => id !== null)),
       ];
       const materias = new Map<string, Materia>();
       if (subjectIds.length > 0) {
@@ -152,25 +144,23 @@ export async function GET(request: Request): Promise<NextResponse> {
         },
       );
       if (errorLogro) throw errorLogro;
+      // 0086 devuelve `respondidas` y `acertadas` por dia (no `items_*`): con
+      // los nombres equivocados el parte diria «0 items» para siempre.
       const logro = (logroData ?? []) as {
-        items_respondidos?: number | null;
-        aciertos?: number | null;
+        respondidas?: number | null;
+        acertadas?: number | null;
       }[];
-      const itemsRespondidos = Number(logro[0]?.items_respondidos ?? 0);
-      const aciertos = Number(logro[0]?.aciertos ?? 0);
+      const itemsRespondidos = Number(logro[0]?.respondidas ?? 0);
+      const aciertos = Number(logro[0]?.acertadas ?? 0);
 
-      const minutosPrevistos = tareas.reduce(
-        (suma, t) => suma + (t.minutos ?? 0),
-        0,
-      );
+      const minutosPrevistos = tareas.reduce((suma, t) => suma + (t.minutos ?? 0), 0);
 
       const tareasConMateria = tareas.map((t) => {
         const materia = materias.get(t.subject_id ?? "");
         if (materia === undefined) {
           throw new Error(`subject_id ${String(t.subject_id)} sin materia`);
         }
-        const tipo: "leccion" | "practica" =
-          t.tipo === "practica" ? "practica" : "leccion";
+        const tipo: "leccion" | "practica" = t.tipo === "practica" ? "practica" : "leccion";
         return {
           subjectId: t.subject_id ?? "",
           materia: nombreDeMateria(materia),
@@ -228,9 +218,7 @@ export async function GET(request: Request): Promise<NextResponse> {
 
       let algunEnviado = false;
       if (guardianes.length > 0) {
-        const guardianIds = [
-          ...new Set(guardianes.map((g) => g.guardian_id)),
-        ];
+        const guardianIds = [...new Set(guardianes.map((g) => g.guardian_id))];
         const { data: chatsData, error: errorChats } = await admin
           .from("telegram_de_tutor")
           .select("guardian_id, chat_id")
@@ -238,10 +226,12 @@ export async function GET(request: Request): Promise<NextResponse> {
           .not("chat_id", "is", null);
         if (errorChats) throw errorChats;
 
-        const chats = ((chatsData ?? []) as {
-          guardian_id: string;
-          chat_id: number;
-        }[]).map((c) => ({
+        const chats = (
+          (chatsData ?? []) as {
+            guardian_id: string;
+            chat_id: number;
+          }[]
+        ).map((c) => ({
           guardian_id: c.guardian_id,
           chat_id: Number(c.chat_id),
         }));

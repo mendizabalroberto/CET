@@ -32,8 +32,8 @@ export default async function HoyPage() {
     <UiLocaleProvider locale={locale}>
       <div className="flex flex-col gap-8">
         <header>
-          <h1 className="text-2xl font-bold text-ink">{hoy.title}</h1>
-          <p className="mt-2 max-w-prose text-muted">{hoy.subtitle}</p>
+          <h1 className="text-ink text-2xl font-bold">{hoy.title}</h1>
+          <p className="text-muted mt-2 max-w-prose">{hoy.subtitle}</p>
         </header>
 
         {resultado.estado === "error" ? (
@@ -68,12 +68,12 @@ export default async function HoyPage() {
                   <li key={tarea.id}>
                     <Link
                       href={tarea.href}
-                      className="flex min-h-14 items-center gap-3 rounded-xl border border-line bg-card px-4 py-3 no-underline focus-visible:outline-2 focus-visible:outline-offset-2"
+                      className="border-line bg-card flex min-h-14 items-center gap-3 rounded-xl border px-4 py-3 no-underline focus-visible:outline-2 focus-visible:outline-offset-2"
                     >
                       <SubjectIcon code={tarea.subjectCode} />
                       <span className="min-w-0 flex-1">
-                        <span className="block font-semibold text-ink">{tarea.titulo}</span>
-                        <span className="mt-0.5 flex flex-wrap gap-x-1 text-sm text-muted">
+                        <span className="text-ink block font-semibold">{tarea.titulo}</span>
+                        <span className="text-muted mt-0.5 flex flex-wrap gap-x-1 text-sm">
                           <span>{tarea.tipo === "leccion" ? hoy.lesson : hoy.practice}</span>
                           {minutosLabel !== null ? <span>{minutosLabel}</span> : null}
                           <span>{taskOfLabel}</span>
@@ -89,7 +89,7 @@ export default async function HoyPage() {
 
         <Link
           href={ROUTES.studentHome}
-          className="inline-flex w-fit items-center rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-card focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="bg-ink text-card inline-flex w-fit items-center rounded-lg px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           {hoy.backToLessons}
         </Link>

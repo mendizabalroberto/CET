@@ -41,9 +41,7 @@ export function textoDelParte(d: DatosDelParte): string {
     `${d.itemsRespondidos} ítems, ${d.aciertos} aciertos`,
   ];
   if (d.pendientes.length > 0) {
-    const resumen = d.pendientes
-      .map((p) => `${p.materia} (${p.minutos} min)`)
-      .join(", ");
+    const resumen = d.pendientes.map((p) => `${p.materia} (${p.minutos} min)`).join(", ");
     lineas.push(`Pendiente de hoy: ${resumen}`);
   }
   return lineas.join("\n");
@@ -56,9 +54,7 @@ export function ventanaDelDia(fecha: string): { desde: string; hasta: string } {
   };
 }
 
-export function esViolacionDeUnicidad(
-  error: { code?: string | null } | null | undefined,
-): boolean {
+export function esViolacionDeUnicidad(error: { code?: string | null } | null | undefined): boolean {
   return error?.code === "23505";
 }
 
@@ -82,17 +78,9 @@ export function pendientesDelDia(
     const hecha =
       tarea.tipo === "leccion"
         ? tarea.lessonId !== null &&
-          eventos.some(
-            (e) =>
-              e.event_type === "lesson_completed" &&
-              e.lesson_id === tarea.lessonId,
-          )
+          eventos.some((e) => e.event_type === "lesson_completed" && e.lesson_id === tarea.lessonId)
         : tarea.skillId !== null &&
-          eventos.some(
-            (e) =>
-              e.event_type === "answer_submitted" &&
-              e.skill_id === tarea.skillId,
-          );
+          eventos.some((e) => e.event_type === "answer_submitted" && e.skill_id === tarea.skillId);
     if (hecha) {
       continue;
     }

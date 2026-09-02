@@ -132,6 +132,12 @@ los esquemas):
 
 ## 4 · Qué NO cuenta como resuelto
 
+- **Un test de relleno.** El intento anterior entregó `consultas.test.ts` con
+  UN solo `it` que no importaba nada del módulo; el motor revirtió el código,
+  el test siguió verde, y el contrato se dio por FALSO VERDE. Cada una de las
+  cuatro puras/esquemas de §3 tiene que estar importada y ejercida con
+  asserts sobre su salida real; como mínimo 8 `it`. Si al revertir
+  `consultas.ts` el test no se pone rojo, no vale.
 - Lanzar desde una lectura. Vacío o `null`, y a seguir.
 - `createAdminClient` sin motivo, o usarlo donde la sesión del tutor ya llega
   (boletines, planes, partes, calendario, la RPC).

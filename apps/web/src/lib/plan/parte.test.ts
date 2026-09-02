@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  esViolacionDeUnicidad,
-  pendientesDelDia,
-  textoDelParte,
-  ventanaDelDia,
-} from "./parte";
+import { esViolacionDeUnicidad, pendientesDelDia, textoDelParte, ventanaDelDia } from "./parte";
 
 describe("textoDelParte", () => {
   it("formatea el parte con pendiente", () => {
@@ -71,17 +66,36 @@ describe("esViolacionDeUnicidad", () => {
 describe("pendientesDelDia", () => {
   it("mezcla una lección hecha, una lección pendiente y una práctica respondida", () => {
     const tareas: Parameters<typeof pendientesDelDia>[0] = [
-      { subjectId: "s1", materia: "English", tipo: "leccion", lessonId: "l1", skillId: null, minutos: 10 },
-      { subjectId: "s1", materia: "English", tipo: "leccion", lessonId: "l2", skillId: null, minutos: 25 },
-      { subjectId: "s2", materia: "Math", tipo: "practica", lessonId: null, skillId: "sk1", minutos: 15 },
+      {
+        subjectId: "s1",
+        materia: "English",
+        tipo: "leccion",
+        lessonId: "l1",
+        skillId: null,
+        minutos: 10,
+      },
+      {
+        subjectId: "s1",
+        materia: "English",
+        tipo: "leccion",
+        lessonId: "l2",
+        skillId: null,
+        minutos: 25,
+      },
+      {
+        subjectId: "s2",
+        materia: "Math",
+        tipo: "practica",
+        lessonId: null,
+        skillId: "sk1",
+        minutos: 15,
+      },
     ];
     const eventos = [
       { event_type: "lesson_completed", lesson_id: "l1", skill_id: null },
       { event_type: "answer_submitted", lesson_id: null, skill_id: "sk1" },
     ];
 
-    expect(pendientesDelDia(tareas, eventos)).toEqual([
-      { materia: "English", minutos: 25 },
-    ]);
+    expect(pendientesDelDia(tareas, eventos)).toEqual([{ materia: "English", minutos: 25 }]);
   });
 });
