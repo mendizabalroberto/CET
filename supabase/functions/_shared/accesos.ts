@@ -59,6 +59,18 @@ export type ParametrosDeRegistroDeAcceso = {
   p_agente_familia: string | null;
   p_user_agent: string | null;
   p_origen: "web" | "edge";
+  /**
+   * Los tres que 0088 abrió en la tabla y 0089 añadió a la firma de la RPC.
+   *
+   * Van al FINAL de la firma y con `default null` en Postgres, de modo que un
+   * llamante que todavía mande once argumentos sigue siendo válido. Aquí, en
+   * cambio, son obligatorios: `supabase-js` llama por nombre y este tipo es lo
+   * único que obliga a que la Edge Function no se deje la mitad del contexto,
+   * que es exactamente el fallo del 01/09/2026 descrito más abajo.
+   */
+  p_latitud: number | null;
+  p_longitud: number | null;
+  p_zona_horaria: string | null;
 };
 
 /**
@@ -105,19 +117,54 @@ function cabeceraAcotada(headers: Headers, nombre: string): string | null {
 }
 
 /**
- * La geo tal y como la pone la capa web. Los tres campos son independientes: que
+ * Una coordenada que `numeric(9,6)` vaya a aceptar, o nada.
+ *
+ * Esta cabecera la escribe quien llama —`auth-pin` es un endpoint público— así
+ * que aquí entra literalmente cualquier cosa. Y `latitud` no es `text`: un
+ * `"hola"` llegaría a Postgres como argumento `numeric` y haría fallar
+ * `registrar_acceso` ENTERA, con lo que se perdería el registro del acceso. Es
+ * el mismo razonamiento que `ipParaInet` deja escrito para `inet`, y la misma
+ * conclusión: filtrar aquí convierte ese ataque en «se registra el acceso con
+ * la coordenada a NULL».
+ *
+ * El rango también se comprueba. Una latitud de 900 es aritméticamente un
+ * número y geográficamente nada, y `numeric(9,6)` la aceptaría sin rechistar:
+ * dejaría en la tabla más sensible del sistema un dato que parece medido.
+ */
+function coordenadaDeCabecera(headers: Headers, nombre: string, tope: number): number | null {
+  const bruto = cabeceraAcotada(headers, nombre);
+  if (bruto === null) return null;
+  const numero = Number(bruto);
+  if (!Number.isFinite(numero) || Math.abs(numero) > tope) return null;
+  return numero;
+}
+
+/**
+ * La geo tal y como la pone la capa web. Los campos son independientes: que
  * Vercel sepa el país y no la ciudad es normal, y guardar el país solo vale más
  * que no guardar nada.
+ *
+ * Las coordenadas y la zona horaria bajan por el MISMO canal de cabeceras que
+ * el país, y no por el cuerpo, por la razón de la cabecera de este fichero:
+ * `entradaDeAuthPin` es `.strict()` y ese `.strict()` es lo único que impide
+ * presentar las dos puertas de login a la vez. Ningún dato de contexto vale lo
+ * que costaría aflojarlo.
  */
 export function geoDeCabeceras(headers: Headers): {
   pais: string | null;
   region: string | null;
   ciudad: string | null;
+  latitud: number | null;
+  longitud: number | null;
+  zonaHoraria: string | null;
 } {
   return {
     pais: cabeceraAcotada(headers, "x-cet-geo-pais"),
     region: cabeceraAcotada(headers, "x-cet-geo-region"),
     ciudad: cabeceraAcotada(headers, "x-cet-geo-ciudad"),
+    latitud: coordenadaDeCabecera(headers, "x-cet-geo-latitud", 90),
+    longitud: coordenadaDeCabecera(headers, "x-cet-geo-longitud", 180),
+    zonaHoraria: cabeceraAcotada(headers, "x-cet-geo-zona"),
   };
 }
 
@@ -207,6 +254,9 @@ export type ContextoDeAcceso = {
   pais: string | null;
   region: string | null;
   ciudad: string | null;
+  latitud: number | null;
+  longitud: number | null;
+  zonaHoraria: string | null;
   agenteFamilia: string;
   userAgent: string | null;
 };
@@ -276,5 +326,8 @@ export function parametrosDeAcceso(
     p_agente_familia: contexto.agenteFamilia,
     p_user_agent: contexto.userAgent,
     p_origen: "edge",
+    p_latitud: contexto.latitud,
+    p_longitud: contexto.longitud,
+    p_zona_horaria: contexto.zonaHoraria,
   };
 }

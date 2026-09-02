@@ -40,6 +40,26 @@
  * user-agent de la tablet de un niño. Del dispositivo solo se dice SI existe;
  * del enlace, SI está vivo. Un panel de administración que enseña de más sobre
  * un menor no es más útil, es más peligroso.
+ *
+ * ===========================================================================
+ * LOS ACCESOS: DESPLEGABLE POR HIJO, Y POR QUÉ NO UNA SECCIÓN APARTE
+ * ===========================================================================
+ * Un acceso solo significa algo AL LADO del niño al que pertenece. «Santa Cruz
+ * de la Sierra, Chrome en Android, hace dos horas» no es información hasta que
+ * se sabe de quién es, y una tabla global obligaría a repetir el nombre en cada
+ * fila para poder volver a agruparlos con la vista.
+ *
+ * Cerrado por defecto, con un `<details>` nativo: con dos hijos y cinco accesos
+ * abrirlo todo cabría, pero con doscientos hijos la página sería un muro de
+ * miles de filas que nadie lee. Y `<details>` no necesita estado ni JavaScript
+ * —lo abre el navegador—, así que funciona igual con el teclado y lo anuncia
+ * solo un lector de pantalla.
+ *
+ * Lo que estas tablas NO pintan, y no por olvido: la IP y las coordenadas. La
+ * migración 0088 las deja fuera del `GRANT` de `authenticated` porque unas
+ * coordenadas con seis decimales se leen como la dirección de un niño cuando
+ * son el centroide de su ciudad. Se dice en pantalla (`privacyNote`) para que
+ * quien administre esto no lo tome por una carencia y pida ampliarlo.
  */
 import type { Locale } from "@cet/shared";
 import { Badge, Card, EmptyState, StatTile, Table, type TableColumn } from "@cet/ui";
@@ -47,7 +67,13 @@ import type { ReactNode } from "react";
 
 import { formatSchoolTime } from "./dates";
 import { fill, ui, type StaffDictionary } from "./i18n";
-import type { FamiliaHijo, FamiliesData, InvitacionPendiente } from "./queries";
+import type {
+  AccesoDeAlumno,
+  Familia,
+  FamiliaHijo,
+  FamiliesData,
+  InvitacionPendiente,
+} from "./queries";
 
 /**
  * UTC, y dicho en voz alta en la pantalla.
@@ -129,6 +155,8 @@ export function Familias({ data, locale, t }: Props): ReactNode {
                     />
                   )}
                 </div>
+
+                <AccesosDeLaFamilia familia={familia} t={t} cuando={cuando} />
               </Card>
             </li>
           ))}
@@ -225,6 +253,190 @@ function etapa(valor: string, t: StaffDictionary): string {
   if (valor === "primary") return t.admin.families.stagePrimary;
   if (valor === "secondary") return t.admin.families.stageSecondary;
   return valor === "" ? t.common.none : valor;
+}
+
+/* ========================================================================== */
+/* Los accesos                                                                */
+/* ========================================================================== */
+
+/**
+ * Un desplegable por hijo, y ninguno para el que no ha entrado nunca.
+ *
+ * A un hijo sin accesos NO se le pinta un `<details>` vacío: abrir algo para
+ * encontrar «nada» es peor que no ofrecerlo, y esa información ya la da la
+ * columna «Último acceso» de la tabla de arriba, que en ese caso dice «No ha
+ * entrado nunca». La nota de privacidad, en cambio, se pinta siempre que haya
+ * al menos un desplegable: explica un hueco, y el hueco está ahí aunque solo
+ * se vea un acceso.
+ */
+function AccesosDeLaFamilia({
+  familia,
+  t,
+  cuando,
+}: {
+  readonly familia: Familia;
+  readonly t: StaffDictionary;
+  readonly cuando: (valor: string | null) => string;
+}): ReactNode {
+  const A = t.admin.families.accesses;
+  const conAccesos = familia.hijos.filter((hijo) => hijo.accesos.length > 0);
+  if (conAccesos.length === 0) return null;
+
+  return (
+    <div className="mt-4 flex flex-col gap-2">
+      {conAccesos.map((hijo) => (
+        <details
+          key={hijo.profileId}
+          className="rounded-lg border border-line bg-surface"
+        >
+          {/* El recuento va DENTRO del resumen y no en un badge al lado: es lo
+              único que permite decidir si merece la pena abrirlo, y quien
+              navega con un lector de pantalla lo oye en el mismo anuncio. */}
+          <summary className="cursor-pointer px-4 py-2 text-sm font-semibold text-ink">
+            {fill(A.toggle, { child: hijo.fullName, count: hijo.accesos.length })}
+          </summary>
+          <div className="px-4 pb-4">
+            <Table<AccesoDeAlumno>
+              caption={ui(fill(A.caption, { child: hijo.fullName }))}
+              rows={hijo.accesos}
+              rowKey={(acceso) => acceso.id}
+              columns={columnasDeAccesos(t, cuando)}
+            />
+          </div>
+        </details>
+      ))}
+      <p className="text-xs text-muted">{A.privacyNote}</p>
+    </div>
+  );
+}
+
+function columnasDeAccesos(
+  t: StaffDictionary,
+  cuando: (valor: string | null) => string,
+): ReadonlyArray<TableColumn<AccesoDeAlumno>> {
+  const A = t.admin.families.accesses;
+
+  return [
+    {
+      key: "when",
+      header: ui(A.when),
+      rowHeader: true,
+      cell: (acceso) => cuando(acceso.createdAt),
+    },
+    {
+      key: "kind",
+      header: ui(A.kind),
+      // El tono lleva SIEMPRE su palabra dentro (WCAG 1.4.1). Y solo el intento
+      // fallido es `warning`: un canje o una entrada correcta son el
+      // funcionamiento normal, y pintarlos de color entrena a no mirar el que
+      // sí importa.
+      cell: (acceso) => (
+        <Badge tone={acceso.tipo === "login_fallido" ? "warning" : "neutral"}>
+          {tipoDeAcceso(acceso.tipo, t)}
+        </Badge>
+      ),
+    },
+    {
+      key: "from",
+      header: ui(A.from),
+      cell: (acceso) => <Procedencia acceso={acceso} t={t} />,
+    },
+    {
+      key: "device",
+      header: ui(A.device),
+      cell: (acceso) =>
+        acceso.agenteFamilia === null || acceso.agenteFamilia === "" ? (
+          <span className="text-muted">{A.unknownDevice}</span>
+        ) : (
+          acceso.agenteFamilia
+        ),
+    },
+    {
+      key: "signals",
+      header: ui(A.signals),
+      cell: (acceso) =>
+        acceso.senales.length === 0 ? (
+          // «Ninguna» y no una celda en blanco: un hueco no se puede distinguir
+          // de un fallo de carga, y aquí la ausencia de señales es un hecho.
+          <span className="text-muted">{A.noSignals}</span>
+        ) : (
+          <span className="flex flex-wrap gap-1">
+            {acceso.senales.map((senal) => (
+              <Badge key={senal} tone="warning">
+                {senalDeAcceso(senal, t)}
+              </Badge>
+            ))}
+          </span>
+        ),
+    },
+  ];
+}
+
+/**
+ * Ciudad, región y país en una línea, y la zona horaria debajo.
+ *
+ * Se juntan porque por separado ocupan tres columnas para decir una sola cosa,
+ * y porque las tres pueden faltar a la vez: el borde resuelve el país mucho más
+ * a menudo que la ciudad. Cuando no se sabe nada se dice «Sin ubicación», que
+ * no es lo mismo que una celda vacía.
+ *
+ * La zona horaria va en segunda línea y en gris porque no es «dónde» sino «en
+ * qué hora vive»: es el dato que explica por qué los informes de un niño
+ * boliviano salían en UTC, y por eso se enseña aunque no localice a nadie.
+ */
+function Procedencia({
+  acceso,
+  t,
+}: {
+  readonly acceso: AccesoDeAlumno;
+  readonly t: StaffDictionary;
+}): ReactNode {
+  const A = t.admin.families.accesses;
+  const partes = [acceso.ciudad, acceso.region, acceso.pais].filter(
+    (parte): parte is string => parte !== null && parte !== "",
+  );
+
+  return (
+    <span className="flex flex-col">
+      {partes.length === 0 ? (
+        <span className="text-muted">{A.unknownPlace}</span>
+      ) : (
+        <span>{partes.join(" · ")}</span>
+      )}
+      {acceso.zonaHoraria === null || acceso.zonaHoraria === "" ? null : (
+        <span className="text-xs text-muted">{acceso.zonaHoraria}</span>
+      )}
+    </span>
+  );
+}
+
+/**
+ * `acceso_tipo` es un enum de la base. Si mañana apareciera un quinto valor se
+ * pinta CRUDO, por el mismo motivo que `etapa()`: un hueco no se puede depurar
+ * y el identificador en pantalla dice exactamente qué falta traducir.
+ */
+function tipoDeAcceso(valor: string, t: StaffDictionary): string {
+  const A = t.admin.families.accesses;
+  if (valor === "enlace_canjeado") return A.kindRedeemed;
+  if (valor === "login_ok") return A.kindLoginOk;
+  if (valor === "login_fallido") return A.kindLoginFailed;
+  if (valor === "dispositivo_olvidado") return A.kindDeviceForgotten;
+  return valor === "" ? t.common.none : valor;
+}
+
+/**
+ * Las cuatro señales de `app.registrar_acceso()`. Una señal desconocida se
+ * pinta cruda: las reglas viven en Postgres y se añaden allí, así que esta
+ * lista se queda corta ANTES de que nadie toque este fichero — y es mejor leer
+ * `senal_nueva` en el panel que no ver nada.
+ */
+function senalDeAcceso(valor: string, t: StaffDictionary): string {
+  const A = t.admin.families.accesses;
+  if (valor === "dispositivo_nuevo") return A.signalNewDevice;
+  if (valor === "salto_de_pais") return A.signalCountryJump;
+  if (valor === "canje_fuera_de_red") return A.signalOutOfNetwork;
+  if (valor === "ip_multicuenta") return A.signalSharedIp;
+  return valor;
 }
 
 /* ========================================================================== */

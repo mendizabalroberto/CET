@@ -61,9 +61,42 @@ export interface Geo {
   readonly pais: string | null;
   readonly region: string | null;
   readonly ciudad: string | null;
+  /**
+   * El centroide de la ciudad, NO la posicion de nadie.
+   *
+   * Se recogen porque son lo unico que permite medir DISTANCIA entre dos
+   * accesos, y esa pregunta el nombre de la ciudad no la puede responder: dos
+   * «Santa Cruz» son iguales como texto aunque esten en dos continentes. Ver
+   * la cabecera de la migracion 0088, que ademas explica por que no se contrata
+   * un servicio externo de geolocalizacion: no seria mas preciso, solo mandaria
+   * la IP de un menor a un tercero.
+   *
+   * Las dos columnas quedan FUERA del grant de `authenticated`. No porque
+   * revelen mas que la ciudad —no lo hacen— sino porque lo PARECEN: seis
+   * decimales en una pantalla se leen como la direccion de un nino.
+   */
+  readonly latitud: number | null;
+  readonly longitud: number | null;
+  /**
+   * La zona horaria IANA del aparato desde el que entra, segun el borde.
+   *
+   * Es el mas util de los tres y el menos evidente: `app.zona_horaria_alumno`
+   * la deduce hoy por otros medios, y esto le da una fuente directa. Si entra
+   * en el grant de `authenticated` porque no localiza a nadie —media America
+   * comparte zona— y es lo que permite pintar las horas de un informe en la
+   * hora del nino en vez de en UTC.
+   */
+  readonly zonaHoraria: string | null;
 }
 
-export const GEO_DESCONOCIDA: Geo = { pais: null, region: null, ciudad: null };
+export const GEO_DESCONOCIDA: Geo = {
+  pais: null,
+  region: null,
+  ciudad: null,
+  latitud: null,
+  longitud: null,
+  zonaHoraria: null,
+};
 
 /* ========================================================================== */
 /* Lectura de cabeceras                                                       */
@@ -96,11 +129,41 @@ function decodificar(valor: string | null): string | null {
   }
 }
 
+/**
+ * Una coordenada, o nada.
+ *
+ * Se filtra AQUI y no en Postgres a proposito. La columna es `numeric(9,6)` y
+ * un `check` de rango sobre ella tumbaria el INSERT entero —es decir, perderia
+ * el registro del acceso— por culpa de un dato decorativo, y eso contradice la
+ * regla que gobierna este modulo desde 0078: ningun rastro puede tumbar un
+ * login. Aqui, en cambio, «no es una coordenada» se degrada a NULL, que es
+ * exactamente lo que la columna significa cuando el borde no supo resolverla.
+ *
+ * `Number("")` es 0 y no NaN, que convertiria una cabecera vacia en el punto
+ * (0, 0) —el golfo de Guinea, a 6.000 km de cualquier alumno—. `limpia()` ya
+ * devuelve `null` para la cadena vacia, y por eso esta funcion nunca la ve; el
+ * `Number.isFinite` cubre el resto.
+ */
+function coordenada(valor: string | null, tope: number): number | null {
+  if (valor === null) return null;
+  const numero = Number(valor);
+  if (!Number.isFinite(numero) || Math.abs(numero) > tope) return null;
+  return numero;
+}
+
 export function leerGeo(cabeceras: Headers): Geo {
   return {
     pais: decodificar(limpia(cabeceras.get("x-vercel-ip-country"))),
     region: decodificar(limpia(cabeceras.get("x-vercel-ip-country-region"))),
     ciudad: decodificar(limpia(cabeceras.get("x-vercel-ip-city"))),
+    // Las tres pasan por `decodificar()` igual que la ciudad. Un numero no
+    // deberia llevar nada que escapar, y la zona horaria —`America/La_Paz`— es
+    // ASCII puro, pero quien emite estas cabeceras es el borde y no este
+    // codigo: tratarlas distinto seria apostar a que Vercel no cambia de
+    // criterio. Decodificar algo que no estaba codificado no hace nada.
+    latitud: coordenada(decodificar(limpia(cabeceras.get("x-vercel-ip-latitude"))), 90),
+    longitud: coordenada(decodificar(limpia(cabeceras.get("x-vercel-ip-longitude"))), 180),
+    zonaHoraria: decodificar(limpia(cabeceras.get("x-vercel-ip-timezone"))),
   };
 }
 
@@ -131,6 +194,19 @@ export function cabecerasDeGeo(geo: Geo): Record<string, string> {
   if (geo.pais !== null) salida["x-cet-geo-pais"] = encodeURIComponent(geo.pais);
   if (geo.region !== null) salida["x-cet-geo-region"] = encodeURIComponent(geo.region);
   if (geo.ciudad !== null) salida["x-cet-geo-ciudad"] = encodeURIComponent(geo.ciudad);
+  // Las coordenadas viajan por el MISMO canal que la ciudad, y no por el cuerpo,
+  // por el motivo de arriba: `.strict()` es lo que impide presentar las dos
+  // puertas de login a la vez, y no se afloja para transportar contexto.
+  //
+  // `String(numero)` y no `encodeURIComponent`: un numero de JavaScript solo
+  // produce digitos, punto, signo y quiza una `e`, todo dentro del ASCII
+  // imprimible que una cabecera admite. Codificarlo no protegeria de nada y
+  // obligaria a mirar dos veces el dia que alguien depure una cabecera a mano.
+  if (geo.latitud !== null) salida["x-cet-geo-latitud"] = String(geo.latitud);
+  if (geo.longitud !== null) salida["x-cet-geo-longitud"] = String(geo.longitud);
+  if (geo.zonaHoraria !== null) {
+    salida["x-cet-geo-zona"] = encodeURIComponent(geo.zonaHoraria);
+  }
   return salida;
 }
 
@@ -322,6 +398,12 @@ export async function registrarAcceso(
       p_agente_familia: registro.agenteFamilia,
       p_user_agent: registro.contexto.userAgent,
       p_origen: ORIGEN_WEB,
+      // Los tres de 0088/0089. Van al final y por nombre: `supabase-js` llama
+      // por nombre siempre, asi que el orden aqui es solo legibilidad, pero
+      // coincide con el de la firma para que comparar los dos sea trivial.
+      p_latitud: registro.contexto.geo.latitud,
+      p_longitud: registro.contexto.geo.longitud,
+      p_zona_horaria: registro.contexto.geo.zonaHoraria,
     });
 
     if (error !== null) {

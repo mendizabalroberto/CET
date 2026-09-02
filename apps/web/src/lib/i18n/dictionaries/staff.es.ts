@@ -390,6 +390,41 @@ export const staffEs: StaffDictionary = {
       lastAccess: "Último acceso",
       never: "No ha entrado nunca",
       noChildren: "Todavía no ha dado de alta a ningún hijo.",
+      /* ------------------------------------------------------------------
+         Los accesos de un hijo. El vocabulario aquí es el de una persona que
+         mira un rastro, no el de la base: `enlace_canjeado` es un identificador
+         y «Canje del enlace» es lo que se lee. Las señales se traducen una a
+         una en vez de pintarse crudas por el mismo motivo — `ip_multicuenta`
+         no le dice nada a nadie que no haya leído la migración 0078.
+         ------------------------------------------------------------------ */
+      accesses: {
+        toggle: "Accesos de {child} ({count})",
+        caption: "Últimos accesos registrados de {child}",
+        when: "Cuándo",
+        kind: "Tipo",
+        from: "Desde dónde",
+        device: "Aparato",
+        signals: "Señales",
+        unknownPlace: "Sin ubicación",
+        unknownDevice: "Sin aparato",
+        noSignals: "Ninguna",
+        /* Ningún acceso no es un error: es un hijo dado de alta que todavía no
+           ha entrado. Se dice con una frase y no con una tabla vacía. */
+        none: "Todavía no ha entrado ninguna vez.",
+        kindRedeemed: "Canje del enlace",
+        kindLoginOk: "Entrada correcta",
+        kindLoginFailed: "Intento fallido",
+        kindDeviceForgotten: "Aparato olvidado",
+        signalNewDevice: "Aparato nuevo",
+        signalCountryJump: "Salto de país",
+        signalOutOfNetwork: "Canje fuera de red",
+        signalSharedIp: "IP con varias cuentas",
+        /* Por qué esta tabla no enseña la IP ni las coordenadas. Va en pantalla
+           y no solo en un comentario: quien administre esto tiene que saber que
+           el hueco es deliberado, o lo pedirá como si fuera una carencia. */
+        privacyNote:
+          "No se muestran ni la dirección IP ni las coordenadas. Son el centro de la ciudad, no la casa de nadie, y aparentarían una precisión que el dato no tiene.",
+      },
       empty: "Todavía no hay ninguna familia con cuenta.",
       emptyBody:
         "En cuanto un tutor canjee su invitación y cree su cuenta, aparecerá aquí con sus hijos.",

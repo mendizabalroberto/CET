@@ -17,7 +17,7 @@
 -- privilegio correcto y una politica rota siguen siendo una fuga.
 -- =============================================================================
 begin;
-select plan(38);
+select plan(41);
 
 \ir helpers/fixture.psql
 
@@ -118,6 +118,24 @@ select ok(
   has_column_privilege('authenticated', 'public.accesos_de_alumno', 'agente_familia', 'SELECT'),
   'el tutor SI lee "Chrome en Android": es lo que le permite revocar el aparato');
 
+-- 0088 abrio zona_horaria y dejo fuera las coordenadas, y la diferencia no es
+-- de sensibilidad sino de APARIENCIA: unas coordenadas con seis decimales en
+-- una pantalla se leen como la direccion de un niño, cuando son el centroide de
+-- su ciudad. La zona horaria no localiza a nadie —media America comparte la
+-- misma— y es lo unico que permite pintar las horas de un informe en la del
+-- alumno en vez de en UTC.
+select ok(
+  not has_column_privilege('authenticated', 'public.accesos_de_alumno', 'latitud', 'SELECT'),
+  'authenticated NO lee latitud: aparenta una precision que el dato no tiene');
+
+select ok(
+  not has_column_privilege('authenticated', 'public.accesos_de_alumno', 'longitud', 'SELECT'),
+  'authenticated NO lee longitud, por el mismo motivo que la latitud');
+
+select ok(
+  has_column_privilege('authenticated', 'public.accesos_de_alumno', 'zona_horaria', 'SELECT'),
+  'zona_horaria SI: no localiza a nadie y es lo que pone las horas en la del alumno');
+
 select ok(
   not has_table_privilege('authenticated', 'public.accesos_de_alumno', 'INSERT'),
   'authenticated NO tiene INSERT: nadie fabrica su propio rastro');
@@ -162,27 +180,27 @@ select ok(
 
 select ok(
   not has_function_privilege('authenticated',
-    'public.registrar_acceso(uuid, uuid, public.acceso_tipo, inet, text, text, text, text, text, text, text)',
+    'public.registrar_acceso(uuid, uuid, public.acceso_tipo, inet, text, text, text, text, text, text, text, numeric, numeric, text)',
     'EXECUTE'),
   'authenticated NO ejecuta el envoltorio: acepta p_student_id, y con el un '
   'alumno fabricaria el rastro de otro');
 
 select ok(
   not has_function_privilege('anon',
-    'public.registrar_acceso(uuid, uuid, public.acceso_tipo, inet, text, text, text, text, text, text, text)',
+    'public.registrar_acceso(uuid, uuid, public.acceso_tipo, inet, text, text, text, text, text, text, text, numeric, numeric, text)',
     'EXECUTE'),
   'anon tampoco: el ACL por defecto de una funcion incluye PUBLIC, y sin el '
   'revoke explicito estaria abierta');
 
 select ok(
   not has_function_privilege('authenticated',
-    'app.registrar_acceso(uuid, uuid, public.acceso_tipo, inet, text, text, text, text, text, text, text)',
+    'app.registrar_acceso(uuid, uuid, public.acceso_tipo, inet, text, text, text, text, text, text, text, numeric, numeric, text)',
     'EXECUTE'),
   'authenticated tampoco alcanza la de `app` por la puerta de atras');
 
 select ok(
   has_function_privilege('service_role',
-    'public.registrar_acceso(uuid, uuid, public.acceso_tipo, inet, text, text, text, text, text, text, text)',
+    'public.registrar_acceso(uuid, uuid, public.acceso_tipo, inet, text, text, text, text, text, text, text, numeric, numeric, text)',
     'EXECUTE'),
   'service_role SI la ejecuta: es quien escribe desde la web y desde auth-pin');
 

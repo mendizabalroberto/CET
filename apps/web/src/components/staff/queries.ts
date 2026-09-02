@@ -1139,6 +1139,51 @@ export async function loadAdminData(
 /* ========================================================================== */
 
 /**
+ * UN ACCESO, TAL Y COMO PUEDE VERLO UNA SESIÓN — Y NI UNA COLUMNA MÁS.
+ *
+ * ===========================================================================
+ * ESTA LISTA DE CAMPOS ES EL GRANT POR COLUMNA, COPIADO
+ * ===========================================================================
+ * `accesos_de_alumno` es «la tabla más sensible del sistema» por decisión
+ * escrita en 0078: guarda la IP en claro, sin caducidad, de un menor. La
+ * compensación no es la retención, es que `ip`, `ip_hash` y `user_agent` —y
+ * desde 0088 también `latitud` y `longitud`— quedan FUERA del `GRANT` de
+ * `authenticated`. Ninguna política puede devolver lo que el motor no concede
+ * por columna.
+ *
+ * Consecuencia práctica que conviene saber antes de tocar el `select`: pedir
+ * una sola de esas columnas no devuelve esa columna vacía, hace fallar la
+ * consulta ENTERA con un 42501. Así que esta interfaz no es documentación, es
+ * el contrato: si aparece un campo aquí que no está en el grant, la vista de
+ * familias deja de cargar.
+ *
+ * ===========================================================================
+ * POR QUÉ NO SE PINTAN LAS COORDENADAS AUNQUE EXISTAN
+ * ===========================================================================
+ * Y no se amplía el grant para pintarlas. Lo explica la cabecera de 0088: unas
+ * coordenadas con seis decimales no revelan más que el nombre de la ciudad
+ * —son su centroide, no la casa de nadie— pero lo PARECEN, y quien las vea se
+ * las va a creer con una precisión que el dato no tiene. La ciudad dice la
+ * verdad sin aparentar lo que no es. `zona_horaria` sí entra: no localiza a
+ * nadie y dice desde qué huso entró el niño.
+ */
+export interface AccesoDeAlumno {
+  readonly id: string;
+  readonly studentId: string;
+  /** `enlace_canjeado` | `login_ok` | `login_fallido` | `dispositivo_olvidado`. */
+  readonly tipo: string;
+  readonly pais: string | null;
+  readonly region: string | null;
+  readonly ciudad: string | null;
+  readonly zonaHoraria: string | null;
+  /** «Chrome en Android». El user-agent entero no sale nunca hacia un navegador. */
+  readonly agenteFamilia: string | null;
+  /** `dispositivo_nuevo`, `salto_de_pais`, `canje_fuera_de_red`, `ip_multicuenta`. */
+  readonly senales: readonly string[];
+  readonly createdAt: string | null;
+}
+
+/**
  * UN HIJO, VISTO DESDE LA ADMINISTRACIÓN.
  *
  * Lo que NO lleva es tan deliberado como lo que lleva: ni `pin_hash`, ni
@@ -1168,6 +1213,15 @@ export interface FamiliaHijo {
    * barata, que además ya se estaba consultando para saber si hay dispositivo.
    */
   readonly ultimoAccesoAt: string | null;
+  /**
+   * Los últimos accesos de este hijo, del más reciente al más antiguo.
+   *
+   * Cuelgan del hijo y no de una sección aparte a propósito: un acceso solo
+   * significa algo AL LADO del niño al que pertenece —«Santa Cruz» no dice nada
+   * hasta que se sabe de quién es— y una lista global obligaría a repetir el
+   * nombre en cada fila para volver a juntarlos.
+   */
+  readonly accesos: readonly AccesoDeAlumno[];
 }
 
 export interface Familia {
@@ -1197,6 +1251,38 @@ export interface FamiliesData {
 }
 
 const FAMILIAS_LIMITE = 500;
+
+/**
+ * CUÁNTOS ACCESOS SE ENSEÑAN DE CADA HIJO.
+ *
+ * Diez, y no «todos». Un historial de ubicación permanente no se pagina en un
+ * panel: lo que responde a «¿desde dónde se conecta este niño?» son sus últimas
+ * entradas, y a partir de la décima lo que se añade es desplazamiento vertical,
+ * no información. Con los datos reales de hoy —cinco accesos en total— caben
+ * todos; con doscientos hijos siguen cabiendo diez de cada uno sin que la
+ * página crezca sin control.
+ */
+const ACCESOS_POR_HIJO = 10;
+
+/**
+ * TECHO DE FILAS DE LA CONSULTA, Y EL REPARTO QUE NO SE PUEDE PEDIR A POSTGREST.
+ *
+ * Lo que hace falta es «los diez últimos DE CADA alumno», y eso en SQL es un
+ * `lateral` o un `row_number()`, ninguno de los cuales expone PostgREST. Las dos
+ * salidas serían: una consulta por hijo —doscientas peticiones para pintar una
+ * pantalla— o una sola consulta con un techo global que se reparte aquí. Se
+ * elige la segunda.
+ *
+ * Y hay que decir en voz alta lo que se compra con eso: el techo es GLOBAL y las
+ * filas vienen de la más reciente a la más antigua, así que un alumno
+ * hiperactivo podría llenarlo él solo y dejar a otro sin ninguna. Con 2.000
+ * filas eso exige que un solo niño acumule dos mil accesos más recientes que el
+ * último de otro; a razón de un login por sesión, son años. Si algún día ese
+ * reparto empieza a fallar, la respuesta NO es subir el número: es una RPC que
+ * haga el `row_number()` dentro de Postgres. Se deja escrito para que quien lo
+ * vea no lo confunda con un descuido.
+ */
+const ACCESOS_TECHO = 2000;
 
 /**
  * Las familias del sistema, para el superadmin.
@@ -1275,9 +1361,10 @@ export async function loadFamiliesData(viewer: SessionProfile): Promise<Families
   // vivo, y no rompe nada. Es la misma cuenta que ya hace `listarHijos()`.
   const ahora = new Date().toISOString();
 
-  const [perfilesRes, fichasRes, dispositivosRes, enlacesRes] = await Promise.all(
+  const [perfilesRes, fichasRes, dispositivosRes, enlacesRes, accesosRes] = await Promise.all(
     hijoIds.length === 0
       ? [
+          Promise.resolve({ data: [] }),
           Promise.resolve({ data: [] }),
           Promise.resolve({ data: [] }),
           Promise.resolve({ data: [] }),
@@ -1300,6 +1387,20 @@ export async function loadFamiliesData(viewer: SessionProfile): Promise<Families
             .in("student_id", hijoIds)
             .is("revoked_at", null)
             .gt("expires_at", ahora),
+          // Las columnas se enumeran UNA A UNA y jamás con `*`. No es estilo:
+          // `select *` sobre esta tabla pide `ip`, `ip_hash`, `user_agent`,
+          // `latitud` y `longitud`, que están fuera del grant de
+          // `authenticated`, y PostgREST devolvería un 42501 que dejaría la
+          // pantalla entera sin familias. Es la regla 3 de la cabecera de este
+          // fichero, la misma que protege `attempt_items.answer_key`.
+          supabase
+            .from("accesos_de_alumno")
+            .select(
+              "id, student_id, tipo, pais, region, ciudad, agente_familia, senales, zona_horaria, created_at",
+            )
+            .in("student_id", hijoIds)
+            .order("created_at", { ascending: false })
+            .limit(ACCESOS_TECHO),
         ],
   );
 
@@ -1331,6 +1432,49 @@ export async function loadFamiliesData(viewer: SessionProfile): Promise<Families
     }
   }
 
+  // Ruidoso (R4). Un fallo aquí es casi siempre el mismo: alguien ha añadido
+  // una columna al `select` que el grant por columna no concede, y PostgREST
+  // responde 42501 a la consulta ENTERA. Sin este grito, la pantalla saldría
+  // con todas las familias y sin un solo acceso, que se lee como «este niño no
+  // se ha conectado nunca» — una afirmación falsa sobre un menor.
+  if ("error" in accesosRes && accesosRes.error !== null) {
+    console.error(
+      "[cet] loadFamiliesData accesos_de_alumno",
+      accesosRes.error.code,
+      accesosRes.error.message,
+    );
+  }
+
+  // Agrupar y cortar a diez POR HIJO, no diez en total. Las filas ya vienen de
+  // la más reciente a la más antigua, así que el orden dentro de cada grupo se
+  // hereda del `order by` y no hay que volver a ordenar nada.
+  const accesosPorHijo = new Map<string, AccesoDeAlumno[]>();
+  for (const fila of (accesosRes.data ?? []) as Record<string, unknown>[]) {
+    const studentId = asString(fila["student_id"]);
+    if (studentId === null) continue;
+    const cola = accesosPorHijo.get(studentId) ?? [];
+    if (cola.length >= ACCESOS_POR_HIJO) continue;
+    cola.push({
+      // `id` es un `bigint generated always as identity` y PostgREST lo entrega
+      // como número JSON. Se guarda como texto porque aquí solo sirve de clave
+      // de React: nadie hace aritmética con él, y un `bigint` que pasa por
+      // `number` es una precisión que se pierde en silencio.
+      id: String(fila["id"] ?? ""),
+      studentId,
+      tipo: asString(fila["tipo"]) ?? "",
+      pais: asString(fila["pais"]),
+      region: asString(fila["region"]),
+      ciudad: asString(fila["ciudad"]),
+      zonaHoraria: asString(fila["zona_horaria"]),
+      agenteFamilia: asString(fila["agente_familia"]),
+      senales: Array.isArray(fila["senales"])
+        ? (fila["senales"] as unknown[]).map(String).filter((s) => s !== "")
+        : [],
+      createdAt: asString(fila["created_at"]),
+    });
+    accesosPorHijo.set(studentId, cola);
+  }
+
   const conEnlaceVivo = new Set(
     ((enlacesRes.data ?? []) as Record<string, unknown>[])
       .map((fila) => asString(fila["student_id"]))
@@ -1360,6 +1504,7 @@ export async function loadFamiliesData(viewer: SessionProfile): Promise<Families
         hayDispositivo: conDispositivo.has(vinculo.studentId),
         hayEnlaceVivo: conEnlaceVivo.has(vinculo.studentId),
         ultimoAccesoAt: ultimoAccesoPorId.get(vinculo.studentId) ?? null,
+        accesos: accesosPorHijo.get(vinculo.studentId) ?? [],
       };
     });
 

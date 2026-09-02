@@ -69,18 +69,32 @@ describe("la geo viaja por cabecera y NUNCA por el cuerpo", () => {
 });
 
 describe("geoDeCabeceras", () => {
-  it("lee las tres cabeceras que pone la capa web", () => {
+  it("lee las cabeceras que pone la capa web", () => {
     const h = new Headers({
       "x-cet-geo-pais": "ES",
       "x-cet-geo-region": "MD",
       "x-cet-geo-ciudad": "Madrid",
     });
-    expect(geoDeCabeceras(h)).toEqual({ pais: "ES", region: "MD", ciudad: "Madrid" });
+    expect(geoDeCabeceras(h)).toEqual({
+      pais: "ES",
+      region: "MD",
+      ciudad: "Madrid",
+      latitud: null,
+      longitud: null,
+      zonaHoraria: null,
+    });
   });
 
-  it("los tres campos son independientes: país sin ciudad es un caso normal", () => {
+  it("los campos son independientes: país sin ciudad es un caso normal", () => {
     const h = new Headers({ "x-cet-geo-pais": "ES" });
-    expect(geoDeCabeceras(h)).toEqual({ pais: "ES", region: null, ciudad: null });
+    expect(geoDeCabeceras(h)).toEqual({
+      pais: "ES",
+      region: null,
+      ciudad: null,
+      latitud: null,
+      longitud: null,
+      zonaHoraria: null,
+    });
   });
 
   it("EL CONTRATO CON LA CAPA WEB: la geo llega percent-codificada y se descodifica", () => {
@@ -94,7 +108,14 @@ describe("geoDeCabeceras", () => {
       "x-cet-geo-region": "AN",
       "x-cet-geo-ciudad": encodeURIComponent("Málaga"),
     });
-    expect(geoDeCabeceras(h)).toEqual({ pais: "ES", region: "AN", ciudad: "Málaga" });
+    expect(geoDeCabeceras(h)).toEqual({
+      pais: "ES",
+      region: "AN",
+      ciudad: "Málaga",
+      latitud: null,
+      longitud: null,
+      zonaHoraria: null,
+    });
   });
 
   it("una secuencia mal formada no lanza: se guarda cruda y el acceso se registra", () => {
@@ -115,6 +136,37 @@ describe("geoDeCabeceras", () => {
   it("acota el texto: la cabecera es falsificable y no es una vía de escritura", () => {
     const h = new Headers({ "x-cet-geo-ciudad": "M".repeat(5000) });
     expect(geoDeCabeceras(h).ciudad).toHaveLength(120);
+  });
+
+  it("las coordenadas y la zona bajan por el mismo canal que el país", () => {
+    // Por cabecera y NUNCA por el cuerpo: `entradaDeAuthPin` es `.strict()` y
+    // ese `.strict()` es lo único que impide presentar las dos puertas de login
+    // en una sola petición.
+    const h = new Headers({
+      "x-cet-geo-latitud": "-17.7833",
+      "x-cet-geo-longitud": "-63.1821",
+      "x-cet-geo-zona": "America%2FLa_Paz",
+    });
+    const geo = geoDeCabeceras(h);
+    expect(geo.latitud).toBe(-17.7833);
+    expect(geo.longitud).toBe(-63.1821);
+    expect(geo.zonaHoraria).toBe("America/La_Paz");
+  });
+
+  it("una coordenada que `numeric` rechazaría se degrada a NULL", () => {
+    // `auth-pin` es público: aquí entra literalmente cualquier cosa. Un "hola"
+    // llegaría a Postgres como argumento `numeric` y haría fallar
+    // `registrar_acceso` entera, perdiendo el registro del acceso. Es la misma
+    // lección que `ipParaInet` con `inet`.
+    const h = new Headers({
+      "x-cet-geo-latitud": "hola",
+      "x-cet-geo-longitud": "900",
+    });
+    const geo = geoDeCabeceras(h);
+    expect(geo.latitud).toBeNull();
+    // 900 es un número y no es una longitud: `numeric(9,6)` lo aceptaría y
+    // dejaría un dato con pinta de medido en la tabla más sensible del sistema.
+    expect(geo.longitud).toBeNull();
   });
 });
 
@@ -181,6 +233,9 @@ describe("parametrosDeAcceso", () => {
       p_agente_familia: "Chrome en Windows",
       p_user_agent: "Mozilla/5.0 (Windows NT 10.0) Chrome/120.0.0.0 Safari/537.36",
       p_origen: "edge",
+      p_latitud: null,
+      p_longitud: null,
+      p_zona_horaria: null,
     });
   });
 

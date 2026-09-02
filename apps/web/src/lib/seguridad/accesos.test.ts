@@ -21,6 +21,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  GEO_DESCONOCIDA,
   cabecerasDeGeo,
   contextoDeAcceso,
   hashDeIp,
@@ -50,9 +51,35 @@ describe("leerGeo", () => {
         "x-vercel-ip-country": "ES",
         "x-vercel-ip-country-region": "AN",
         "x-vercel-ip-city": "M%C3%A1laga",
+        "x-vercel-ip-latitude": "36.7213",
+        "x-vercel-ip-longitude": "-4.4213",
+        "x-vercel-ip-timezone": "Europe/Madrid",
       }),
     );
-    expect(geo).toEqual({ pais: "ES", region: "AN", ciudad: "Málaga" });
+    expect(geo).toEqual({
+      pais: "ES",
+      region: "AN",
+      ciudad: "Málaga",
+      // Numeros, no cadenas: la columna es `numeric(9,6)` y lo que se compara
+      // con ellas son distancias, no textos.
+      latitud: 36.7213,
+      longitud: -4.4213,
+      zonaHoraria: "Europe/Madrid",
+    });
+  });
+
+  it("una coordenada imposible es NULL y no un punto en el golfo de Guinea", () => {
+    // El borde no manda basura, pero quien llame a mano a esta aplicacion si. Y
+    // `Number("")` vale 0: sin filtro, una cabecera vacia dejaria el punto
+    // (0, 0) en la tabla mas sensible del sistema, con pinta de dato medido.
+    const geo = leerGeo(
+      cabeceras({
+        "x-vercel-ip-latitude": "900",
+        "x-vercel-ip-longitude": "hola",
+      }),
+    );
+    expect(geo.latitud).toBeNull();
+    expect(geo.longitud).toBeNull();
   });
 
   it("no se cae con un percent suelto", () => {
@@ -62,26 +89,53 @@ describe("leerGeo", () => {
   });
 
   it("sin cabeceras, todo nulo y no cadena vacia", () => {
-    expect(leerGeo(cabeceras({}))).toEqual({ pais: null, region: null, ciudad: null });
+    expect(leerGeo(cabeceras({}))).toEqual({
+      pais: null,
+      region: null,
+      ciudad: null,
+      latitud: null,
+      longitud: null,
+      zonaHoraria: null,
+    });
     expect(leerGeo(cabeceras({ "x-vercel-ip-city": "   " })).ciudad).toBeNull();
   });
 });
 
 describe("cabecerasDeGeo", () => {
   it("omite lo desconocido en vez de mandarlo vacio", () => {
-    expect(cabecerasDeGeo({ pais: "ES", region: null, ciudad: null })).toEqual({
-      "x-cet-geo-pais": "ES",
-    });
+    expect(
+      cabecerasDeGeo({
+        pais: "ES",
+        region: null,
+        ciudad: null,
+        latitud: null,
+        longitud: null,
+        zonaHoraria: null,
+      }),
+    ).toEqual({ "x-cet-geo-pais": "ES" });
   });
 
   it("todo valor sale en ASCII puro", () => {
     // La propiedad que importa: un solo byte alto aqui y `fetch` rechaza la
     // peticion entera, sin codigo de error que apunte a la causa.
-    const salida = cabecerasDeGeo({ pais: "ES", region: "Andalucía", ciudad: "Málaga" });
+    const salida = cabecerasDeGeo({
+      pais: "ES",
+      region: "Andalucía",
+      ciudad: "Málaga",
+      latitud: 36.7213,
+      longitud: -4.4213,
+      zonaHoraria: "Europe/Madrid",
+    });
     for (const valor of Object.values(salida)) {
       expect(valor).toMatch(/^[\x20-\x7e]*$/);
     }
     expect(decodeURIComponent(salida["x-cet-geo-ciudad"] ?? "")).toBe("Málaga");
+    // Las tres de 0088 bajan por el MISMO canal. Si algun dia acabaran en el
+    // cuerpo habria que aflojar el `.strict()` de `entradaDeAuthPin`, que es lo
+    // unico que impide presentar las dos puertas de login a la vez.
+    expect(salida["x-cet-geo-latitud"]).toBe("36.7213");
+    expect(salida["x-cet-geo-longitud"]).toBe("-4.4213");
+    expect(decodeURIComponent(salida["x-cet-geo-zona"] ?? "")).toBe("Europe/Madrid");
   });
 });
 
@@ -141,6 +195,28 @@ describe("registrarAcceso", () => {
     expect(args["p_device_id"]).toBe(registro.deviceId);
   });
 
+  it("manda tambien los tres datos que 0089 abrio en la firma", async () => {
+    // 0088 creo `latitud`, `longitud` y `zona_horaria` en la tabla, pero el
+    // unico camino que escribe en ella es esta RPC: sin estos tres parametros,
+    // aquella migracion solo dejaba tres columnas a NULL en cada fila nueva.
+    const rpc = vi.fn().mockResolvedValue({ error: null });
+    const contexto = contextoDeAcceso(
+      cabeceras({
+        "x-forwarded-for": "190.186.86.236",
+        "x-vercel-ip-latitude": "-17.7833",
+        "x-vercel-ip-longitude": "-63.1821",
+        "x-vercel-ip-timezone": "America/La_Paz",
+      }),
+    );
+
+    await registrarAcceso({ rpc } as never, { ...registro, contexto });
+
+    const [, args] = rpc.mock.calls[0] as [string, Record<string, unknown>];
+    expect(args["p_latitud"]).toBe(-17.7833);
+    expect(args["p_longitud"]).toBe(-63.1821);
+    expect(args["p_zona_horaria"]).toBe("America/La_Paz");
+  });
+
   it("un error de PostgREST no lanza: se grita con prefijo greppable", async () => {
     const grito = vi.spyOn(console, "error").mockImplementation(() => {});
     const rpc = vi.fn().mockResolvedValue({ error: { code: "42501", message: "denied" } });
@@ -181,7 +257,14 @@ describe("cabecerasDeContexto · lo que baja hasta auth-pin", () => {
     const salida = cabecerasDeContexto({
       ip: "190.186.86.236",
       ipHash: "da-igual",
-      geo: { pais: "BO", region: "S", ciudad: "Santa Cruz de la Sierra" },
+      geo: {
+        pais: "BO",
+        region: "S",
+        ciudad: "Santa Cruz de la Sierra",
+        latitud: -17.7833,
+        longitud: -63.1821,
+        zonaHoraria: "America/La_Paz",
+      },
       userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/151.0.0.0",
     });
     expect(salida["x-cet-ip"]).toBe("190.186.86.236");
@@ -193,7 +276,7 @@ describe("cabecerasDeContexto · lo que baja hasta auth-pin", () => {
     const salida = cabecerasDeContexto({
       ip: null,
       ipHash: null,
-      geo: { pais: "ES", region: null, ciudad: "Malaga" },
+      geo: { ...GEO_DESCONOCIDA, pais: "ES", ciudad: "Malaga" },
       userAgent: "Navegador Raro/1.0 (Espana)",
     });
     for (const valor of Object.values(salida)) {
@@ -205,7 +288,7 @@ describe("cabecerasDeContexto · lo que baja hasta auth-pin", () => {
     const salida = cabecerasDeContexto({
       ip: null,
       ipHash: null,
-      geo: { pais: null, region: null, ciudad: null },
+      geo: GEO_DESCONOCIDA,
       userAgent: null,
     });
     expect(salida).toEqual({});
