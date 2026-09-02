@@ -123,3 +123,36 @@ mezclar las ramas `deepseek/rev-*`. rev-7 al final.
 - Editar el calendario escolar desde la interfaz del colegio.
 - Traducir el contenido (`HANDOFF.md §0.2`) y rotar las claves (`§6`).
 - El hito Cambridge de Y6: no existe en el seed; hay que decidir cuál es.
+
+---
+
+## 5 · Cierre de la ronda (2 de septiembre, noche)
+
+| Id | Motor final | Desenlace |
+|---|---|---|
+| rev-1 | DeepSeek 4 rondas en rojo («el parche no aplica»); **Sonnet** | verde, `eac177b` |
+| rev-2 | DeepSeek, verde a la primera ($0,006) | `1122ff6` |
+| rev-3 | DeepSeek: 3 «falsos verdes» hasta que existió un test rojo; después verde a la primera | `f2aafb7` |
+| rev-4 | Sonnet (una caída por límite de sesión, relanzado) + dos retoques a ojo | `a8f1a55` |
+| rev-5 | Sonnet | `adce053` + corrección de fechas civiles `9596a7c` |
+| rev-6 | interno: la causa del 404 era el `<Link>` a `/logout` prefetchado | `095d4c9` |
+| rev-7 | pgTAP del plan y del calendario en verde (22 y 9) tras dejar de incluir migraciones ya aplicadas | `095d4c9` |
+
+Dos hallazgos que no estaban en el plan y se arreglaron por el camino:
+
+- **Fechas civiles un día antes.** `new Date("2026-08-24")` es medianoche UTC y
+  La Paz va a UTC-4: el plan «empezaba» el 23 y el feriado del 24 salía en 23.
+  Ahora `fechaLegible` formatea las fechas sin hora con `timeZone: "UTC"`.
+- **`/dev/plan-preview`**: vista previa de la pestaña del plan con tres casos,
+  para mirar cancelar/descartar/histórico/calendario sin cuenta de tutor.
+
+### Lo que queda apuntado
+
+- **Acierto y lecciones por materia** en el panel: ningún RPC reparte ítems por
+  materia. Haría falta `informe_alumno_resumen_por_materia` (migración). El
+  componente ya admite los dos campos.
+- **e2e del recorrido del plan** con DeepSeek mockeado (spec §12).
+- **Hito Cambridge de Y6** en el seed del calendario.
+- `Logo CET.png` en la raíz sin sitio; `%TEMP%/deploy-plan` es un worktree
+  viejo de un despliegue (`git worktree prune` cuando se confirme).
+- La clave `DEEP_SEEK_API` sigue pendiente de rotación (`HANDOFF.md §6`).
