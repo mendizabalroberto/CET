@@ -31,12 +31,13 @@ import { notFound } from "next/navigation";
 import { resolveI18n } from "@cet/shared";
 import { EmptyState, ErrorState, LessonBlock } from "@cet/ui";
 
-import { getLesson } from "@/components/learn/queries";
+import { getLesson, getLessonProgress } from "@/components/learn/queries";
 import { UiLocaleProvider } from "@/components/learn/UiLocaleProvider";
 import { Migas, type Miga } from "@/components/nav/Migas";
 import { dictI18n, interpolate } from "@/lib/i18n";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getLearnDictionary } from "@/components/learn/dictionary";
+import { DIAS_DE_ESTUDIO, tiempoPorLeccion } from "@/lib/tutor/estudio";
 import { alcanceDeHijo } from "@/lib/tutor/queries";
 import { rutasDeHijo } from "@/lib/tutor/rutas";
 
@@ -60,7 +61,14 @@ export default async function LeccionDelHijoPage({ params }: PageProps) {
   const rutas = rutasDeHijo(hijo.id);
   const raiz: Miga = { label: C.trailRoot, href: rutas.contenido };
 
-  const lesson = await getLesson(lessonId, hijo.schoolId, locale);
+  // Las tres en paralelo: la lección, cuánto tiempo lleva en ella y si la ha
+  // terminado. Son independientes, y que el tiempo falle no puede impedir que
+  // el padre lea la lección.
+  const [lesson, tiempos, avance] = await Promise.all([
+    getLesson(lessonId, hijo.schoolId, locale),
+    tiempoPorLeccion(hijo.id),
+    getLessonProgress(hijo.schoolId, hijo.id),
+  ]);
 
   if (lesson === null) {
     return (
@@ -95,6 +103,8 @@ export default async function LeccionDelHijoPage({ params }: PageProps) {
   ];
 
   const tl = getLearnDictionary(locale).lesson;
+  const estudio = tiempos?.get(lesson.id);
+  const estadoDeLeccion = avance?.get(lesson.id);
 
   return (
     <UiLocaleProvider locale={locale}>
@@ -112,6 +122,59 @@ export default async function LeccionDelHijoPage({ params }: PageProps) {
             </p>
           )}
         </header>
+
+        {/* ===================================================================
+            CÓMO HA ESTUDIADO ESTA, ANTES DEL TEXTO DE LA LECCIÓN
+            ===================================================================
+            El informe de la ficha ya dice en qué lecciones se le va el tiempo.
+            Lo que no decía es cuánto en ESTA, que es la pregunta que trae a un
+            padre a abrirla. Va arriba porque es el motivo de la visita: quien
+            baja a leer la lección entera lo hace después, y quien solo quería
+            el dato no tiene que buscarlo debajo de treinta bloques.
+
+            EL TIEMPO LO CALCULA LA BASE, no esta pantalla. Ver la cabecera de
+            `lib/tutor/estudio.ts`: hay una sola definición de «tiempo de
+            estudio» en este producto y es la de 0083. */}
+        <section className="rounded-2xl border-2 border-line bg-card p-5">
+          <h3 className="text-lg font-bold text-ink">{C.studyTitle}</h3>
+          {tiempos === null ? (
+            /* Ni un cero: una consulta caída no es un niño que no ha
+               estudiado, y decirle a un padre que su hijo no ha tocado esta
+               lección cuando no lo sabemos es mentirle sobre su trabajo. */
+            <p className="mt-2 text-muted">{C.studyUnknown}</p>
+          ) : estudio === undefined ? (
+            <p className="mt-2 text-muted">{C.studyNone}</p>
+          ) : (
+            <>
+              <dl className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div>
+                  <dt className="text-sm text-muted">{C.studyMinutes}</dt>
+                  <dd className="text-xl font-bold text-ink">
+                    {interpolate(t.tutor.child.progress.minutesUnit, {
+                      count: Math.round(estudio.minutos),
+                    })}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-muted">{C.studyVisits}</dt>
+                  <dd className="text-xl font-bold text-ink">{estudio.visitas}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-muted">{C.studyOpens}</dt>
+                  <dd className="text-xl font-bold text-ink">{estudio.aperturas}</dd>
+                </div>
+              </dl>
+              {estadoDeLeccion === undefined ? null : (
+                <p className="mt-3 text-sm font-semibold text-teal">
+                  {estadoDeLeccion === "completed" ? C.studyDone : C.studyStarted}
+                </p>
+              )}
+              <p className="mt-2 text-sm text-muted">
+                {interpolate(C.studyWindow, { days: DIAS_DE_ESTUDIO })}
+              </p>
+            </>
+          )}
+        </section>
 
         {lesson.blocks.length === 0 ? (
           <EmptyState

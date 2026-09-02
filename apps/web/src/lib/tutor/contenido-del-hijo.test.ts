@@ -39,6 +39,7 @@ const PANTALLAS = [
   { nombre: "índice de materias", fichero: join(BASE, "contenido", "page.tsx") },
   { nombre: "materia", fichero: join(BASE, "contenido", "materia", "[key]", "page.tsx") },
   { nombre: "lección", fichero: join(BASE, "contenido", "leccion", "[lessonId]", "page.tsx") },
+  { nombre: "práctica", fichero: join(BASE, "practica", "page.tsx") },
 ] as const;
 
 /**
@@ -56,6 +57,23 @@ const MIDEN_AL_ALUMNO = [
 
 function fuente(fichero: string): string {
   return readFileSync(fichero, "utf8");
+}
+
+/**
+ * El código sin sus comentarios.
+ *
+ * Hace falta porque estas pantallas EXPLICAN en sus cabeceras por qué no
+ * llevan ciertas piezas —«no hay «practicar esto»; `/practice` es zona de
+ * `student`»— y un test que buscara la cadena a pelo castigaría justo al
+ * comentario que documenta la decisión. Lo que no puede volver es el
+ * MECANISMO, y el mecanismo vive en el código.
+ *
+ * Es un borrado tosco a propósito: no distingue un `//` dentro de una cadena.
+ * En estos ficheros no hay ninguno, y una gramática de TypeScript dentro de un
+ * test sería más código que probar que el que prueba.
+ */
+function sinComentarios(texto: string): string {
+  return texto.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/^\s*\/\/.*$/gm, " ");
 }
 
 describe("el contenido del hijo, visto por su padre", () => {
@@ -81,18 +99,15 @@ describe("el contenido del hijo, visto por su padre", () => {
       });
 
       it("no ofrece nada que altere el trabajo del niño", () => {
-        const texto = fuente(fichero);
-        // Marcar una lección como terminada, o mandar al padre a practicar en
-        // nombre de su hijo. Lo segundo además sería un 404 mudo, porque esa
-        // zona es de `student`.
-        //
-        // Se nombran las PIEZAS y no la ruta: las cabeceras de estas pantallas
-        // explican por qué no está el enlace de practicar, y un test que
-        // prohibiera la cadena castigaría al comentario que documenta la
-        // decisión. El mecanismo es lo que no puede volver.
-        expect(texto).not.toContain("LessonCompleteButton");
-        expect(texto).not.toContain("findPracticeTopic");
-        expect(texto).not.toContain("practiceThis");
+        const codigo = sinComentarios(fuente(fichero));
+        // Marcar como terminada una lección que el niño no ha hecho es
+        // falsear su trabajo.
+        expect(codigo).not.toContain("LessonCompleteButton");
+        // Y mandar al padre a practicar en nombre de su hijo añadiría
+        // respuestas a un historial que no es suyo. Sería además un 404 mudo:
+        // esa zona es de `student`.
+        expect(codigo).not.toContain("practiceThis");
+        expect(codigo).not.toMatch(/["'`]\/practice/);
       });
     });
   }
@@ -107,6 +122,7 @@ describe("las rutas del hijo", () => {
       rutas.contenido,
       rutas.materia("math"),
       rutas.leccion("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+      rutas.practica,
     ];
 
     for (const destino of destinos) {

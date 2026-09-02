@@ -373,6 +373,7 @@ export const en = {
         label: "About this child",
         progress: "How they're doing",
         content: "Their lessons",
+        practice: "Their practice",
         current: "you are here",
       },
       /**
@@ -404,9 +405,80 @@ export const en = {
          * políticas de contenido miran el colegio del lector. Decirlo es la
          * diferencia entre «faltan lecciones» y «esta pantalla está rota».
          */
+        /* --- Lo que lleva estudiado DE ESTA lección --------------------- */
+        /**
+         * El panel de arriba del lector. Contesta «¿cuánto ha estado en ESTA?»,
+         * que es la pregunta que trae a un padre a abrir una lección concreta
+         * después de leer en el informe que ahí se le va el tiempo.
+         *
+         * «Se ha sentado con ella» y no «visitas»: una visita es una palabra de
+         * analista. Un padre cuenta veces que su hijo se puso con algo.
+         */
+        studyTitle: "How they've studied this one",
+        studyMinutes: "Time on this lesson",
+        studyVisits: "Times they sat down with it",
+        studyOpens: "Times they opened it",
+        studyNone: "They haven't opened this one yet.",
+        studyUnknown: "We can't show the time on this one right now.",
+        studyWindow: "Last {days} days.",
+        studyDone: "They marked it finished.",
+        studyStarted: "They've started it.",
         partialTitle: "You may not see everything",
         partialBody:
           "Your child studies at a school, and some of what that school adds is only for the school. Here you'll see the lessons everyone gets.",
+      },
+      /**
+       * LA PRÁCTICA DEL HIJO, PREGUNTA A PREGUNTA.
+       *
+       * REGISTRO. Ni «ítems», ni «precisión», ni «engineKey». Y sobre todo:
+       * ningún juicio. La pantalla dice qué pasó —cuántas hizo, en cuáles se
+       * equivocó, dónde pidió pista— y no dice si eso está bien o mal. Quien
+       * juzga es el padre, que conoce a su hijo; nosotros solo tenemos los
+       * datos.
+       *
+       * «PIDIÓ UNA PISTA» NO ES UNA FALTA. El texto lo dice en voz alta porque
+       * una tabla con una columna de pistas invita a leerla como un contador de
+       * trampas, y pedir ayuda cuando uno se atasca es exactamente lo que hay
+       * que hacer.
+       */
+      practice: {
+        title: "What {name} has been practising",
+        subtitle:
+          "Every question they answered: the ones they got right, the ones they didn't, and where they asked for a hint.",
+        window: "Last {days} days.",
+        emptyTitle: "They haven't practised yet",
+        emptyBody:
+          "When your child practises, you'll see here which topics they worked on and how each question went.",
+        errorTitle: "We couldn't load their practice",
+        errorBody: "Try again in a moment.",
+        truncated:
+          "There's more than we can show at once. This is the most recent part of the period.",
+        hintNote:
+          "Asking for a hint isn't a mistake. It's what you do when you get stuck, and it's worth seeing where it happens.",
+        /* --- Por tema ---------------------------------------------------- */
+        byTopicTitle: "By topic",
+        topic: "Topic",
+        answered: "Answered",
+        right: "Right",
+        wrong: "Wrong",
+        accuracy: "Got right",
+        hints: "Hints asked for",
+        solutions: "Answers looked up",
+        unknownTopic: "Another topic",
+        /* --- Una a una --------------------------------------------------- */
+        oneByOneTitle: "One by one",
+        oneByOneBody: "Most recent first.",
+        when: "When",
+        outcome: "How it went",
+        outcomeRight: "Right",
+        outcomeWrong: "Wrong",
+        theirAnswer: "They answered",
+        noAnswer: "Left blank",
+        seconds: "{count}s",
+        secondsLabel: "Time",
+        hintsOnItem: "{count} hint(s)",
+        changesOnItem: "changed their mind {count} time(s)",
+        noHelp: "On their own",
       },
       /**
        * El seguimiento. Lo redacta `lib/tutor/seguimiento.ts`, que compone las

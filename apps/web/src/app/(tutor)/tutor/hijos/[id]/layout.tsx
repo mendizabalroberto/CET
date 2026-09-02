@@ -58,6 +58,11 @@ export default async function HijoLayout({ children, params }: LayoutProps) {
     // `exacto`: la ficha es prefijo de todo lo demás. Ver `NavDelHijo`.
     { href: rutas.ficha, label: C.nav.progress, exacto: true },
     { href: rutas.contenido, label: C.nav.content },
+    // TRES Y NO MÁS. El orden es el de las preguntas que trae aquí a un padre:
+    // primero «¿está estudiando?», después «¿el qué?», y solo entonces «¿cómo
+    // le va cuando lo intenta solo?». Una cuarta pestaña obligaría a decidir
+    // antes de mirar, que es justo lo que esta zona evita.
+    { href: rutas.practica, label: C.nav.practice },
   ];
 
   return (

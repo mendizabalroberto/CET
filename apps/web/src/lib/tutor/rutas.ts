@@ -19,6 +19,8 @@ export interface RutasDeHijo {
   readonly ficha: string;
   /** El índice de sus materias. */
   readonly contenido: string;
+  /** Lo que ha practicado, pregunta a pregunta. */
+  readonly practica: string;
   readonly materia: (clave: string) => string;
   readonly leccion: (lessonId: string) => string;
 }
@@ -28,6 +30,7 @@ export function rutasDeHijo(studentId: string): RutasDeHijo {
   return {
     ficha: base,
     contenido: `${base}/contenido`,
+    practica: `${base}/practica`,
     materia: (clave) => `${base}/contenido/materia/${encodeURIComponent(clave)}`,
     leccion: (lessonId) => `${base}/contenido/leccion/${encodeURIComponent(lessonId)}`,
   };
