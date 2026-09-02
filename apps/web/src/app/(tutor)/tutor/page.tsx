@@ -11,9 +11,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { AnadirHijoForm } from "@/components/tutor/AnadirHijoForm";
+import { Telegram } from "@/components/tutor/Telegram";
 import { interpolate } from "@/lib/i18n";
 import { getServerDictionary } from "@/lib/i18n/server";
-import { listarHijos } from "@/lib/tutor/queries";
+import { estadoDeTelegram, listarHijos } from "@/lib/tutor/queries";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getServerDictionary();
@@ -22,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function TutorPage() {
   const { t } = await getServerDictionary();
-  const hijos = await listarHijos();
+  const [hijos, telegram] = await Promise.all([listarHijos(), estadoDeTelegram()]);
 
   const H = t.tutor.home;
 
@@ -67,6 +68,24 @@ export default async function TutorPage() {
       )}
 
       <AnadirHijoForm />
+
+      {/*
+        SIN BOT CONFIGURADO, LA SECCION NO EXISTE.
+        Ofrecerle a un padre unos avisos que no van a llegar es peor que no
+        ofrecerselos: se queda esperandolos. `estadoDeTelegram()` resuelve
+        `disponible` mirando el entorno del servidor, no una preferencia suya.
+
+        El `key` tira el estado del cliente cuando el vinculo cambia de verdad
+        —al conectarse o al cortarse—, para que un enlace ya quemado no siga
+        pintado. El porque completo esta en la cabecera de `Telegram.tsx`.
+      */}
+      {telegram.disponible ? (
+        <Telegram
+          key={telegram.vinculadoAt ?? "sin-vinculo"}
+          vinculado={telegram.vinculado}
+          vinculadoAt={telegram.vinculadoAt}
+        />
+      ) : null}
     </section>
   );
 }

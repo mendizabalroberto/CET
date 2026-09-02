@@ -17,6 +17,7 @@ import "server-only";
 import type { I18nText } from "@cet/shared";
 
 import { requireRole } from "@/lib/auth/session";
+import { telegramDisponible } from "@/lib/telegram/bot";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -401,6 +402,38 @@ export interface ResumenDeEstudio {
   readonly rachaMaxima: number;
 }
 
+/**
+ * Una hora del reloj del alumno y lo que hizo en ella.
+ *
+ * `informe_alumno_actividad_por_hora` devuelve SIEMPRE las veinticuatro, con
+ * las vacías a cero, así que aquí el cero es una medida y no un hueco. Los
+ * minutos salen de la diferencia entre latidos consecutivos del cronómetro, de
+ * modo que cada minuto está atribuido a la hora en la que de verdad ocurrió;
+ * la cabecera de la migración 0085 lo explica entero.
+ */
+export interface HoraDeEstudio {
+  /** 0..23, en la zona horaria del alumno. La resuelve la base, no esta capa. */
+  readonly hora: number;
+  readonly minutos: number;
+  /** Eventos de aprendizaje de esa hora. No se pinta: sirve para depurar. */
+  readonly eventos: number;
+}
+
+/**
+ * Lo que salió de un día: el otro eje de la dispersión.
+ *
+ * La fecha es la MISMA clave que trae `serie`, y los dos calendarios los genera
+ * la base igual (ver 0086). Cruzarlos por la fecha es lo único que hace la capa
+ * de arriba; si alguna vez dejaran de cuadrar, los puntos llevarían los minutos
+ * de un día y las lecciones de otro sin que nada fallara.
+ */
+export interface LogroDelDia {
+  readonly fecha: string;
+  readonly leccionesCompletadas: number;
+  readonly itemsRespondidos: number;
+  readonly aciertos: number;
+}
+
 export interface SeguimientoDeHijo {
   /** Días que abarca la ventana, hoy incluido. Se pinta en los textos. */
   readonly dias: number;
@@ -409,6 +442,10 @@ export interface SeguimientoDeHijo {
   readonly serie: readonly DiaDeEstudio[];
   readonly destrezas: readonly DestrezaDeHijo[];
   readonly lecciones: readonly LeccionDeHijo[];
+  /** El reloj del día. Vacío cuando la consulta falla o no hay medición. */
+  readonly horas: readonly HoraDeEstudio[];
+  /** Lo logrado cada día, para cruzarlo con los minutos de `serie`. */
+  readonly logro: readonly LogroDelDia[];
 }
 
 /** Ventana por defecto. Una semana cabe en una pantalla de móvil sin apretar. */
@@ -488,26 +525,40 @@ function leerI18n(valor: unknown): I18nText | null {
  * Cómo le va a UN hijo en los últimos días.
  *
  * Va con la SESIÓN DEL TUTOR, igual que `detalleDeHijo` y por el mismo motivo:
- * las cuatro funciones de informe llaman a `app.puede_ver_informe()` en su
+ * las seis funciones de informe llaman a `app.puede_ver_informe()` en su
  * primera línea, así que es el motor quien decide si este adulto alcanza a este
  * menor. Aquí no se escribe ninguna comprobación de pertenencia — escribirla
  * sería una segunda copia de la regla de acceso a datos de un menor, y dos
  * copias divergen.
  *
- * NO LANZA, como el resto de lecturas de esta casa. Si una de las cuatro
- * consultas falla, esa parte viene vacía y las otras tres se pintan igual: un
+ * NO LANZA, como el resto de lecturas de esta casa. Si una de las seis
+ * consultas falla, esa parte viene vacía y las demás se pintan igual: un
  * informe incompleto es mejor que la pantalla roja de `app/error.tsx`, y quien
  * decide qué enseñar es la página.
  *
- * Las cuatro van en paralelo porque son independientes entre sí; la quinta
+ * Las seis van en paralelo porque son independientes entre sí; la séptima
  * —los nombres de las lecciones— no puede: necesita los ids que devuelve la
- * cuarta.
+ * del tiempo por lección.
+ *
+ * DOS DE LAS SEIS SON NUEVAS Y NO ROMPEN NADA SI FALTAN. El reloj del día
+ * (0085) y el logro diario (0086) llegan vacíos si su función no está en la
+ * base, y sus dos paneles se callan solos: el informe pierde dos secciones y
+ * conserva las otras cuatro. Es la misma tolerancia que ya tenía, aplicada a
+ * las partes que se añaden después.
  */
 export async function seguimientoDeHijo(
   studentId: string,
   dias: number = DIAS_DE_SEGUIMIENTO,
 ): Promise<SeguimientoDeHijo> {
-  const vacio: SeguimientoDeHijo = { dias, resumen: null, serie: [], destrezas: [], lecciones: [] };
+  const vacio: SeguimientoDeHijo = {
+    dias,
+    resumen: null,
+    serie: [],
+    destrezas: [],
+    lecciones: [],
+    horas: [],
+    logro: [],
+  };
 
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(studentId)) {
     return vacio;
@@ -517,11 +568,13 @@ export async function seguimientoDeHijo(
   const { desde, hasta } = ventanaDeInforme(dias);
   const args = { p_student_id: studentId, p_desde: desde, p_hasta: hasta };
 
-  const [resumen, serie, skills, tiempo] = await Promise.all([
+  const [resumen, serie, skills, tiempo, horas, logro] = await Promise.all([
     supabase.rpc("informe_alumno_resumen", args),
     supabase.rpc("informe_alumno_serie_diaria", args),
     supabase.rpc("informe_alumno_skills", args),
     supabase.rpc("informe_alumno_tiempo_por_leccion", args),
+    supabase.rpc("informe_alumno_actividad_por_hora", args),
+    supabase.rpc("informe_alumno_logro_diario", args),
   ]);
 
   // RUIDOSO A PROPÓSITO (R4). Un informe a cero por un `grant` que falta se ve
@@ -532,6 +585,8 @@ export async function seguimientoDeHijo(
     { parte: "serie", error: serie.error },
     { parte: "skills", error: skills.error },
     { parte: "tiempo", error: tiempo.error },
+    { parte: "horas", error: horas.error },
+    { parte: "logro", error: logro.error },
   ];
   for (const { parte, error } of respuestas) {
     if (error !== null) {
@@ -583,12 +638,38 @@ export async function seguimientoDeHijo(
     }
   }
 
+  // El reloj: la base garantiza las 24 horas, pero lo que llega se filtra
+  // igual. Una fila con la hora fuera de 0..23 no es una hora del día y
+  // pintarla correría todo el eje sin que nada avisara.
+  const relojDelDia = ((horas.data ?? []) as Fila[])
+    .map((fila): HoraDeEstudio | null => {
+      const hora = numero(fila["hora"]);
+      if (hora === null || !Number.isInteger(hora) || hora < 0 || hora > 23) return null;
+      return { hora, minutos: numero(fila["minutos"]) ?? 0, eventos: entero(fila["eventos"]) };
+    })
+    .filter((h): h is HoraDeEstudio => h !== null);
+
+  const logroPorDia = ((logro.data ?? []) as Fila[])
+    .map((fila): LogroDelDia | null => {
+      const fecha = fila["fecha"];
+      if (typeof fecha !== "string") return null;
+      return {
+        fecha,
+        leccionesCompletadas: entero(fila["lecciones_completadas"]),
+        itemsRespondidos: entero(fila["items_respondidos"]),
+        aciertos: entero(fila["aciertos"]),
+      };
+    })
+    .filter((l): l is LogroDelDia => l !== null);
+
   return {
     dias,
     resumen: cifras,
     serie: serieDeDias,
     destrezas,
     lecciones: await nombrarLecciones(supabase, minutosPorLeccion),
+    horas: relojDelDia,
+    logro: logroPorDia,
   };
 }
 
@@ -628,4 +709,67 @@ async function nombrarLecciones(
     salida.push({ id, nombre, minutos });
   }
   return salida;
+}
+
+/* ========================================================================== */
+/* Telegram: si este tutor esta conectado, y desde cuando                      */
+/* ========================================================================== */
+
+export interface EstadoDeTelegram {
+  /** ¿Hay bot configurado? Si no, la seccion no se pinta. */
+  readonly disponible: boolean;
+  readonly vinculado: boolean;
+  /** ISO-8601, o `null`. Es lo unico que la sesion puede leer ademas del id. */
+  readonly vinculadoAt: string | null;
+}
+
+/**
+ * El estado del vinculo con Telegram del tutor de la sesion.
+ *
+ * SE PIDEN DOS COLUMNAS Y NO `*`, y no es estilo: es lo unico que funciona. El
+ * GRANT de `telegram_de_tutor` (0087) es POR COLUMNA y la sesion solo alcanza
+ * `guardian_id, vinculado_at, created_at, updated_at`. Un `select("*")` -o
+ * cualquier peticion que incluya `chat_id` o `token_hash`- se va en un 42501
+ * «permission denied for column», y la pantalla se quedaria sin seccion sin
+ * que nadie entendiera por que. Ese GRANT existe para que un XSS en el panel
+ * del tutor no pueda sacar el `chat_id` con el que se le escribe a un padre.
+ *
+ * Se lee con la SESION del tutor, no con el cliente de servicio: la politica
+ * `telegram_select_propio` es quien decide de quien es la fila, y esta consulta
+ * no la esquiva.
+ *
+ * `disponible` se resuelve ANTES de tocar la base. Sin bot no hay nada que
+ * ofrecer, y preguntar por una fila cuyo estado no se va a pintar es un viaje
+ * a la base por nada.
+ */
+export async function estadoDeTelegram(): Promise<EstadoDeTelegram> {
+  if (!telegramDisponible()) {
+    return { disponible: false, vinculado: false, vinculadoAt: null };
+  }
+
+  const tutor = await requireRole(["guardian"], { onDeny: "not-found" });
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("telegram_de_tutor")
+    .select("guardian_id, vinculado_at")
+    .eq("guardian_id", tutor.id)
+    .maybeSingle();
+
+  if (error !== null) {
+    // Ruidoso a proposito (R4): «no conectado» por un fallo de consulta se lee
+    // en pantalla como un estado real, y el padre pulsaria un boton que no
+    // hacia falta. Sin fila tampoco hay vinculo, asi que el fallo seguro es el
+    // mismo, pero queda constancia de que no fue el estado, fue el viaje.
+    console.error("[cet] estadoDeTelegram", error.code, error.message);
+    return { disponible: true, vinculado: false, vinculadoAt: null };
+  }
+
+  const vinculadoAt = (data as Fila | null)?.["vinculado_at"];
+  const fecha = typeof vinculadoAt === "string" ? vinculadoAt : null;
+
+  // `vinculado_at` no nulo ES el estado «conectado»: el `chat_id` que de verdad
+  // lo determina no se puede leer desde aqui, y las dos columnas se escriben y
+  // se borran juntas, en la misma sentencia, siempre.
+  return { disponible: true, vinculado: fecha !== null, vinculadoAt: fecha };
 }

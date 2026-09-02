@@ -48,9 +48,11 @@
  * se resuelven con el idioma de la petición.
  */
 import { resolveI18n, type I18nText, type Locale } from "@cet/shared";
-import { masteryLevel, UNKNOWN_SUBJECT } from "@cet/ui";
+import { masteryLevel, MIN_DIAS_DISPERSION, UNKNOWN_SUBJECT } from "@cet/ui";
 import type {
   EffortDay,
+  EffortOutcomePoint,
+  HourActivity,
   LessonTime,
   ScorecardStat,
   SkillEntry,
@@ -91,6 +93,21 @@ function enDosIdiomas(
   return {
     es: interpolate(elegir(getDictionary("es").tutor.child.progress), valores),
     en: interpolate(elegir(getDictionary("en").tutor.child.progress), valores),
+  };
+}
+
+/**
+ * Como `enDosIdiomas`, pero cuando los VALORES que se interpolan tambien
+ * cambian de idioma: «de 21:00 a 22:00» frente a «21:00 to 22:00». Sin esto,
+ * la frase inglesa saldria con la conjuncion castellana metida dentro.
+ */
+function enCadaIdioma(
+  elegir: (textos: TextosDeProgreso) => string,
+  valores: (locale: Locale) => Record<string, string | number>,
+): I18nText {
+  return {
+    es: interpolate(elegir(getDictionary("es").tutor.child.progress), valores("es")),
+    en: interpolate(elegir(getDictionary("en").tutor.child.progress), valores("en")),
   };
 }
 
@@ -174,6 +191,31 @@ function cifras(seguimiento: SeguimientoDeHijo, locale: Locale): readonly Scorec
     if (valor > 0) salida.push({ value: String(valor), label: enDosIdiomas(etiqueta) });
   };
 
+  /* LAS CIFRAS DEL PERIODO VAN PEGADAS AL TIEMPO Y NO AL FINAL. Las tres
+     hablan de la misma magnitud que la primera baldosa —cuánto y con qué
+     constancia—, y separarlas con las lecciones y el acierto obligaría al
+     padre a saltar de un lado a otro de la fila para responder una sola
+     pregunta. Ninguna se pinta sin un día de estudio detrás: «un día normal:
+     0 min» es el valor de inicialización disfrazado de medida. */
+  const periodo = cifrasDelPeriodo(seguimiento);
+  if (periodo.mediana !== null && periodo.mejorDia !== null) {
+    salida.push(
+      { value: textoDeMinutos(periodo.mediana, locale), label: enDosIdiomas((x) => x.medianLabel) },
+      { value: textoDeMinutos(periodo.mejorDia, locale), label: enDosIdiomas((x) => x.bestDayLabel) },
+      {
+        value: interpolate(getDictionary(locale).tutor.child.progress.activeDaysValue, {
+          active: periodo.diasActivos,
+          total: periodo.diasDeVentana,
+        }),
+        label: enDosIdiomas((x) => x.activeDaysLabel),
+      },
+    );
+  }
+  // La racha de DÍAS no es la `rachaMaxima` del resumen, que cuenta aciertos
+  // seguidos dentro de una práctica. Son dos cosas distintas con el mismo
+  // nombre corriente, y por eso se rotulan diferente.
+  siHay(periodo.rachaDeDias, (x) => x.daysRowLabel);
+
   siHay(r.leccionesAbiertas, (x) => x.lessonsOpened);
   siHay(r.leccionesCompletadas, (x) => x.lessonsCompleted);
   siHay(r.itemsRespondidos, (x) => x.answered);
@@ -195,24 +237,33 @@ function cifras(seguimiento: SeguimientoDeHijo, locale: Locale): readonly Scorec
   return salida;
 }
 
+/**
+ * «lun, 1 sept» en los dos calendarios. Lo usan la constancia y la dispersion,
+ * que rotulan el MISMO dia: dos formatos distintos para la misma fecha, dentro
+ * del mismo informe, se leen como dos fechas distintas.
+ */
+function nombreDelDia(fecha: string): Record<Locale, string> {
+  const d = new Date(`${fecha}T00:00:00Z`);
+  return {
+    es: new Intl.DateTimeFormat(INTL.es, FORMATO_DE_DIA).format(d),
+    en: new Intl.DateTimeFormat(INTL.en, FORMATO_DE_DIA).format(d),
+  };
+}
+
 /** La serie de constancia, con la etiqueta de cada columna ya redactada. */
 function constancia(seguimiento: SeguimientoDeHijo): readonly EffortDay[] {
   return seguimiento.serie.map((dia): EffortDay => {
-    const fecha = new Date(`${dia.fecha}T00:00:00Z`);
-    const nombreDelDia: Record<Locale, string> = {
-      es: new Intl.DateTimeFormat(INTL.es, FORMATO_DE_DIA).format(fecha),
-      en: new Intl.DateTimeFormat(INTL.en, FORMATO_DE_DIA).format(fecha),
-    };
+    const nombre = nombreDelDia(dia.fecha);
 
     // Un día sin minutos se rotula «no estudió» y NO «0 min»: la columna ya
     // dice cero con su forma, y la etiqueta está para leerse, no para repetir.
     const minutos = dia.minutos;
     const label: I18nText =
       minutos === null || minutos <= 0
-        ? { es: interpolateDia("es", nombreDelDia.es, null), en: interpolateDia("en", nombreDelDia.en, null) }
+        ? { es: interpolateDia("es", nombre.es, null), en: interpolateDia("en", nombre.en, null) }
         : {
-            es: interpolateDia("es", nombreDelDia.es, textoDeMinutos(minutos, "es")),
-            en: interpolateDia("en", nombreDelDia.en, textoDeMinutos(minutos, "en")),
+            es: interpolateDia("es", nombre.es, textoDeMinutos(minutos, "es")),
+            en: interpolateDia("en", nombre.en, textoDeMinutos(minutos, "en")),
           };
 
     return { label, minutes: minutos };
@@ -269,6 +320,251 @@ function resumenDeConstancia(seguimiento: SeguimientoDeHijo): I18nText {
   };
 }
 
+
+/**
+ * ===========================================================================
+ * EL RELOJ DEL DÍA: A QUÉ HORA ESTUDIA
+ * ===========================================================================
+ * La hora se escribe en reloj de 24 h («21:00») y NO con `Intl` en formato de
+ * 12 h. Dos motivos, y ninguno es la pereza: la franja de la noche —que es
+ * justo la que un padre quiere ver— se lee de un tirón en 24 h y con «9 p. m.»
+ * hay que traducirla, y además el rótulo del eje tiene que caber debajo de una
+ * columna de ocho píxeles, donde «12 a. m.» no entra. La misma cifra vale para
+ * los dos idiomas, así que el eje no cambia de ancho entre ellos.
+ */
+function horaDeReloj(hora: number): string {
+  // El módulo hace falta de verdad: el fin de la última franja es «23 + 1», y
+  // «24:00» no es una hora que nadie lea en un reloj.
+  return `${String(((hora % 24) + 24) % 24).padStart(2, "0")}:00`;
+}
+
+/** La franja de una hora, redactada en cada idioma: «21:00 a 22:00». */
+function franja(desde: number, hasta: number): Record<Locale, string> {
+  const valores = { from: horaDeReloj(desde), to: horaDeReloj(hasta) };
+  return {
+    es: interpolate(getDictionary("es").tutor.child.progress.hourRange, valores),
+    en: interpolate(getDictionary("en").tutor.child.progress.hourRange, valores),
+  };
+}
+
+/**
+ * Las horas que se rotulan en el eje. Cuatro anclas, de seis en seis.
+ * Veinticuatro números debajo de columnas de ocho píxeles se emborronan; con
+ * medianoche, mañana, mediodía y tarde se cuenta de seis en seis, que es como
+ * se lee un reloj. Ver la cabecera de `DailyRhythm`.
+ */
+const HORAS_ROTULADAS: ReadonlySet<number> = new Set([0, 6, 12, 18]);
+
+/** El reloj del día, con la frase de cada hora ya redactada. */
+function ritmo(seguimiento: SeguimientoDeHijo): readonly HourActivity[] {
+  return seguimiento.horas.map((h): HourActivity => {
+    const rango = franja(h.hora, h.hora + 1);
+    const conMinutos = h.minutos > 0;
+    return {
+      hour: h.hora,
+      minutes: h.minutos,
+      label: enCadaIdioma(
+        (x) => (conMinutos ? x.hourStudied : x.hourNone),
+        (locale) => ({
+          range: rango[locale],
+          ...(conMinutos ? { minutes: textoDeMinutos(h.minutos, locale) } : {}),
+        }),
+      ),
+      // El rótulo solo en las cuatro anclas; en las demás no va la clave.
+      ...(HORAS_ROTULADAS.has(h.hora) ? { tick: String(h.hora).padStart(2, "0") } : {}),
+    };
+  });
+}
+
+/**
+ * La frase que resume la forma del día.
+ *
+ * Dice DOS cosas y no una: entre qué horas cae todo su estudio, y cuál es la
+ * hora más fuerte. La franja sola no distingue al niño que estudia repartido de
+ * seis a once del que se mete una hora a las diez y media; la hora pico sola
+ * —que es lo único que había antes de la migración 0085— no dice si esa hora
+ * es la única o el pico de una tarde larga.
+ *
+ * Se cuenta AQUÍ y no en el dibujo: `DailyRhythm` no sabe leer un reloj, igual
+ * que `EffortTrend` no sabe contar días.
+ */
+function resumenDelRitmo(horas: readonly HourActivity[]): I18nText {
+  const conEstudio = horas.filter((h) => h.minutes > 0);
+  const primera = conEstudio[0];
+  const ultima = conEstudio.at(-1);
+  // El llamante ya comprobó que hay ritmo; esto es para que el tipo lo sepa.
+  if (primera === undefined || ultima === undefined) return { es: "", en: "" };
+
+  const pico = conEstudio.reduce((mejor, h) => (h.minutes > mejor.minutes ? h : mejor), primera);
+  const rangoPico = franja(pico.hour, pico.hour + 1);
+
+  // Una sola hora con estudio no tiene «entre las X y las Y»: decir «entre las
+  // 22:00 y las 23:00, sobre todo de 22:00 a 23:00» es repetirse dos veces.
+  if (primera.hour === ultima.hour) {
+    return enCadaIdioma(
+      (x) => x.rhythmSummaryOne,
+      (locale) => ({ peak: rangoPico[locale], minutes: textoDeMinutos(pico.minutes, locale) }),
+    );
+  }
+
+  return enCadaIdioma(
+    (x) => x.rhythmSummary,
+    (locale) => ({
+      from: horaDeReloj(primera.hour),
+      to: horaDeReloj(ultima.hour + 1),
+      peak: rangoPico[locale],
+      minutes: textoDeMinutos(pico.minutes, locale),
+    }),
+  );
+}
+
+/**
+ * ===========================================================================
+ * ESFUERZO CONTRA RESULTADO
+ * ===========================================================================
+ * Un punto por día: los minutos de `serie` contra lo que salió de ese día en
+ * `logro`. Las dos series se cruzan POR LA FECHA, que es la misma clave y el
+ * mismo calendario local del alumno (ver la migración 0086); cruzarlas por
+ * posición se rompería en silencio el día que una de las dos trajera un día de
+ * más, y los puntos llevarían el tiempo de un día y las lecciones de otro.
+ *
+ * SIN NINGUNA FILA DE LOGRO NO HAY NUBE, y esta es la regla del cero que no es
+ * un cero aplicada aquí. Si la consulta no devuelve nada —porque falló, o
+ * porque su función todavía no está en la base— todos los días saldrían con
+ * `y = 0` y la nube diría «echa horas y no termina nada», que es una acusación
+ * construida con la ausencia de una consulta. Con cero filas, el panel entero
+ * no se monta.
+ *
+ * QUÉ SE PINTA EN EL EJE VERTICAL. Lecciones terminadas si alguna se terminó;
+ * si no, preguntas acertadas si hubo alguna. Un niño que practica sin cerrar
+ * lecciones tendría una nube pegada al suelo que solo dice «cero», cuando de
+ * su tiempo sí salió algo. Si ninguna de las dos cosas ocurrió NUNCA, se
+ * quedan las lecciones a cero: ahí el cero está medido y es la respuesta —dura,
+ * pero cierta— a «¿le cunde?».
+ */
+interface Nube {
+  readonly points: readonly EffortOutcomePoint[];
+  readonly yAxisLabel: I18nText;
+  readonly yMaxText: string;
+}
+
+function dispersion(seguimiento: SeguimientoDeHijo, locale: Locale): Nube | null {
+  if (seguimiento.logro.length === 0) return null;
+
+  const porFecha = new Map(seguimiento.logro.map((l) => [l.fecha, l]));
+  const dias = seguimiento.serie.filter((d) => d.minutos !== null && d.minutos > 0);
+  if (dias.length === 0) return null;
+
+  const leccionesDe = (fecha: string): number => porFecha.get(fecha)?.leccionesCompletadas ?? 0;
+  const aciertosDe = (fecha: string): number => porFecha.get(fecha)?.aciertos ?? 0;
+
+  const huboLecciones = dias.some((d) => leccionesDe(d.fecha) > 0);
+  const huboAciertos = dias.some((d) => aciertosDe(d.fecha) > 0);
+  const porLecciones = huboLecciones || !huboAciertos;
+
+  const valorDe = porLecciones ? leccionesDe : aciertosDe;
+  const unidad = (cuantos: number, l: Locale): string => {
+    const textos = getDictionary(l).tutor.child.progress;
+    if (porLecciones) {
+      return cuantos === 1 ? textos.lessonOne : interpolate(textos.lessonMany, { count: cuantos });
+    }
+    return cuantos === 1 ? textos.rightOne : interpolate(textos.rightMany, { count: cuantos });
+  };
+
+  const points = dias.map((dia): EffortOutcomePoint => {
+    const minutos = dia.minutos ?? 0;
+    const logrado = valorDe(dia.fecha);
+    const nombre = nombreDelDia(dia.fecha);
+    return {
+      x: minutos,
+      y: logrado,
+      label: enCadaIdioma(
+        (x) => x.outcomePoint,
+        (l) => ({
+          day: nombre[l],
+          minutes: textoDeMinutos(minutos, l),
+          lessons: unidad(logrado, l),
+        }),
+      ),
+    };
+  });
+
+  const maximo = points.reduce((mayor, p) => Math.max(mayor, p.y), 0);
+
+  return {
+    points,
+    yAxisLabel: enDosIdiomas((x) => (porLecciones ? x.outcomeYAxis : x.outcomeYAxisRight)),
+    yMaxText: unidad(maximo, locale),
+  };
+}
+
+/**
+ * ===========================================================================
+ * LAS CIFRAS DEL PERIODO SALEN DE LA SERIE QUE YA SE CONSULTA
+ * ===========================================================================
+ * Ni una consulta más: mediana, mejor día, constancia y racha se derivan de los
+ * mismos días que pinta la gráfica. Es lo que garantiza que la baldosa y el
+ * dibujo no puedan contradecirse — un total sacado del resumen encima de una
+ * silueta sacada de la serie es la contradicción que ya se corrigió en
+ * `resumenDeConstancia`.
+ *
+ * LA MEDIANA VA SOBRE LOS DÍAS CON ESTUDIO, NO SOBRE LA VENTANA. Un niño que
+ * estudia tres tardes a la semana tiene cuatro ceros en siete días, así que la
+ * mediana de la ventana es CERO para él y para el que no ha entrado nunca. Esa
+ * cifra mide el calendario, no al niño. La mediana de sus días de estudio dice
+ * cuánto dura una tarde suya, que es lo que la baldosa promete.
+ *
+ * Y ES LA MEDIANA Y NO LA MEDIA porque una tarde de tres horas antes de un
+ * examen levanta la media de toda la semana y deja al padre creyendo que su
+ * hijo estudia una hora diaria. La mediana no se mueve por un día suelto, que
+ * es justo la propiedad que aquí hace falta.
+ */
+interface CifrasDelPeriodo {
+  /** Minutos de un día de estudio normal. `null` si no estudió ningún día. */
+  readonly mediana: number | null;
+  /** Minutos del mejor día. `null` si no estudió ningún día. */
+  readonly mejorDia: number | null;
+  readonly diasActivos: number;
+  readonly diasDeVentana: number;
+  /** Días de estudio seguidos, el tramo más largo. */
+  readonly rachaDeDias: number;
+}
+
+export function cifrasDelPeriodo(seguimiento: SeguimientoDeHijo): CifrasDelPeriodo {
+  const minutosPorDia = seguimiento.serie.map((d) => (d.minutos === null ? 0 : d.minutos));
+  const conEstudio = minutosPorDia.filter((m) => m > 0);
+
+  const ordenados = [...conEstudio].sort((a, b) => a - b);
+  const medio = Math.floor(ordenados.length / 2);
+  const mediana =
+    ordenados.length === 0
+      ? null
+      : ordenados.length % 2 === 1
+        ? (ordenados[medio] ?? null)
+        : // Par: la media de los dos centrales, que es la definición y no un
+          // atajo. Coger el de la izquierda haría que dos días de 10 y 40 min
+          // dieran «10 min» como día normal.
+          ((ordenados[medio - 1] ?? 0) + (ordenados[medio] ?? 0)) / 2;
+
+  let racha = 0;
+  let corriente = 0;
+  for (const minutos of minutosPorDia) {
+    corriente = minutos > 0 ? corriente + 1 : 0;
+    if (corriente > racha) racha = corriente;
+  }
+
+  return {
+    mediana,
+    mejorDia: conEstudio.length === 0 ? null : Math.max(...conEstudio),
+    diasActivos: conEstudio.length,
+    // Los días que TRAE la serie, no los que se pidieron: la base arma el
+    // calendario en la zona del niño y puede devolver uno más. Es la misma
+    // razón que en `resumenDeConstancia`.
+    diasDeVentana: seguimiento.serie.length,
+    rachaDeDias: racha,
+  };
+}
+
 /** Las destrezas, con el nivel derivado con el MISMO umbral que ve el niño. */
 function destrezas(seguimiento: SeguimientoDeHijo): readonly SkillEntry[] {
   return seguimiento.destrezas.map(
@@ -311,6 +607,10 @@ export function propsDeSeguimiento(
 ): StudyScorecardProps | null {
   if (!hayAlgoQueContar(seguimiento)) return null;
 
+  const horas = ritmo(seguimiento);
+  const nube = dispersion(seguimiento, locale);
+  const diasConEstudio = nube === null ? 0 : nube.points.length;
+
   return {
     subjectCode: UNKNOWN_SUBJECT,
     studentName: nombreDelAlumno,
@@ -321,6 +621,45 @@ export function propsDeSeguimiento(
       series: constancia(seguimiento),
       summary: resumenDeConstancia(seguimiento),
     },
+    // El reloj se pasa siempre: `DailyRhythm` se calla solo si no hay ni un
+    // minuto atribuido a una hora, que es la misma condición con la que el
+    // scorecard decide no montar el panel. Una sola definición, como el resto.
+    rhythm: {
+      title: enDosIdiomas((x) => x.rhythmTitle),
+      hours: horas,
+      summary: resumenDelRitmo(horas),
+    },
+    // La nube, en cambio, puede no existir: sin filas de logro no sabemos qué
+    // salió de esos minutos y el panel entero desaparece. Ver `dispersion`.
+    ...(nube === null
+      ? {}
+      : {
+          outcome: {
+            title: enDosIdiomas((x) => x.outcomeTitle),
+            points: nube.points,
+            xAxisLabel: enDosIdiomas((x) => x.outcomeXAxis),
+            yAxisLabel: nube.yAxisLabel,
+            xMaxText: textoDeMinutos(
+              nube.points.reduce((mayor, punto) => Math.max(mayor, punto.x), 0),
+              locale,
+            ),
+            yMaxText: nube.yMaxText,
+            summary: enCadaIdioma(
+              (x) => x.outcomeSummary,
+              (l) => ({ days: diasEnDosIdiomas(diasConEstudio)[l] }),
+            ),
+            // La frase que se pinta EN LUGAR de la nube cuando hay pocos días.
+            // Sin ella el panel no se montaría y el tutor no sabría que esto
+            // existe ni qué le falta para verlo. Ver `EffortOutcomeScatter`.
+            tooFewText: enCadaIdioma(
+              (x) => x.outcomeTooFew,
+              (l) => ({
+                min: diasEnDosIdiomas(MIN_DIAS_DISPERSION)[l],
+                days: diasEnDosIdiomas(diasConEstudio)[l],
+              }),
+            ),
+          },
+        }),
     skills: {
       title: enDosIdiomas((x) => x.skillsTitle),
       items: destrezas(seguimiento),

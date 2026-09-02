@@ -21,9 +21,15 @@
  *      (la misma razon por la que los circulos del `EffortMeter` salieron de
  *      `TopicCard` el 28 de agosto).
  *   2. La constancia: la unica pregunta que las cifras no pueden responder.
- *   3. Las destrezas: donde va fuerte y donde flojo.
- *   4. La clase: solo si la cohorte da (ver `scorecard-data.ts`).
- *   5. El reparto del tiempo por leccion: el detalle, al final.
+ *   3. El reloj del dia: a que hora estudia. Va pegado a la constancia porque
+ *      las dos hablan del tiempo, y esta contesta el «¿cuando?» que aquella
+ *      deja abierto — leerlas seguidas es leer una sola idea.
+ *   4. Esfuerzo contra resultado: «¿le cunde?», que solo tiene sentido despues
+ *      de haber visto cuanto tiempo echa. Antes de las destrezas porque sigue
+ *      hablando de tiempo; las destrezas cambian de tema.
+ *   5. Las destrezas: donde va fuerte y donde flojo.
+ *   6. La clase: solo si la cohorte da (ver `scorecard-data.ts`).
+ *   7. El reparto del tiempo por leccion: el detalle, al final.
  *
  * ===========================================================================
  * UN PANEL SIN CONTENIDO NO SE MONTA
@@ -59,12 +65,19 @@ import { StatTile } from "../data/StatTile.js";
 
 import { ScorecardPanel } from "./ScorecardPanel.js";
 import { EffortTrend, type EffortTrendProps } from "./EffortTrend.js";
+import { DailyRhythm, type DailyRhythmProps } from "./DailyRhythm.js";
+import {
+  EffortOutcomeScatter,
+  type EffortOutcomeScatterProps,
+} from "./EffortOutcomeScatter.js";
 import { SkillList, type SkillListProps } from "./SkillList.js";
 import { CohortComparison, type CohortComparisonProps } from "./CohortComparison.js";
 import { LessonTimeBreakdown, type LessonTimeBreakdownProps } from "./LessonTimeBreakdown.js";
 import {
   hayCohorteSuficiente,
   hayDestrezasMedidas,
+  hayDispersionSuficiente,
+  hayRitmoDiario,
   haySerieDeEsfuerzo,
   hayTiempoPorLeccion,
 } from "./scorecard-data.js";
@@ -92,6 +105,10 @@ export interface StudyScorecardProps {
   readonly stats?: readonly ScorecardStat[] | undefined;
   /** La constancia diaria. */
   readonly effort?: ConTitulo<EffortTrendProps> | undefined;
+  /** A que hora del dia estudia. Se oculta solo si no hay ni un minuto medido. */
+  readonly rhythm?: ConTitulo<DailyRhythmProps> | undefined;
+  /** Esfuerzo contra resultado. Se oculta solo si hay pocos dias. */
+  readonly outcome?: ConTitulo<EffortOutcomeScatterProps> | undefined;
   /** Areas fortalecidas y flojas. */
   readonly skills?: ConTitulo<SkillListProps> | undefined;
   /** La comparacion con la clase. Se oculta sola si la cohorte no da. */
@@ -107,6 +124,8 @@ export function StudyScorecard({
   statsTitle,
   stats,
   effort,
+  rhythm,
+  outcome,
   skills,
   cohort,
   lessons,
@@ -115,6 +134,13 @@ export function StudyScorecard({
   /* Las mismas condiciones que usan los hijos para callarse. Ver la cabecera. */
   const hayCifras = stats !== undefined && stats.length > 0;
   const hayEsfuerzo = effort !== undefined && haySerieDeEsfuerzo(effort.series);
+  const hayHoras = rhythm !== undefined && hayRitmoDiario(rhythm.hours);
+  /* La dispersion tiene DOS motivos para aparecer, igual que la comparacion con
+     la clase: o hay dias suficientes y se pinta, o no los hay y hay que explicar
+     por que no esta. Sin la frase que lo explica, el panel no se monta. */
+  const hayNube =
+    outcome !== undefined &&
+    (hayDispersionSuficiente(outcome.points) || outcome.tooFewText !== undefined);
   const hayDestrezas = skills !== undefined && hayDestrezasMedidas(skills.items);
   const hayLecciones = lessons !== undefined && hayTiempoPorLeccion(lessons.items);
   /* La comparacion tiene DOS motivos para aparecer: o hay cohorte suficiente y
@@ -151,6 +177,26 @@ export function StudyScorecard({
       {hayEsfuerzo ? (
         <ScorecardPanel subjectCode={subjectCode} title={effort.title}>
           <EffortTrend series={effort.series} summary={effort.summary} />
+        </ScorecardPanel>
+      ) : null}
+
+      {hayHoras ? (
+        <ScorecardPanel subjectCode={subjectCode} title={rhythm.title}>
+          <DailyRhythm hours={rhythm.hours} summary={rhythm.summary} />
+        </ScorecardPanel>
+      ) : null}
+
+      {hayNube ? (
+        <ScorecardPanel subjectCode={subjectCode} title={outcome.title}>
+          <EffortOutcomeScatter
+            points={outcome.points}
+            summary={outcome.summary}
+            xAxisLabel={outcome.xAxisLabel}
+            yAxisLabel={outcome.yAxisLabel}
+            xMaxText={outcome.xMaxText}
+            yMaxText={outcome.yMaxText}
+            tooFewText={outcome.tooFewText}
+          />
         </ScorecardPanel>
       ) : null}
 

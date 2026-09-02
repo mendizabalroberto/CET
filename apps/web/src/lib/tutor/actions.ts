@@ -44,6 +44,7 @@ import { z } from "zod";
 
 import { requireRole } from "@/lib/auth/session";
 import { ROUTES } from "@/lib/routes";
+import { enlaceDeVinculacion, telegramDisponible } from "@/lib/telegram/bot";
 import { fetchConPlazo, PLAZO_AUTENTICAR_MS } from "@/lib/net/plazo";
 import { clientKeyFromHeaders, rateLimit } from "@/lib/security/rate-limit";
 import {
@@ -1013,4 +1014,166 @@ export async function olvidarDispositivo(
 
   revalidatePath("/tutor");
   return done("dispositivoOlvidado");
+}
+
+/* ========================================================================== */
+/* 7 · vincularTelegram — el enlace que le dice al bot quien es este padre     */
+/* ========================================================================== */
+
+/**
+ * TREINTA MINUTOS, Y NO SIETE DIAS COMO EL DEL ALUMNO.
+ *
+ * La vida de un enlace se fija por como se usa, no por costumbre. El del alumno
+ * dura una semana porque el tutor se lo MANDA a su hijo por WhatsApp y el nino
+ * lo abrira cuando llegue a casa: entre emitirlo y canjearlo hay un viaje.
+ *
+ * Este no viaja a ninguna parte. El tutor lo genera y lo pulsa el mismo, en la
+ * misma pantalla y en el mismo minuto. Todo lo que dure de mas es tiempo en el
+ * que una credencial vive sin que nadie la necesite, y quien la robara podria
+ * apuntar a SU Telegram los avisos sobre un menor ajeno. Media hora es holgura
+ * de sobra para «me han llamado por telefono a mitad», y nada mas.
+ */
+const VIDA_VINCULO_TELEGRAM_MS = 30 * 60 * 1000;
+
+export async function vincularTelegram(
+  _prev: TutorState,
+  _fd: FormData,
+): Promise<TutorState> {
+  // EL ROL PRIMERO, igual que en `crearEnlaceDeAcceso`: que la seccion no se
+  // pinte sin bot no impide invocar esta accion con un `fetch`.
+  const tutor = await requireRole(["guardian"], { onDeny: "not-found" });
+
+  /*
+   * SIN BOT NO SE EMITE NADA.
+   *
+   * La interfaz ya oculta la seccion cuando falta la configuracion, pero eso es
+   * cosmetica. Si aqui no se comprobara, una invocacion directa dejaria en la
+   * base un token vivo apuntando a un tutor real que NUNCA se puede canjear
+   * -no hay webhook que lo reciba- y que sin embargo sigue siendo una
+   * credencial valida el dia que alguien configure el bot.
+   */
+  if (!telegramDisponible()) return fail("notFound");
+
+  // ESCALADA DE PRIVILEGIO, documentada: `telegram_de_tutor` (0087) no concede
+  // INSERT ni UPDATE a `authenticated` para nadie. Si lo hiciera, un tutor
+  // podria escribirse el `chat_id` que quisiera y desviar a su Telegram los
+  // avisos del hijo de otro.
+  const admin = createAdminClient(
+    "Vincular Telegram: telegram_de_tutor solo la escribe service_role, por diseño (0087)",
+  );
+
+  const token = generarToken();
+  const ahora = new Date().toISOString();
+
+  /*
+   * UPSERT Y NO INSERT: la clave primaria es `guardian_id`, o sea una fila por
+   * tutor. Pedir otro enlace REEMPLAZA el pendiente en vez de acumular una
+   * segunda credencial viva —el mismo criterio de «un solo enlace vivo» que
+   * `crearEnlaceDeAcceso` consigue revocando antes de insertar—.
+   *
+   * `chat_id` y `vinculado_at` NO van en el payload a proposito, y eso importa:
+   * PostgREST traduce el upsert a `ON CONFLICT DO UPDATE SET <columnas dadas>`,
+   * asi que un tutor YA conectado que genere otro enlace no se queda
+   * desconectado mientras decide si lo pulsa. Cortar el vinculo es un acto
+   * explicito y tiene su propia accion.
+   */
+  const { error } = await admin.from("telegram_de_tutor").upsert(
+    {
+      guardian_id: tutor.id,
+      token_hash: hashToken(token),
+      token_expira_at: new Date(Date.now() + VIDA_VINCULO_TELEGRAM_MS).toISOString(),
+      updated_at: ahora,
+    },
+    { onConflict: "guardian_id" },
+  );
+
+  if (error !== null) {
+    // Ni el token ni la URL entran aqui. `code` y `message` de Postgres, y nada
+    // del cuerpo de la peticion.
+    console.error("[cet] vincularTelegram upsert", error.code, error.message);
+    return fail("unexpected");
+  }
+
+  /*
+   * AUDITORIA: `tutor.enlace_generado`, Y NO UNA ACCION NUEVA.
+   *
+   * El vocabulario del rol `guardian` lo fija `0068_auditoria_de_la_cadena.sql`
+   * y tiene exactamente tres verbos: `tutor.hijo_creado`,
+   * `tutor.enlace_generado` y `tutor.dispositivo_olvidado`. Pedir cualquier otro
+   * -«tutor.telegram_vinculado», por ejemplo- devuelve `invalid_parameter_value`
+   * y la auditoria se PIERDE, que es peor que registrarla con el verbo vecino.
+   *
+   * Y el verbo vecino describe con precision lo que acaba de pasar: se ha
+   * emitido un enlace de un solo uso con caducidad. Lo que lo distingue del
+   * enlace de un alumno es el `entity_type` —`telegram_de_tutor` frente a
+   * `student_access_links`— que es justo para lo que sirve esa columna. Quien
+   * lea el log no confunde los dos.
+   *
+   * `entity_id` es el propio tutor: `app.audit()` (0074) solo deja a un tutor
+   * auditar sobre si mismo o sobre un hijo suyo, y aqui el sujeto es el.
+   */
+  const supabase = await createClient();
+  await auditar(supabase, "tutor.enlace_generado", "telegram_de_tutor", tutor.id, {
+    canal: "telegram",
+    caduca_en_minutos: VIDA_VINCULO_TELEGRAM_MS / 60000,
+  });
+
+  revalidatePath("/tutor");
+
+  // UNA SOLA VEZ, y en ningun log. La base guarda el SHA-256 y nada mas: quien
+  // cierre esta pantalla sin pulsar el enlace genera otro.
+  return done("telegramEnlaceCreado", { url: enlaceDeVinculacion(token) });
+}
+
+/* ========================================================================== */
+/* 8 · desvincularTelegram — un padre tiene que poder cortarlo                 */
+/* ========================================================================== */
+
+/**
+ * Corta el vinculo: sin `chat_id` no hay a donde escribirle, y esa ausencia ES
+ * la desconexion.
+ *
+ * SE BORRAN LAS TRES COLUMNAS, no solo el `chat_id`. Dejar vivo un `token_hash`
+ * pendiente convertiria «he desconectado» en una promesa a medias: quien
+ * tuviera aquel enlace todavia sin pulsar podria reconectar el chat que quisiera
+ * despues de que el padre creyera haberlo cortado.
+ *
+ * NO SE AUDITA, y es deliberado. El vocabulario del rol `guardian` (0068) no
+ * tiene ningun verbo que signifique esto, y forzar el que hay -«enlace
+ * generado» para describir una revocacion- seria escribir un dato falso en una
+ * tabla forense, que es peor que no escribir ninguno. Ampliarlo pide una
+ * migracion, y la asimetria se sostiene: lo que crea una credencial queda
+ * registrado; retirarla solo reduce lo que el sistema puede hacer.
+ */
+export async function desvincularTelegram(
+  _prev: TutorState,
+  _fd: FormData,
+): Promise<TutorState> {
+  const tutor = await requireRole(["guardian"], { onDeny: "not-found" });
+
+  const admin = createAdminClient(
+    "Desvincular Telegram: telegram_de_tutor solo la escribe service_role, por diseño (0087)",
+  );
+
+  // El `eq` sobre `guardian_id` es la frontera entera de esta escritura: con
+  // `service_role` no hay RLS que la acote, asi que la acota el `where` y sale
+  // de la SESION, jamas del formulario.
+  const { error } = await admin
+    .from("telegram_de_tutor")
+    .update({
+      chat_id: null,
+      token_hash: null,
+      token_expira_at: null,
+      vinculado_at: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("guardian_id", tutor.id);
+
+  if (error !== null) {
+    console.error("[cet] desvincularTelegram update", error.code, error.message);
+    return fail("unexpected");
+  }
+
+  revalidatePath("/tutor");
+  return done("telegramDesvinculado");
 }

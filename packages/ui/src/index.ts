@@ -214,12 +214,24 @@ export {
   haySerieDeEsfuerzo,
   hayDestrezasMedidas,
   hayTiempoPorLeccion,
+  hayRitmoDiario,
+  minutosDeLaHora,
+  hayDispersionSuficiente,
+  puntosDeDispersion,
+  MIN_DIAS_DISPERSION,
   type EffortDay,
   type SkillEntry,
   type LessonTime,
+  type HourActivity,
+  type EffortOutcomePoint,
 } from "./reports/scorecard-data.js";
 export { ScorecardPanel, type ScorecardPanelProps } from "./reports/ScorecardPanel.js";
 export { EffortTrend, type EffortTrendProps } from "./reports/EffortTrend.js";
+export { DailyRhythm, type DailyRhythmProps } from "./reports/DailyRhythm.js";
+export {
+  EffortOutcomeScatter,
+  type EffortOutcomeScatterProps,
+} from "./reports/EffortOutcomeScatter.js";
 export { SkillList, type SkillListProps } from "./reports/SkillList.js";
 export { CohortComparison, type CohortComparisonProps } from "./reports/CohortComparison.js";
 export {

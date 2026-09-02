@@ -26,7 +26,12 @@
 import { describe, expect, it } from "vitest";
 
 import type { SeguimientoDeHijo } from "./queries";
-import { hayAlgoQueContar, propsDeSeguimiento, textoDeMinutos } from "./seguimiento";
+import {
+  cifrasDelPeriodo,
+  hayAlgoQueContar,
+  propsDeSeguimiento,
+  textoDeMinutos,
+} from "./seguimiento";
 
 const VACIO: SeguimientoDeHijo = {
   dias: 7,
@@ -34,6 +39,8 @@ const VACIO: SeguimientoDeHijo = {
   serie: [],
   destrezas: [],
   lecciones: [],
+  horas: [],
+  logro: [],
 };
 
 /** El resumen de un niño que no ha entrado nunca: nueve ceros de verdad. */
@@ -64,6 +71,8 @@ const UNA_TARDE: SeguimientoDeHijo = {
   ],
   destrezas: [],
   lecciones: [],
+  horas: [],
+  logro: [],
 };
 
 describe("seguimiento — sin datos no se monta el informe", () => {
@@ -220,5 +229,248 @@ describe("seguimiento — lo que se le pasa al scorecard", () => {
 
   it("el informe lo encabeza el nombre que se le pase, sin adornos", () => {
     expect(propsDeSeguimiento(rico, "Leo", "es")?.studentName).toBe("Leo");
+  });
+});
+
+/**
+ * ===========================================================================
+ * EL RELOJ DEL DÍA, LA NUBE Y LAS CIFRAS DEL PERIODO
+ * ===========================================================================
+ * Las tres cosas que se añadieron al informe del tutor comparten la misma
+ * manera de romperse que el resto: no fallan, mienten. Un reloj plano dibujado
+ * como si fuera una medida, una nube de dos puntos que enseña una tendencia
+ * perfecta que no existe, y una mediana calculada sobre la ventana entera que
+ * le dice a todo padre de un niño que estudia tres tardes que su hijo estudia
+ * cero minutos al día.
+ */
+
+/** Las veinticuatro horas a cero: lo que devuelve la base sin medición. */
+const RELOJ_VACIO = Array.from({ length: 24 }, (_, hora) => ({
+  hora,
+  minutos: 0,
+  eventos: 0,
+}));
+
+/** El mismo reloj con minutos en las horas que se le pasen. */
+function relojCon(minutosPorHora: Readonly<Record<number, number>>) {
+  return RELOJ_VACIO.map((h) => {
+    const minutos = minutosPorHora[h.hora];
+    return minutos === undefined ? h : { ...h, minutos, eventos: 3 };
+  });
+}
+
+describe("seguimiento — el reloj del día", () => {
+  it("cada hora trae su frase redactada en los dos idiomas", () => {
+    const conReloj: SeguimientoDeHijo = { ...UNA_TARDE, horas: relojCon({ 22: 30 }) };
+    const horas = propsDeSeguimiento(conReloj, "Leo", "es")?.rhythm?.hours ?? [];
+    expect(horas).toHaveLength(24);
+    const pico = horas.find((h) => h.hour === 22);
+    expect(pico?.label.es).toBe("De 22:00 a 23:00: 30 min");
+    expect(pico?.label.en).toBe("22:00 to 23:00: 30 min");
+  });
+
+  it("una hora sin estudio se rotula «no estudió» y no «0 min»", () => {
+    const conReloj: SeguimientoDeHijo = { ...UNA_TARDE, horas: relojCon({ 22: 30 }) };
+    const horas = propsDeSeguimiento(conReloj, "Leo", "es")?.rhythm?.hours ?? [];
+    expect(horas.find((h) => h.hour === 3)?.label.es).toBe("De 03:00 a 04:00: no estudió");
+  });
+
+  it("solo cuatro horas llevan rótulo de eje, y son las anclas de seis en seis", () => {
+    const conReloj: SeguimientoDeHijo = { ...UNA_TARDE, horas: relojCon({ 22: 30 }) };
+    const horas = propsDeSeguimiento(conReloj, "Leo", "es")?.rhythm?.hours ?? [];
+    expect(horas.filter((h) => h.tick !== undefined).map((h) => h.tick)).toEqual([
+      "00",
+      "06",
+      "12",
+      "18",
+    ]);
+  });
+
+  it("el resumen dice la franja y la hora más fuerte", () => {
+    const conReloj: SeguimientoDeHijo = { ...UNA_TARDE, horas: relojCon({ 21: 10, 22: 30 }) };
+    const resumen = propsDeSeguimiento(conReloj, "Leo", "es")?.rhythm?.summary;
+    expect(resumen?.es).toBe("Estudia entre las 21:00 y las 23:00, sobre todo de 22:00 a 23:00 (30 min).");
+    expect(resumen?.en).toBe("They study between 21:00 and 23:00, mostly 22:00 to 23:00 (30 min).");
+  });
+
+  it("una sola hora con estudio no dice «entre las X y las Y»", () => {
+    // «Entre las 22:00 y las 23:00, sobre todo de 22:00 a 23:00» se repite dos
+    // veces la misma información y suena a plantilla mal rellenada.
+    const conReloj: SeguimientoDeHijo = { ...UNA_TARDE, horas: relojCon({ 22: 30 }) };
+    expect(propsDeSeguimiento(conReloj, "Leo", "es")?.rhythm?.summary.es).toBe(
+      "Todo su tiempo cae de 22:00 a 23:00 (30 min).",
+    );
+  });
+
+  it("la última franja del día no dice «24:00»", () => {
+    const conReloj: SeguimientoDeHijo = { ...UNA_TARDE, horas: relojCon({ 23: 15 }) };
+    const horas = propsDeSeguimiento(conReloj, "Leo", "es")?.rhythm?.hours ?? [];
+    expect(horas.find((h) => h.hour === 23)?.label.es).toBe("De 23:00 a 00:00: 15 min");
+  });
+});
+
+describe("seguimiento — esfuerzo contra resultado", () => {
+  /** Cuatro días con estudio y su logro, que es lo que pide el umbral. */
+  const CUATRO_DIAS: SeguimientoDeHijo = {
+    ...UNA_TARDE,
+    serie: [
+      { fecha: "2026-08-29", minutos: 20 },
+      { fecha: "2026-08-30", minutos: 0 },
+      { fecha: "2026-08-31", minutos: 35 },
+      { fecha: "2026-09-01", minutos: 43.78 },
+      { fecha: "2026-09-02", minutos: 12 },
+    ],
+    logro: [
+      { fecha: "2026-08-29", leccionesCompletadas: 1, itemsRespondidos: 4, aciertos: 3 },
+      { fecha: "2026-08-30", leccionesCompletadas: 0, itemsRespondidos: 0, aciertos: 0 },
+      { fecha: "2026-08-31", leccionesCompletadas: 2, itemsRespondidos: 6, aciertos: 5 },
+      { fecha: "2026-09-01", leccionesCompletadas: 5, itemsRespondidos: 3, aciertos: 2 },
+      { fecha: "2026-09-02", leccionesCompletadas: 0, itemsRespondidos: 2, aciertos: 1 },
+    ],
+  };
+
+  it("sin ninguna fila de logro no hay panel: la ausencia no es un cero", () => {
+    // Si la consulta no devuelve nada, todos los días saldrían con y = 0 y la
+    // nube diría «echa horas y no termina nada» — una acusación construida con
+    // la ausencia de una consulta.
+    expect(propsDeSeguimiento({ ...UNA_TARDE, logro: [] }, "Leo", "es")?.outcome).toBeUndefined();
+  });
+
+  it("un punto por día CON estudio; los días a cero no entran", () => {
+    const puntos = propsDeSeguimiento(CUATRO_DIAS, "Leo", "es")?.outcome?.points ?? [];
+    expect(puntos).toHaveLength(4);
+    expect(puntos.map((p) => p.x)).toEqual([20, 35, 43.78, 12]);
+  });
+
+  it("los minutos y el logro se cruzan POR LA FECHA, no por la posición", () => {
+    const puntos = propsDeSeguimiento(CUATRO_DIAS, "Leo", "es")?.outcome?.points ?? [];
+    // El día de 35 min terminó 2 lecciones; el de 43,78 terminó 5. Cruzados por
+    // posición —saltándose el día a cero de en medio— saldrían corridos.
+    expect(puntos.map((p) => p.y)).toEqual([1, 2, 5, 0]);
+  });
+
+  it("cada punto se lee entero sin ver el dibujo, en los dos idiomas", () => {
+    const punto = propsDeSeguimiento(CUATRO_DIAS, "Leo", "es")?.outcome?.points[1];
+    expect(punto?.label.es).toBe("lun, 31 ago: 35 min, 2 lecciones");
+    expect(punto?.label.en).toBe("Mon 31 Aug: 35 min, 2 lessons");
+  });
+
+  it("sin ninguna lección terminada, el eje pasa a las preguntas acertadas", () => {
+    // Un niño que practica sin cerrar lecciones tendría la nube pegada al suelo
+    // diciendo «cero», cuando de su tiempo sí salió algo.
+    const soloPractica: SeguimientoDeHijo = {
+      ...CUATRO_DIAS,
+      logro: CUATRO_DIAS.logro.map((l) => ({ ...l, leccionesCompletadas: 0 })),
+    };
+    const nube = propsDeSeguimiento(soloPractica, "Leo", "es")?.outcome;
+    expect(nube?.yAxisLabel.es).toBe("Preguntas acertadas");
+    expect(nube?.points.map((p) => p.y)).toEqual([3, 5, 2, 1]);
+  });
+
+  it("los topes de los dos ejes van escritos con sus unidades", () => {
+    const nube = propsDeSeguimiento(CUATRO_DIAS, "Leo", "es")?.outcome;
+    expect(nube?.xMaxText).toBe("44 min");
+    expect(nube?.yMaxText).toBe("5 lecciones");
+  });
+
+  it("con pocos días viaja la frase que explica por qué no hay nube", () => {
+    // Es el caso REAL de hoy: un solo día con estudio. Sin esta frase el panel
+    // no se monta y el tutor no sabe que esto existe ni qué le falta para verlo.
+    const unDia: SeguimientoDeHijo = {
+      ...UNA_TARDE,
+      logro: [{ fecha: "2026-09-01", leccionesCompletadas: 5, itemsRespondidos: 3, aciertos: 2 }],
+    };
+    const nube = propsDeSeguimiento(unDia, "Leo", "es")?.outcome;
+    expect(nube?.points).toHaveLength(1);
+    expect(nube?.tooFewText?.es).toContain("4 días");
+    expect(nube?.tooFewText?.es).toContain("1 día");
+    expect(nube?.tooFewText?.en).toContain("4 days");
+  });
+});
+
+describe("seguimiento — las cifras del periodo salen de la serie que ya se consulta", () => {
+  const TRES_TARDES: SeguimientoDeHijo = {
+    ...UNA_TARDE,
+    serie: [
+      { fecha: "2026-08-26", minutos: 0 },
+      { fecha: "2026-08-27", minutos: 10 },
+      { fecha: "2026-08-28", minutos: 40 },
+      { fecha: "2026-08-29", minutos: 30 },
+      { fecha: "2026-08-30", minutos: 0 },
+      { fecha: "2026-08-31", minutos: 0 },
+      { fecha: "2026-09-01", minutos: 0 },
+    ],
+  };
+
+  it("la mediana va sobre los días CON estudio, no sobre la ventana", () => {
+    // Sobre la ventana entera la mediana de este niño sería 0 min, igual que la
+    // del que no ha entrado nunca: esa cifra mide el calendario, no al niño.
+    expect(cifrasDelPeriodo(TRES_TARDES).mediana).toBe(30);
+  });
+
+  it("con un número par de días de estudio, la mediana es la media de los dos centrales", () => {
+    const cuatro: SeguimientoDeHijo = {
+      ...TRES_TARDES,
+      serie: [
+        { fecha: "2026-08-27", minutos: 10 },
+        { fecha: "2026-08-28", minutos: 20 },
+        { fecha: "2026-08-29", minutos: 40 },
+        { fecha: "2026-08-30", minutos: 50 },
+      ],
+    };
+    expect(cifrasDelPeriodo(cuatro).mediana).toBe(30);
+  });
+
+  it("el mejor día, los días activos y la ventana salen de la propia serie", () => {
+    const cifras = cifrasDelPeriodo(TRES_TARDES);
+    expect(cifras.mejorDia).toBe(40);
+    expect(cifras.diasActivos).toBe(3);
+    expect(cifras.diasDeVentana).toBe(7);
+  });
+
+  it("la racha cuenta días SEGUIDOS, y se corta con un día a cero", () => {
+    expect(cifrasDelPeriodo(TRES_TARDES).rachaDeDias).toBe(3);
+    const partida: SeguimientoDeHijo = {
+      ...TRES_TARDES,
+      serie: [
+        { fecha: "2026-08-27", minutos: 10 },
+        { fecha: "2026-08-28", minutos: 0 },
+        { fecha: "2026-08-29", minutos: 30 },
+      ],
+    };
+    expect(cifrasDelPeriodo(partida).rachaDeDias).toBe(1);
+  });
+
+  it("sin ningún día de estudio no hay mediana ni mejor día: no son ceros", () => {
+    const nada: SeguimientoDeHijo = {
+      ...TRES_TARDES,
+      serie: TRES_TARDES.serie.map((d) => ({ ...d, minutos: 0 })),
+    };
+    const cifras = cifrasDelPeriodo(nada);
+    expect(cifras.mediana).toBeNull();
+    expect(cifras.mejorDia).toBeNull();
+    expect(cifras.rachaDeDias).toBe(0);
+  });
+
+  it("las baldosas del periodo no se pintan sin un día de estudio detrás", () => {
+    const nada: SeguimientoDeHijo = {
+      ...UNA_TARDE,
+      resumen: { ...CEROS, sesiones: 4 },
+      serie: UNA_TARDE.serie.map((d) => ({ ...d, minutos: 0 })),
+    };
+    const etiquetas = (propsDeSeguimiento(nada, "Leo", "es")?.stats ?? []).map((s) => s.label.es);
+    expect(etiquetas).not.toContain("Un día normal");
+    expect(etiquetas).not.toContain("Su mejor día");
+    expect(etiquetas).not.toContain("Días seguidos");
+  });
+
+  it("con un día de estudio sí se pintan, y dicen lo mismo que la gráfica", () => {
+    const stats = propsDeSeguimiento(UNA_TARDE, "Leo", "es")?.stats ?? [];
+    const valor = (etiqueta: string): string | undefined =>
+      stats.find((s) => s.label.es === etiqueta)?.value;
+    expect(valor("Un día normal")).toBe("44 min");
+    expect(valor("Su mejor día")).toBe("44 min");
+    expect(valor("Días con estudio")).toBe("1 de 7");
+    expect(valor("Días seguidos")).toBe("1");
   });
 });

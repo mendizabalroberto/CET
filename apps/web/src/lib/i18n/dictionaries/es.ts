@@ -300,6 +300,21 @@ export const es: Dictionary = {
       devices: "{count} aparato(s) recordado(s)",
       open: "Abrir",
     },
+    telegram: {
+      title: "Avisos por Telegram",
+      body: "Te escribimos por Telegram para contarte cómo le va a tu hijo. Solo lo recibes tú, y puedes cortarlo cuando quieras.",
+      enable: "Habilitar notificaciones por Telegram",
+      enabling: "Preparando el enlace…",
+      pendingTitle: "Falta un paso",
+      pendingBody:
+        "Abre este enlace y pulsa «Empezar» en Telegram. Ese gesto tuyo es lo que nos dice que ese chat es el tuyo.",
+      open: "Abrir Telegram",
+      pendingExpires: "El enlace vale media hora. Si se te pasa, crea otro.",
+      connected: "Conectado",
+      connectedSince: "Conectado desde el {date}.",
+      disconnect: "Desconectar",
+      disconnecting: "Desconectando…",
+    },
     add: {
       title: "A\u00f1adir un hijo",
       fullNameLabel: "Su nombre completo",
@@ -354,6 +369,34 @@ export const es: Dictionary = {
         minutesUnit: "{count} min",
         hoursUnit: "{hours} h {minutes} min",
         percentValue: "{value} %",
+        /* --- El reloj del día: a qué hora estudia (migración 0085) --------- */
+        rhythmTitle: "A qué hora estudia",
+        /** La franja se escribe con la hora de reloj, que es como se habla de horas. */
+        hourRange: "{from} a {to}",
+        hourStudied: "De {range}: {minutes}",
+        hourNone: "De {range}: no estudió",
+        rhythmSummary: "Estudia entre las {from} y las {to}, sobre todo de {peak} ({minutes}).",
+        rhythmSummaryOne: "Todo su tiempo cae de {peak} ({minutes}).",
+        /* --- Esfuerzo contra resultado ------------------------------------- */
+        outcomeTitle: "¿Le cunde el tiempo?",
+        outcomeXAxis: "Tiempo de estudio",
+        outcomeYAxis: "Lecciones terminadas",
+        outcomeYAxisRight: "Preguntas acertadas",
+        outcomeSummary:
+          "Un punto por cada día que estudió: más a la derecha, más tiempo le echó; más arriba, más lecciones terminó. {days} con estudio.",
+        outcomeTooFew:
+          "Todavía no hay con qué responder a esto: hacen falta al menos {min} con estudio y de momento hay {days}.",
+        outcomePoint: "{day}: {minutes}, {lessons}",
+        lessonOne: "1 lección",
+        lessonMany: "{count} lecciones",
+        rightOne: "1 acertada",
+        rightMany: "{count} acertadas",
+        /* --- Las cifras del periodo, sacadas de la propia serie diaria ------ */
+        medianLabel: "Un día normal",
+        bestDayLabel: "Su mejor día",
+        activeDaysLabel: "Días con estudio",
+        activeDaysValue: "{active} de {total}",
+        daysRowLabel: "Días seguidos",
       },
     },
     signUp: {

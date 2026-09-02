@@ -135,3 +135,119 @@ export function hayDestrezasMedidas(items: readonly SkillEntry[]): boolean {
 export function hayTiempoPorLeccion(items: readonly LessonTime[]): boolean {
   return items.some((l) => Number.isFinite(l.minutes) && l.minutes > 0);
 }
+
+/**
+ * =============================================================================
+ * LA FORMA DEL DIA: UNA HORA POR COLUMNA
+ * =============================================================================
+ * `minutes === 0` aqui NO es «no lo sabemos»: la funcion de base devuelve
+ * SIEMPRE las veinticuatro horas y pone a cero las que no tuvieron actividad,
+ * asi que el cero es una medida. Por eso este tipo no admite `null` en los
+ * minutos y no hay que distinguir dos estados como en `EffortDay`: un reloj con
+ * huecos no se lee —el ojo no sabe si falta la barra o falta la hora—, y por eso
+ * la consulta ya se encarga de que no los haya.
+ */
+export interface HourActivity {
+  /** La hora local del alumno, 0..23. Es la posicion en el reloj, no un rotulo. */
+  readonly hour: number;
+  /** Minutos de estudio atribuidos a esa hora. Cero es un dato. */
+  readonly minutes: number;
+  /** «De 21:00 a 22:00: 18 min», ya redactado por la aplicacion. */
+  readonly label: I18nText;
+  /**
+   * Rotulo corto del eje, y solo en las horas que se rotulan («00», «06»).
+   * Cuatro anclas bastan para orientarse; veinticuatro numeros bajo columnas de
+   * diez pixeles no se leen, se emborronan.
+   */
+  readonly tick?: string | undefined;
+}
+
+/** Minutos utilizables de una hora. La basura cuenta como cero, no como hueco. */
+export function minutosDeLaHora(hora: HourActivity): number {
+  return Number.isFinite(hora.minutes) && hora.minutes > 0 ? hora.minutes : 0;
+}
+
+/**
+ * ¿Hay reloj que pintar? Solo si alguna hora tiene minutos.
+ *
+ * Veinticuatro columnas a cero no son «estudia a ninguna hora»: son una ventana
+ * sin medicion. Ocurre de verdad —las sesiones anteriores al cronometro de 0080
+ * cuentan minutos en el resumen y no tienen latidos que atribuir a una hora—, y
+ * pintar el reloj plano al lado de una baldosa que dice «44 min» es contradecirse
+ * dentro de la misma pantalla. Misma regla que `haySerieDeEsfuerzo`, y vive aqui
+ * por lo mismo: quien compone el scorecard necesita la misma respuesta.
+ */
+export function hayRitmoDiario(horas: readonly HourActivity[]): boolean {
+  return horas.some((h) => minutosDeLaHora(h) > 0);
+}
+
+/**
+ * =============================================================================
+ * ESFUERZO CONTRA RESULTADO: UN PUNTO POR DIA
+ * =============================================================================
+ * `x` son los minutos de ese dia y `y` lo que salio de ellos. Las dos magnitudes
+ * llegan en BRUTO y no normalizadas —al reves que en `CohortComparison`— porque
+ * aqui los dos ejes son independientes: cada uno tiene su propia escala y su
+ * propio maximo, y no hay ninguna comparacion entre ellos que un eje comun
+ * pudiera falsear.
+ */
+export interface EffortOutcomePoint {
+  /** Minutos estudiados ese dia. Eje horizontal. */
+  readonly x: number;
+  /** Lo logrado ese dia (lecciones terminadas, aciertos…). Eje vertical. */
+  readonly y: number;
+  /** «lun, 1 sept: 44 min, 2 lecciones», ya redactado por la aplicacion. */
+  readonly label: I18nText;
+}
+
+/**
+ * DIAS MINIMOS PARA QUE LA DISPERSION SE PINTE, Y POR QUE SON CUATRO
+ *
+ * Una nube de puntos se lee buscando una TENDENCIA: «cuanto mas tiempo, mas
+ * cunde» o «da igual el tiempo que le eche». Esa lectura es la unica razon de
+ * ser del dibujo, y con dos o tres puntos es siempre falsa:
+ *
+ *  1. **Por dos puntos pasa exactamente una recta.** Con dos dias, la nube
+ *     dibuja SIEMPRE una tendencia perfecta, suba o baje. No es que se vea una
+ *     relacion: es que es geometricamente imposible no verla. Un padre leeria
+ *     «a mi hijo le cunde mas cuanto mas estudia» de dos tardes cualesquiera.
+ *  2. **Con tres, un dia raro manda.** Una tarde de examen o una de resfriado
+ *     mueve la nube entera, y la conclusion se invierte con un solo punto.
+ *
+ * CUATRO es el suelo donde una nube empieza a poder desmentirse a si misma: hace
+ * falta que tres de los cuatro digan lo mismo para que se lea una direccion, y
+ * eso ya no lo consigue una tarde suelta. No es un numero de manual de
+ * estadistica —para eso harian falta decenas— sino el punto por debajo del cual
+ * el dibujo MIENTE SIEMPRE en vez de mentir a veces. Por debajo no se pinta ni
+ * atenuado ni con un aviso al pie, por el mismo motivo que `MIN_COHORTE`: una
+ * nube dudosa en una pantalla se lee como una nube.
+ *
+ * Se cuentan los dias CON ESFUERZO, no los dias de la ventana: un dia a cero
+ * minutos no aporta ninguna informacion sobre si el tiempo cunde, y cuatro
+ * puntos amontonados en el origen darian por bueno el dibujo sin darle un solo
+ * dato. Ver `hayDispersionSuficiente`.
+ */
+export const MIN_DIAS_DISPERSION = 4;
+
+/** Un punto utilizable: los dos ejes son numeros finitos y no negativos. */
+function puntoUtilizable(p: EffortOutcomePoint): boolean {
+  return Number.isFinite(p.x) && p.x > 0 && Number.isFinite(p.y) && p.y >= 0;
+}
+
+/**
+ * ¿Hay nube que pintar? Solo con `MIN_DIAS_DISPERSION` dias de estudio real.
+ *
+ * Unico sitio donde se decide, por lo mismo que `hayCohorteSuficiente`: el
+ * componente se calla con la misma condicion con la que el scorecard decide no
+ * montar el panel, y no hay dos umbrales que mantener a la vez.
+ */
+export function hayDispersionSuficiente(points: readonly EffortOutcomePoint[]): boolean {
+  return points.filter(puntoUtilizable).length >= MIN_DIAS_DISPERSION;
+}
+
+/** Los puntos que de verdad entran en el dibujo. Los demas no existen. */
+export function puntosDeDispersion(
+  points: readonly EffortOutcomePoint[],
+): readonly EffortOutcomePoint[] {
+  return points.filter(puntoUtilizable);
+}

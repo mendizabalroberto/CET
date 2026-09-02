@@ -308,6 +308,26 @@ export const en = {
       devices: "{count} device(s) remembered",
       open: "Open",
     },
+    /*
+     * Avisos por Telegram. El vinculo va al reves de lo que parece -es el padre
+     * quien escribe primero al bot- y por eso el texto tiene que decirle que
+     * pulse «Empezar»: sin ese gesto suyo no hay forma de escribirle.
+     */
+    telegram: {
+      title: "Telegram alerts",
+      body: "We can message you on Telegram about how your child is getting on. Only you see it, and you can stop it whenever you like.",
+      enable: "Turn on Telegram notifications",
+      enabling: "Getting your link ready…",
+      pendingTitle: "One step to go",
+      pendingBody:
+        "Open this link and press “Start” in Telegram. That press is what tells us the chat is yours.",
+      open: "Open Telegram",
+      pendingExpires: "The link is good for half an hour. If it runs out, just make another one.",
+      connected: "Connected",
+      connectedSince: "Connected since {date}.",
+      disconnect: "Disconnect",
+      disconnecting: "Disconnecting…",
+    },
     add: {
       title: "Add a child",
       fullNameLabel: "Their full name",
@@ -374,6 +394,33 @@ export const en = {
         minutesUnit: "{count} min",
         hoursUnit: "{hours} h {minutes} min",
         percentValue: "{value}%",
+        /* --- When they study (migration 0085) ------------------------------ */
+        rhythmTitle: "When they study",
+        hourRange: "{from} to {to}",
+        hourStudied: "{range}: {minutes}",
+        hourNone: "{range}: no study",
+        rhythmSummary: "They study between {from} and {to}, mostly {peak} ({minutes}).",
+        rhythmSummaryOne: "All of their time falls between {peak} ({minutes}).",
+        /* --- Effort against outcome ---------------------------------------- */
+        outcomeTitle: "Is the time paying off?",
+        outcomeXAxis: "Study time",
+        outcomeYAxis: "Lessons finished",
+        outcomeYAxisRight: "Questions right",
+        outcomeSummary:
+          "One dot for each day they studied: further right means more time on it, higher up means more lessons finished. {days} with study.",
+        outcomeTooFew:
+          "There is nothing to answer this with yet: it takes at least {min} with study, and so far there are {days}.",
+        outcomePoint: "{day}: {minutes}, {lessons}",
+        lessonOne: "1 lesson",
+        lessonMany: "{count} lessons",
+        rightOne: "1 right",
+        rightMany: "{count} right",
+        /* --- Period figures, all derived from the daily series -------------- */
+        medianLabel: "A typical day",
+        bestDayLabel: "Their best day",
+        activeDaysLabel: "Days with study",
+        activeDaysValue: "{active} of {total}",
+        daysRowLabel: "Days in a row",
       },
     },
     signUp: {

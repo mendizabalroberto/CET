@@ -105,6 +105,19 @@ export const PLAZO_AUTENTICAR_MS = 15_000;
  */
 export const PLAZO_TELEMETRIA_MS = 10_000;
 
+/**
+ * Hablar con Telegram: **10 s**.
+ *
+ * Mismo razonamiento que la telemetría, y por eso el mismo número. Quien espera
+ * aquí no es nadie: un aviso a un padre no se pinta en ninguna pantalla, y el
+ * módulo que lo manda no lanza —devuelve `false` y grita en el log—. Lo que NO
+ * puede hacer es colgarse, porque entonces cuelga a quien lo llamó: el webhook,
+ * al que Telegram le exige un 2xx y al que REINTENTA durante horas si no llega,
+ * y las acciones desde las que un día se avise a un tutor. Un aviso perdido es
+ * un aviso perdido; un aviso colgado es una petición colgada.
+ */
+export const PLAZO_TELEGRAM_MS = 10_000;
+
 /** Plazo por defecto de cualquier llamada que no declare el suyo. */
 export const PLAZO_POR_DEFECTO_MS = 15_000;
 
