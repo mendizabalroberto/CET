@@ -103,20 +103,29 @@ describe("reloj monótono", () => {
 });
 
 describe("latido", () => {
-  it("late cada 60 s de tiempo ACTIVO, no de reloj de pared", () => {
+  it("late por tiempo ACTIVO, no por reloj de pared", () => {
     // Lo que hace que el latido sirva de algo: una pestaña abierta y quieta no
     // late. Si latiera por reloj de pared, la sesión olvidada volvería a
     // inflarse sola, que es el defecto que 0064 cerró en la base de datos.
+    //
+    // Los tiempos van EN FUNCIÓN de `LATIDO_CADA_MS` y no en números redondos:
+    // este test se escribió con 60 s a mano y se puso rojo al bajar la
+    // resolución a 6 s, sin que la conducta que comprueba hubiera cambiado. Un
+    // test que falla porque se ajustó una constante no protege nada, solo cobra
+    // peaje.
+    const casiUnLatido = LATIDO_CADA_MS - 1_000;
+
     let c = arrancar(T0);
-    c = pausar(c, T0 + 10_000);
+    c = pausar(c, T0 + casiUnLatido);
+    // Una hora de reloj de pared con el cronómetro parado: sigue sin latir.
     expect(debeLatir(c, T0 + 3_600_000)).toBe(false);
 
     c = reanudar(c, T0 + 3_600_000);
-    expect(debeLatir(c, T0 + 3_600_000 + 49_999)).toBe(false);
-    expect(debeLatir(c, T0 + 3_600_000 + 50_000)).toBe(true);
+    expect(debeLatir(c, T0 + 3_600_000 + 999)).toBe(false);
+    expect(debeLatir(c, T0 + 3_600_000 + 1_000)).toBe(true);
   });
 
-  it("después de marcar un latido no vuelve a latir hasta 60 s activos más", () => {
+  it("después de marcar un latido no vuelve a latir hasta otro tanto de activo", () => {
     let c = arrancar(T0);
     expect(debeLatir(c, T0 + LATIDO_CADA_MS)).toBe(true);
     c = marcarLatido(c, T0 + LATIDO_CADA_MS);

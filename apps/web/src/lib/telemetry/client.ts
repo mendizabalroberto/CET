@@ -21,6 +21,7 @@
 import { MAX_EVENT_BATCH, type ClientEvent, type LearningEventType } from "@cet/shared";
 
 import { fetchConPlazo, PLAZO_TELEMETRIA_MS } from "@/lib/net/plazo";
+import { guardar, rescatar } from "./deposito";
 
 export const FLUSH_INTERVAL_MS = 5_000;
 export const FLUSH_AT_COUNT = 20;
@@ -168,6 +169,21 @@ export class TelemetryQueue {
     this.warnedAfterDispose = false;
     this.timer = setInterval(() => void this.flush(), FLUSH_INTERVAL_MS);
 
+    // RESCATE DE LO QUE MURIO SIN ENVIARSE. Va a la CABEZA de la cola, delante
+    // de lo que se genere ahora: son eventos mas antiguos y el orden es lo que
+    // hace legible una reconstruccion. Conservan su `sessionId` y su `seq`
+    // originales, asi que no se mezclan con la sesion nueva.
+    const pendientes = rescatar(this.sessionId);
+    if (pendientes.length > 0) {
+      this.queue = [...pendientes, ...this.queue].slice(-MAX_QUEUE);
+      this.persistir();
+    }
+
+    // Volver la red es la mejor senal que hay para reintentar: mejor que esperar
+    // al siguiente tick de 5 s, y mucho mejor que el backoff, que en ese momento
+    // puede estar en un plazo largo tras varios fallos.
+    window.addEventListener("online", this.onOnline);
+
     // `visibilitychange` es el único evento fiable en móvil: `beforeunload` y
     // `unload` no se disparan cuando iOS descarta una pestaña en segundo plano.
     document.addEventListener("visibilitychange", this.onVisibilityChange);
@@ -194,8 +210,13 @@ export class TelemetryQueue {
       window.removeEventListener("pagehide", this.onPageHide);
       document.removeEventListener("pointerdown", this.onPointerDown, true);
       document.removeEventListener("keydown", this.onKeyDown, true);
+      window.removeEventListener("online", this.onOnline);
     }
     this.flushWithBeacon();
+    // DESPUES del beacon: `flushWithBeacon` vacia lo que consigue entregar, asi
+    // que lo que quede aqui es exactamente lo que no salio. Persistirlo antes
+    // guardaria tambien lo ya entregado y se duplicaria en el proximo arranque.
+    this.persistir();
   }
 
   private readonly onVisibilityChange = (): void => {
@@ -275,6 +296,8 @@ export class TelemetryQueue {
       this.queue = this.queue.slice(-MAX_QUEUE);
     }
 
+    this.persistir();
+
     if (this.queue.length >= FLUSH_AT_COUNT) void this.flush();
   }
 
@@ -334,6 +357,34 @@ export class TelemetryQueue {
   }
 
   /**
+   * Vuelca a `localStorage` lo que aun no se ha entregado.
+   *
+   * Se llama en CADA cambio de la cola. Parece mucho, y no lo es: la cola se
+   * vacia cada 5 s o cada 20 eventos, asi que en la practica se escriben unos
+   * pocos kilobytes por tick. La alternativa —persistir solo al ocultarse la
+   * pestana— deja fuera justo el caso que motivo todo esto: el navegador que
+   * mata la pestana en segundo plano sin avisar a nadie.
+   */
+  private persistir(): void {
+    guardar(this.sessionId, this.queue);
+  }
+
+  /**
+   * Ha vuelto la red. Se reintenta YA y se cancela el backoff en curso, que en
+   * ese momento puede estar esperando hasta un minuto por fallos anteriores.
+   * Sin esto, el niño recupera el wifi y su telemetria se queda parada mirando
+   * un temporizador que ya no tiene sentido.
+   */
+  private readonly onOnline = (): void => {
+    if (this.retryTimer) {
+      clearTimeout(this.retryTimer);
+      this.retryTimer = null;
+    }
+    this.consecutiveFailures = 0;
+    void this.flush();
+  };
+
+  /**
    * Envío normal, con reintento y backoff exponencial.
    * Los eventos NO se pierden en un fallo: vuelven al principio de la cola.
    */
@@ -363,6 +414,10 @@ export class TelemetryQueue {
         // Sin sesión: reintentar no arregla nada y reencolar haría crecer la
         // cola sin fin. Se descarta el lote.
         this.consecutiveFailures = 0;
+        // Y se descarta TAMBIEN del deposito. Sin esto, un lote que el servidor
+        // rechaza por falta de sesion volveria en cada arranque a intentar
+        // entrar por una puerta que le seguira estando cerrada.
+        this.persistir();
         return;
       }
 
@@ -372,16 +427,28 @@ export class TelemetryQueue {
          
         console.error("[telemetry] lote rechazado por el servidor (400)");
         this.consecutiveFailures = 0;
+        // Igual que arriba: un lote malformado daria 400 para siempre, y
+        // resucitarlo en cada arranque solo repetiria el error eternamente.
+        this.persistir();
         return;
       }
 
       if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
 
       this.consecutiveFailures = 0;
+      // Entregado: el deposito deja de guardarlo. Si no se actualizara aqui, el
+      // proximo arranque rescataria eventos YA guardados en la base y los
+      // duplicaria, que es peor que perderlos: un informe con el doble de
+      // tiempo de estudio no se nota roto, solo se lee mal.
+      this.persistir();
     } catch {
       // Red caída o 5xx: los eventos vuelven a la cabeza de la cola, en su
       // orden original, y se reintenta con backoff.
       this.queue = [...batch, ...this.queue].slice(-MAX_QUEUE);
+      // Y de vuelta al deposito: este es EL caso que justifica el fichero. Si la
+      // pestana muere ahora —sin red, que es cuando mas probable es— esto es lo
+      // unico que queda del rato del nino.
+      this.persistir();
       this.consecutiveFailures += 1;
       this.scheduleRetry();
     } finally {

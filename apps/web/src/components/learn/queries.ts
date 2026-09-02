@@ -400,19 +400,51 @@ export async function getLesson(
 
   const courseId = module.course_id as string;
 
+  // TERCERA COMPROBACION: que este curso este al alcance de ESTE alumno.
+  //
+  // Con colegio, el alcance lo fija la activacion en `school_courses`: sin ella
+  // se podria adivinar un uuid y abrir una leccion global de un curso que el
+  // centro nunca encendio.
+  //
+  // SIN colegio, esa consulta era `.eq("school_id", null)`, que en Postgres no
+  // casa con nada -NULL no es igual a NULL- y devolvia siempre vacio. O sea:
+  // para el hijo de un tutor, TODA leccion respondia «no encontrada». Es el
+  // mismo fallo que dejaba `/learn` vacio, en el segundo sitio donde vivia; el
+  // arreglo del listado destapo este, porque hasta entonces no habia forma de
+  // llegar hasta aqui.
+  //
+  // Su alcance no se afloja, CAMBIA DE FUENTE: para quien no tiene centro que
+  // le encienda cursos, el curso tiene que ser global y estar publicado. Es
+  // exactamente la biblioteca que el listado le ofrece, asi que adivinar un
+  // uuid no abre nada que no estuviera ya en su pantalla.
+  const sinColegio = schoolId === null;
+
   const [{ data: activation }, { data: course }] = await Promise.all([
-    supabase
-      .from("school_courses")
-      .select("course_id")
-      .eq("school_id", schoolId)
-      .eq("course_id", courseId)
-      .eq("is_active", true)
-      .maybeSingle(),
-    supabase.from("courses").select("id, name").eq("id", courseId).or(scope).maybeSingle(),
+    sinColegio
+      ? Promise.resolve({ data: { course_id: courseId } })
+      : supabase
+          .from("school_courses")
+          .select("course_id")
+          .eq("school_id", schoolId)
+          .eq("course_id", courseId)
+          .eq("is_active", true)
+          .maybeSingle(),
+    sinColegio
+      ? supabase
+          .from("courses")
+          .select("id, name")
+          .eq("id", courseId)
+          .eq("status", "published")
+          .is("school_id", null)
+          .maybeSingle()
+      : supabase.from("courses").select("id, name").eq("id", courseId).or(scope).maybeSingle(),
   ]);
 
   // El curso no está encendido para este colegio: para el alumno, no existe.
   if (!activation) return null;
+  // Y sin colegio, el que manda es este: un curso que no sea global y publicado
+  // no forma parte de su biblioteca, asi que tampoco existe para el.
+  if (sinColegio && !course) return null;
 
   const { data: blocks } = await supabase
     .from("lesson_blocks")

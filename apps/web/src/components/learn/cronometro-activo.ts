@@ -33,8 +33,32 @@
  * una ref y que la pantalla no se entere de que cambió.
  */
 
-/** Cada cuánto tiempo ACTIVO se emite un latido de telemetría. */
-export const LATIDO_CADA_MS = 60_000;
+/**
+ * Cada cuánto tiempo ACTIVO se emite un latido de telemetría, y por tanto la
+ * RESOLUCIÓN con la que queda registrado el tiempo de una pantalla.
+ *
+ * Empezó en 60 s con este razonamiento: el latido existe para que el portátil
+ * que se cierra de golpe no se lleve la sesión entera —así es como se rompió el
+ * cálculo de 0064—, y con un minuto lo peor que se pierde es un minuto.
+ *
+ * Se baja a 6 s porque ese argumento fija el TECHO de lo que se pierde, no el
+ * suelo de lo que se quiere ver. Con 60 s, una visita de 40 segundos a una
+ * pantalla no deja ni un latido: solo la fila de salida. Con 6 s se ve la forma
+ * de la sesión —dónde se atascó, dónde voló— y no solo su total.
+ *
+ * LO QUE CUESTA, dicho en voz alta: son DIEZ VECES más filas en
+ * `learning_events`. Una lección de veinte minutos pasa de ~20 a ~200 eventos
+ * por niño. El envío no sufre —la cola del navegador ya agrupa cada 5 s o cada
+ * 20 eventos, así que van en lote igual—, pero la tabla crece diez veces más
+ * deprisa, y hoy NADIE la purga: la retención de 0054 se programa con pg_cron y
+ * pg_cron no está instalado en este proyecto. Hay particiones precreadas hasta
+ * 2027-08, así que espacio hay; lo que no hay es limpieza automática.
+ *
+ * Si algún día esto pesa, lo que se toca es este número y nada más: quien
+ * agrega ya tiene que quedarse con el MÁXIMO por visita y no sumar, así que
+ * cambiar la resolución no cambia ninguna cifra de ningún informe.
+ */
+export const LATIDO_CADA_MS = 6_000;
 
 export interface Cronometro {
   /** Instante monótono del arranque. El origen de los milisegundos BRUTOS. */

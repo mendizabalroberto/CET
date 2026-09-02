@@ -55,6 +55,11 @@ function consulta(tabla: string): Record<string, unknown> {
   for (const filtro of ["select", "eq", "is", "in", "or", "order", "filter", "neq"]) {
     encadenable[filtro] = () => encadenable;
   }
+  // `maybeSingle()` cierra la cadena y devuelve UNA fila o null, no una lista.
+  // Sin esto el doble devolvía el array y el código de producción leía
+  // `lesson.title` sobre un array, que es `undefined` — un falso rojo que no
+  // dice nada del fallo que se está probando.
+  encadenable["maybeSingle"] = () => Promise.resolve({ data: filas[0] ?? null, error: null });
   return encadenable;
 }
 
@@ -133,5 +138,68 @@ describe("getStudentCourses · el alcance de quien no tiene colegio", () => {
     const cursos = await getStudentCourses("11111111-1111-4111-8111-111111111111");
 
     expect(cursos).toEqual([]);
+  });
+});
+
+describe("getLesson · abrir una leccion sin colegio", () => {
+  const LECCION = "aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa";
+
+  it("EL SEGUNDO SITIO DEL MISMO FALLO: sin colegio, la leccion se encuentra", async () => {
+    // `getLesson` exigia una fila de `school_courses` con
+    // `.eq("school_id", null)`. En Postgres eso no casa con nada -NULL no es
+    // igual a NULL-, asi que devolvia vacio SIEMPRE y toda leccion respondia
+    // «no encontrada». Reportado al probar en produccion el 01/09/2026, en
+    // cuanto el arreglo del listado permitio llegar hasta aqui.
+    respuestas["lessons"] = [
+      { id: LECCION, module_id: "m1", title: { es: "Simplificar" }, estimated_minutes: 20 },
+    ];
+    respuestas["course_modules"] = [{ id: "m1", course_id: "c1", title: { es: "Fracciones" } }];
+    respuestas["courses"] = [{ id: "c1", name: { es: "Matematicas" } }];
+    respuestas["lesson_blocks"] = [];
+
+    const { getLesson } = await import("./queries");
+    const leccion = await getLesson(LECCION, null, "es");
+
+    expect(leccion).not.toBeNull();
+  });
+
+  it("sin colegio NO se pregunta por school_courses tampoco al abrir", async () => {
+    respuestas["lessons"] = [
+      { id: LECCION, module_id: "m1", title: { es: "Simplificar" }, estimated_minutes: 20 },
+    ];
+    respuestas["course_modules"] = [{ id: "m1", course_id: "c1", title: { es: "Fracciones" } }];
+    respuestas["courses"] = [{ id: "c1", name: { es: "Matematicas" } }];
+    respuestas["lesson_blocks"] = [];
+
+    const { getLesson } = await import("./queries");
+    await getLesson(LECCION, null, "es");
+
+    expect(tablasConsultadas).not.toContain("school_courses");
+  });
+
+  it("sin colegio, un curso que NO es global y publicado sigue sin existir", async () => {
+    // El alcance no se afloja, cambia de fuente. Si la consulta de `courses` no
+    // devuelve nada -no es global, o no esta publicado- adivinar el uuid de la
+    // leccion no puede abrirla.
+    respuestas["lessons"] = [
+      { id: LECCION, module_id: "m1", title: { es: "Simplificar" }, estimated_minutes: 20 },
+    ];
+    respuestas["course_modules"] = [{ id: "m1", course_id: "c1", title: { es: "Fracciones" } }];
+    respuestas["courses"] = [];
+
+    const { getLesson } = await import("./queries");
+    expect(await getLesson(LECCION, null, "es")).toBeNull();
+  });
+
+  it("CON colegio, un curso no encendido sigue sin existir para el alumno", async () => {
+    respuestas["lessons"] = [
+      { id: LECCION, module_id: "m1", title: { es: "Simplificar" }, estimated_minutes: 20 },
+    ];
+    respuestas["course_modules"] = [{ id: "m1", course_id: "c1", title: { es: "Fracciones" } }];
+    respuestas["school_courses"] = [];
+    respuestas["courses"] = [{ id: "c1", name: { es: "Matematicas" } }];
+
+    const { getLesson } = await import("./queries");
+    expect(await getLesson(LECCION, "11111111-1111-4111-8111-111111111111", "es")).toBeNull();
   });
 });
