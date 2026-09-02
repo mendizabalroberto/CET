@@ -533,18 +533,12 @@ const eventoCalendarioSchema = z.object({
   ]),
 });
 
-export async function calendarioDelPlan(gestion: number): Promise<EventoCalendario[]> {
-  const { createClient } = await import("@/lib/supabase/server");
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("calendario_eventos")
-    .select("desde, hasta, tipo, year_levels")
-    .eq("gestion", gestion)
-    .order("desde", { ascending: true });
-
-  if (error !== null || data === null) return [];
+export function filtrarCalendarioPorCurso(
+  filas: readonly unknown[],
+  yearLevel: number | null,
+): EventoCalendario[] {
   const resultado: EventoCalendario[] = [];
-  for (const bruta of data) {
+  for (const bruta of filas) {
     if (!esFila(bruta)) continue;
     const parse = eventoCalendarioSchema.safeParse(bruta);
     if (!parse.success) continue;
@@ -556,13 +550,80 @@ export async function calendarioDelPlan(gestion: number): Promise<EventoCalendar
     if (
       parse.data.tipo === "hito_cambridge" &&
       Array.isArray(yearLevels) &&
-      yearLevels.length > 0
+      yearLevels.length > 0 &&
+      (yearLevel === null || !yearLevels.includes(yearLevel))
     ) {
       continue;
     }
     resultado.push(parse.data);
   }
   return resultado;
+}
+
+export async function calendarioDelPlan(
+  gestion: number,
+  yearLevel: number | null = null,
+): Promise<EventoCalendario[]> {
+  const { createClient } = await import("@/lib/supabase/server");
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("calendario_eventos")
+    .select("desde, hasta, tipo, year_levels")
+    .eq("gestion", gestion)
+    .order("desde", { ascending: true });
+
+  if (error !== null || data === null) return [];
+  return filtrarCalendarioPorCurso(data, yearLevel);
+}
+
+export interface EventoProximo {
+  readonly desde: string;
+  readonly hasta: string;
+  readonly tipo: EventoCalendario["tipo"];
+  readonly yearLevels: number[];
+}
+
+export function recortarVentana(
+  filas: readonly unknown[],
+  desde: string,
+  hasta: string,
+): EventoProximo[] {
+  const resultado: EventoProximo[] = [];
+  for (const bruta of filas) {
+    if (!esFila(bruta)) continue;
+    const parse = eventoCalendarioSchema.safeParse(bruta);
+    if (!parse.success) continue;
+    if (parse.data.hasta < desde || parse.data.desde > hasta) continue;
+    const yearLevelsBruto = bruta["year_levels"];
+    const yearLevels = Array.isArray(yearLevelsBruto)
+      ? yearLevelsBruto.filter((x): x is number => typeof x === "number")
+      : [];
+    resultado.push({ ...parse.data, yearLevels });
+  }
+  return resultado;
+}
+
+export async function eventosProximos(
+  gestion: number,
+  desde: string,
+  dias: number = 60,
+): Promise<EventoProximo[]> {
+  const { createClient } = await import("@/lib/supabase/server");
+  const supabase = await createClient();
+  const hasta = sumarDias(desde, dias);
+  const { data, error } = await supabase
+    .from("calendario_eventos")
+    .select("desde, hasta, tipo, year_levels")
+    .eq("gestion", gestion)
+    .gte("hasta", desde)
+    .lte("desde", hasta)
+    .order("desde", { ascending: true });
+
+  if (error !== null || data === null) {
+    console.error("[cet] eventosProximos", error);
+    return [];
+  }
+  return recortarVentana(data, desde, hasta);
 }
 
 export async function minutosObservados(studentId: string): Promise<number | null> {

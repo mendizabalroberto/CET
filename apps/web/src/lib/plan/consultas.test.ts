@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  filtrarCalendarioPorCurso,
+  recortarVentana,
   armarEntradaReparto,
   armarInventarioEstratega,
   notaGuardadaSchema,
@@ -158,5 +160,103 @@ describe("armarEntradaReparto", () => {
     });
 
     expect(entrada.materias).toEqual([]);
+  });
+});
+
+describe("filtrarCalendarioPorCurso", () => {
+  it("deja pasar un feriado sin year_levels", () => {
+    const resultado = filtrarCalendarioPorCurso(
+      [{ desde: "2026-09-07", hasta: "2026-09-07", tipo: "feriado" }],
+      6,
+    );
+    expect(resultado).toEqual([
+      { desde: "2026-09-07", hasta: "2026-09-07", tipo: "feriado" },
+    ]);
+  });
+
+  it("descarta un hito de otro curso", () => {
+    const resultado = filtrarCalendarioPorCurso(
+      [
+        {
+          desde: "2026-09-07",
+          hasta: "2026-09-07",
+          tipo: "hito_cambridge",
+          year_levels: [4],
+        },
+      ],
+      6,
+    );
+    expect(resultado).toEqual([]);
+  });
+
+  it("conserva un hito del curso del alumno", () => {
+    const resultado = filtrarCalendarioPorCurso(
+      [
+        {
+          desde: "2026-09-07",
+          hasta: "2026-09-07",
+          tipo: "hito_cambridge",
+          year_levels: [6],
+        },
+      ],
+      6,
+    );
+    expect(resultado).toEqual([
+      { desde: "2026-09-07", hasta: "2026-09-07", tipo: "hito_cambridge" },
+    ]);
+  });
+
+  it("descarta un hito con year_levels cuando no se conoce el curso", () => {
+    const resultado = filtrarCalendarioPorCurso(
+      [
+        {
+          desde: "2026-09-07",
+          hasta: "2026-09-07",
+          tipo: "hito_cambridge",
+          year_levels: [6],
+        },
+      ],
+      null,
+    );
+    expect(resultado).toEqual([]);
+  });
+
+  it("conserva un hito con year_levels vacio", () => {
+    const resultado = filtrarCalendarioPorCurso(
+      [
+        {
+          desde: "2026-09-07",
+          hasta: "2026-09-07",
+          tipo: "hito_cambridge",
+          year_levels: [],
+        },
+      ],
+      6,
+    );
+    expect(resultado).toEqual([
+      { desde: "2026-09-07", hasta: "2026-09-07", tipo: "hito_cambridge" },
+    ]);
+  });
+});
+
+describe("recortarVentana", () => {
+  it("conserva solo los eventos dentro de la ventana", () => {
+    const resultado = recortarVentana(
+      [
+        { desde: "2026-09-01", hasta: "2026-09-01", tipo: "feriado" },
+        { desde: "2026-09-10", hasta: "2026-09-11", tipo: "hito_cambridge", year_levels: [6] },
+        { desde: "2026-10-01", hasta: "2026-10-01", tipo: "feriado" },
+      ],
+      "2026-09-05",
+      "2026-09-30",
+    );
+    expect(resultado).toEqual([
+      {
+        desde: "2026-09-10",
+        hasta: "2026-09-11",
+        tipo: "hito_cambridge",
+        yearLevels: [6],
+      },
+    ]);
   });
 });
