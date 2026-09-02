@@ -1,10 +1,18 @@
 "use client";
 
-import { useActionState, useRef } from "react";
+import { useActionState, useRef, useState } from "react";
 
 import { useI18n } from "@/lib/i18n/provider";
-import { confirmarBoletin, fijarPlan, proponerPlan, subirBoletin } from "@/lib/plan/acciones";
-import type { BoletinResumen, PlanResumen } from "@/lib/plan/consultas";
+import {
+  cancelarPlan,
+  confirmarBoletin,
+  descartarBoletin,
+  fijarPlan,
+  proponerPlan,
+  subirBoletin,
+  type PlanState,
+} from "@/lib/plan/acciones";
+import type { BoletinResumen, EventoProximo, PlanResumen } from "@/lib/plan/consultas";
 
 type TechoVisible = {
   readonly subjectId: string;
@@ -14,13 +22,22 @@ type TechoVisible = {
 };
 
 type Valores = Record<string, string | number>;
-type AccionDeEscritura = "subir" | "confirmar" | "proponer" | "fijar";
+type AccionDeEscritura =
+  | "subir"
+  | "confirmar"
+  | "proponer"
+  | "fijar"
+  | "cancelar"
+  | "descartar";
 
 interface Props {
   readonly studentId: string;
   readonly boletin: BoletinResumen | null;
+  readonly boletines: readonly BoletinResumen[];
   readonly plan: PlanResumen | null;
   readonly nombre: string;
+  readonly eventos: readonly EventoProximo[];
+  readonly yearLevel: number | null;
 }
 
 const ESTADO_INICIAL = { ok: false } as const;
@@ -79,7 +96,15 @@ function fechaLegible(iso: string, locale: string): string {
   return fecha.toLocaleDateString(locale === "es" ? "es-ES" : "en-GB");
 }
 
-export function PlanDeEstudio({ studentId, boletin, plan }: Props) {
+export function PlanDeEstudio({
+  studentId,
+  boletin,
+  boletines,
+  plan,
+  nombre,
+  eventos,
+  yearLevel,
+}: Props) {
   const { t, fmt, locale } = useI18n();
   const P = t.tutor.child.plan;
 
@@ -90,27 +115,51 @@ export function PlanDeEstudio({ studentId, boletin, plan }: Props) {
   );
   const [propuesta, accionProponer, proponiendo] = useActionState(proponerPlan, ESTADO_INICIAL);
   const [fijacion, accionFijar, fijando] = useActionState(fijarPlan, ESTADO_INICIAL);
+  const [cancelacion, accionCancelar, cancelando] = useActionState(cancelarPlan, ESTADO_INICIAL);
+  const [descarte, accionDescartar, descartando] = useActionState(
+    descartarBoletin,
+    ESTADO_INICIAL,
+  );
+
+  const [pidiendoConfirmacionDeCancelar, setPidiendoConfirmacionDeCancelar] = useState(false);
 
   const ultimaAccion = useRef<AccionDeEscritura | null>(null);
   const marcar = (accion: AccionDeEscritura) => () => {
     ultimaAccion.current = accion;
   };
 
-  const errorKey =
-    ultimaAccion.current === "subir"
-      ? subida.errorKey
-      : ultimaAccion.current === "confirmar"
-        ? confirmacion.errorKey
-        : ultimaAccion.current === "proponer"
-          ? propuesta.errorKey
-          : ultimaAccion.current === "fijar"
-            ? fijacion.errorKey
-            : (subida.errorKey ?? confirmacion.errorKey ?? propuesta.errorKey ?? fijacion.errorKey);
+  const estados: Record<AccionDeEscritura, PlanState> = {
+    subir: subida,
+    confirmar: confirmacion,
+    proponer: propuesta,
+    fijar: fijacion,
+    cancelar: cancelacion,
+    descartar: descarte,
+  };
 
-  const mensaje =
+  // El estado que manda para el acuse (éxito o error): el de la última acción
+  // que se envió, o —antes de que se envíe nada— el primero que ya traiga
+  // algo que contar, en el mismo orden en que aparecen en la pantalla.
+  const estadoActivo =
+    ultimaAccion.current !== null
+      ? estados[ultimaAccion.current]
+      : (Object.values(estados).find((estado) => estado.errorKey !== undefined || estado.ok) ??
+        (ESTADO_INICIAL as PlanState));
+
+  const errorKey = estadoActivo.ok ? undefined : estadoActivo.errorKey;
+  const successKey = estadoActivo.ok ? estadoActivo.successKey : undefined;
+
+  const mensajeDeError =
     errorKey === undefined
       ? null
-      : (t.tutor.errors[errorKey as keyof typeof t.tutor.errors] ?? t.tutor.errors.generic);
+      : fmt(t.tutor.errors[errorKey as keyof typeof t.tutor.errors] ?? t.tutor.errors.generic, {
+          name: nombre,
+        });
+
+  const mensajeDeExito =
+    successKey === undefined
+      ? null
+      : fmt(P.success[successKey as keyof typeof P.success], { name: nombre });
 
   const valoresPropuesta = propuesta.ok ? propuesta.values : undefined;
   const hayPropuesta = valoresPropuesta !== undefined;
@@ -139,6 +188,8 @@ export function PlanDeEstudio({ studentId, boletin, plan }: Props) {
     boletin !== null && boletin.estado === "confirmado" && boletin.confirmadoAt !== null
       ? new Date(boletin.confirmadoAt).toLocaleDateString(locale === "es" ? "es-ES" : "en-GB")
       : null;
+
+  const historial = boletin === null ? boletines : boletines.slice(1);
 
   const tablaDeNotas = (
     <div className="overflow-x-auto">
@@ -187,6 +238,39 @@ export function PlanDeEstudio({ studentId, boletin, plan }: Props) {
     </div>
   );
 
+  function tablaHistorica(fila: BoletinResumen) {
+    return (
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-sm">
+          <thead>
+            <tr className="border-line text-muted border-b text-left">
+              <th scope="col" className="px-4 py-3 font-semibold">
+                {P.colSubject}
+              </th>
+              <th scope="col" className="px-4 py-3 text-right font-semibold">
+                {P.colGrade}
+              </th>
+              <th scope="col" className="px-4 py-3 text-right font-semibold">
+                {P.colBand}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {fila.notas.map((nota, indice) => (
+              <tr key={`${nota.materia}-${indice}`} className="border-line border-b last:border-0">
+                <th scope="row" className="text-ink px-4 py-3 text-left font-semibold">
+                  {nota.materia}
+                </th>
+                <td className="text-ink px-4 py-3 text-right font-semibold">{nota.nota}</td>
+                <td className="text-ink px-4 py-3 font-medium">{P.bands[nota.banda]}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
   const formularioDeSubida = (
     <form action={accionSubir} onSubmit={marcar("subir")} className="mt-4 space-y-3">
       <label htmlFor="plan-archivo" className="text-ink block font-semibold">
@@ -213,6 +297,8 @@ export function PlanDeEstudio({ studentId, boletin, plan }: Props) {
 
   return (
     <div className="space-y-6">
+      <h2 className="text-ink text-xl font-bold">{fmt(P.title, { name: nombre })}</h2>
+
       <section className="border-line bg-card rounded-2xl border-2 p-5">
         <h2 className="text-ink text-lg font-bold">{P.uploadTitle}</h2>
         <p className="text-muted mt-2">{P.intro}</p>
@@ -228,23 +314,41 @@ export function PlanDeEstudio({ studentId, boletin, plan }: Props) {
               : fmt(P.term, { n: boletin.trimestre, year: boletin.gestion })}
           </p>
           {boletin.estado === "extraido" ? (
-            <form
-              action={accionConfirmar}
-              onSubmit={marcar("confirmar")}
-              className="mt-4 space-y-3"
-            >
-              <input type="hidden" name="studentId" value={studentId} />
-              <input type="hidden" name="boletinId" value={boletin.id} />
-              {tablaDeNotas}
-              <button
-                type="submit"
-                disabled={confirmando}
-                className="bg-brand text-on-brand rounded-xl px-5 py-3 font-semibold disabled:opacity-60"
+            <>
+              <form
+                action={accionConfirmar}
+                onSubmit={marcar("confirmar")}
+                className="mt-4 space-y-3"
               >
-                {confirmando ? P.confirming : P.confirmButton}
-              </button>
-              <p className="text-muted text-[15px]">{P.extractedHelp}</p>
-            </form>
+                <input type="hidden" name="studentId" value={studentId} />
+                <input type="hidden" name="boletinId" value={boletin.id} />
+                {tablaDeNotas}
+                <button
+                  type="submit"
+                  disabled={confirmando}
+                  className="bg-brand text-on-brand rounded-xl px-5 py-3 font-semibold disabled:opacity-60"
+                >
+                  {confirmando ? P.confirming : P.confirmButton}
+                </button>
+                <p className="text-muted text-[15px]">{P.extractedHelp}</p>
+              </form>
+              <form
+                action={accionDescartar}
+                onSubmit={marcar("descartar")}
+                className="mt-4 space-y-2"
+              >
+                <input type="hidden" name="studentId" value={studentId} />
+                <input type="hidden" name="boletinId" value={boletin.id} />
+                <button
+                  type="submit"
+                  disabled={descartando}
+                  className="border-line text-ink rounded-xl border-2 px-5 py-3 font-semibold disabled:opacity-60"
+                >
+                  {descartando ? P.discarding : P.discardButton}
+                </button>
+                <p className="text-muted text-[15px]">{P.discardHelp}</p>
+              </form>
+            </>
           ) : (
             <div className="mt-4 space-y-3">
               {tablaDeNotas}
@@ -327,10 +431,10 @@ export function PlanDeEstudio({ studentId, boletin, plan }: Props) {
                 <h3 className="text-ink font-semibold">{P.weightsTitle}</h3>
                 <ul className="text-ink mt-1 list-inside list-disc text-[15px]">
                   {Object.entries(pesosPropuesta).map(([code, peso]) => {
-                    const nombre = nombrePorCode.get(code) ?? code;
+                    const nombreMateria = nombrePorCode.get(code) ?? code;
                     return (
                       <li key={code}>
-                        {nombre} → {Math.round(peso * 100)}%
+                        {nombreMateria} → {Math.round(peso * 100)}%
                       </li>
                     );
                   })}
@@ -433,6 +537,44 @@ export function PlanDeEstudio({ studentId, boletin, plan }: Props) {
               <p className="text-muted mt-1 text-[15px]">{P.reportsEmpty}</p>
             )}
           </div>
+          {plan !== null ? (
+            <div className="border-line mt-4 rounded-xl border-2 p-4">
+              <h3 className="text-ink font-semibold">{P.cancelTitle}</h3>
+              <p className="text-muted mt-1 text-[15px]">
+                {fmt(P.cancelBody, { name: nombre })}
+              </p>
+              {!pidiendoConfirmacionDeCancelar ? (
+                <button
+                  type="button"
+                  onClick={() => setPidiendoConfirmacionDeCancelar(true)}
+                  className="border-line text-ink mt-3 rounded-xl border-2 px-5 py-3 font-semibold"
+                >
+                  {P.cancelButton}
+                </button>
+              ) : (
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <form action={accionCancelar} onSubmit={marcar("cancelar")}>
+                    <input type="hidden" name="planId" value={plan.id} />
+                    <input type="hidden" name="studentId" value={studentId} />
+                    <button
+                      type="submit"
+                      disabled={cancelando}
+                      className="border-danger text-ink rounded-xl border-2 px-5 py-3 font-semibold disabled:opacity-60"
+                    >
+                      {cancelando ? P.cancelling : P.cancelConfirm}
+                    </button>
+                  </form>
+                  <button
+                    type="button"
+                    onClick={() => setPidiendoConfirmacionDeCancelar(false)}
+                    className="text-ink px-5 py-3 font-semibold"
+                  >
+                    {P.cancelKeep}
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : null}
         </section>
       ) : boletin === null ? (
         <section className="border-line bg-card rounded-2xl border-2 p-5">
@@ -446,12 +588,84 @@ export function PlanDeEstudio({ studentId, boletin, plan }: Props) {
         </section>
       )}
 
-      {mensaje !== null ? (
+      <section className="border-line bg-card rounded-2xl border-2 p-5">
+        <h2 className="text-ink text-lg font-bold">{P.historyTitle}</h2>
+        {historial.length === 0 ? (
+          <p className="text-muted mt-2 text-[15px]">{P.historyEmpty}</p>
+        ) : (
+          <ul className="mt-3 space-y-2">
+            {historial.map((fila) => {
+              const term =
+                fila.trimestre === null
+                  ? P.historyTermUnknown
+                  : fmt(P.term, { n: fila.trimestre, year: fila.gestion });
+              return (
+                <li key={fila.id} className="border-line border-b pb-2 last:border-0 last:pb-0">
+                  <details>
+                    <summary className="text-ink cursor-pointer text-[15px] font-medium">
+                      {fmt(P.historyLine, {
+                        term,
+                        count: fila.notas.length,
+                        date: fechaLegible(fila.createdAt, locale),
+                      })}
+                    </summary>
+                    <div className="mt-2">{tablaHistorica(fila)}</div>
+                  </details>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+
+      <section className="border-line bg-card rounded-2xl border-2 p-5">
+        <h2 className="text-ink text-lg font-bold">{P.calendarTitle}</h2>
+        {eventos.length === 0 ? (
+          <p className="text-muted mt-2 text-[15px]">{P.calendarEmpty}</p>
+        ) : (
+          <ul className="mt-3 space-y-2 text-[15px]">
+            {eventos.map((evento, indice) => {
+              const esDeOtroCurso =
+                evento.tipo === "hito_cambridge" &&
+                evento.yearLevels.length > 0 &&
+                (yearLevel === null || !evento.yearLevels.includes(yearLevel));
+              const rango =
+                evento.desde === evento.hasta
+                  ? fmt(P.calendarDay, { date: fechaLegible(evento.desde, locale) })
+                  : fmt(P.calendarRange, {
+                      from: fechaLegible(evento.desde, locale),
+                      to: fechaLegible(evento.hasta, locale),
+                    });
+              return (
+                <li
+                  key={`${evento.tipo}-${evento.desde}-${indice}`}
+                  className={esDeOtroCurso ? "text-muted" : "text-ink"}
+                >
+                  <span className="font-semibold">{P.calendarTypes[evento.tipo]}</span>
+                  {" — "}
+                  {rango}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+
+      {mensajeDeExito !== null ? (
+        <p
+          role="status"
+          className="border-brand bg-brand/10 text-ink rounded-lg border-l-4 px-4 py-3 text-[15px]"
+        >
+          {mensajeDeExito}
+        </p>
+      ) : null}
+
+      {mensajeDeError !== null ? (
         <p
           role="alert"
           className="border-danger bg-danger/10 text-ink rounded-lg border-l-4 px-4 py-3 text-[15px]"
         >
-          {mensaje}
+          {mensajeDeError}
         </p>
       ) : null}
     </div>

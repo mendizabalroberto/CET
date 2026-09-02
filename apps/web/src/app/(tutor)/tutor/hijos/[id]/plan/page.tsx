@@ -11,7 +11,9 @@ import { notFound } from "next/navigation";
 
 import { PlanDeEstudio } from "@/components/tutor/PlanDeEstudio";
 import { getServerDictionary } from "@/lib/i18n/server";
-import { boletinesDeHijo, planActivoDeHijo } from "@/lib/plan/consultas";
+import { boletinesDeHijo, eventosProximos, planActivoDeHijo } from "@/lib/plan/consultas";
+import { hoyEnZona } from "@/lib/plan/fecha";
+import { createClient } from "@/lib/supabase/server";
 import { alcanceDeHijo } from "@/lib/tutor/queries";
 
 interface PageProps {
@@ -21,6 +23,26 @@ interface PageProps {
 /** «Leo Mendizabal García» -> «Leo». */
 function nombreDePila(nombre: string): string {
   return nombre.trim().split(/\s+/)[0] ?? nombre;
+}
+
+/**
+ * El curso del hijo, solo para marcar en gris un hito Cambridge que no es
+ * suyo (§6 del encargo). `alcanceDeHijo` no lo trae —solo decide el catálogo
+ * de contenido, no el calendario— así que se lee aparte, con la misma sesión
+ * del tutor y la RLS que ya cubre `students`. `null` si algo falla: el
+ * componente entonces pinta todos los hitos igual, en vez de romper la
+ * pantalla por un dato que aquí es solo decorativo.
+ */
+async function yearLevelDeHijo(studentId: string): Promise<number | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("students")
+    .select("year_level")
+    .eq("profile_id", studentId)
+    .maybeSingle();
+  if (error !== null || data === null) return null;
+  const valor = (data as { year_level?: unknown }).year_level;
+  return typeof valor === "number" ? valor : null;
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -34,17 +56,25 @@ export default async function PlanDeHijoPage({ params }: PageProps) {
   const hijo = await alcanceDeHijo(id);
   if (hijo === null) notFound();
 
-  const [boletines, plan] = await Promise.all([
+  const hoy = hoyEnZona();
+  const gestionActual = Number(hoy.slice(0, 4));
+
+  const [boletines, plan, eventos, yearLevel] = await Promise.all([
     boletinesDeHijo(hijo.id),
     planActivoDeHijo(hijo.id),
+    eventosProximos(gestionActual, hoy, 60),
+    yearLevelDeHijo(hijo.id),
   ]);
 
   return (
     <PlanDeEstudio
       studentId={hijo.id}
       boletin={boletines[0] ?? null}
+      boletines={boletines}
       plan={plan}
       nombre={nombreDePila(hijo.nombre)}
+      eventos={eventos}
+      yearLevel={yearLevel}
     />
   );
 }

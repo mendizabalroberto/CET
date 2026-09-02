@@ -355,8 +355,9 @@ export async function proponerPlan(_prev: PlanState, fd: FormData): Promise<Plan
   if (boletin.estado !== "confirmado") return fail("planSinConfirmar");
   if (!boletin.notas.some((nota) => nota.code !== null)) return fail("planSinContenido");
 
-  const [perfilRes, inventario, completadas, minutos] = await Promise.all([
+  const [perfilRes, yearLevelRes, inventario, completadas, minutos] = await Promise.all([
     supabase.from("profiles").select("full_name").eq("id", studentId).maybeSingle(),
+    supabase.from("students").select("year_level").eq("profile_id", studentId).maybeSingle(),
     inventarioDeContenido(),
     leccionesCompletadas(studentId),
     minutosObservados(studentId),
@@ -371,9 +372,15 @@ export async function proponerPlan(_prev: PlanState, fd: FormData): Promise<Plan
   }
   const fullName = columnaTexto(perfilRes.data as Fila | null, "full_name") ?? "";
   const nombreDePila = fullName.trim().split(/\s+/)[0] ?? "";
+  // El curso decide qué hito Cambridge cierra la ventana del plan (0092): un
+  // fallo al leerlo no debe tumbar la propuesta, solo hace que ningún hito se
+  // filtre por curso.
+  const yearLevelBruto =
+    yearLevelRes.error === null ? (yearLevelRes.data as Fila | null)?.["year_level"] : null;
+  const yearLevel = typeof yearLevelBruto === "number" ? yearLevelBruto : null;
 
   const hoy = hoyEnZona();
-  const calendario = await calendarioDelPlan(Number(hoy.slice(0, 4)));
+  const calendario = await calendarioDelPlan(Number(hoy.slice(0, 4)), yearLevel);
   const ventana = hitoMasCercano(calendario, hoy);
 
   const entrada: EntradaEstratega = {
