@@ -50,6 +50,21 @@
  * un indicador, y los nombres de alumno con dos apellidos son largos.
  *
  * ===========================================================================
+ * LAS PROPS SE PASAN UNA A UNA, Y ESO TIENE UN FILO
+ * ===========================================================================
+ * Cada grupo llega como `ConTitulo<XProps>` —las props del dibujo MAS el titulo
+ * de su panel—, asi que no se puede hacer `<EffortTrend {...effort} />`: el
+ * `title` es del panel, no del dibujo, y colarselo seria pasarle una prop que no
+ * conoce. Por eso van enumeradas.
+ *
+ * EL FILO: una prop nueva en un dibujo compila y no llega. El tipo la admite
+ * —viaja en `effort`— y el JSX de aqui simplemente no la reenvia, asi que no
+ * falla nada: la aplicacion la pasa, el compilador calla y la pantalla sale sin
+ * eje. Paso exactamente eso con `yTicks` y `peakText` el dia que se anadieron.
+ * Al tocar las props de cualquier dibujo de esta carpeta, este fichero es la
+ * segunda parada obligatoria.
+ *
+ * ===========================================================================
  * LOS TEXTOS (AD-7)
  * ===========================================================================
  * Ni un literal de cara al usuario. Los titulos de seccion entran como
@@ -176,13 +191,23 @@ export function StudyScorecard({
 
       {hayEsfuerzo ? (
         <ScorecardPanel subjectCode={subjectCode} title={effort.title}>
-          <EffortTrend series={effort.series} summary={effort.summary} />
+          <EffortTrend
+            series={effort.series}
+            summary={effort.summary}
+            yTicks={effort.yTicks}
+            peakText={effort.peakText}
+          />
         </ScorecardPanel>
       ) : null}
 
       {hayHoras ? (
         <ScorecardPanel subjectCode={subjectCode} title={rhythm.title}>
-          <DailyRhythm hours={rhythm.hours} summary={rhythm.summary} />
+          <DailyRhythm
+            hours={rhythm.hours}
+            summary={rhythm.summary}
+            yTicks={rhythm.yTicks}
+            peakText={rhythm.peakText}
+          />
         </ScorecardPanel>
       ) : null}
 
@@ -195,6 +220,8 @@ export function StudyScorecard({
             yAxisLabel={outcome.yAxisLabel}
             xMaxText={outcome.xMaxText}
             yMaxText={outcome.yMaxText}
+            xTicks={outcome.xTicks}
+            yTicks={outcome.yTicks}
             tooFewText={outcome.tooFewText}
           />
         </ScorecardPanel>

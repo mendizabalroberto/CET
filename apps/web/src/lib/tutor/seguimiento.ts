@@ -48,8 +48,9 @@
  * se resuelven con el idioma de la petición.
  */
 import { resolveI18n, type I18nText, type Locale } from "@cet/shared";
-import { masteryLevel, MIN_DIAS_DISPERSION, UNKNOWN_SUBJECT } from "@cet/ui";
+import { cortesDelEje, masteryLevel, MIN_DIAS_DISPERSION, UNKNOWN_SUBJECT } from "@cet/ui";
 import type {
+  AxisTick,
   EffortDay,
   EffortOutcomePoint,
   HourActivity,
@@ -84,6 +85,60 @@ const FORMATO_DE_DIA: Intl.DateTimeFormatOptions = {
   // enseñaría el día ANTERIOR: la columna del lunes rotulada «domingo».
   timeZone: "UTC",
 };
+
+/**
+ * Formato del ancla del eje horizontal: «1 sept». Sin el día de la semana, que
+ * sí lleva la etiqueta larga de la columna: el ancla está para situar la
+ * ventana —dónde empieza y dónde acaba— y «lun, 1 sept» repetido dos o tres
+ * veces bajo el dibujo es una franja de texto que compite con las columnas.
+ */
+const FORMATO_DE_ANCLA: Intl.DateTimeFormatOptions = {
+  day: "numeric",
+  month: "short",
+  // Misma trampa que en `FORMATO_DE_DIA`: sin fijar UTC, un servidor al oeste
+  // de Greenwich anclaría la columna del lunes con la fecha del domingo.
+  timeZone: "UTC",
+};
+
+/**
+ * Qué días del eje llevan ancla: el primero, el último y —si la ventana da para
+ * ello— el de en medio.
+ *
+ * DOS O TRES, NUNCA UNA POR COLUMNA. Catorce fechas debajo de columnas
+ * estrechas no se leen: se emborronan en una franja gris que además roba altura
+ * al dibujo, que es lo que hay que mirar. Con los dos extremos se sabe qué
+ * periodo se está viendo, que es la pregunta que el eje horizontal contesta; el
+ * día concreto de cada columna ya lo da su etiqueta al posarse o al enfocarla.
+ */
+function anclasDeLaSerie(cuantos: number): ReadonlySet<number> {
+  if (cuantos <= 0) return new Set();
+  if (cuantos === 1) return new Set([0]);
+  const anclas = new Set([0, cuantos - 1]);
+  // Cinco es donde el hueco entre los dos extremos empieza a pedir una
+  // referencia intermedia. Por debajo, la del medio queda pegada a las otras.
+  if (cuantos >= 5) anclas.add(Math.floor((cuantos - 1) / 2));
+  return anclas;
+}
+
+/**
+ * La escala vertical de un eje medido en MINUTOS, ya redondeada y rotulada.
+ *
+ * El reparto en números redondos lo hace `cortesDelEje`, que vive en `@cet/ui`
+ * junto al dibujo que los pinta; el texto lo escribe esta capa, porque el
+ * paquete no sabe —ni puede saber, por AD-7— que la unidad son minutos ni cómo
+ * se dice eso en el idioma del tutor. Cada corte viaja con su rótulo para que
+ * la línea y su número no puedan separarse.
+ *
+ * Sin ningún minuto medido no hay escala: un eje rotulado sobre un dibujo vacío
+ * es la ausencia de datos disfrazada de medición.
+ */
+function cortesDeMinutos(maximo: number, locale: Locale): readonly AxisTick[] {
+  if (!Number.isFinite(maximo) || maximo <= 0) return [];
+  return cortesDelEje(maximo, 3).map((value) => ({
+    value,
+    text: textoDeMinutos(value, locale),
+  }));
+}
 
 /** Redacta la misma frase en los dos idiomas. Nunca escribe un literal. */
 function enDosIdiomas(
@@ -250,9 +305,19 @@ function nombreDelDia(fecha: string): Record<Locale, string> {
   };
 }
 
-/** La serie de constancia, con la etiqueta de cada columna ya redactada. */
-function constancia(seguimiento: SeguimientoDeHijo): readonly EffortDay[] {
-  return seguimiento.serie.map((dia): EffortDay => {
+/**
+ * La serie de constancia, con la etiqueta de cada columna ya redactada y el
+ * ancla del eje horizontal en los dos o tres días que la llevan.
+ *
+ * El ancla necesita el `locale` de la petición y la etiqueta no: la etiqueta
+ * viaja en los dos idiomas porque la resuelve el dibujo, mientras que el ancla
+ * es una cadena ya resuelta —igual que el «06» del reloj—, y aquí sí hay que
+ * elegir calendario. Es la misma asimetría que ya tiene `lecciones()`.
+ */
+function constancia(seguimiento: SeguimientoDeHijo, locale: Locale): readonly EffortDay[] {
+  const anclas = anclasDeLaSerie(seguimiento.serie.length);
+
+  return seguimiento.serie.map((dia, indice): EffortDay => {
     const nombre = nombreDelDia(dia.fecha);
 
     // Un día sin minutos se rotula «no estudió» y NO «0 min»: la columna ya
@@ -266,7 +331,19 @@ function constancia(seguimiento: SeguimientoDeHijo): readonly EffortDay[] {
             en: interpolateDia("en", nombre.en, textoDeMinutos(minutos, "en")),
           };
 
-    return { label, minutes: minutos };
+    return {
+      label,
+      minutes: minutos,
+      // El ancla solo en los días elegidos; en los demás no va la clave, igual
+      // que el rótulo del reloj. Ver `anclasDeLaSerie`.
+      ...(anclas.has(indice)
+        ? {
+            tick: new Intl.DateTimeFormat(INTL[locale], FORMATO_DE_ANCLA).format(
+              new Date(`${dia.fecha}T00:00:00Z`),
+            ),
+          }
+        : {}),
+    };
   });
 }
 
@@ -446,6 +523,17 @@ interface Nube {
   readonly points: readonly EffortOutcomePoint[];
   readonly yAxisLabel: I18nText;
   readonly yMaxText: string;
+  /** La escala horizontal (minutos), ya redondeada y rotulada. */
+  readonly xTicks: readonly AxisTick[];
+  /**
+   * La escala vertical, en cuentas ENTERAS.
+   *
+   * Media lección terminada no existe, así que un eje rotulado «0,4 · 0,8 ·
+   * 1,2» no es un eje más fino: es un eje donde ningún punto podrá caer nunca
+   * sobre una línea. Por eso `cortesDelEje` recibe aquí la bandera de enteros y
+   * en el eje de minutos no.
+   */
+  readonly yTicks: readonly AxisTick[];
 }
 
 function dispersion(seguimiento: SeguimientoDeHijo, locale: Locale): Nube | null {
@@ -490,11 +578,20 @@ function dispersion(seguimiento: SeguimientoDeHijo, locale: Locale): Nube | null
   });
 
   const maximo = points.reduce((mayor, p) => Math.max(mayor, p.y), 0);
+  const maximoDeMinutos = points.reduce((mayor, p) => Math.max(mayor, p.x), 0);
 
   return {
     points,
     yAxisLabel: enDosIdiomas((x) => (porLecciones ? x.outcomeYAxis : x.outcomeYAxisRight)),
     yMaxText: unidad(maximo, locale),
+    xTicks: cortesDeMinutos(maximoDeMinutos, locale),
+    // Dos cortes y no tres: el eje vertical de la nube cuenta lecciones o
+    // aciertos de UN día, y ahí los números son pequeños. Tres líneas sobre un
+    // recorrido de dos o tres lecciones son más rejilla que dato.
+    yTicks:
+      maximo > 0
+        ? cortesDelEje(maximo, 2, true).map((value) => ({ value, text: unidad(value, locale) }))
+        : [],
   };
 }
 
@@ -611,6 +708,17 @@ export function propsDeSeguimiento(
   const nube = dispersion(seguimiento, locale);
   const diasConEstudio = nube === null ? 0 : nube.points.length;
 
+  /* Las dos escalas verticales. El pico de cada dibujo sale de SUS datos —los
+     minutos de un día en la constancia, los de una hora en el reloj— y no de
+     una escala común: son dos ventanas de tiempo distintas, y un eje compartido
+     haría que el reloj de un niño que estudia una hora seguida se pintara
+     aplastado contra el suelo por culpa de la altura del otro dibujo. */
+  const picoDelDia = seguimiento.serie.reduce(
+    (mayor, d) => Math.max(mayor, d.minutos ?? 0),
+    0,
+  );
+  const picoDeLaHora = horas.reduce((mayor, h) => Math.max(mayor, h.minutes), 0);
+
   return {
     subjectCode: UNKNOWN_SUBJECT,
     studentName: nombreDelAlumno,
@@ -618,8 +726,14 @@ export function propsDeSeguimiento(
     stats: cifras(seguimiento, locale),
     effort: {
       title: enDosIdiomas((x) => x.effortTitle),
-      series: constancia(seguimiento),
+      series: constancia(seguimiento, locale),
       summary: resumenDeConstancia(seguimiento),
+      yTicks: cortesDeMinutos(picoDelDia, locale),
+      // El único rótulo directo del dibujo, y solo si hubo algún día con
+      // estudio: la cifra del día más alto, escrita en su cabeza. Un número
+      // sobre cada columna sería ruido —nadie lee catorce— y ninguno dejaría
+      // el dibujo sin magnitud, que es lo que la escala ya no permite.
+      ...(picoDelDia > 0 ? { peakText: textoDeMinutos(picoDelDia, locale) } : {}),
     },
     // El reloj se pasa siempre: `DailyRhythm` se calla solo si no hay ni un
     // minuto atribuido a una hora, que es la misma condición con la que el
@@ -628,6 +742,8 @@ export function propsDeSeguimiento(
       title: enDosIdiomas((x) => x.rhythmTitle),
       hours: horas,
       summary: resumenDelRitmo(horas),
+      yTicks: cortesDeMinutos(picoDeLaHora, locale),
+      ...(picoDeLaHora > 0 ? { peakText: textoDeMinutos(picoDeLaHora, locale) } : {}),
     },
     // La nube, en cambio, puede no existir: sin filas de logro no sabemos qué
     // salió de esos minutos y el panel entero desaparece. Ver `dispersion`.
@@ -644,6 +760,11 @@ export function propsDeSeguimiento(
               locale,
             ),
             yMaxText: nube.yMaxText,
+            // Con escala rotulada el dibujo deja de escribir los dos topes al
+            // lado de los rótulos: serían el mismo número dos veces, uno en la
+            // rejilla y otro en la frase. El componente los suprime solo.
+            xTicks: nube.xTicks,
+            yTicks: nube.yTicks,
             summary: enCadaIdioma(
               (x) => x.outcomeSummary,
               (l) => ({ days: diasEnDosIdiomas(diasConEstudio)[l] }),

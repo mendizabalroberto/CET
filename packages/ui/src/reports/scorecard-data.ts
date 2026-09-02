@@ -78,6 +78,49 @@ export interface EffortDay {
   readonly label: I18nText;
   /** Minutos del dia. `0` es un dato; `null` es la ausencia de dato. */
   readonly minutes: number | null;
+  /**
+   * Rotulo corto del eje horizontal, y SOLO en los dias que se anclan («1 sep»,
+   * «8 sep»). Mismo trato que `HourActivity.tick` y por el mismo motivo: catorce
+   * fechas debajo de columnas estrechas se emborronan en una franja gris, y dos
+   * o tres anclas bastan para saber donde empieza y donde acaba la ventana.
+   *
+   * Sin ninguna ancla la serie sigue siendo legible —el resumen escrito dice el
+   * periodo—, asi que es opcional de verdad y no un hueco que rellenar.
+   */
+  readonly tick?: string | undefined;
+}
+
+/**
+ * Un corte rotulado de un eje de valores.
+ *
+ * Existe para que la escala del eje vertical la ESCRIBA la aplicacion. El
+ * dibujo sabe repartir cortes redondos (`cortesDelEje` en `chart-chrome`), pero
+ * no sabe decir «30 min» en el idioma del tutor —ni siquiera sabe que la unidad
+ * son minutos—, y fabricar aqui ese texto seria el literal de cara al usuario
+ * que AD-7 prohibe en este paquete. Asi que el valor y su rotulo viajan juntos.
+ *
+ * El TOPE del eje es el `value` mas alto de la lista, no el maximo de los datos:
+ * quien decide hasta donde llega la escala es quien la rotula, porque si no las
+ * dos cosas divergen y el ultimo rotulo cae por debajo de la columna mas alta.
+ */
+export interface AxisTick {
+  /** El valor en las unidades del dato (minutos, lecciones…). Mayor que cero. */
+  readonly value: number;
+  /** Ese valor ya formateado y con su unidad («30 min»), en el idioma activo. */
+  readonly text: string;
+}
+
+/**
+ * Los cortes utilizables de un eje: los que son numeros positivos y traen
+ * rotulo, de menor a mayor. La basura se descarta en vez de pintar una linea
+ * sin sitio o un rotulo vacio flotando en el margen.
+ */
+export function cortesUtiles(ticks: readonly AxisTick[] | undefined): readonly AxisTick[] {
+  if (ticks === undefined) return [];
+  return ticks
+    .filter((c) => Number.isFinite(c.value) && c.value > 0 && c.text.length > 0)
+    .slice()
+    .sort((a, b) => a.value - b.value);
 }
 
 /**

@@ -35,7 +35,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { axe } from "jest-axe";
 import type { ReactNode } from "react";
 
@@ -345,6 +345,343 @@ describe("los dos paneles nuevos dentro del informe", () => {
           title: T("Le cunde el tiempo", "Is the time paying off"),
           ...propsDeNube(nubeDe(5)),
         }}
+      />,
+    );
+    expect(await axe(container)).toHaveNoViolations();
+  });
+});
+
+/**
+ * ===========================================================================
+ * EL RELOJ COMO GRAFICO PROFESIONAL: LIENZO MEDIDO, ESCALA Y CAPA DE DETALLE
+ * ===========================================================================
+ * Lo de arriba fija que el reloj no MIENTE. Esto fija que el reloj se LEE, que
+ * es la otra mitad y la que se cae sola en cuanto alguien toca el dibujo:
+ *
+ *  1. **El lienzo se mide.** El reparto viejo daba 238 px clavados dentro de un
+ *     panel de 560, con la mitad del panel en blanco al lado. Se comprueba que
+ *     el `viewBox` es el ancho dibujado y que las columnas se reparten ese
+ *     ancho, no un numero escrito a mano.
+ *  2. **La escala, si llega, manda ella.** El tope del eje es el corte mas alto
+ *     y NO el maximo de los datos: si mandara el dato, el ultimo rotulo quedaria
+ *     por debajo de la columna mas alta, que es un adorno y no una escala.
+ *  3. **La rejilla es continua.** El guion ya significa «esto no es tuyo» y «de
+ *     ese dia no hay registro» en los hermanos de esta carpeta.
+ *  4. **El detalle no vive solo en el raton.** El globo del navegador no aparece
+ *     con el teclado; se comprueba que el foco abre EXACTAMENTE el mismo aviso
+ *     que el puntero, y que cada hora es alcanzable y se llama con su frase.
+ *  5. **Un solo numero sobre el dibujo, y solo si lo escribe la aplicacion.**
+ */
+describe("reloj del dia — el dibujo se lee, no solo es cierto", () => {
+  const RELOJ = relojCon({ 21: 12, 22: 30 });
+  const CORTES = [
+    { value: 30, text: "30 min" },
+    { value: 60, text: "60 min" },
+  ];
+
+  it("el lienzo es el ancho medido, y las columnas se lo reparten", () => {
+    const { container } = pintar(<DailyRhythm hours={RELOJ} summary={RESUMEN_RITMO} />);
+    const svg = container.querySelector("svg")!;
+    const ancho = Number(svg.getAttribute("width"));
+    // Un pixel del viewBox es un pixel de pantalla: ni escalado ni deformado.
+    expect(svg.getAttribute("viewBox")).toBe(`0 0 ${ancho} ${svg.getAttribute("height")}`);
+    const xs = columnas(container).map((c) => Number(c.getAttribute("x")));
+    // La ultima columna llega al borde derecho del lienzo, no a los 238 px de
+    // un reparto fijo. Un decimo de holgura para el aire del carril.
+    expect(xs.at(-1)!).toBeGreaterThan(ancho * 0.9);
+  });
+
+  it("sin cortes no hay escala dibujada, y el reloj sigue igual que siempre", () => {
+    const { container } = pintar(<DailyRhythm hours={RELOJ} summary={RESUMEN_RITMO} />);
+    expect(container.querySelectorAll("line[data-cet-rejilla]")).toHaveLength(0);
+    expect(container.querySelectorAll('text[data-cet-rotulo="valor"]')).toHaveLength(0);
+    expect(columnas(container)).toHaveLength(24);
+  });
+
+  it("con cortes, el tope del eje es el corte mas alto y no el dato mas alto", () => {
+    const sinEscala = pintar(<DailyRhythm hours={RELOJ} summary={RESUMEN_RITMO} />);
+    const conEscala = pintar(
+      <DailyRhythm hours={RELOJ} summary={RESUMEN_RITMO} yTicks={CORTES} />,
+    );
+    const pico = (c: HTMLElement): number =>
+      Math.max(...columnas(c).map((m) => Number(m.getAttribute("height"))));
+    // El pico son 30 min. Contra su propio maximo llena el area; contra un eje
+    // que llega a 60 mide la mitad. Si el tope fuera el dato, medirian igual.
+    expect(pico(conEscala.container)).toBeLessThan(pico(sinEscala.container) * 0.75);
+  });
+
+  it("cada corte trae su linea CONTINUA y su rotulo, escrito por la aplicacion", () => {
+    const { container } = pintar(
+      <DailyRhythm hours={RELOJ} summary={RESUMEN_RITMO} yTicks={CORTES} />,
+    );
+    const rejilla = Array.from(container.querySelectorAll("line[data-cet-rejilla]"));
+    expect(rejilla).toHaveLength(2);
+    // Continua: el guion ya significa otra cosa en esta carpeta.
+    expect(rejilla.every((l) => l.getAttribute("stroke-dasharray") === null)).toBe(true);
+    const rotulos = Array.from(container.querySelectorAll('text[data-cet-rotulo="valor"]'));
+    expect(rotulos.map((r) => r.textContent)).toEqual(["30 min", "60 min"]);
+  });
+
+  it("las horas ancladas llevan su vertical de referencia, y solo ellas", () => {
+    const conRotulos = RELOJ.map((h) =>
+      h.hour % 6 === 0 ? { ...h, tick: String(h.hour).padStart(2, "0") } : h,
+    );
+    const { container } = pintar(<DailyRhythm hours={conRotulos} summary={RESUMEN_RITMO} />);
+    expect(container.querySelectorAll("line[data-cet-ancla]")).toHaveLength(4);
+  });
+
+  it("la marca apoya cuadrada en la linea base y solo redondea el extremo de dato", () => {
+    const { container } = pintar(<DailyRhythm hours={RELOJ} summary={RESUMEN_RITMO} />);
+    const marcas = columnas(container);
+    const conEstudio = marcas.find((m) => m.getAttribute("data-cet-hora") === "con-minutos")!;
+    const aCero = marcas.find((m) => m.getAttribute("data-cet-hora") === "cero")!;
+    expect(Number(conEstudio.getAttribute("rx"))).toBeGreaterThan(0);
+    // El zocalo del cero no es la punta de una medida: es el suelo.
+    expect(Number(aCero.getAttribute("rx"))).toBe(0);
+  });
+
+  it("cada hora es un blanco alcanzable con el dedo y con el tabulador", () => {
+    const { container } = pintar(<DailyRhythm hours={RELOJ} summary={RESUMEN_RITMO} />);
+    const blancos = Array.from(container.querySelectorAll('rect[data-cet-blanco="hora"]'));
+    expect(blancos).toHaveLength(24);
+    expect(blancos.every((b) => b.getAttribute("tabindex") === "0")).toBe(true);
+    // 24 px es el minimo de la casa para un dedo, aunque el carril sea menor.
+    expect(blancos.every((b) => Number(b.getAttribute("width")) >= 24)).toBe(true);
+    // Y se llama con la frase que redacta la aplicacion, no con un numero.
+    expect(screen.getByRole("img", { name: "De 22:00 a 23:00: 30 min" })).toBeInTheDocument();
+  });
+
+  it("el foco del teclado abre el MISMO aviso que el raton", () => {
+    const { container } = pintar(<DailyRhythm hours={RELOJ} summary={RESUMEN_RITMO} />);
+    const blanco = container.querySelectorAll('rect[data-cet-blanco="hora"]')[22]!;
+
+    expect(container.querySelector("[data-cet-aviso]")).toBeNull();
+    fireEvent.focus(blanco);
+    // Quien navega con tabulador se quedaba sin la capa de detalle entera.
+    expect(container.querySelector("[data-cet-aviso]")?.textContent).toBe(
+      "De 22:00 a 23:00: 30 min",
+    );
+    fireEvent.blur(blanco);
+    expect(container.querySelector("[data-cet-aviso]")).toBeNull();
+
+    fireEvent.pointerEnter(blanco);
+    expect(container.querySelector("[data-cet-aviso]")?.textContent).toBe(
+      "De 22:00 a 23:00: 30 min",
+    );
+  });
+
+  it("la hora senalada responde con una FORMA, no con un tono", () => {
+    const { container } = pintar(<DailyRhythm hours={RELOJ} summary={RESUMEN_RITMO} />);
+    expect(container.querySelectorAll("rect[data-cet-carril]")).toHaveLength(0);
+    fireEvent.focus(container.querySelectorAll('rect[data-cet-blanco="hora"]')[22]!);
+    // Un carril que aparece lo ve tambien quien no distingue colores.
+    expect(container.querySelectorAll("rect[data-cet-carril]")).toHaveLength(1);
+  });
+
+  it("la cifra sobre el dibujo es una sola, la del pico, y solo si llega escrita", () => {
+    const sin = pintar(<DailyRhythm hours={RELOJ} summary={RESUMEN_RITMO} />);
+    expect(sin.container.querySelectorAll("text[data-cet-pico]")).toHaveLength(0);
+
+    const con = pintar(<DailyRhythm hours={RELOJ} summary={RESUMEN_RITMO} peakText="30 min" />);
+    const cifras = Array.from(con.container.querySelectorAll("text[data-cet-pico]"));
+    // Rotular las veinticuatro convertiria el dibujo en una tabla mal maquetada.
+    expect(cifras.map((c) => c.textContent)).toEqual(["30 min"]);
+    // Y va sobre la columna del pico (las 22 h), no sobre otra.
+    const x = Number(cifras[0]!.getAttribute("x"));
+    const pico = columnas(con.container)[22]!;
+    const centro = Number(pico.getAttribute("x")) + Number(pico.getAttribute("width")) / 2;
+    expect(Math.abs(x - centro)).toBeLessThan(1);
+  });
+});
+
+/**
+ * ===========================================================================
+ * LA NUBE PROFESIONALIZADA: ESCALA, ANILLO Y BLANCO DE ALCANCE
+ * ===========================================================================
+ * Lo que cierran estos casos son las tres formas de romper la nube al darle
+ * rejilla y aviso, ninguna de las cuales da error:
+ *
+ *  1. **La rejilla contradice a los datos.** Si el tope del eje saliera del
+ *     maximo de los puntos y no del corte mas alto que rotula la aplicacion, el
+ *     ultimo rotulo caeria por debajo del punto mas alto y la magnitud escrita
+ *     mentiria. Y al reves: un corte por debajo del dato sacaria el punto fuera
+ *     del marco, que es perder un dia sin avisar.
+ *  2. **La rejilla se disfraza de dato.** Continua siempre: el guion ya significa
+ *     «referencia» o «sin registro» en los hermanos de esta carpeta.
+ *  3. **El foco cae en un agujero mudo.** El dibujo es `aria-hidden`, asi que
+ *     nada enfocable puede vivir dentro; los blancos de alcance son la propia
+ *     lista de dias y por eso cada dia se nombra UNA vez, no dos.
+ */
+describe("dispersion — la escala rotulada", () => {
+  const CORTES_X = [
+    { value: 15, text: "15 min" },
+    { value: 30, text: "30 min" },
+    { value: 45, text: "45 min" },
+  ];
+  const CORTES_Y = [
+    { value: 1, text: "1 lec" },
+    { value: 2, text: "2 lec" },
+  ];
+
+  it("sin cortes se comporta como siempre: topes escritos y solo los dos ejes", () => {
+    const { container } = pintar(<EffortOutcomeScatter {...propsDeNube(nubeDe(6))} />);
+    expect(container.querySelectorAll("svg line")).toHaveLength(2);
+    expect(container.querySelectorAll("[data-cet-rejilla]")).toHaveLength(0);
+    expect(screen.getByText("40 min")).toBeInTheDocument();
+    expect(screen.getByText("2 lecciones")).toBeInTheDocument();
+  });
+
+  it("con cortes hay rejilla rotulada, y el tope no se dice dos veces", () => {
+    const { container } = pintar(
+      <EffortOutcomeScatter {...propsDeNube(nubeDe(6))} xTicks={CORTES_X} yTicks={CORTES_Y} />,
+    );
+    expect(container.querySelectorAll('line[data-cet-rejilla="dispersion-x"]')).toHaveLength(3);
+    expect(container.querySelectorAll('line[data-cet-rejilla="dispersion-y"]')).toHaveLength(2);
+
+    const rotulosX = Array.from(container.querySelectorAll('text[data-cet-rotulo="dispersion-x"]'));
+    expect(rotulosX.map((r) => r.textContent)).toEqual(["15 min", "30 min", "45 min"]);
+    const rotulosY = Array.from(container.querySelectorAll('text[data-cet-rotulo="dispersion-y"]'));
+    expect(rotulosY.map((r) => r.textContent)).toEqual(["1 lec", "2 lec"]);
+
+    // El tope escrito se calla: con rejilla seria el mismo numero repetido.
+    expect(screen.queryByText("40 min")).toBeNull();
+    expect(screen.queryByText("2 lecciones")).toBeNull();
+  });
+
+  it("la rejilla es continua: el guion significa otra cosa en esta casa", () => {
+    const { container } = pintar(
+      <EffortOutcomeScatter {...propsDeNube(nubeDe(6))} xTicks={CORTES_X} yTicks={CORTES_Y} />,
+    );
+    const rejilla = Array.from(container.querySelectorAll("[data-cet-rejilla]"));
+    expect(rejilla.length).toBeGreaterThan(0);
+    for (const linea of rejilla) {
+      expect(linea.getAttribute("stroke-dasharray")).toBeNull();
+    }
+  });
+
+  it("ni con rejilla se dibuja una recta de tendencia", () => {
+    const { container } = pintar(
+      <EffortOutcomeScatter {...propsDeNube(nubeDe(6))} xTicks={CORTES_X} yTicks={CORTES_Y} />,
+    );
+    expect(container.querySelectorAll("svg path, svg polyline")).toHaveLength(0);
+    // Toda linea del dibujo es un eje o un corte; ninguna se ajusta a los puntos.
+    expect(container.querySelectorAll("svg line")).toHaveLength(2 + 3 + 2);
+  });
+
+  it("el tope del eje lo manda el corte mas alto, no el maximo de los puntos", () => {
+    // Los mismos seis dias (maximo 45 min) con dos escalas distintas. Con el eje
+    // hasta 90, el ultimo dia tiene que caer MAS A LA IZQUIERDA: si el tope
+    // saliera de los datos, las dos nubes se pintarian identicas y el rotulo
+    // «90 min» estaria mintiendo sobre el ancho del dibujo.
+    const hasta45 = pintar(<EffortOutcomeScatter {...propsDeNube(nubeDe(6))} xTicks={CORTES_X} />);
+    const hasta90 = pintar(
+      <EffortOutcomeScatter
+        {...propsDeNube(nubeDe(6))}
+        xTicks={[
+          { value: 30, text: "30 min" },
+          { value: 60, text: "60 min" },
+          { value: 90, text: "90 min" },
+        ]}
+      />,
+    );
+    const ultimoDe = (c: HTMLElement): number =>
+      Number(
+        Array.from(c.querySelectorAll('circle[data-cet-punto="dia"]'))
+          .at(-1)!
+          .getAttribute("cx"),
+      );
+    expect(ultimoDe(hasta90.container)).toBeLessThan(ultimoDe(hasta45.container));
+  });
+
+  it("un corte por debajo del dato no saca el punto del marco", () => {
+    // La aplicacion manda la escala, pero un corte equivocado no puede perder un
+    // dia: el dato mas alto sigue dentro y el eje se estira hasta el.
+    const { container } = pintar(
+      <EffortOutcomeScatter {...propsDeNube(nubeDe(6))} xTicks={[{ value: 10, text: "10 min" }]} />,
+    );
+    const anchoDelLienzo = Number(container.querySelector("svg")!.getAttribute("width"));
+    const xs = Array.from(container.querySelectorAll('circle[data-cet-punto="dia"]')).map((p) =>
+      Number(p.getAttribute("cx")),
+    );
+    for (const x of xs) {
+      expect(x).toBeGreaterThan(0);
+      expect(x).toBeLessThanOrEqual(anchoDelLienzo);
+    }
+  });
+});
+
+describe("dispersion — el punto se puede contar y se puede apuntar", () => {
+  it("cada dia es un disco de al menos 8 px con anillo de la superficie", () => {
+    // Dos dias solapados se siguen contando porque cada disco conserva su borde.
+    const { container } = pintar(<EffortOutcomeScatter {...propsDeNube(nubeDe(5))} />);
+    for (const punto of Array.from(container.querySelectorAll('circle[data-cet-punto="dia"]'))) {
+      expect(Number(punto.getAttribute("r"))).toBeGreaterThanOrEqual(4);
+      expect(punto.getAttribute("stroke")).toBe("var(--cet-surface)");
+      expect(Number(punto.getAttribute("stroke-width"))).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it("el dibujo esta oculto al lector y no esconde nada enfocable dentro", () => {
+    // `aria-hidden` con algo enfocable dentro es un usuario de teclado oyendo
+    // silencio. Los blancos de alcance viven FUERA del svg, en la lista.
+    const { container } = pintar(<EffortOutcomeScatter {...propsDeNube(nubeDe(5))} />);
+    const svg = container.querySelector("svg")!;
+    expect(svg.getAttribute("aria-hidden")).toBe("true");
+    expect(svg.querySelectorAll("[tabindex]")).toHaveLength(0);
+  });
+
+  it("la lista de dias ES el blanco de alcance: un solo nodo por dia", () => {
+    const { container } = pintar(<EffortOutcomeScatter {...propsDeNube(nubeDe(5))} />);
+    const lista = container.querySelector('ul[data-cet-lista="dias-de-dispersion"]') as HTMLElement;
+    expect(within(lista).getAllByRole("listitem")).toHaveLength(5);
+
+    const blancos = within(lista).getAllByRole("img");
+    expect(blancos).toHaveLength(5);
+    // Nombre accesible: la frase que ya escribio la aplicacion, ni una inventada.
+    expect(blancos[0]!).toHaveAttribute("aria-label", "Dia 1: 10 min");
+    expect(blancos[0]!).toHaveAttribute("tabindex", "0");
+    // Y el dia se nombra UNA vez, no dos.
+    expect(screen.getAllByRole("img", { name: "Dia 1: 10 min" })).toHaveLength(1);
+  });
+
+  it("el foco y el raton abren el MISMO aviso, con la frase del dia", () => {
+    const { container } = pintar(<EffortOutcomeScatter {...propsDeNube(nubeDe(5))} />);
+    const blancos = screen.getAllByRole("img");
+    expect(container.querySelector('[data-cet-aviso="grafico"]')).toBeNull();
+
+    fireEvent.focus(blancos[2]!);
+    expect(container.querySelector('[data-cet-aviso="grafico"]')).toHaveTextContent("Dia 3: 24 min");
+    fireEvent.blur(blancos[2]!);
+    expect(container.querySelector('[data-cet-aviso="grafico"]')).toBeNull();
+
+    fireEvent.mouseEnter(blancos[1]!);
+    expect(container.querySelector('[data-cet-aviso="grafico"]')).toHaveTextContent("Dia 2: 17 min");
+    fireEvent.mouseLeave(blancos[1]!);
+    expect(container.querySelector('[data-cet-aviso="grafico"]')).toBeNull();
+  });
+
+  it("el dia enfocado responde con el TAMANO, no con el tono", () => {
+    // Un realce cromatico no existe en escala de grises. El disco crece.
+    const { container } = pintar(<EffortOutcomeScatter {...propsDeNube(nubeDe(5))} />);
+    const discos = (): Element[] =>
+      Array.from(container.querySelectorAll('circle[data-cet-punto="dia"]'));
+    const antes = discos().map((d) => d.getAttribute("r"));
+    expect(new Set(antes).size).toBe(1);
+
+    fireEvent.focus(screen.getAllByRole("img")[0]!);
+    const despues = discos().map((d) => Number(d.getAttribute("r")));
+    expect(despues[0]!).toBeGreaterThan(Number(antes[0]));
+    expect(despues[1]!).toBe(Number(antes[1]));
+    // Y el tono no se ha tocado: la tinta sigue siendo una sola.
+    expect(new Set(discos().map((d) => d.getAttribute("fill"))).size).toBe(1);
+  });
+
+  it("la nube con rejilla y avisos no tiene violaciones de accesibilidad", async () => {
+    const { container } = pintar(
+      <EffortOutcomeScatter
+        {...propsDeNube(nubeDe(6))}
+        xTicks={[{ value: 45, text: "45 min" }]}
+        yTicks={[{ value: 2, text: "2 lec" }]}
       />,
     );
     expect(await axe(container)).toHaveNoViolations();

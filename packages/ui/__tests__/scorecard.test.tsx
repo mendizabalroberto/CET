@@ -29,7 +29,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { axe } from "jest-axe";
 import type { ReactNode } from "react";
 
@@ -642,5 +642,298 @@ describe("scorecard — accesibilidad (jest-axe)", () => {
       </main>,
     );
     expect(await axe(container)).toHaveNoViolations();
+  });
+});
+
+/* ================================================================== *
+ * 7. La constancia profesionalizada: escala, eje, apoyo y alcance
+ * ================================================================== */
+
+/**
+ * Lo que fija este bloque es lo que separa un dibujo de informe de una barra
+ * decorativa: que la regla vertical NO la invente el componente, que el detalle
+ * llegue tambien por teclado, y que el unico rotulo directo sea el que la
+ * aplicacion haya escrito. Nada de esto se comprueba por el color.
+ */
+describe("EffortTrend — la regla, el eje y el alcance", () => {
+  const CORTES = [
+    { value: 30, text: "30 min" },
+    { value: 60, text: "60 min" },
+    { value: 90, text: "90 min" },
+  ] as const;
+
+  const SERIE: readonly EffortDay[] = [
+    { label: T("Lunes: 30 minutos", "Monday: 30 minutes"), minutes: 30, tick: "1 sep" },
+    { label: T("Martes: 0 minutos", "Tuesday: 0 minutes"), minutes: 0 },
+    { label: T("Miercoles: 60 minutos", "Wednesday: 60 minutes"), minutes: 60 },
+  ];
+
+  const blancos = (container: HTMLElement): SVGRectElement[] =>
+    Array.from(container.querySelectorAll("rect[data-cet-alcance]"));
+
+  it("sin yTicks no aparece ninguna rejilla ni calle de rotulos", () => {
+    const { container } = pintar(<EffortTrend series={SERIE} summary={RESUMEN} />);
+    // La unica linea del dibujo es la base; ninguna linea de rejilla mas.
+    expect(container.querySelectorAll("svg line")).toHaveLength(1);
+  });
+
+  it("con yTicks pinta una rejilla continua por corte, con su rotulo", () => {
+    const { container } = pintar(
+      <EffortTrend series={SERIE} summary={RESUMEN} yTicks={CORTES} />,
+    );
+    // Tres cortes + la linea base.
+    expect(container.querySelectorAll("svg line")).toHaveLength(CORTES.length + 1);
+    for (const corte of CORTES) expect(container.textContent).toContain(corte.text);
+
+    // Continua: el guion ya significa «sin registro» en este dibujo.
+    for (const linea of Array.from(container.querySelectorAll("svg line"))) {
+      expect(linea.getAttribute("stroke-dasharray")).toBeNull();
+    }
+  });
+
+  it("el tope de la escala es el corte mas alto, no el maximo del dato", () => {
+    // Con tope 90 y un dia de 60, la columna no puede llegar arriba del todo.
+    const conRegla = pintar(<EffortTrend series={SERIE} summary={RESUMEN} yTicks={CORTES} />);
+    const sinRegla = pintar(<EffortTrend series={SERIE} summary={RESUMEN} />);
+    const masAlta = (c: HTMLElement): number =>
+      Math.max(...barrasDeDia(c).map((r) => Number(r.getAttribute("height"))));
+
+    expect(masAlta(conRegla.container)).toBeLessThan(masAlta(sinRegla.container));
+  });
+
+  it("el ancla del eje horizontal solo sale en los dias que la traen", () => {
+    const { container } = pintar(<EffortTrend series={SERIE} summary={RESUMEN} />);
+    const anclas = Array.from(container.querySelectorAll("text[data-cet-ancla]"));
+    expect(anclas.map((n) => n.textContent)).toEqual(["1 sep"]);
+  });
+
+  it("hay un blanco apuntable por dia, alcanzable con el tabulador y con nombre", () => {
+    const { container } = pintar(<EffortTrend series={SERIE} summary={RESUMEN} />);
+    const marcas = blancos(container);
+    expect(marcas).toHaveLength(SERIE.length);
+    for (const marca of marcas) expect(marca.getAttribute("tabindex")).toBe("0");
+    expect(marcas.map((m) => m.getAttribute("aria-label"))).toEqual([
+      "Lunes: 30 minutos",
+      "Martes: 0 minutos",
+      "Miercoles: 60 minutos",
+    ]);
+  });
+
+  it("el foco del teclado abre el mismo aviso que el raton, y al salir se cierra", () => {
+    const { container } = pintar(<EffortTrend series={SERIE} summary={RESUMEN} />);
+    const primero = blancos(container)[0] as SVGRectElement;
+
+    expect(container.querySelector("[data-cet-aviso]")).toBeNull();
+
+    fireEvent.focus(primero);
+    expect(container.querySelector("[data-cet-aviso]")?.textContent).toBe("Lunes: 30 minutos");
+    // Y el dia apuntado se realza con FORMA, no con tono.
+    expect(container.querySelector("[data-cet-realce]")).toBeTruthy();
+
+    fireEvent.blur(primero);
+    expect(container.querySelector("[data-cet-aviso]")).toBeNull();
+    expect(container.querySelector("[data-cet-realce]")).toBeNull();
+  });
+
+  it("el raton produce exactamente el mismo aviso que el foco", () => {
+    const { container } = pintar(<EffortTrend series={SERIE} summary={RESUMEN} />);
+    const ultimo = blancos(container)[2] as SVGRectElement;
+    fireEvent.mouseEnter(ultimo);
+    expect(container.querySelector("[data-cet-aviso]")?.textContent).toBe(
+      "Miercoles: 60 minutos",
+    );
+    fireEvent.mouseLeave(ultimo);
+    expect(container.querySelector("[data-cet-aviso]")).toBeNull();
+  });
+
+  it("sin peakText no hay ningun rotulo directo sobre las columnas", () => {
+    const { container } = pintar(<EffortTrend series={SERIE} summary={RESUMEN} />);
+    expect(container.querySelectorAll("text[data-cet-pico]")).toHaveLength(0);
+  });
+
+  it("con peakText se rotula UN solo dia, el mas alto", () => {
+    const { container } = pintar(
+      <EffortTrend series={SERIE} summary={RESUMEN} peakText="60 min" />,
+    );
+    const picos = Array.from(container.querySelectorAll("text[data-cet-pico]"));
+    expect(picos).toHaveLength(1);
+    expect(picos[0]?.textContent).toBe("60 min");
+  });
+
+  it("la franja del eje entra en el alto del svg: nunca un scroll anidado", () => {
+    const alto = (node: Element | null): number => Number(node?.getAttribute("height"));
+    const conEje = pintar(<EffortTrend series={SERIE} summary={RESUMEN} />);
+    const sinEje = pintar(
+      <EffortTrend series={SERIE.map(({ tick: _t, ...d }) => d)} summary={RESUMEN} />,
+    );
+    expect(alto(conEje.container.querySelector("svg"))).toBeGreaterThan(
+      alto(sinEje.container.querySelector("svg")),
+    );
+  });
+
+  it("el dibujo con regla, eje, pico y alcance sigue sin violaciones de axe", async () => {
+    const { container } = pintar(
+      <main>
+        <EffortTrend series={SERIE} summary={RESUMEN} yTicks={CORTES} peakText="60 min" />
+      </main>,
+    );
+    expect(await axe(container)).toHaveNoViolations();
+  });
+});
+
+/* ================================================================== *
+ * 6. La geometria de las barras horizontales
+ * ================================================================== *
+ * Lo que fija este bloque no es «se ve bonito»: es que el dibujo no MIENTA
+ * sobre su propia escala. Las dos listas de barras horizontales se dibujaban
+ * con `preserveAspectRatio="none"` sobre un `viewBox` de cien unidades, o sea
+ * con una escala por eje. Con eso, el radio de una esquina salia elipse, el
+ * trazo habia que salvarlo con `vector-effect` y el mismo `width` numerico
+ * valia una distancia distinta en cada ancho de panel. Se comprueba aqui —y no
+ * a ojo— porque el sintoma es invisible en una captura de un solo ancho.
+ */
+
+describe("barras horizontales — la escala es una sola y el extremo redondea", () => {
+  const LIENZOS = [
+    {
+      nombre: "CohortComparison",
+      pintarlo: () => pintar(<CohortComparison {...COMPARACION} cohortSize={24} />),
+      barra: 'rect[data-cet-barra="alumno"]',
+    },
+    {
+      nombre: "LessonTimeBreakdown",
+      pintarlo: () => pintar(<LessonTimeBreakdown items={LECCIONES} />),
+      barra: 'rect[data-cet-barra="minutos"]',
+    },
+  ] as const;
+
+  for (const caso of LIENZOS) {
+    it(`${caso.nombre}: el lienzo se dibuja 1:1, sin estirar un eje contra el otro`, () => {
+      const { container } = caso.pintarlo();
+      const svg = container.querySelector("svg") as SVGSVGElement;
+
+      // Un `preserveAspectRatio="none"` es literalmente «deforma el dibujo».
+      expect(svg.getAttribute("preserveAspectRatio")).toBeNull();
+
+      // Y el viewBox mide lo mismo que la caja: una unidad, un pixel.
+      const partes = (svg.getAttribute("viewBox") ?? "").split(" ");
+      expect(partes[2]).toBe(svg.getAttribute("width"));
+      expect(partes[3]).toBe(svg.getAttribute("height"));
+    });
+
+    it(`${caso.nombre}: el extremo de dato redondea con el radio de la casa`, async () => {
+      const { RADIO_DE_DATO } = await import("../src/reports/chart-chrome.js");
+      const { container } = caso.pintarlo();
+      const barra = container.querySelector(caso.barra) as SVGRectElement;
+      expect(Number(barra.getAttribute("rx"))).toBe(RADIO_DE_DATO);
+    });
+
+    it(`${caso.nombre}: el extremo que apoya sale cuadrado, no redondo`, () => {
+      // Un `rx` redondea las cuatro esquinas y no hay atributo para pedir dos.
+      // La barra desborda el radio hacia la izquierda y se recorta en el
+      // origen: por eso su `x` es negativa y lleva un `clip-path`. Si alguien
+      // quita el recorte, la barra despega del cero con dos esquinas redondas.
+      const { container } = caso.pintarlo();
+      const barra = container.querySelector(caso.barra) as SVGRectElement;
+      expect(Number(barra.getAttribute("x"))).toBeLessThan(0);
+      expect(barra.getAttribute("clip-path")).toBeTruthy();
+    });
+
+    it(`${caso.nombre}: ya no hay trazo compensado: no queda que compensar`, () => {
+      const { container } = caso.pintarlo();
+      expect(container.querySelectorAll("[vector-effect]")).toHaveLength(0);
+    });
+
+    it(`${caso.nombre}: el grueso de la barra no pasa del tope de la casa`, async () => {
+      const { GRUESO_MAXIMO } = await import("../src/reports/chart-chrome.js");
+      const { container } = caso.pintarlo();
+      const barra = container.querySelector(caso.barra) as SVGRectElement;
+      expect(Number(barra.getAttribute("height"))).toBeLessThanOrEqual(GRUESO_MAXIMO);
+    });
+  }
+
+  it("CohortComparison: la linea de origen es rejilla continua, nunca un guion", () => {
+    // El guion ya significa «esto no es tuyo, es referencia» en la barra de la
+    // clase. La linea que marca el cero —y que cierra el contorno de esa barra
+    // hueca, cuyo canto se lleva el recorte— tiene que ir continua y en tinta
+    // de rejilla, o el dibujo tendria dos cosas distintas dichas igual.
+    const { container } = pintar(<CohortComparison {...COMPARACION} cohortSize={24} />);
+    const rejilla = Array.from(container.querySelectorAll("svg rect")).filter(
+      (r) => r.getAttribute("data-cet-barra") === null && r.getAttribute("opacity") !== null,
+    );
+    expect(rejilla.length).toBeGreaterThan(0);
+    for (const marca of rejilla) {
+      expect(marca.getAttribute("stroke-dasharray")).toBeNull();
+    }
+  });
+
+  it("las dos barras de la comparacion siguen distinguiendose por la forma", () => {
+    // Lo mismo que ya fija el bloque 2, repetido aqui a proposito: la geometria
+    // se ha rehecho entera y la firma no cromatica es lo que no puede caerse.
+    const { container } = pintar(<CohortComparison {...COMPARACION} cohortSize={24} />);
+    const alumno = container.querySelector('rect[data-cet-barra="alumno"]');
+    const clase = container.querySelector('rect[data-cet-barra="clase"]');
+    expect(alumno?.getAttribute("fill")).toBe("currentColor");
+    expect(clase?.getAttribute("fill")).toBe("none");
+    expect(clase?.getAttribute("stroke-dasharray")).toBe("3 2");
+  });
+});
+
+/* ================================================================== *
+ * 7. La fila de leccion: parte del total y respuesta al teclado
+ * ================================================================== */
+
+describe("LessonTimeBreakdown — la parte del total y la respuesta de la fila", () => {
+  it("escribe la parte del total SOLO si la aplicacion la pasa (AD-7)", () => {
+    const { container } = pintar(
+      <LessonTimeBreakdown
+        items={[
+          { name: "Valor posicional", minutes: 47, minutesText: "47 min", shareText: "44 %" },
+        ]}
+      />,
+    );
+    expect(container.textContent).toContain("44 %");
+    expect(container.querySelectorAll('[data-cet-parte="del-total"]')).toHaveLength(1);
+  });
+
+  it("sin ese texto la fila no deja un hueco ni inventa un porcentaje", () => {
+    const { container } = pintar(<LessonTimeBreakdown items={LECCIONES} />);
+    expect(container.querySelectorAll('[data-cet-parte="del-total"]')).toHaveLength(0);
+    expect(container.textContent).not.toContain("%");
+  });
+
+  it("cada fila se alcanza con el tabulador, no solo con el raton", () => {
+    // Si la fila solo respondiera al raton, quien navega con teclado se quedaria
+    // sin la unica ayuda para no perder la linea en una lista larga (WCAG 2.1.1).
+    const { container } = pintar(<LessonTimeBreakdown items={LECCIONES} />);
+    const filas = Array.from(container.querySelectorAll('li[data-cet-fila="leccion"]'));
+    expect(filas).toHaveLength(3);
+    for (const fila of filas) {
+      expect(fila.getAttribute("tabindex")).toBe("0");
+    }
+  });
+
+  it("la respuesta al raton y al foco es de FORMA, y es la misma para los dos", () => {
+    const { container } = pintar(<LessonTimeBreakdown items={LECCIONES} />);
+    const fila = container.querySelector('li[data-cet-fila="leccion"]') as HTMLElement;
+    const nombre = fila.querySelector("span") as HTMLElement;
+
+    // Contorno al foco y subrayado en las dos entradas: nada que dependa del tono.
+    expect(fila.className).toContain("focus-visible:outline-2");
+    expect(nombre.className).toContain("group-hover:underline");
+    expect(nombre.className).toContain("group-focus-visible:underline");
+
+    // Y ni una clase de fondo de color como respuesta: en escala de grises no
+    // pasa nada, que es la prueba de que el canal no es el tono.
+    expect(fila.className).not.toMatch(/(hover|focus-visible):bg-/);
+  });
+
+  it("el nombre sigue sin compartir renglon con la barra (obs003)", () => {
+    const { container } = pintar(<LessonTimeBreakdown items={LECCIONES} />);
+    const fila = container.querySelector('li[data-cet-fila="leccion"]') as HTMLElement;
+    const nombre = fila.querySelector("span") as HTMLElement;
+    // El nombre es el primer hijo de la fila y el dibujo cuelga de otro bloque.
+    expect(nombre.parentElement).toBe(fila);
+    expect(nombre.querySelectorAll("svg")).toHaveLength(0);
   });
 });

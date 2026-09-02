@@ -219,12 +219,21 @@ export {
   hayDispersionSuficiente,
   puntosDeDispersion,
   MIN_DIAS_DISPERSION,
+  cortesUtiles,
+  type AxisTick,
   type EffortDay,
   type SkillEntry,
   type LessonTime,
   type HourActivity,
   type EffortOutcomePoint,
 } from "./reports/scorecard-data.js";
+// El reparto de la escala de un eje. Sale de `escala.js` y NO de
+// `chart-chrome.js`, que es donde vive el resto del armazon: la aplicacion lo
+// llama desde el SERVIDOR —reparte los cortes y los rotula ella, porque el
+// paquete no sabe que la unidad son minutos (AD-7)—, y `chart-chrome` lleva
+// "use client". Importarlo de alli arrastraria la frontera de cliente al
+// servidor, que es lo que `apps/web/src/lib/rsc-boundary.test.ts` vigila.
+export { cortesDelEje, topeDelEje } from "./reports/escala.js";
 export { ScorecardPanel, type ScorecardPanelProps } from "./reports/ScorecardPanel.js";
 export { EffortTrend, type EffortTrendProps } from "./reports/EffortTrend.js";
 export { DailyRhythm, type DailyRhythmProps } from "./reports/DailyRhythm.js";
@@ -237,6 +246,7 @@ export { CohortComparison, type CohortComparisonProps } from "./reports/CohortCo
 export {
   LessonTimeBreakdown,
   type LessonTimeBreakdownProps,
+  type LessonTimeRow,
 } from "./reports/LessonTimeBreakdown.js";
 export {
   StudyScorecard,
