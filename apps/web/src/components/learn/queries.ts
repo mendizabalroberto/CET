@@ -133,22 +133,55 @@ export async function getStudentCourses(schoolId: string | null): Promise<Course
   const supabase = await createClient();
   const scope = globalOrOwn(schoolId);
 
-  // Sin colegio no hay activaciones que consultar: `school_courses` es la tabla
-  // con la que un colegio enciende un curso global, y el hijo de un tutor no
-  // tiene colegio que encienda nada. Se salta el viaje y se sigue con la lista
-  // vacia, que es la respuesta correcta y no un fallo.
-  const { data: activations, error: activationError } =
-    schoolId === null
-      ? { data: [] as { course_id: string }[], error: null }
-      : await supabase
-          .from("school_courses")
-          .select("course_id")
-          .eq("school_id", schoolId)
-          .eq("is_active", true);
+  // QUE CURSOS ESTAN ENCENDIDOS PARA ESTE ALUMNO, que se responde distinto
+  // segun tenga colegio o no.
+  //
+  // Un colegio enciende cursos con `school_courses`. Aqui habia un atajo para el
+  // alumno sin colegio —«no hay activaciones que consultar, se sigue con la
+  // lista vacia, que es la respuesta correcta y no un fallo»— y NO era la
+  // respuesta correcta: dejaba a `/learn` COMPLETAMENTE VACIO para todo hijo de
+  // un tutor.
+  //
+  // Medido el 01/09/2026 con un alumno de familia real: la base le concede las
+  // 33 lecciones de las 6 materias —todas `published` y con `school_id` nulo, y
+  // la politica `lessons_select` se apoya en `can_read_content(NULL)`, que es
+  // verdadero para cualquiera— y la aplicacion se las quitaba todas. Entro en
+  // `/learn`, no habia nada que abrir, y se fue. Queda en la telemetria: un
+  // `nav_route_changed` a `/learn` y ni un solo `lesson_opened`.
+  //
+  // El fallo estaba en tratar «no tiene colegio» como «tiene un colegio que no
+  // ha encendido nada». Son cosas distintas: `school_courses` existe para que un
+  // centro ACOTE la biblioteca global a lo que da ese curso, y quien no tiene
+  // centro no tiene a nadie que le acote nada. Su alcance es la biblioteca
+  // global entera, que es literalmente lo que dice AD-2 y lo que `globalOrOwn`
+  // ya devuelve para `null`.
+  //
+  // Se resuelve como un `courseIds` con dos origenes y NO como una rama que se
+  // duplique hacia abajo: a partir de la linea siguiente el codigo es el mismo
+  // para los dos casos, asi que no hay dos caminos que puedan divergir.
+  const sinColegio = schoolId === null;
 
-  if (activationError) return null;
+  const { data: encendidos, error: errorDeAlcance } = sinColegio
+    ? await supabase
+        .from("courses")
+        .select("id")
+        .eq("status", "published")
+        .is("school_id", null)
+    : await supabase
+        .from("school_courses")
+        .select("course_id")
+        .eq("school_id", schoolId)
+        .eq("is_active", true);
 
-  const courseIds = (activations ?? []).map((row) => row.course_id as string);
+  if (errorDeAlcance) return null;
+
+  // Las dos consultas traen la misma cosa con distinto nombre de columna:
+  // `courses.id` y `school_courses.course_id`. Se estrecha aqui, una vez, para
+  // que de aqui hacia abajo solo exista `courseIds` y no dos formas de fila.
+  const courseIds = (encendidos ?? []).map((row) => {
+    const fila = row as { id?: string; course_id?: string };
+    return (sinColegio ? fila.id : fila.course_id) as string;
+  });
   if (courseIds.length === 0) return [];
 
   // NO se consulta `skill_mastery`. Aquí había una tercera consulta que
