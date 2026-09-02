@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import type { EventoCalendario } from "@cet/engine";
 import type { NotaGuardada } from "./consultas";
-import { hitoMasCercano, leerNotasCorregidas, leerPesos } from "./acciones.puras";
+import {
+  hitoMasCercano,
+  leerIdsDeCancelacion,
+  leerIdsDeDescarte,
+  leerNotasCorregidas,
+  leerPesos,
+} from "./acciones.puras";
 
 describe("hitoMasCercano", () => {
   it("elige las finales como hito cuando son el siguiente evento del calendario", () => {
@@ -104,5 +110,74 @@ describe("leerPesos", () => {
 
   it("rechaza una suma distinta de 1", () => {
     expect(leerPesos('{"math": 0.6, "science": 0.6}')).toBeNull();
+  });
+});
+
+const UUID_A = "11111111-1111-1111-1111-111111111111";
+const UUID_B = "22222222-2222-2222-2222-222222222222";
+
+describe("leerIdsDeCancelacion", () => {
+  it("con dos UUID validos devuelve el par", () => {
+    const fd = new FormData();
+    fd.set("planId", UUID_A);
+    fd.set("studentId", UUID_B);
+
+    expect(leerIdsDeCancelacion(fd)).toEqual({ planId: UUID_A, studentId: UUID_B });
+  });
+
+  it("devuelve null si un id esta vacio", () => {
+    const fd = new FormData();
+    fd.set("planId", "");
+    fd.set("studentId", UUID_B);
+
+    expect(leerIdsDeCancelacion(fd)).toBeNull();
+  });
+
+  it("devuelve null si un id no es un UUID", () => {
+    const fd = new FormData();
+    fd.set("planId", "no-es-un-uuid");
+    fd.set("studentId", UUID_B);
+
+    expect(leerIdsDeCancelacion(fd)).toBeNull();
+  });
+
+  it("devuelve null si falta un campo", () => {
+    const fd = new FormData();
+    fd.set("planId", UUID_A);
+
+    expect(leerIdsDeCancelacion(fd)).toBeNull();
+  });
+});
+
+describe("leerIdsDeDescarte", () => {
+  it("con dos UUID validos devuelve el par", () => {
+    const fd = new FormData();
+    fd.set("boletinId", UUID_A);
+    fd.set("studentId", UUID_B);
+
+    expect(leerIdsDeDescarte(fd)).toEqual({ boletinId: UUID_A, studentId: UUID_B });
+  });
+
+  it("devuelve null si un id esta vacio", () => {
+    const fd = new FormData();
+    fd.set("boletinId", UUID_A);
+    fd.set("studentId", "");
+
+    expect(leerIdsDeDescarte(fd)).toBeNull();
+  });
+
+  it("devuelve null si un id no es un UUID", () => {
+    const fd = new FormData();
+    fd.set("boletinId", "no-es-un-uuid");
+    fd.set("studentId", UUID_B);
+
+    expect(leerIdsDeDescarte(fd)).toBeNull();
+  });
+
+  it("devuelve null si falta un campo", () => {
+    const fd = new FormData();
+    fd.set("studentId", UUID_B);
+
+    expect(leerIdsDeDescarte(fd)).toBeNull();
   });
 });

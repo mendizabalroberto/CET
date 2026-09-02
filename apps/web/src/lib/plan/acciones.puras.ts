@@ -7,6 +7,7 @@
  * `acciones.ts` es un fichero "use server" y en el solo caben acciones async.
  */
 import type { EventoCalendario } from "@cet/engine";
+import { z } from "zod";
 
 import { bandaDeNota } from "./boletin";
 import type { NotaGuardada } from "./consultas";
@@ -14,6 +15,42 @@ import { sumarDias } from "./fecha";
 import { MATERIAS_CON_CONTENIDO, type CodigoMateria } from "./tipos";
 
 const CODIGOS_DE_MATERIA = new Set<string>(MATERIAS_CON_CONTENIDO);
+
+const schemaDeParDeIds = z.object({
+  a: z.string().uuid(),
+  b: z.string().uuid(),
+});
+
+function leerParDeIds(
+  fd: FormData,
+  campoA: string,
+  campoB: string,
+): { a: string; b: string } | null {
+  const parse = schemaDeParDeIds.safeParse({ a: fd.get(campoA), b: fd.get(campoB) });
+  return parse.success ? parse.data : null;
+}
+
+/**
+ * Lee `planId` y `studentId` del `FormData` de `cancelarPlan`. UUID válidos
+ * en ambos campos, o `null`.
+ */
+export function leerIdsDeCancelacion(
+  fd: FormData,
+): { planId: string; studentId: string } | null {
+  const par = leerParDeIds(fd, "planId", "studentId");
+  return par === null ? null : { planId: par.a, studentId: par.b };
+}
+
+/**
+ * Lee `boletinId` y `studentId` del `FormData` de `descartarBoletin`. UUID
+ * válidos en ambos campos, o `null`.
+ */
+export function leerIdsDeDescarte(
+  fd: FormData,
+): { boletinId: string; studentId: string } | null {
+  const par = leerParDeIds(fd, "boletinId", "studentId");
+  return par === null ? null : { boletinId: par.a, studentId: par.b };
+}
 
 /**
  * El hito de la ventana: la proxima fecha de `examenes_finales` o de

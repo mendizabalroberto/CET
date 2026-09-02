@@ -25,7 +25,13 @@ import { requireRole } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { rutasDeHijo } from "@/lib/tutor/rutas";
 
-import { hitoMasCercano, leerNotasCorregidas, leerPesos } from "./acciones.puras";
+import {
+  hitoMasCercano,
+  leerIdsDeCancelacion,
+  leerIdsDeDescarte,
+  leerNotasCorregidas,
+  leerPesos,
+} from "./acciones.puras";
 import { ExtraccionInvalidaError, promptDeExtraccion, validarExtraccion } from "./boletin";
 import {
   armarEntradaReparto,
@@ -496,6 +502,24 @@ export async function fijarPlan(_prev: PlanState, fd: FormData): Promise<PlanSta
     "Fijar plan: desactivar el anterior y crear plan y tareas; la RLS del tutor no cubre esas escrituras",
   );
 
+  const { data: activosPrevios, error: activosError } = await admin
+    .from("planes_de_estudio")
+    .select("id")
+    .eq("student_id", datos.studentId)
+    .eq("activo", true);
+  if (activosError !== null) {
+    console.error(
+      "[cet] fijarPlan planes_de_estudio.select",
+      activosError.code,
+      activosError.message,
+    );
+    return fail("generic");
+  }
+  const idsPreviosActivos = (activosPrevios ?? [])
+    .filter(esFila)
+    .map((fila) => columnaTexto(fila, "id"))
+    .filter((id): id is string => id !== null);
+
   const { error: desactivarError } = await admin
     .from("planes_de_estudio")
     .update({ activo: false })
@@ -559,6 +583,19 @@ export async function fijarPlan(_prev: PlanState, fd: FormData): Promise<PlanSta
       if (rollbackError !== null) {
         console.error("[cet] fijarPlan rollback", rollbackError.code, rollbackError.message);
       }
+      if (idsPreviosActivos.length > 0) {
+        const { error: reactivarError } = await admin
+          .from("planes_de_estudio")
+          .update({ activo: true })
+          .in("id", idsPreviosActivos);
+        if (reactivarError !== null) {
+          console.error(
+            "[cet] fijarPlan rollback reactivar",
+            reactivarError.code,
+            reactivarError.message,
+          );
+        }
+      }
       return fail("generic");
     }
   }
@@ -569,4 +606,67 @@ export async function fijarPlan(_prev: PlanState, fd: FormData): Promise<PlanSta
     tareas: reparto.tareas.length,
     techos: JSON.stringify(reparto.techos),
   });
+}
+
+export async function cancelarPlan(_prev: PlanState, fd: FormData): Promise<PlanState> {
+  const tutor = await requireRole(["guardian"], { onDeny: "not-found" });
+
+  const ids = leerIdsDeCancelacion(fd);
+  if (ids === null) return fail("notFound");
+
+  const supabase = await createClient();
+  if (!(await esHijoSuyo(supabase, tutor.id, ids.studentId))) return fail("notFound");
+
+  const { createAdminClient } = await import("@/lib/supabase/admin");
+  const admin = createAdminClient(
+    "Cancelar plan: la RLS del tutor no cubre la escritura en planes_de_estudio",
+  );
+  const { data: actualizado, error: cancelError } = await admin
+    .from("planes_de_estudio")
+    .update({ activo: false })
+    .eq("id", ids.planId)
+    .eq("student_id", ids.studentId)
+    .eq("activo", true)
+    .select("id");
+
+  if (cancelError !== null) {
+    console.error("[cet] cancelarPlan planes_de_estudio.update", cancelError.code, cancelError.message);
+    return fail("generic");
+  }
+  if (actualizado === null || actualizado.length === 0) return fail("planNoActivo");
+
+  revalidatePath(rutasDeHijo(ids.studentId).plan);
+  return done("planCancelado");
+}
+
+export async function descartarBoletin(_prev: PlanState, fd: FormData): Promise<PlanState> {
+  const tutor = await requireRole(["guardian"], { onDeny: "not-found" });
+
+  const ids = leerIdsDeDescarte(fd);
+  if (ids === null) return fail("notFound");
+
+  const supabase = await createClient();
+  if (!(await esHijoSuyo(supabase, tutor.id, ids.studentId))) return fail("notFound");
+
+  const boletin = await boletinDeHijo(ids.studentId, ids.boletinId);
+  if (boletin === null) return fail("notFound");
+  if (boletin.estado !== "extraido") return fail("planBoletinConfirmadoNoSeDescarta");
+
+  const { createAdminClient } = await import("@/lib/supabase/admin");
+  const admin = createAdminClient(
+    "Descartar boletín: la RLS del tutor no cubre la escritura en boletines",
+  );
+  const { error: borrarError } = await admin
+    .from("boletines")
+    .delete()
+    .eq("id", ids.boletinId)
+    .eq("student_id", ids.studentId);
+
+  if (borrarError !== null) {
+    console.error("[cet] descartarBoletin boletines.delete", borrarError.code, borrarError.message);
+    return fail("generic");
+  }
+
+  revalidatePath(rutasDeHijo(ids.studentId).plan);
+  return done("boletinDescartado");
 }
