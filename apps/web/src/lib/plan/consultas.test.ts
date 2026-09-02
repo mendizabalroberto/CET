@@ -4,9 +4,13 @@ import {
   filtrarCalendarioPorCurso,
   recortarVentana,
   armarEntradaReparto,
-  armarInventarioEstratega,
+  armarInventarioDetallado,
+  armarUltimasLecciones,
   notaGuardadaSchema,
   repartoGuardadoSchema,
+  type ActividadDeMateria,
+  type LeccionCompletadaReciente,
+  type MasteryDeSkill,
   type MateriaInventario,
 } from "./consultas";
 
@@ -14,26 +18,30 @@ const materiaEnglish: MateriaInventario = {
   subjectId: "subj-english",
   code: "english",
   lecciones: [
-    { lessonId: "lesson-1", moduloOrd: 1, ord: 1, minutos: 25 },
-    { lessonId: "lesson-2", moduloOrd: 1, ord: 2, minutos: 15 },
+    { lessonId: "lesson-1", titulo: "Reading 1", moduloTitulo: "Módulo 1", moduloOrd: 1, ord: 1, minutos: 25 },
+    { lessonId: "lesson-2", titulo: "Reading 2", moduloTitulo: "Módulo 1", moduloOrd: 1, ord: 2, minutos: 15 },
   ],
   skills: [
-    { skillId: "skill-1", code: "s1", ord: 1, preguntas: 10 },
-    { skillId: "skill-2", code: "s2", ord: 2, preguntas: 0 },
+    { skillId: "skill-1", code: "s1", nombre: "Vocabulario", ord: 1, preguntas: 10 },
+    { skillId: "skill-2", code: "s2", nombre: "Gramática", ord: 2, preguntas: 0 },
   ],
 };
 
 const materiaMath: MateriaInventario = {
   subjectId: "subj-math",
   code: "math",
-  lecciones: [{ lessonId: "lesson-3", moduloOrd: 1, ord: 1, minutos: 30 }],
+  lecciones: [
+    { lessonId: "lesson-3", titulo: "Fracciones", moduloTitulo: "Módulo 1", moduloOrd: 1, ord: 1, minutos: 30 },
+  ],
   skills: [],
 };
 
 const materiaScience: MateriaInventario = {
   subjectId: "subj-science",
   code: "science",
-  lecciones: [{ lessonId: "lesson-6", moduloOrd: 1, ord: 1, minutos: 40 }],
+  lecciones: [
+    { lessonId: "lesson-6", titulo: "Plantas", moduloTitulo: "Módulo 1", moduloOrd: 1, ord: 1, minutos: 40 },
+  ],
   skills: [],
 };
 
@@ -78,13 +86,37 @@ describe("notaGuardadaSchema", () => {
 });
 
 describe("repartoGuardadoSchema", () => {
-  it("acepta un reparto válido", () => {
+  it("acepta un reparto válido sin prioridades (planes previos a §7.4)", () => {
     expect(
       repartoGuardadoSchema.safeParse({
         pesos: { english: 1 },
         techos: [],
       }).success,
     ).toBe(true);
+  });
+
+  it("acepta un reparto con prioridades", () => {
+    const resultado = repartoGuardadoSchema.safeParse({
+      pesos: { english: 1 },
+      techos: [],
+      prioridades: {
+        english: { lecciones: ["lesson-1"], skills: ["skill-1"], porQue: "Repasar lectura." },
+      },
+    });
+    expect(resultado.success).toBe(true);
+    if (resultado.success) {
+      expect(resultado.data.prioridades?.english?.porQue).toBe("Repasar lectura.");
+    }
+  });
+
+  it("rechaza una clave de prioridades que no es materia planificable", () => {
+    expect(
+      repartoGuardadoSchema.safeParse({
+        pesos: { english: 1 },
+        techos: [],
+        prioridades: { art: { lecciones: [], skills: [], porQue: "x" } },
+      }).success,
+    ).toBe(false);
   });
 
   it("rechaza claves que no son materias planificables", () => {
@@ -97,28 +129,70 @@ describe("repartoGuardadoSchema", () => {
   });
 });
 
-describe("armarInventarioEstratega", () => {
-  it("cuenta completadas, minutos y preguntas de dos materias", () => {
-    const resultado = armarInventarioEstratega(
+describe("armarInventarioDetallado", () => {
+  it("cruza completadas, mastery/ultimaPractica y actividad reciente por materia", () => {
+    const mastery = new Map<string, MasteryDeSkill>([
+      ["skill-1", { mastery: 0.6, ultimaPractica: "2026-08-20" }],
+    ]);
+    const actividad = new Map<string, ActividadDeMateria>([
+      ["subj-english", { minutos: 30, items: 4, porcentajeAcierto: 75, leccionesCompletadas: 1 }],
+    ]);
+
+    const resultado = armarInventarioDetallado(
       [materiaEnglish, materiaMath],
       new Set(["lesson-1", "lesson-3"]),
+      mastery,
+      actividad,
     );
 
     expect(resultado).toHaveLength(2);
     expect(resultado[0]).toEqual({
       code: "english",
-      leccionesPublicadas: 2,
-      leccionesCompletadas: 1,
-      minutosEstimados: 40,
-      preguntasPublicadas: 10,
+      lecciones: [
+        { id: "lesson-1", titulo: "Reading 1", modulo: "Módulo 1", minutos: 25, completada: true },
+        { id: "lesson-2", titulo: "Reading 2", modulo: "Módulo 1", minutos: 15, completada: false },
+      ],
+      skills: [
+        {
+          id: "skill-1",
+          code: "s1",
+          nombre: "Vocabulario",
+          preguntas: 10,
+          mastery: 0.6,
+          ultimaPractica: "2026-08-20",
+        },
+        {
+          id: "skill-2",
+          code: "s2",
+          nombre: "Gramática",
+          preguntas: 0,
+          mastery: null,
+          ultimaPractica: null,
+        },
+      ],
+      reciente: { minutos: 30, items: 4, porcentajeAcierto: 75, leccionesCompletadas: 1 },
     });
-    expect(resultado[1]).toEqual({
-      code: "math",
-      leccionesPublicadas: 1,
-      leccionesCompletadas: 1,
-      minutosEstimados: 30,
-      preguntasPublicadas: 0,
+    expect(resultado[1]?.reciente).toEqual({
+      minutos: 0,
+      items: 0,
+      porcentajeAcierto: null,
+      leccionesCompletadas: 0,
     });
+  });
+});
+
+describe("armarUltimasLecciones", () => {
+  it("resuelve título y materia de cada lección reciente", () => {
+    const ultimas: LeccionCompletadaReciente[] = [
+      { lessonId: "lesson-1", fecha: "2026-08-30" },
+      { lessonId: "lesson-desconocida", fecha: "2026-08-29" },
+      { lessonId: "lesson-3", fecha: "2026-08-28" },
+    ];
+
+    expect(armarUltimasLecciones(ultimas, [materiaEnglish, materiaMath])).toEqual([
+      { titulo: "Reading 1", code: "english", fecha: "2026-08-30" },
+      { titulo: "Fracciones", code: "math", fecha: "2026-08-28" },
+    ]);
   });
 });
 
@@ -131,7 +205,9 @@ describe("armarEntradaReparto", () => {
       pesos: { english: 0.5, math: 0.5, science: 0 },
       inventario: [materiaEnglish, materiaScience, materiaMath],
       completadas: new Set(["lesson-1", "lesson-3"]),
-      mastery: new Map([["skill-1", 0.8]]),
+      mastery: new Map<string, MasteryDeSkill>([
+        ["skill-1", { mastery: 0.8, ultimaPractica: "2026-08-20" }],
+      ]),
       calendario,
     });
 
@@ -160,6 +236,57 @@ describe("armarEntradaReparto", () => {
     });
 
     expect(entrada.materias).toEqual([]);
+  });
+
+  it("rellena prioridadLecciones/prioridadSkills solo donde hay algo que priorizar", () => {
+    const entrada = armarEntradaReparto({
+      desde: "2026-09-01",
+      hasta: "2026-09-30",
+      minutosPorDia: 30,
+      pesos: { english: 0.5, math: 0.5 },
+      inventario: [materiaEnglish, materiaMath],
+      completadas: new Set(),
+      mastery: new Map(),
+      calendario: [],
+      prioridades: {
+        english: { lecciones: ["lesson-2"], skills: [], porQue: "Repasar lectura." },
+      },
+    });
+
+    const english = entrada.materias.find((m) => m.code === "english");
+    const math = entrada.materias.find((m) => m.code === "math");
+    expect(english?.prioridadLecciones).toEqual(["lesson-2"]);
+    expect(english?.prioridadSkills).toBeUndefined();
+    expect(math?.prioridadLecciones).toBeUndefined();
+    expect(math?.prioridadSkills).toBeUndefined();
+  });
+
+  it("pasa los examenes del alumno al motor, y los omite si no vienen", () => {
+    const sinExamenes = armarEntradaReparto({
+      desde: "2026-09-01",
+      hasta: "2026-09-30",
+      minutosPorDia: 30,
+      pesos: { english: 0.5, math: 0.5 },
+      inventario: [materiaEnglish, materiaMath],
+      completadas: new Set(),
+      mastery: new Map(),
+      calendario: [],
+    });
+    expect(sinExamenes.examenes).toBeUndefined();
+
+    const examenes = [{ fecha: "2026-09-15", subjectId: "subj-english" }];
+    const conExamenes = armarEntradaReparto({
+      desde: "2026-09-01",
+      hasta: "2026-09-30",
+      minutosPorDia: 30,
+      pesos: { english: 0.5, math: 0.5 },
+      inventario: [materiaEnglish, materiaMath],
+      completadas: new Set(),
+      mastery: new Map(),
+      calendario: [],
+      examenes,
+    });
+    expect(conExamenes.examenes).toEqual(examenes);
   });
 });
 

@@ -21,6 +21,7 @@ import { RobotLector } from "@/components/tutor/RobotLector";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { LocaleProvider } from "@/lib/i18n/provider";
 import type { BoletinResumen, EventoProximo, PlanResumen } from "@/lib/plan/consultas";
+import type { ExamenResumen } from "@/lib/plan/examenes";
 
 const STUDENT_ID = "00000000-0000-4000-8000-000000000001";
 
@@ -80,6 +81,23 @@ const planActivo: PlanResumen = {
   ],
   createdAt: "2026-08-23T18:00:00Z",
   tareas: 96,
+  prioridades: [
+    {
+      code: "math",
+      porQue: "La nota más floja y todavía no ha tocado fracciones: empezar por ahí.",
+      lecciones: [
+        { lessonId: "l-frac-1", titulo: "Fracciones equivalentes" },
+        { lessonId: "l-frac-2", titulo: "Sumar y restar fracciones" },
+      ],
+      skills: [{ skillId: "s-frac-add", nombre: "Sumar fracciones con distinto denominador" }],
+    },
+    {
+      code: "science",
+      porQue: "Suficiente en el boletín y ninguna práctica hecha en cuatro semanas.",
+      lecciones: [{ lessonId: "l-sci-3", titulo: "Circuitos eléctricos" }],
+      skills: [],
+    },
+  ],
   partes: [
     { fecha: "2026-09-01", minutosPrevistos: 40, minutosMedidos: 38, itemsRespondidos: 22, aciertos: 17, enviadoAt: "2026-09-02T01:00:00Z" },
     { fecha: "2026-08-31", minutosPrevistos: 40, minutosMedidos: 12, itemsRespondidos: 6, aciertos: 4, enviadoAt: "2026-09-01T01:00:00Z" },
@@ -92,6 +110,11 @@ const eventos: EventoProximo[] = [
   { desde: "2026-10-05", hasta: "2026-10-09", tipo: "vacaciones", yearLevels: [] },
   { desde: "2026-10-17", hasta: "2026-10-17", tipo: "hito_cambridge", yearLevels: [4] },
   { desde: "2026-10-31", hasta: "2026-10-31", tipo: "fin_trimestre", yearLevels: [] },
+];
+
+const examenes: ExamenResumen[] = [
+  { id: "x1", fecha: "2026-10-12", subjectId: "s-math", code: "math", titulo: "Fracciones y decimales", origen: "tutor" },
+  { id: "x2", fecha: "2026-10-14", subjectId: null, code: null, titulo: "Examen", origen: "documento" },
 ];
 
 interface Caso {
@@ -176,6 +199,7 @@ export default async function PlanPreviewPage() {
               nombre="Leo"
               eventos={caso.eventos}
               yearLevel={6}
+              examenes={caso.plan !== null ? examenes : []}
             />
           </section>
         ))}

@@ -1,8 +1,9 @@
 import { z } from "zod";
 import type { EntradaReparto, EventoCalendario, MateriaDelPlan, TechoDeMateria } from "@cet/engine";
-import type { InventarioDeMateria } from "./estratega";
-import { hoyEnZona, sumarDias } from "./fecha";
-import { MATERIAS_CON_CONTENIDO, type Banda, type CodigoMateria } from "./tipos";
+import { i18nText, resolveI18n } from "@cet/shared";
+import type { InventarioDetalladoDeMateria } from "./estratega";
+import { hoyEnZona, sumarDias, ZONA_HORARIA_DEL_PLAN } from "./fecha";
+import { MATERIAS_CON_CONTENIDO, type Banda, type CodigoMateria, type PrioridadDeMateria } from "./tipos";
 
 type Fila = Record<string, unknown>;
 
@@ -26,6 +27,17 @@ function numero(value: unknown): number | null {
 function entero(value: unknown): number | null {
   const n = numero(value);
   return n !== null && Number.isInteger(n) ? n : null;
+}
+
+/**
+ * `jsonb` I18nText de la base a texto plano: `es` con fallback `en`, como el
+ * resto de la app (AD-7). Cadena vacía si el valor no es un I18nText válido —
+ * mejor un hueco visible que tumbar el inventario entero por un título roto.
+ */
+function tituloDesdeI18n(value: unknown): string {
+  const parse = i18nText.safeParse(value);
+  if (!parse.success) return "";
+  return resolveI18n(parse.data, "es", "en");
 }
 
 function listaDeStrings(value: unknown): string[] {
@@ -69,6 +81,8 @@ export const notaGuardadaSchema: z.ZodType<NotaGuardada> = z.object({
 export interface RepartoGuardado {
   readonly pesos: Partial<Record<CodigoMateria, number>>;
   readonly techos: readonly TechoDeMateria[];
+  /** Qué leer y qué practicar primero (§7.2/§7.4). Ausente en planes previos a esa ronda. */
+  readonly prioridades?: Partial<Record<CodigoMateria, PrioridadDeMateria>>;
 }
 
 const pesoGuardadoSchema = z
@@ -93,9 +107,28 @@ const techoDeMateriaSchema = z.object({
   minutosDisponibles: z.number(),
 });
 
+const prioridadDeMateriaGuardadaSchema = z.object({
+  lecciones: z.array(z.string()),
+  skills: z.array(z.string()),
+  porQue: z.string(),
+});
+
+const prioridadesGuardadasSchema = z
+  .object({
+    english: prioridadDeMateriaGuardadaSchema.optional(),
+    ict: prioridadDeMateriaGuardadaSchema.optional(),
+    math: prioridadDeMateriaGuardadaSchema.optional(),
+    science: prioridadDeMateriaGuardadaSchema.optional(),
+    socials: prioridadDeMateriaGuardadaSchema.optional(),
+    spanish: prioridadDeMateriaGuardadaSchema.optional(),
+  })
+  .strict()
+  .optional();
+
 export const repartoGuardadoSchema: z.ZodType<RepartoGuardado> = z.object({
   pesos: pesosGuardadosSchema,
   techos: z.array(techoDeMateriaSchema),
+  prioridades: prioridadesGuardadasSchema,
 }) as unknown as z.ZodType<RepartoGuardado>;
 
 export interface BoletinResumen {
@@ -117,6 +150,14 @@ export interface ParteResumen {
   readonly enviadoAt: string | null;
 }
 
+/** Qué leer y qué practicar primero en una materia, ya con títulos (§7.4/§7.5). */
+export interface PrioridadResumen {
+  readonly code: CodigoMateria;
+  readonly porQue: string;
+  readonly lecciones: readonly { readonly lessonId: string; readonly titulo: string }[];
+  readonly skills: readonly { readonly skillId: string; readonly nombre: string }[];
+}
+
 export interface PlanResumen {
   readonly id: string;
   readonly boletinId: string;
@@ -128,6 +169,8 @@ export interface PlanResumen {
   readonly createdAt: string;
   readonly tareas: number;
   readonly partes: readonly ParteResumen[];
+  /** Vacío si el plan no guardó prioridades (§7.4). */
+  readonly prioridades: readonly PrioridadResumen[];
 }
 
 export interface MateriaInventario {
@@ -135,6 +178,8 @@ export interface MateriaInventario {
   readonly code: CodigoMateria;
   readonly lecciones: readonly {
     readonly lessonId: string;
+    readonly titulo: string;
+    readonly moduloTitulo: string;
     readonly moduloOrd: number;
     readonly ord: number;
     readonly minutos: number;
@@ -142,6 +187,7 @@ export interface MateriaInventario {
   readonly skills: readonly {
     readonly skillId: string;
     readonly code: string;
+    readonly nombre: string;
     readonly ord: number;
     readonly preguntas: number;
   }[];
@@ -289,6 +335,48 @@ export async function planActivoDeHijo(studentId: string): Promise<PlanResumen |
     });
   }
 
+  const prioridadesGuardadas = repartoResultado.data.prioridades ?? {};
+  const entradasPrioridades = Object.entries(prioridadesGuardadas) as [
+    CodigoMateria,
+    PrioridadDeMateria,
+  ][];
+
+  const lessonIds = [...new Set(entradasPrioridades.flatMap(([, p]) => p.lecciones))];
+  const skillIds = [...new Set(entradasPrioridades.flatMap(([, p]) => p.skills))];
+
+  const [leccionesRes, skillsRes] = await Promise.all([
+    lessonIds.length > 0
+      ? supabase.from("lessons").select("id, title").in("id", lessonIds)
+      : Promise.resolve({ data: [], error: null }),
+    skillIds.length > 0
+      ? supabase.from("skills").select("id, name").in("id", skillIds)
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+
+  const tituloPorLeccion = new Map<string, string>();
+  for (const bruta of leccionesRes.data ?? []) {
+    if (!esFila(bruta)) continue;
+    const id = texto(bruta["id"]);
+    if (id !== null) tituloPorLeccion.set(id, tituloDesdeI18n(bruta["title"]));
+  }
+  const nombrePorSkill = new Map<string, string>();
+  for (const bruta of skillsRes.data ?? []) {
+    if (!esFila(bruta)) continue;
+    const id = texto(bruta["id"]);
+    if (id !== null) nombrePorSkill.set(id, tituloDesdeI18n(bruta["name"]));
+  }
+
+  const prioridades: PrioridadResumen[] = entradasPrioridades.map(([code, prioridad]) => ({
+    code,
+    porQue: prioridad.porQue,
+    lecciones: prioridad.lecciones
+      .filter((lessonId) => tituloPorLeccion.has(lessonId))
+      .map((lessonId) => ({ lessonId, titulo: tituloPorLeccion.get(lessonId) ?? "" })),
+    skills: prioridad.skills
+      .filter((skillId) => nombrePorSkill.has(skillId))
+      .map((skillId) => ({ skillId, nombre: nombrePorSkill.get(skillId) ?? "" })),
+  }));
+
   return {
     id,
     boletinId,
@@ -297,6 +385,7 @@ export async function planActivoDeHijo(studentId: string): Promise<PlanResumen |
     minutosPorDia,
     reparto: repartoResultado.data,
     recomendaciones,
+    prioridades,
     createdAt,
     tareas: conteoTareas ?? 0,
     partes,
@@ -332,12 +421,12 @@ export async function inventarioDeContenido(): Promise<MateriaInventario[]> {
 
   const [materiasRes, modulosRes, skillsRes] = await Promise.all([
     supabase.from("subjects").select("id, code, ord").is("school_id", null).in("id", subjectIds),
-    supabase.from("course_modules").select("id, course_id, ord").in("course_id", courseIds),
+    supabase.from("course_modules").select("id, course_id, ord, title").in("course_id", courseIds),
     supabase
       // `skills` no tiene `status`: la skill existe o no; lo publicado son
       // sus preguntas, que se cuentan mas abajo.
       .from("skills")
-      .select("id, course_id, code, ord")
+      .select("id, course_id, code, ord, name")
       .in("course_id", courseIds),
   ]);
 
@@ -356,21 +445,21 @@ export async function inventarioDeContenido(): Promise<MateriaInventario[]> {
     }
   }
 
-  const modulos: { id: string; courseId: string; ord: number }[] = [];
+  const modulos: { id: string; courseId: string; ord: number; titulo: string }[] = [];
   for (const bruta of modulosRes.data ?? []) {
     if (!esFila(bruta)) continue;
     const id = texto(bruta["id"]);
     const courseId = texto(bruta["course_id"]);
     const ord = entero(bruta["ord"]);
     if (id !== null && courseId !== null && ord !== null) {
-      modulos.push({ id, courseId, ord });
+      modulos.push({ id, courseId, ord, titulo: tituloDesdeI18n(bruta["title"]) });
     }
   }
 
-  const moduloPorId = new Map<string, { courseId: string; ord: number }>();
+  const moduloPorId = new Map<string, { courseId: string; ord: number; titulo: string }>();
   for (const m of modulos) moduloPorId.set(m.id, m);
 
-  const skills: { id: string; courseId: string; code: string; ord: number }[] = [];
+  const skills: { id: string; courseId: string; code: string; ord: number; nombre: string }[] = [];
   for (const bruta of skillsRes.data ?? []) {
     if (!esFila(bruta)) continue;
     const id = texto(bruta["id"]);
@@ -378,7 +467,7 @@ export async function inventarioDeContenido(): Promise<MateriaInventario[]> {
     const code = texto(bruta["code"]);
     const ord = entero(bruta["ord"]);
     if (id !== null && courseId !== null && code !== null && ord !== null) {
-      skills.push({ id, courseId, code, ord });
+      skills.push({ id, courseId, code, ord, nombre: tituloDesdeI18n(bruta["name"]) });
     }
   }
 
@@ -387,7 +476,7 @@ export async function inventarioDeContenido(): Promise<MateriaInventario[]> {
     moduleIds.length > 0
       ? await supabase
           .from("lessons")
-          .select("id, module_id, ord, estimated_minutes")
+          .select("id, module_id, ord, estimated_minutes, title")
           .in("module_id", moduleIds)
           .eq("status", "published")
       : { data: [], error: null };
@@ -398,6 +487,7 @@ export async function inventarioDeContenido(): Promise<MateriaInventario[]> {
     moduleId: string;
     ord: number;
     minutos: number;
+    titulo: string;
   }[] = [];
   for (const bruta of lessonsRes.data ?? []) {
     if (!esFila(bruta)) continue;
@@ -406,7 +496,7 @@ export async function inventarioDeContenido(): Promise<MateriaInventario[]> {
     const ord = entero(bruta["ord"]);
     const minutos = numero(bruta["estimated_minutes"]);
     if (id !== null && moduleId !== null && ord !== null && minutos !== null) {
-      lecciones.push({ id, moduleId, ord, minutos });
+      lecciones.push({ id, moduleId, ord, minutos, titulo: tituloDesdeI18n(bruta["title"]) });
     }
   }
 
@@ -447,6 +537,8 @@ export async function inventarioDeContenido(): Promise<MateriaInventario[]> {
       return [
         {
           lessonId: leccion.id,
+          titulo: leccion.titulo,
+          moduloTitulo: modulo.titulo,
           moduloOrd: modulo.ord,
           ord: leccion.ord,
           minutos: leccion.minutos,
@@ -460,6 +552,7 @@ export async function inventarioDeContenido(): Promise<MateriaInventario[]> {
       .map((skill) => ({
         skillId: skill.id,
         code: skill.code,
+        nombre: skill.nombre,
         ord: skill.ord,
         preguntas: preguntasPorSkill.get(skill.id) ?? 0,
       }))
@@ -497,24 +590,116 @@ export async function leccionesCompletadas(studentId: string): Promise<ReadonlyS
   return resultado;
 }
 
-export async function masteryDeAlumno(studentId: string): Promise<ReadonlyMap<string, number>> {
+export interface MasteryDeSkill {
+  readonly mastery: number;
+  /** `YYYY-MM-DD`, fecha civil en la zona del plan; `null` sin práctica registrada. */
+  readonly ultimaPractica: string | null;
+}
+
+export async function masteryDeAlumno(
+  studentId: string,
+): Promise<ReadonlyMap<string, MasteryDeSkill>> {
   const { createAdminClient } = await import("@/lib/supabase/admin");
   const supabase = createAdminClient(
     "Leer skill_mastery del alumno para armar la entrada del plan",
   );
   const { data, error } = await supabase
     .from("skill_mastery")
-    .select("skill_id, mastery")
+    .select("skill_id, mastery, last_practiced_at")
     .eq("student_id", studentId);
 
-  const resultado = new Map<string, number>();
+  const resultado = new Map<string, MasteryDeSkill>();
   if (error !== null) return resultado;
   for (const bruta of data ?? []) {
     if (!esFila(bruta)) continue;
     const skillId = texto(bruta["skill_id"]);
     const mastery = numero(bruta["mastery"]);
+    const ultimaPracticaBruta = texto(bruta["last_practiced_at"]);
     if (skillId !== null && mastery !== null && mastery >= 0 && mastery <= 1) {
-      resultado.set(skillId, mastery);
+      resultado.set(skillId, {
+        mastery,
+        ultimaPractica:
+          ultimaPracticaBruta === null
+            ? null
+            : hoyEnZona(ZONA_HORARIA_DEL_PLAN, new Date(ultimaPracticaBruta)),
+      });
+    }
+  }
+  return resultado;
+}
+
+/**
+ * Reparto por materia de los últimos 28 días (§7.1), mismo RPC y ventana que
+ * `minutosObservados` y `lib/tutor/queries.ts`: una fila por materia con
+ * actividad, nunca una por cada materia del catálogo.
+ */
+export interface ActividadDeMateria {
+  readonly minutos: number;
+  readonly items: number;
+  readonly porcentajeAcierto: number | null;
+  readonly leccionesCompletadas: number;
+}
+
+export async function actividadRecientePorMateria(
+  studentId: string,
+): Promise<ReadonlyMap<string, ActividadDeMateria>> {
+  const { createClient } = await import("@/lib/supabase/server");
+  const supabase = await createClient();
+  const { desde, hasta } = ventanaDeInforme(28);
+  const { data, error } = await supabase.rpc("informe_alumno_resumen_por_materia", {
+    p_student_id: studentId,
+    p_desde: desde,
+    p_hasta: hasta,
+  });
+
+  const resultado = new Map<string, ActividadDeMateria>();
+  if (error !== null || !Array.isArray(data)) return resultado;
+  for (const bruta of data) {
+    if (!esFila(bruta)) continue;
+    const subjectId = texto(bruta["subject_id"]);
+    const minutos = numero(bruta["minutos_estudio"]);
+    const items = entero(bruta["items_respondidos"]);
+    const porcentajeAcierto = numero(bruta["porcentaje_acierto"]);
+    const leccionesCompletadas = entero(bruta["lecciones_completadas"]);
+    if (subjectId === null || minutos === null || items === null || leccionesCompletadas === null) {
+      continue;
+    }
+    resultado.set(subjectId, { minutos, items, porcentajeAcierto, leccionesCompletadas });
+  }
+  return resultado;
+}
+
+export interface LeccionCompletadaReciente {
+  readonly lessonId: string;
+  /** `YYYY-MM-DD`, fecha civil en la zona del plan. */
+  readonly fecha: string;
+}
+
+/** Las últimas `limite` lecciones que terminó el alumno, más recientes primero (§7.1). */
+export async function ultimasLeccionesCompletadas(
+  studentId: string,
+  limite: number = 5,
+): Promise<LeccionCompletadaReciente[]> {
+  const { createAdminClient } = await import("@/lib/supabase/admin");
+  const supabase = createAdminClient(
+    "Leer learning_events para las últimas lecciones completadas del plan",
+  );
+  const { data, error } = await supabase
+    .from("learning_events")
+    .select("lesson_id, server_ts")
+    .eq("student_id", studentId)
+    .eq("event_type", "lesson_completed")
+    .order("server_ts", { ascending: false })
+    .limit(limite);
+
+  const resultado: LeccionCompletadaReciente[] = [];
+  if (error !== null) return resultado;
+  for (const bruta of data ?? []) {
+    if (!esFila(bruta)) continue;
+    const lessonId = texto(bruta["lesson_id"]);
+    const serverTs = texto(bruta["server_ts"]);
+    if (lessonId !== null && serverTs !== null) {
+      resultado.push({ lessonId, fecha: hoyEnZona(ZONA_HORARIA_DEL_PLAN, new Date(serverTs)) });
     }
   }
   return resultado;
@@ -654,20 +839,66 @@ export async function minutosObservados(studentId: string): Promise<number | nul
   return Math.round(total / dias);
 }
 
-export function armarInventarioEstratega(
+const ACTIVIDAD_VACIA: ActividadDeMateria = {
+  minutos: 0,
+  items: 0,
+  porcentajeAcierto: null,
+  leccionesCompletadas: 0,
+};
+
+/**
+ * El detalle que ve el estratega por materia (§7.1): sustituye a los cuatro
+ * totales de antes. `completada` y `mastery`/`ultimaPractica` cruzan el
+ * inventario con lo que hizo el alumno; `reciente` es su actividad de los
+ * últimos 28 días (o ceros/porcentaje `null` si no tocó esa materia).
+ */
+export function armarInventarioDetallado(
   inventario: readonly MateriaInventario[],
   completadas: ReadonlySet<string>,
-): InventarioDeMateria[] {
+  mastery: ReadonlyMap<string, MasteryDeSkill>,
+  actividad: ReadonlyMap<string, ActividadDeMateria>,
+): InventarioDetalladoDeMateria[] {
   return inventario.map((materia) => ({
     code: materia.code,
-    leccionesPublicadas: materia.lecciones.length,
-    leccionesCompletadas: materia.lecciones.reduce(
-      (n, leccion) => n + (completadas.has(leccion.lessonId) ? 1 : 0),
-      0,
-    ),
-    minutosEstimados: materia.lecciones.reduce((n, leccion) => n + leccion.minutos, 0),
-    preguntasPublicadas: materia.skills.reduce((n, skill) => n + skill.preguntas, 0),
+    lecciones: materia.lecciones.map((leccion) => ({
+      id: leccion.lessonId,
+      titulo: leccion.titulo,
+      modulo: leccion.moduloTitulo,
+      minutos: leccion.minutos,
+      completada: completadas.has(leccion.lessonId),
+    })),
+    skills: materia.skills.map((skill) => {
+      const m = mastery.get(skill.skillId);
+      return {
+        id: skill.skillId,
+        code: skill.code,
+        nombre: skill.nombre,
+        preguntas: skill.preguntas,
+        mastery: m?.mastery ?? null,
+        ultimaPractica: m?.ultimaPractica ?? null,
+      };
+    }),
+    reciente: actividad.get(materia.subjectId) ?? ACTIVIDAD_VACIA,
   }));
+}
+
+/** Las últimas lecciones completadas (§7.1), con su título y la materia a la que pertenecen. */
+export function armarUltimasLecciones(
+  ultimas: readonly LeccionCompletadaReciente[],
+  inventario: readonly MateriaInventario[],
+): { readonly titulo: string; readonly code: CodigoMateria; readonly fecha: string }[] {
+  const materiaPorLeccion = new Map<string, { titulo: string; code: CodigoMateria }>();
+  for (const materia of inventario) {
+    for (const leccion of materia.lecciones) {
+      materiaPorLeccion.set(leccion.lessonId, { titulo: leccion.titulo, code: materia.code });
+    }
+  }
+
+  return ultimas.flatMap((reciente) => {
+    const encontrada = materiaPorLeccion.get(reciente.lessonId);
+    if (!encontrada) return [];
+    return [{ titulo: encontrada.titulo, code: encontrada.code, fecha: reciente.fecha }];
+  });
 }
 
 export function armarEntradaReparto(p: {
@@ -677,8 +908,10 @@ export function armarEntradaReparto(p: {
   readonly pesos: Partial<Record<CodigoMateria, number>>;
   readonly inventario: readonly MateriaInventario[];
   readonly completadas: ReadonlySet<string>;
-  readonly mastery: ReadonlyMap<string, number>;
+  readonly mastery: ReadonlyMap<string, MasteryDeSkill>;
   readonly calendario: readonly EventoCalendario[];
+  readonly prioridades?: Partial<Record<CodigoMateria, PrioridadDeMateria>>;
+  readonly examenes?: readonly { readonly fecha: string; readonly subjectId: string | null }[];
 }): EntradaReparto {
   const materias: MateriaDelPlan[] = [];
 
@@ -687,6 +920,8 @@ export function armarEntradaReparto(p: {
     if (typeof peso !== "number" || !Number.isFinite(peso) || peso <= 0) {
       continue;
     }
+
+    const prioridad = p.prioridades?.[materia.code];
 
     materias.push({
       subjectId: materia.subjectId,
@@ -703,8 +938,14 @@ export function armarEntradaReparto(p: {
         skillId: skill.skillId,
         ord: skill.ord,
         preguntas: skill.preguntas,
-        mastery: p.mastery.get(skill.skillId) ?? null,
+        mastery: p.mastery.get(skill.skillId)?.mastery ?? null,
       })),
+      ...(prioridad !== undefined && prioridad.lecciones.length > 0
+        ? { prioridadLecciones: prioridad.lecciones }
+        : {}),
+      ...(prioridad !== undefined && prioridad.skills.length > 0
+        ? { prioridadSkills: prioridad.skills }
+        : {}),
     });
   }
 
@@ -714,5 +955,6 @@ export function armarEntradaReparto(p: {
     minutosPorDia: p.minutosPorDia,
     materias,
     calendario: p.calendario,
+    ...(p.examenes !== undefined ? { examenes: p.examenes } : {}),
   };
 }

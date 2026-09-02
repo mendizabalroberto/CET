@@ -56,10 +56,15 @@ export function leerIdsDeDescarte(
  * El hito de la ventana: la proxima fecha de `examenes_finales` o de
  * `hito_cambridge` posterior a `hoy`. Si no hay, la ventana se estira a
  * `hoy + 70 días`.
+ *
+ * Si el alumno tiene exámenes propios (0095) y el último cae después de ese
+ * `hasta`, la ventana se estira hasta ese examen: `hito` pasa a
+ * "examen_del_alumno" para que no se pierda de vista.
  */
 export function hitoMasCercano(
   calendario: readonly EventoCalendario[],
   hoy: string,
+  examenes?: readonly { readonly fecha: string }[],
 ): { hasta: string; hito: string } {
   const candidatos = calendario
     .filter(
@@ -70,8 +75,18 @@ export function hitoMasCercano(
     .sort((a, b) => a.desde.localeCompare(b.desde));
 
   const elegido = candidatos[0];
-  if (elegido === undefined) return { hasta: sumarDias(hoy, 70), hito: "" };
-  return { hasta: elegido.desde, hito: elegido.tipo };
+  const base = elegido === undefined ? { hasta: sumarDias(hoy, 70), hito: "" } : { hasta: elegido.desde, hito: elegido.tipo };
+
+  const ultimoExamen = [...(examenes ?? [])]
+    .map((examen) => examen.fecha)
+    .filter((fecha) => fecha > hoy)
+    .sort((a, b) => a.localeCompare(b))
+    .pop();
+
+  if (ultimoExamen !== undefined && ultimoExamen > base.hasta) {
+    return { hasta: ultimoExamen, hito: "examen_del_alumno" };
+  }
+  return base;
 }
 
 /**

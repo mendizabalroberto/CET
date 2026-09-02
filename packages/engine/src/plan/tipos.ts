@@ -53,6 +53,23 @@ export interface MateriaDelPlan {
   readonly peso: number;
   readonly lecciones: readonly LeccionDisponible[];
   readonly skills: readonly SkillDisponible[];
+  /**
+   * Ids que el estratega (DeepSeek) pidió practicar/estudiar primero, en ese
+   * orden. El repartidor los honra en ese orden y sigue con el resto como
+   * siempre; ids desconocidos o de lecciones ya completadas se ignoran.
+   */
+  readonly prioridadLecciones?: readonly string[];
+  readonly prioridadSkills?: readonly string[];
+}
+
+/**
+ * Un examen que el tutor registró para su hijo. `subjectId: null` es un
+ * examen general (final de trimestre, jornada de exámenes) y cuenta para
+ * todas las materias a efectos de intensidad, sin favorecer a ninguna.
+ */
+export interface ExamenDelAlumno {
+  readonly fecha: FechaISO;
+  readonly subjectId: string | null;
 }
 
 export interface EntradaReparto {
@@ -62,6 +79,22 @@ export interface EntradaReparto {
   readonly minutosPorDia: number;
   readonly materias: readonly MateriaDelPlan[];
   readonly calendario: readonly EventoCalendario[];
+  /**
+   * Exámenes conocidos del alumno. Reglas del repartidor (deterministas,
+   * ver `repartir.ts`):
+   * - Ventana de empuje: los 7 días antes de un examen de una materia
+   *   (incluido el día antes, el propio día del examen no) esa materia va
+   *   primera entre los candidatos del día; con varias materias en ventana,
+   *   gana la de examen más próximo.
+   * - Intensidad: cualquier día dentro de la ventana de empuje de un examen
+   *   (de materia o general) multiplica el presupuesto del día por 1,25,
+   *   igual que ya hace `examenes_finales` con 1,5; no se acumulan, se
+   *   aplica el mayor de los dos factores.
+   * - Después del examen: desde el día siguiente la materia pasa al final
+   *   de los candidatos (sigue recibiendo lo que sobre, pero no compite)
+   *   hasta que otro examen suyo abra una nueva ventana de empuje.
+   */
+  readonly examenes?: readonly ExamenDelAlumno[];
 }
 
 export type TipoTarea = "leccion" | "practica";

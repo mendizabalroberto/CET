@@ -12,6 +12,13 @@ import {
   type PlanState,
 } from "@/lib/plan/acciones";
 import type { BoletinResumen, EventoProximo, PlanResumen } from "@/lib/plan/consultas";
+import {
+  anadirExamen,
+  borrarExamen,
+  subirCalendarioDeExamenes,
+  type ExamenResumen,
+} from "@/lib/plan/examenes";
+import { MATERIAS_CON_CONTENIDO } from "@/lib/plan/tipos";
 
 import { RobotLector } from "./RobotLector";
 
@@ -23,7 +30,15 @@ type TechoVisible = {
 };
 
 type Valores = Record<string, string | number>;
-type AccionDeEscritura = "generar" | "regenerar" | "editar" | "cancelar" | "descartar";
+type AccionDeEscritura =
+  | "generar"
+  | "regenerar"
+  | "editar"
+  | "cancelar"
+  | "descartar"
+  | "anadirExamen"
+  | "borrarExamen"
+  | "subirExamenes";
 
 interface Props {
   readonly studentId: string;
@@ -33,6 +48,7 @@ interface Props {
   readonly nombre: string;
   readonly eventos: readonly EventoProximo[];
   readonly yearLevel: number | null;
+  readonly examenes: readonly ExamenResumen[];
 }
 
 const ESTADO_INICIAL = { ok: false } as const;
@@ -84,6 +100,7 @@ export function PlanDeEstudio({
   nombre,
   eventos,
   yearLevel,
+  examenes,
 }: Props) {
   const { t, fmt, locale } = useI18n();
   const P = t.tutor.child.plan;
@@ -99,6 +116,19 @@ export function PlanDeEstudio({
     descartarBoletin,
     ESTADO_INICIAL,
   );
+  const [altaExamen, accionAnadirExamen, anadiendoExamen] = useActionState(
+    anadirExamen,
+    ESTADO_INICIAL,
+  );
+  const [bajaExamen, accionBorrarExamen, borrandoExamen] = useActionState(
+    borrarExamen,
+    ESTADO_INICIAL,
+  );
+  const [subidaExamenes, accionSubirExamenes, subiendoExamenes] = useActionState(
+    subirCalendarioDeExamenes,
+    ESTADO_INICIAL,
+  );
+  const [mostrandoSubidaDeExamenes, setMostrandoSubidaDeExamenes] = useState(false);
 
   const [pidiendoConfirmacionDeBorrar, setPidiendoConfirmacionDeBorrar] = useState(false);
   const [mostrandoEdicion, setMostrandoEdicion] = useState(false);
@@ -118,6 +148,9 @@ export function PlanDeEstudio({
     editar: edicion,
     cancelar: cancelacion,
     descartar: descarte,
+    anadirExamen: altaExamen,
+    borrarExamen: bajaExamen,
+    subirExamenes: subidaExamenes,
   };
 
   // El estado que manda para el acuse (éxito o error): el de la última acción
@@ -525,6 +558,36 @@ export function PlanDeEstudio({
               </ul>
             </div>
           ) : null}
+          {plan !== null && plan.prioridades.length > 0 ? (
+            <div className="mt-4">
+              <h3 className="text-ink font-semibold">{P.prioritiesTitle}</h3>
+              <p className="text-muted text-[15px]">{P.prioritiesNote}</p>
+              <ul className="mt-2 space-y-3">
+                {plan.prioridades.map((prioridad) => (
+                  <li key={prioridad.code} className="bg-surface-alt rounded-xl px-4 py-3">
+                    <p className="text-ink font-semibold">
+                      {nombrePorCode.get(prioridad.code) ?? prioridad.code}
+                    </p>
+                    {prioridad.porQue !== "" ? (
+                      <p className="text-ink mt-1 text-[15px]">{prioridad.porQue}</p>
+                    ) : null}
+                    {prioridad.lecciones.length > 0 ? (
+                      <p className="text-ink mt-2 text-[15px]">
+                        <span className="text-muted">{P.prioritiesRead} </span>
+                        {prioridad.lecciones.map((leccion) => leccion.titulo).join(" · ")}
+                      </p>
+                    ) : null}
+                    {prioridad.skills.length > 0 ? (
+                      <p className="text-ink mt-1 text-[15px]">
+                        <span className="text-muted">{P.prioritiesPractice} </span>
+                        {prioridad.skills.map((skill) => skill.nombre).join(" · ")}
+                      </p>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
           {plan !== null && plan.recomendaciones.length > 0 ? (
             <div className="mt-4">
               <h3 className="text-ink font-semibold">{P.recommendationsTitle}</h3>
@@ -743,6 +806,163 @@ export function PlanDeEstudio({
             })}
           </ul>
         )}
+      </section>
+
+      <section className="border-line bg-card rounded-2xl border-2 p-5">
+        <h2 className="text-ink text-lg font-bold">{fmt(P.examsTitle, { name: nombre })}</h2>
+        <p className="text-muted mt-2">{P.examsIntro}</p>
+        {examenes.length === 0 ? (
+          <p className="text-muted mt-3 text-[15px]">{P.examsEmpty}</p>
+        ) : (
+          <ul className="mt-3 space-y-2">
+            {examenes.map((examen) => (
+              <li
+                key={examen.id}
+                className="border-line flex flex-wrap items-center justify-between gap-2 border-b pb-2 text-[15px] last:border-0 last:pb-0"
+              >
+                <span className="text-ink">
+                  <span className="font-semibold">{fechaLegible(examen.fecha, locale)}</span>
+                  {" · "}
+                  {examen.code !== null
+                    ? (nombrePorCode.get(examen.code) ?? P.subjects[examen.code])
+                    : P.examsGeneral}
+                  {examen.titulo !== "" && examen.titulo !== examen.code ? ` · ${examen.titulo}` : ""}
+                  {examen.origen === "documento" ? (
+                    <span className="text-muted"> · {P.examsFromDocument}</span>
+                  ) : null}
+                </span>
+                <form action={accionBorrarExamen} onSubmit={marcar("borrarExamen")}>
+                  <input type="hidden" name="studentId" value={studentId} />
+                  <input type="hidden" name="examenId" value={examen.id} />
+                  <button
+                    type="submit"
+                    disabled={borrandoExamen}
+                    className="text-ink px-3 py-1 text-[14px] font-semibold underline disabled:opacity-60"
+                  >
+                    {P.examsDelete}
+                  </button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        )}
+        <form
+          action={accionAnadirExamen}
+          onSubmit={marcar("anadirExamen")}
+          className="border-line mt-4 grid grid-cols-1 gap-3 border-t pt-4 sm:grid-cols-2 sm:items-end"
+        >
+          <input type="hidden" name="studentId" value={studentId} />
+          <div>
+            <label htmlFor="examen-fecha" className="text-ink block text-[15px] font-semibold">
+              {P.examsDate}
+            </label>
+            <input
+              id="examen-fecha"
+              type="date"
+              name="fecha"
+              required
+              className="border-line bg-bg text-ink mt-1 rounded-lg border-2 px-3 py-2"
+            />
+          </div>
+          <div>
+            <label htmlFor="examen-materia" className="text-ink block text-[15px] font-semibold">
+              {P.examsSubject}
+            </label>
+            <select
+              id="examen-materia"
+              name="materia"
+              defaultValue="general"
+              className="border-line bg-bg text-ink mt-1 w-full rounded-lg border-2 px-3 py-2"
+            >
+              <option value="general">{P.examsGeneral}</option>
+              {MATERIAS_CON_CONTENIDO.map((code) => (
+                <option key={code} value={code}>
+                  {nombrePorCode.get(code) ?? P.subjects[code]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="examen-titulo" className="text-ink block text-[15px] font-semibold">
+              {P.examsNote}
+            </label>
+            <input
+              id="examen-titulo"
+              type="text"
+              name="titulo"
+              maxLength={120}
+              placeholder={P.examsNotePlaceholder}
+              className="border-line bg-bg text-ink mt-1 w-full rounded-lg border-2 px-3 py-2"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={anadiendoExamen}
+            className="bg-brand text-on-brand rounded-xl px-5 py-3 font-semibold disabled:opacity-60 sm:col-span-2 sm:justify-self-start"
+          >
+            {anadiendoExamen ? P.examsAdding : P.examsAdd}
+          </button>
+        </form>
+        <div className="border-line mt-4 border-t pt-4">
+          {!mostrandoSubidaDeExamenes ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setMostrandoSubidaDeExamenes(true)}
+                className="border-line text-ink rounded-xl border-2 px-5 py-3 font-semibold"
+              >
+                {P.examsUploadButton}
+              </button>
+              <p className="text-muted mt-2 text-[15px]">{P.examsUploadHelp}</p>
+            </>
+          ) : subiendoExamenes ? (
+            <RobotLector
+              titulo={P.examsAnalyzing}
+              pasos={P.examsAnalyzingSteps}
+              ayuda={P.analyzingHelp}
+              bocadillos={P.analyzingBubbles}
+              etiquetaRobot={P.analyzingRobotLabel}
+              pista={P.analyzingHint}
+            />
+          ) : (
+            <form
+              action={accionSubirExamenes}
+              onSubmit={marcar("subirExamenes")}
+              className="space-y-3"
+            >
+              <input type="hidden" name="studentId" value={studentId} />
+              <div className="flex flex-wrap items-center gap-3">
+                <label
+                  htmlFor="examenes-archivo"
+                  className="border-brand text-ink cursor-pointer rounded-xl border-2 px-5 py-3 font-semibold focus-within:ring-4 focus-within:ring-[var(--ring)]"
+                >
+                  {P.choosePdf}
+                  <input
+                    id="examenes-archivo"
+                    type="file"
+                    accept="application/pdf"
+                    name="archivo"
+                    className="sr-only"
+                  />
+                </label>
+                <button
+                  type="submit"
+                  className="bg-brand text-on-brand rounded-xl px-5 py-3 font-semibold"
+                >
+                  {P.examsUploadSubmit}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMostrandoSubidaDeExamenes(false)}
+                  className="text-ink px-5 py-3 font-semibold"
+                >
+                  {P.editCancel}
+                </button>
+              </div>
+              <p className="text-muted text-[15px]">{P.uploadHelp}</p>
+            </form>
+          )}
+        </div>
       </section>
 
       <section className="border-line bg-card rounded-2xl border-2 p-5">

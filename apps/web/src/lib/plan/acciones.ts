@@ -28,6 +28,7 @@ import type { TechoDeMateria } from "@cet/engine";
 import { PdfSinTextoError, pdfToSpans } from "@cet/content/pdf";
 
 import { requireRole } from "@/lib/auth/session";
+import { getServerDictionary } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 import { rutasDeHijo } from "@/lib/tutor/rutas";
 
@@ -39,15 +40,20 @@ import {
   leerPesosEditados,
 } from "./acciones.puras";
 import { ExtraccionInvalidaError, promptDeExtraccion, validarExtraccion } from "./boletin";
+import { examenesDeAlumno } from "./examenes";
 import {
+  actividadRecientePorMateria,
   armarEntradaReparto,
-  armarInventarioEstratega,
+  armarInventarioDetallado,
+  armarUltimasLecciones,
   boletinesDeHijo,
   calendarioDelPlan,
   inventarioDeContenido,
   leccionesCompletadas,
   masteryDeAlumno,
   minutosObservados,
+  repartoGuardadoSchema,
+  ultimasLeccionesCompletadas,
   type BoletinResumen,
   type NotaGuardada,
 } from "./consultas";
@@ -59,7 +65,7 @@ import {
   type EntradaEstratega,
 } from "./estratega";
 import { hoyEnZona } from "./fecha";
-import type { BoletinExtraido, CodigoMateria } from "./tipos";
+import type { BoletinExtraido, CodigoMateria, PrioridadDeMateria } from "./tipos";
 
 export interface PlanState {
   readonly ok: boolean;
@@ -405,6 +411,7 @@ interface PropuestaLista {
   readonly minutosPorDia: number;
   readonly pesos: Partial<Record<CodigoMateria, number>>;
   readonly recomendaciones: readonly string[];
+  readonly prioridades?: Partial<Record<CodigoMateria, PrioridadDeMateria>>;
   readonly modelo: string;
   readonly tokensIn: number;
   readonly tokensOut: number;
@@ -428,12 +435,26 @@ async function proponer(
     return { ok: false, estado: fail("planSinContenido") };
   }
 
-  const [perfilRes, yearLevelRes, inventario, completadas, minutos] = await Promise.all([
+  const [
+    perfilRes,
+    yearLevelRes,
+    inventario,
+    completadas,
+    mastery,
+    minutos,
+    actividad,
+    ultimas,
+    examenes,
+  ] = await Promise.all([
     supabase.from("profiles").select("full_name").eq("id", studentId).maybeSingle(),
     supabase.from("students").select("year_level").eq("profile_id", studentId).maybeSingle(),
     inventarioDeContenido(),
     leccionesCompletadas(studentId),
+    masteryDeAlumno(studentId),
     minutosObservados(studentId),
+    actividadRecientePorMateria(studentId),
+    ultimasLeccionesCompletadas(studentId),
+    examenesDeAlumno(studentId),
   ]);
   if (perfilRes.error !== null) {
     console.error("[cet] proponer profiles.select", perfilRes.error.code, perfilRes.error.message);
@@ -450,7 +471,10 @@ async function proponer(
 
   const hoy = hoyEnZona();
   const calendario = await calendarioDelPlan(Number(hoy.slice(0, 4)), yearLevel);
-  const ventana = hitoMasCercano(calendario, hoy);
+  const ventana = hitoMasCercano(calendario, hoy, examenes);
+  // El plan mantiene el idioma del alumno (AD-7): recomendaciones y por_que
+  // salen en el idioma con el que ya usa la app, nunca mezclado.
+  const { locale } = await getServerDictionary();
 
   const entrada: EntradaEstratega = {
     nombreDePila,
@@ -460,14 +484,17 @@ async function proponer(
       nota: nota.nota,
       banda: nota.banda,
     })),
-    inventario: armarInventarioEstratega(inventario, completadas),
+    inventario: armarInventarioDetallado(inventario, completadas, mastery, actividad),
+    ultimasLecciones: armarUltimasLecciones(ultimas, inventario),
     ventana: {
       desde: hoy,
       hasta: ventana.hasta,
       hito: ventana.hito,
     },
     minutosPorDiaObservados: minutos,
+    idioma: locale,
     indicacionDelTutor,
+    examenes: examenes.map(({ fecha, code, titulo }) => ({ fecha, code, titulo })),
   };
 
   let respuesta: RespuestaDeepSeek;
@@ -483,13 +510,14 @@ async function proponer(
   }
 
   try {
-    const propuesta = validarPropuesta(respuesta.json);
+    const propuesta = validarPropuesta(respuesta.json, entrada.inventario);
     return {
       ok: true,
       propuesta: {
         minutosPorDia: propuesta.minutosPorDia,
         pesos: propuesta.reparto,
         recomendaciones: propuesta.recomendaciones,
+        ...(propuesta.prioridades !== undefined ? { prioridades: propuesta.prioridades } : {}),
         modelo: respuesta.modelo,
         tokensIn: respuesta.tokensIn,
         tokensOut: respuesta.tokensOut,
@@ -511,6 +539,7 @@ interface OpcionesFijar {
   readonly minutosPorDia: number;
   readonly pesos: Partial<Record<CodigoMateria, number>>;
   readonly recomendaciones: readonly string[];
+  readonly prioridades?: Partial<Record<CodigoMateria, PrioridadDeMateria>>;
   readonly modelo: string;
   readonly tokensIn: number;
   readonly tokensOut: number;
@@ -544,11 +573,12 @@ async function fijar(
   if (boletin.estado !== "confirmado") return { ok: false, estado: fail("planSinConfirmar") };
   if (opciones.desde > opciones.hasta) return { ok: false, estado: fail("generic") };
 
-  const [inventario, completadas, mastery, calendario] = await Promise.all([
+  const [inventario, completadas, mastery, calendario, examenes] = await Promise.all([
     inventarioDeContenido(),
     leccionesCompletadas(studentId),
     masteryDeAlumno(studentId),
     calendarioDelPlan(Number(opciones.desde.slice(0, 4))),
+    examenesDeAlumno(studentId),
   ]);
 
   const entradaReparto = armarEntradaReparto({
@@ -560,6 +590,8 @@ async function fijar(
     completadas,
     mastery,
     calendario,
+    ...(opciones.prioridades !== undefined ? { prioridades: opciones.prioridades } : {}),
+    examenes: examenes.map(({ fecha, subjectId }) => ({ fecha, subjectId })),
   });
   const reparto = repartir(entradaReparto);
   if (reparto.tareas.length === 0) return { ok: false, estado: fail("planSinContenido") };
@@ -609,7 +641,11 @@ async function fijar(
       desde: opciones.desde,
       hasta: opciones.hasta,
       minutos_por_dia: opciones.minutosPorDia,
-      reparto: { pesos: opciones.pesos, techos: reparto.techos },
+      reparto: {
+        pesos: opciones.pesos,
+        techos: reparto.techos,
+        ...(opciones.prioridades !== undefined ? { prioridades: opciones.prioridades } : {}),
+      },
       recomendaciones: opciones.recomendaciones,
       creado_por: tutorId,
       modelo: opciones.modelo,
@@ -800,7 +836,7 @@ export async function editarPlan(_prev: PlanState, fd: FormData): Promise<PlanSt
   );
   const { data: planFila, error: planError } = await admin
     .from("planes_de_estudio")
-    .select("boletin_id, desde, hasta, recomendaciones, modelo, tokens_in, tokens_out")
+    .select("boletin_id, desde, hasta, recomendaciones, modelo, tokens_in, tokens_out, reparto")
     .eq("id", datos.planId)
     .eq("student_id", datos.studentId)
     .eq("activo", true)
@@ -835,11 +871,18 @@ export async function editarPlan(_prev: PlanState, fd: FormData): Promise<PlanSt
 
   const hoy = hoyEnZona();
   const desdeEfectivo = desde < hoy ? hoy : desde;
+  // `editarPlan` conserva las prioridades del plan que edita (§7.4): el tutor
+  // solo cambia minutos/día y pesos, no el «qué leer y qué practicar».
+  const repartoAnteriorParse = repartoGuardadoSchema.safeParse(fila?.["reparto"]);
+  const prioridadesAnteriores = repartoAnteriorParse.success
+    ? repartoAnteriorParse.data.prioridades
+    : undefined;
 
   const fijado = await fijar(tutor.id, datos.studentId, boletinId, {
     minutosPorDia: datos.minutosPorDia,
     pesos,
     recomendaciones: recomendacionesParse.data,
+    ...(prioridadesAnteriores !== undefined ? { prioridades: prioridadesAnteriores } : {}),
     modelo,
     tokensIn: tokensInBruto,
     tokensOut: tokensOutBruto,

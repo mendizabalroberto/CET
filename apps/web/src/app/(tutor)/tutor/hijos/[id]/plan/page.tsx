@@ -12,6 +12,7 @@ import { notFound } from "next/navigation";
 import { PlanDeEstudio } from "@/components/tutor/PlanDeEstudio";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { boletinesDeHijo, eventosProximos, planActivoDeHijo } from "@/lib/plan/consultas";
+import { examenesDeAlumno } from "@/lib/plan/examenes";
 import { hoyEnZona } from "@/lib/plan/fecha";
 import { createClient } from "@/lib/supabase/server";
 import { alcanceDeHijo } from "@/lib/tutor/queries";
@@ -63,11 +64,12 @@ export default async function PlanDeHijoPage({ params }: PageProps) {
   const hoy = hoyEnZona();
   const gestionActual = Number(hoy.slice(0, 4));
 
-  const [boletines, plan, eventos, yearLevel] = await Promise.all([
+  const [boletines, plan, eventos, yearLevel, examenes] = await Promise.all([
     boletinesDeHijo(hijo.id),
     planActivoDeHijo(hijo.id),
     eventosProximos(gestionActual, hoy, 60),
     yearLevelDeHijo(hijo.id),
+    examenesDeAlumno(hijo.id),
   ]);
 
   return (
@@ -79,6 +81,7 @@ export default async function PlanDeHijoPage({ params }: PageProps) {
       nombre={nombreDePila(hijo.nombre)}
       eventos={eventos}
       yearLevel={yearLevel}
+      examenes={examenes}
     />
   );
 }

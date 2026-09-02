@@ -6,6 +6,12 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { PlanDeEstudio, fechaLegible } from "./PlanDeEstudio";
 
+vi.mock("@/lib/plan/examenes", () => ({
+  anadirExamen: vi.fn(),
+  borrarExamen: vi.fn(),
+  subirCalendarioDeExamenes: vi.fn(),
+}));
+
 vi.mock("@/lib/plan/acciones", () => ({
   generarPlan: vi.fn(),
   regenerarPlan: vi.fn(),
@@ -74,6 +80,7 @@ const planConTecho: PlanResumen = {
   recomendaciones: ["Keep a steady pace."],
   createdAt: "2026-09-03T00:00:00.000Z",
   tareas: 20,
+  prioridades: [],
   partes: [],
 };
 
@@ -94,6 +101,7 @@ function renderizar(props: Partial<ComponentProps<typeof PlanDeEstudio>> = {}) {
       nombre="Leo"
       eventos={[]}
       yearLevel={null}
+        examenes={[]}
       {...props}
     />,
   );
@@ -104,7 +112,7 @@ afterEach(cleanup);
 describe("PlanDeEstudio", () => {
   it("pinta el nombre del hijo en el título", () => {
     renderizar({ nombre: "Leo" });
-    expect(screen.getByRole("heading", { level: 2, name: /Leo/ })).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 2, name: /Leo's study plan/ })).toBeTruthy();
   });
 
   it("sin boletín muestra el aviso y el formulario de subida", () => {
@@ -214,6 +222,7 @@ describe("PlanDeEstudio", () => {
         nombre="Leo"
         eventos={[]}
         yearLevel={null}
+        examenes={[]}
       />,
     );
     expect(screen.getByText(/No marked dates in the next two months/)).toBeTruthy();

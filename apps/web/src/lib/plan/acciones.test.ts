@@ -44,6 +44,31 @@ describe("hitoMasCercano", () => {
       hito: "",
     });
   });
+
+  it("estira el hasta hasta el examen del alumno si cae despues del hito del calendario", () => {
+    const calendario: EventoCalendario[] = [
+      { desde: "2026-11-13", hasta: "2026-11-20", tipo: "examenes_finales" },
+    ];
+    expect(
+      hitoMasCercano(calendario, "2026-09-02", [{ fecha: "2026-12-01" }]),
+    ).toEqual({ hasta: "2026-12-01", hito: "examen_del_alumno" });
+  });
+
+  it("no toca el hasta si el examen del alumno cae antes o el mismo dia del hito", () => {
+    const calendario: EventoCalendario[] = [
+      { desde: "2026-11-13", hasta: "2026-11-20", tipo: "examenes_finales" },
+    ];
+    expect(
+      hitoMasCercano(calendario, "2026-09-02", [{ fecha: "2026-10-01" }, { fecha: "2026-11-13" }]),
+    ).toEqual({ hasta: "2026-11-13", hito: "examenes_finales" });
+  });
+
+  it("ignora examenes del alumno que ya pasaron", () => {
+    expect(hitoMasCercano([], "2026-09-02", [{ fecha: "2026-08-01" }])).toEqual({
+      hasta: "2026-11-11",
+      hito: "",
+    });
+  });
 });
 
 describe("leerNotasCorregidas", () => {

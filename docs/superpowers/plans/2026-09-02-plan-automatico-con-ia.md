@@ -133,3 +133,114 @@ de §5.
    y se redespliega (`vercel --prod`) para que la función la lea.
 5. Verificación final en producción con la sesión del tutor ya abierta en
    Chrome: subir `boletin-e2e.pdf` → «Analizando…» → plan. Logs limpios.
+
+---
+
+## 7 · Segunda ronda: el estratega ve el detalle y dice qué leer y qué practicar
+
+Pedido de Roberto (misma tarde): «hay que darle contexto a DeepSeek de las
+prácticas disponibles, de lo último que estudió, así puede establecer
+claramente qué debe leer y qué debe practicar y crearlo en la DB, como un
+plan real con tiempo por día, lecciones, todo en función a las notas».
+
+Hoy el modelo recibe por materia solo cuatro totales (lecciones publicadas,
+completadas, minutos, preguntas) y devuelve pesos; el repartidor elige las
+lecciones por índice y las prácticas por dominio. El plan real (día, lección
+o práctica, minutos) YA se crea en `plan_tareas`; lo que falta es que la
+elección de QUÉ leer y QUÉ practicar la informe el modelo con el detalle.
+
+Frontera que se conserva (spec §8): el modelo PRIORIZA, el código PLANIFICA.
+Ningún id que no exista en el inventario entra en el plan: las prioridades se
+validan contra el catálogo y lo desconocido se descarta.
+
+### 7.1 · Entrada del estratega (`EntradaEstratega`, nuevo detalle)
+
+Por materia con contenido (`inventarioDetallado`):
+```
+{ code, lecciones: [{ id, titulo, modulo, minutos, completada }],
+  skills:    [{ id, code, nombre, preguntas, mastery (0..1|null), ultimaPractica (YYYY-MM-DD|null) }],
+  reciente:  { minutos, items, porcentajeAcierto, leccionesCompletadas }   // 28 días, RPC informe_alumno_resumen_por_materia
+}
+```
+Más `ultimasLecciones: [{ titulo, code, fecha }]` (las 5 últimas
+`lesson_completed` de `learning_events`). Títulos y nombres: el `es` del
+I18nText (fallback `en`). Los totales de antes (`InventarioDeMateria`) se
+sustituyen por esto.
+
+### 7.2 · Salida del estratega (`Propuesta.prioridades`)
+
+```
+{ minutos_por_dia, reparto: {...}, recomendaciones: [...],
+  prioridades: { math: { lecciones: ["<lessonId>", ...], skills: ["<skillId>", ...], por_que: "frase" }, ... } }
+```
+`validarPropuesta(salida, inventarioDetallado)` filtra ids que no estén en el
+inventario de esa materia y lecciones ya completadas; como máximo 8 lecciones
+y 6 skills por materia; `por_que` ≤ 200 caracteres. `prioridades` puede
+faltar (el modelo no lo dio): el repartidor sigue como hoy.
+
+### 7.3 · Repartidor (`@cet/engine`)
+
+`MateriaDelPlan` gana `prioridadLecciones?: readonly string[]` y
+`prioridadSkills?: readonly string[]`. `crearEstado`: las lecciones
+priorizadas van primero, EN ESE ORDEN, y después el resto por módulo/orden
+como hoy; las skills priorizadas primero, en ese orden, y después el resto por
+dominio como hoy. Ids desconocidos se ignoran. Determinista; tests nuevos.
+
+### 7.4 · Persistencia y lectura
+
+`planes_de_estudio.reparto` = `{ pesos, techos, prioridades? }` (mismo JSON;
+sin migración). `RepartoGuardado.prioridades?` con la forma de 7.2 pero en
+camelCase (`porQue`). `PlanResumen` gana
+`prioridades: { code, porQue, lecciones: { lessonId, titulo }[], skills: { skillId, nombre }[] }[]`
+resuelto en `planActivoDeHijo` (títulos desde `lessons.title` / `skills.name`).
+`editarPlan` conserva las prioridades del plan que edita.
+
+### 7.5 · Pantalla
+
+En «Plan actual», bloque «Qué leer y qué practicar primero»: por materia, el
+`porQue` y dos listas cortas (lecciones, prácticas). Claves nuevas:
+`prioritiesTitle`, `prioritiesRead`, `prioritiesPractice`.
+
+### 7.6 · Reparto
+
+| Territorio | Ficheros | Quién |
+|---|---|---|
+| E · Motor | `packages/engine/src/plan/{tipos,repartir,repartir.test}.ts` | agente |
+| F · Datos y prompt | `apps/web/src/lib/plan/{tipos,estratega,estratega.test,consultas,consultas.test,acciones}.ts` | agente |
+| G · Pantalla | `PlanDeEstudio.tsx` (+test), diccionarios, `plan-preview` | yo |
+
+## 8 · Tercera ronda: los exámenes del alumno, y el idioma
+
+Pedido: «el plan de estudios debe considerar el calendario de exámenes; es un
+documento que también debe poder subirse o al menos indicar por escrito qué
+fecha tiene exámenes» y «además debe mantener el lenguaje del alumno».
+
+### 8.1 · Tabla `examenes_del_alumno` (migración 0095)
+
+`id, student_id, subject_id (null = general), fecha, titulo, origen
+('tutor' | 'documento'), creado_por, created_at`. RLS solo para el tutor
+vinculado (`guardian_students`, `revoked_at is null`): select, insert
+(`creado_por = auth.uid()`) y delete. Índice `(student_id, fecha)`; único
+`(student_id, fecha, coalesce(subject_id, cero), lower(titulo))` para que
+una extracción repetida del mismo documento no duplique. pgTAP en
+`supabase/tests/examenes_del_alumno.sql`.
+
+### 8.2 · Pantalla y acciones (`lib/plan/examenes.ts`, nuevo fichero)
+
+Tarjeta «Exámenes» en la pestaña del plan: lista (fecha · materia · título ·
+borrar), formulario «Añadir examen» (fecha, materia o «General», título
+opcional) y «Subir el calendario de exámenes (PDF)»: `pdfToSpans` +
+DeepSeek con `promptDeExtraccionDeExamenes` → `[{fecha, materia, titulo}]`
+validado (fechas reales, materia mapeada con el mismo mapa de sinónimos del
+boletín o null) → insert con la sesión del tutor. Acciones: `anadirExamen`,
+`borrarExamen`, `subirCalendarioDeExamenes`. Consulta `examenesDeAlumno`.
+Solo exámenes desde hoy hacia delante se pasan al plan.
+
+### 8.3 · Motor y estratega
+
+`EntradaReparto.examenes` (motor): 7 días de empuje antes de cada examen,
+×1.25 de intensidad, y la materia deja de competir tras su examen. La ventana
+del plan (`hitoMasCercano`) se estira hasta el último examen si cae después.
+El estratega recibe `examenes: [{fecha, code|null, titulo}]` y `idioma`
+(`es`|`en`, el del tutor en la app) y escribe recomendaciones y `por_que` en
+ese idioma.

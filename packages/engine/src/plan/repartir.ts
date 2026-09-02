@@ -1,6 +1,7 @@
 import type {
   EntradaReparto,
   EventoCalendario,
+  ExamenDelAlumno,
   FechaISO,
   MateriaDelPlan,
   Reparto,
@@ -56,8 +57,20 @@ function sumarDias(fecha: FechaISO, delta: number): FechaISO {
 function enEvento(evento: EventoCalendario, fecha: FechaISO): boolean {
   return evento.desde <= fecha && fecha <= evento.hasta;
 }
+/** Días de antelación de `fecha` a `examen` (1 = el día antes, 7 = una semana antes). */
+function diasHastaExamen(fecha: FechaISO, examen: FechaISO): number {
+  return diasDesdeEpoca(examen) - diasDesdeEpoca(fecha);
+}
+/** `true` si `fecha` cae en la ventana de empuje (7 días antes, examen excluido) de algún examen. */
+function enVentanaDeAlgunExamen(examenes: readonly ExamenDelAlumno[], fecha: FechaISO): boolean {
+  return examenes.some((examen) => {
+    const dias = diasHastaExamen(fecha, examen.fecha);
+    return dias >= 1 && dias <= 7;
+  });
+}
 function generarDias(entrada: EntradaReparto): DiaPlan[] {
   const dias: DiaPlan[] = [];
+  const examenes = entrada.examenes ?? [];
   for (let fecha = entrada.desde; fecha <= entrada.hasta; fecha = sumarDias(fecha, 1)) {
     const dia = diaDeLaSemana(fecha);
     const finde = dia === 0 || dia === 6;
@@ -68,14 +81,69 @@ function generarDias(entrada: EntradaReparto): DiaPlan[] {
     )
       continue;
     let factor = finde ? 0.5 : 1;
+    // examenes_finales (x1,5) y la ventana de empuje de un examen (x1,25) no se
+    // acumulan: se queda con el mayor de los dos factores de intensidad.
+    let factorIntensidad = 1;
     for (const e of entrada.calendario) {
       if (!enEvento(e, fecha)) continue;
-      if (e.tipo === "examenes_finales") factor *= 1.5;
+      if (e.tipo === "examenes_finales") factorIntensidad = Math.max(factorIntensidad, 1.5);
       if (e.tipo === "vacaciones") factor *= 0.4;
     }
+    if (enVentanaDeAlgunExamen(examenes, fecha)) factorIntensidad = Math.max(factorIntensidad, 1.25);
+    factor *= factorIntensidad;
     dias.push({ fecha, presupuesto: Math.round(entrada.minutosPorDia * factor) });
   }
   return dias;
+}
+/** Agrupa por materia los exámenes propios (ignora los generales, `subjectId: null`). */
+function agruparExamenesPorMateria(
+  examenes: readonly ExamenDelAlumno[] | undefined,
+): Map<string, FechaISO[]> {
+  const porMateria = new Map<string, FechaISO[]>();
+  for (const examen of examenes ?? []) {
+    if (examen.subjectId === null) continue;
+    const fechas = porMateria.get(examen.subjectId) ?? [];
+    fechas.push(examen.fecha);
+    porMateria.set(examen.subjectId, fechas);
+  }
+  return porMateria;
+}
+/** El examen más próximo cuya ventana de empuje cubre `fecha`, o `undefined` si ninguno. */
+function examenEnVentana(fechasExamen: readonly FechaISO[], fecha: FechaISO): FechaISO | undefined {
+  let masProximo: FechaISO | undefined;
+  for (const examen of fechasExamen) {
+    const dias = diasHastaExamen(fecha, examen);
+    if (dias >= 1 && dias <= 7 && (!masProximo || examen < masProximo)) masProximo = examen;
+  }
+  return masProximo;
+}
+/** `true` si algún examen de la materia ya pasó (`fecha` es posterior a él). */
+function huboExamenAntes(fechasExamen: readonly FechaISO[], fecha: FechaISO): boolean {
+  return fechasExamen.some((examen) => examen < fecha);
+}
+/**
+ * Reordena los candidatos del día: primero las materias en ventana de empuje
+ * (la de examen más próximo primero), luego el orden habitual, y al final las
+ * materias que ya tuvieron su examen y no tienen otro por delante.
+ */
+function reordenarPorExamenes<T extends { subjectId: string }>(
+  candidatos: readonly T[],
+  examenesPorMateria: Map<string, FechaISO[]>,
+  fecha: FechaISO,
+): T[] {
+  if (examenesPorMateria.size === 0) return [...candidatos];
+  const frente: { candidato: T; proximo: FechaISO }[] = [];
+  const medio: T[] = [];
+  const fondo: T[] = [];
+  for (const candidato of candidatos) {
+    const fechasExamen = examenesPorMateria.get(candidato.subjectId) ?? [];
+    const proximo = examenEnVentana(fechasExamen, fecha);
+    if (proximo) frente.push({ candidato, proximo });
+    else if (huboExamenAntes(fechasExamen, fecha)) fondo.push(candidato);
+    else medio.push(candidato);
+  }
+  frente.sort((a, b) => a.proximo.localeCompare(b.proximo));
+  return [...frente.map((f) => f.candidato), ...medio, ...fondo];
 }
 function techo(materia: MateriaDelPlan): number {
   const lecciones = materia.lecciones
@@ -84,25 +152,53 @@ function techo(materia: MateriaDelPlan): number {
   const preguntas = materia.skills.reduce((a, s) => a + s.preguntas, 0);
   return lecciones + preguntas * factorTecho;
 }
+/**
+ * Reordena `elementos` poniendo primero los ids listados en `prioridad` (en
+ * ese orden; ids desconocidos se ignoran) y después el resto en el orden que
+ * ya traía `elementos` (se asume ya ordenado por el criterio habitual).
+ */
+function anteponerPrioridad<T>(
+  elementos: readonly T[],
+  prioridad: readonly string[] | undefined,
+  id: (elemento: T) => string,
+): T[] {
+  if (!prioridad || prioridad.length === 0) return [...elementos];
+  const porId = new Map(elementos.map((e) => [id(e), e]));
+  const priorizados: T[] = [];
+  const vistos = new Set<string>();
+  for (const pid of prioridad) {
+    const elemento = porId.get(pid);
+    if (elemento && !vistos.has(pid)) {
+      priorizados.push(elemento);
+      vistos.add(pid);
+    }
+  }
+  const resto = elementos.filter((e) => !vistos.has(id(e)));
+  return [...priorizados, ...resto];
+}
 function crearEstado(materia: MateriaDelPlan): Estado {
+  const leccionesOrdenadas = materia.lecciones
+    .filter((l) => !l.completada)
+    .sort(
+      (a, b) => a.moduloOrd - b.moduloOrd || a.ord - b.ord || a.lessonId.localeCompare(b.lessonId),
+    );
+  const skillsOrdenados = materia.skills
+    .filter((s) => s.preguntas > 0)
+    .sort(
+      (a, b) =>
+        (a.mastery ?? -1) - (b.mastery ?? -1) ||
+        a.ord - b.ord ||
+        a.skillId.localeCompare(b.skillId),
+    );
   return {
     subjectId: materia.subjectId,
     code: materia.code,
-    lecciones: materia.lecciones
-      .filter((l) => !l.completada)
-      .sort(
-        (a, b) =>
-          a.moduloOrd - b.moduloOrd || a.ord - b.ord || a.lessonId.localeCompare(b.lessonId),
-      )
-      .map((l) => ({ lessonId: l.lessonId, moduloOrd: l.moduloOrd, ord: l.ord, saldo: l.minutos })),
-    skills: materia.skills
-      .filter((s) => s.preguntas > 0)
-      .sort(
-        (a, b) =>
-          (a.mastery ?? -1) - (b.mastery ?? -1) ||
-          a.ord - b.ord ||
-          a.skillId.localeCompare(b.skillId),
-      ),
+    lecciones: anteponerPrioridad(
+      leccionesOrdenadas,
+      materia.prioridadLecciones,
+      (l) => l.lessonId,
+    ).map((l) => ({ lessonId: l.lessonId, moduloOrd: l.moduloOrd, ord: l.ord, saldo: l.minutos })),
+    skills: anteponerPrioridad(skillsOrdenados, materia.prioridadSkills, (s) => s.skillId),
   };
 }
 function calcularCuotas(
@@ -241,6 +337,7 @@ export function repartir(entrada: EntradaReparto): Reparto {
   const { cuotas, techos } = calcularCuotas(entrada, minutosPresupuestados);
   const estados = new Map(entrada.materias.map((m) => [m.subjectId, crearEstado(m)]));
   const codigos = new Map(entrada.materias.map((m) => [m.subjectId, m.code]));
+  const examenesPorMateria = agruparExamenesPorMateria(entrada.examenes);
   const pendientes = new Map(cuotas);
   const tareas: Tarea[] = [];
   const ord = { valor: 0 };
@@ -261,7 +358,8 @@ export function repartir(entrada: EntradaReparto): Reparto {
         (codigos.get(a.subjectId) ?? "").localeCompare(codigos.get(b.subjectId) ?? "") ||
         a.subjectId.localeCompare(b.subjectId),
     );
-    for (const asigna of repartoDia(dia.presupuesto, candidatos)) {
+    const candidatosOrdenados = reordenarPorExamenes(candidatos, examenesPorMateria, dia.fecha);
+    for (const asigna of repartoDia(dia.presupuesto, candidatosOrdenados)) {
       const estado = estados.get(asigna.subjectId)!;
       const hecho = materializar(estado, dia.fecha, asigna.minutos, tareas, ord);
       pendientes.set(
