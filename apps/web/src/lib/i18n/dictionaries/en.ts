@@ -192,6 +192,12 @@ export const en = {
     },
   },
   auth: {
+    sesionAbierta: {
+      yaDentro: "You are signed in as {name}.",
+      continuar: "Continue",
+      salir: "Sign out",
+      otraCuenta: "Or sign in with a different account:",
+    },
     chooseRole: {
       title: "How do you sign in?",
       subtitle: "Choose the option that describes you.",

@@ -97,23 +97,56 @@ export async function getSessionState(): Promise<SessionState> {
 }
 
 /**
- * Conveniencia para las páginas de login: a quien YA tiene sesión utilizable no
- * se le vuelve a pedir que inicie sesión.
+ * Quién hay ya dentro cuando alguien abre una pantalla de acceso.
  *
- * Vivió en el middleware y hubo que traerla aquí. El borde decide con
- * `getClaims()`, que solo comprueba la firma del JWT en local: una cookie cuya
- * sesión ya fue revocada en Auth le sigue pareciendo válida. Con eso, el atajo
- * expulsaba del login a quien más lo necesitaba —alguien con una cookie muerta—
- * y lo dejaba dando vueltas hasta la portada pública sin un solo mensaje.
+ * ===========================================================================
+ * ANTES ESTO EXPULSABA, Y ERA UNA TRAMPA
+ * ===========================================================================
+ * Se llamaba `redirectIfSignedIn()` y hacía literalmente eso: si había sesión
+ * activa, `redirect(homeForRole(...))` y fuera. La intención era buena —a quien
+ * ya ha entrado no se le vuelve a pedir que entre— pero convertía el login en
+ * una puerta de un solo sentido:
+ *
+ *   con la sesión del TUTOR viva, abrir `/login/staff` te devolvía a `/tutor`
+ *   ANTES de dejarte escribir nada.
+ *
+ * No es que no pudieras entrar como superadmin: es que la pantalla no te dejaba
+ * intentarlo, y sin decir por qué. La única salida era adivinar que primero
+ * había que cerrar sesión. Medido con una persona real el 02/09/2026.
+ *
+ * Y la avería crece con el producto: quien administra y además es tutor de sus
+ * propios hijos tiene DOS cuentas por diseño —no hay un rol que sea las dos— y
+ * necesita ir de una a otra a diario.
+ *
+ * ===========================================================================
+ * LO QUE HACE AHORA
+ * ===========================================================================
+ * Informa, no decide. Devuelve el perfil activo, si lo hay, y es la PÁGINA la
+ * que enseña las dos salidas: seguir como quien ya eres, o entrar con otra
+ * cuenta. Es lo que hace cualquier producto con cuentas múltiples, y es
+ * honesto: el usuario ve su estado en vez de sufrirlo.
+ *
+ * ===========================================================================
+ * POR QUE NO SE FIA DEL JWT
+ * ===========================================================================
+ * Esta comprobación vivió en el middleware y hubo que traerla aquí. El borde
+ * decide con `getClaims()`, que solo verifica la firma en local: una cookie
+ * cuya sesión ya fue revocada en Auth le sigue pareciendo válida. Con eso, el
+ * atajo expulsaba del login a quien más lo necesitaba —alguien con una cookie
+ * muerta— y lo dejaba dando vueltas hasta la portada sin un solo mensaje.
  *
  * `getSessionState()` pregunta al servidor de Auth (`getUser()`) y lee
- * `profiles`. Solo desvía cuando hay un perfil ACTIVO detrás. Ante la duda
- * —cookie muerta, perfil suspendido, perfil inexistente— se pinta el formulario,
- * que es lo que permite salir del atolladero.
+ * `profiles`. Ante la duda —cookie muerta, perfil suspendido, perfil
+ * inexistente— devuelve `null` y la página pinta el formulario a secas, que es
+ * lo que permite salir del atolladero.
  */
-export async function redirectIfSignedIn(): Promise<void> {
+export async function sesionYaAbierta(): Promise<{
+  readonly profile: SessionProfile;
+  readonly casa: string;
+} | null> {
   const state = await getSessionState();
-  if (state.kind === "active") redirect(homeForRole(state.profile.role));
+  if (state.kind !== "active") return null;
+  return { profile: state.profile, casa: homeForRole(state.profile.role) };
 }
 
 /** Perfil activo, o `null`. Azúcar sobre `getSessionState()`. */

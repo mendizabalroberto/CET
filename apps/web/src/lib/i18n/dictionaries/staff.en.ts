@@ -360,6 +360,56 @@ export const staffEn = {
         generic: "The invitation could not be created. Try again.",
       },
     },
+    /**
+     * Families. This block is NOT about a school and that is the whole point:
+     * a child added by their parent is born with no school (migration 0066),
+     * so no school table can ever list them.
+     */
+    families: {
+      title: "Families",
+      body:
+        "A family belongs to no school, so these children never appear in any school's table. They are all here.",
+      timezoneNote:
+        "Times are shown in UTC. A family has no school, so there is no school timezone to apply.",
+      summary: {
+        families: "Families with an account",
+        children: "Children added",
+        pendingInvites: "Invitations not redeemed",
+      },
+      guardian: "Parent or guardian",
+      noEmail: "No email address",
+      childrenCaption: "Children of {guardian}",
+      child: "Child",
+      code: "Code",
+      yearLevel: "Year",
+      stage: "Stage",
+      stagePrimary: "Primary",
+      stageSecondary: "Secondary",
+      device: "Device",
+      deviceYes: "Active",
+      deviceNo: "None",
+      link: "Access link",
+      linkLive: "Live, not redeemed",
+      linkNone: "None",
+      lastAccess: "Last sign-in",
+      never: "Has never signed in",
+      noChildren: "No children added yet.",
+      empty: "No family has an account yet.",
+      emptyBody:
+        "Once a parent redeems their invitation and creates an account, they appear here with their children.",
+      invites: {
+        title: "Pending invitations",
+        caption: "Invited parents who have not created their account yet",
+        email: "Email address",
+        issued: "Issued",
+        expires: "Expires",
+        empty: "No invitation is waiting to be redeemed.",
+        emptyBody:
+          "Invitations you create above wait in this list until the parent creates their account.",
+        /* Read failed. Saying "none pending" here would be a lie. */
+        unavailable: "The invitation queue could not be read. That does not mean it is empty.",
+      },
+    },
     students: {
       title: "Students",
       caption: "Students enrolled at this school",

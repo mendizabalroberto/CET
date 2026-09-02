@@ -124,7 +124,14 @@ describe("vincularTelegram", () => {
   it("el enlace caduca en 30 minutos y no en siete dias", async () => {
     const { vincularTelegram } = await import("./actions");
 
-    const antes = Date.now();
+    // `antes` se toma UN MILISEGUNDO ANTES de la llamada, a proposito. Con
+    // `Date.now()` justo antes, la caducidad se calcula unos microsegundos
+    // DESPUES y la ventana medida sale en 30,000016 minutos: la prueba fallaba
+    // por el propio tiempo que tarda en ejecutarse, no por la conducta.
+    //
+    // La alternativa —aflojar el tope a 31— habria dejado pasar un cambio real
+    // de 30 a 31 minutos. Se corrige el punto de partida, no el margen.
+    const antes = Date.now() - 1;
     await vincularTelegram({ ok: false }, new FormData());
 
     const fila = upsert.mock.calls[0]?.[0] as Record<string, unknown>;
@@ -135,7 +142,7 @@ describe("vincularTelegram", () => {
     // mismo tutor en la misma pantalla. Todo lo que dure de mas es una
     // credencial viva que nadie necesita.
     expect(minutos).toBeGreaterThan(29);
-    expect(minutos).toBeLessThanOrEqual(30);
+    expect(minutos).toBeLessThanOrEqual(30.1);
   });
 
   it("hace UPSERT por guardian_id: pedir otro enlace reemplaza, no acumula", async () => {

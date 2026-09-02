@@ -198,6 +198,15 @@ export const es: Dictionary = {
     },
   },
   auth: {
+    sesionAbierta: {
+      // «{name}» lo sustituye el componente. Se nombra a la persona porque el
+      // caso real es tener dos cuentas propias: sin el nombre, el aviso no
+      // resuelve la única duda que importa —¿cuál de las dos es esta?—.
+      yaDentro: "Ya has entrado como {name}.",
+      continuar: "Continuar",
+      salir: "Salir",
+      otraCuenta: "O entra con otra cuenta:",
+    },
     chooseRole: {
       title: "¿Cómo vas a entrar?",
       subtitle: "Elige la opción que te describe.",

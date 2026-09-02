@@ -21,7 +21,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { AltaDeTutorForm } from "@/components/tutor/AltaDeTutorForm";
-import { redirectIfSignedIn } from "@/lib/auth/session";
+import { sesionYaAbierta } from "@/lib/auth/session";
+import { SesionAbierta } from "@/components/auth/SesionAbierta";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { ROUTES } from "@/lib/routes";
 import { invitacionDelToken } from "@/lib/tutor/queries";
@@ -42,7 +43,8 @@ function primerValor(valor: string | string[] | undefined): string | null {
 }
 
 export default async function RegisterPage({ searchParams }: PageProps) {
-  await redirectIfSignedIn();
+  // Informa, NO expulsa: ver la cabecera de `sesionYaAbierta`.
+  const sesion = await sesionYaAbierta();
 
   const { t } = await getServerDictionary();
   const token = primerValor((await searchParams)["t"]);
@@ -74,6 +76,19 @@ export default async function RegisterPage({ searchParams }: PageProps) {
         ← {t.common.back}
       </Link>
 
+      {/* Informa, no expulsa. Antes esto era un `redirect` y convertia el acceso
+          en una puerta de un solo sentido: con la sesion de otra cuenta viva,
+          esta pantalla te devolvia a su portada sin dejarte escribir nada. */}
+      {sesion === null ? null : (
+        <div className="mt-6">
+          <SesionAbierta
+            nombre={sesion.profile.fullName}
+            casa={sesion.casa}
+            rutaDeSalida={ROUTES.logout}
+            textos={t.auth.sesionAbierta}
+          />
+        </div>
+      )}
       <div className="mt-6">
         <AltaDeTutorForm token={token} email={invitacion.email} />
       </div>

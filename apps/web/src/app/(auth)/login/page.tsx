@@ -11,7 +11,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { redirectIfSignedIn } from "@/lib/auth/session";
+import { sesionYaAbierta } from "@/lib/auth/session";
+import { SesionAbierta } from "@/components/auth/SesionAbierta";
+import { ROUTES } from "@/lib/routes";
 import { getServerDictionary } from "@/lib/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -21,7 +23,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function LoginRolePage() {
   // Con sesión REAL detrás (no una cookie muerta) se va a su portada.
-  await redirectIfSignedIn();
+  // Informa, NO expulsa: ver la cabecera de `sesionYaAbierta`.
+  const sesion = await sesionYaAbierta();
 
   const { t } = await getServerDictionary();
   const C = t.auth.chooseRole;
@@ -34,6 +37,20 @@ export default async function LoginRolePage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-ink">{C.title}</h1>
+      {/* Informa, no expulsa. Antes esto era un `redirect` y convertia el acceso
+          en una puerta de un solo sentido: con la sesion de otra cuenta viva,
+          esta pantalla te devolvia a su portada sin dejarte escribir nada. */}
+      {sesion === null ? null : (
+        <div className="mt-6">
+          <SesionAbierta
+            nombre={sesion.profile.fullName}
+            casa={sesion.casa}
+            rutaDeSalida={ROUTES.logout}
+            textos={t.auth.sesionAbierta}
+          />
+        </div>
+      )}
+
       <p className="mt-2 text-muted">{C.subtitle}</p>
 
       <ul className="mt-8 space-y-3">

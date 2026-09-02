@@ -6,7 +6,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { StudentLoginForm } from "@/components/auth/StudentLoginForm";
-import { redirectIfSignedIn } from "@/lib/auth/session";
+import { sesionYaAbierta } from "@/lib/auth/session";
+import { SesionAbierta } from "@/components/auth/SesionAbierta";
 import { listActiveSchools } from "@/lib/data/schools";
 import { leerCookieDispositivo } from "@/lib/tutor/dispositivo";
 import { alumnoDelDispositivo } from "@/lib/tutor/queries";
@@ -27,7 +28,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function StudentLoginPage() {
   // Con sesión REAL detrás (no una cookie muerta) se va a su portada.
-  await redirectIfSignedIn();
+  // Informa, NO expulsa: ver la cabecera de `sesionYaAbierta`.
+  const sesion = await sesionYaAbierta();
 
   const { t } = await getServerDictionary();
   const schools = await listActiveSchools();
@@ -57,6 +59,19 @@ export default async function StudentLoginPage() {
         <h1 className="mt-4 text-2xl font-bold text-ink">{t.auth.chooseRole.student}</h1>
       ) : null}
 
+      {/* Informa, no expulsa. Antes esto era un `redirect` y convertia el acceso
+          en una puerta de un solo sentido: con la sesion de otra cuenta viva,
+          esta pantalla te devolvia a su portada sin dejarte escribir nada. */}
+      {sesion === null ? null : (
+        <div className="mt-6">
+          <SesionAbierta
+            nombre={sesion.profile.fullName}
+            casa={sesion.casa}
+            rutaDeSalida={ROUTES.logout}
+            textos={t.auth.sesionAbierta}
+          />
+        </div>
+      )}
       <div className="mt-7">
         <StudentLoginForm schools={schools} dispositivo={dispositivo ?? undefined} />
       </div>

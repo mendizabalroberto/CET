@@ -356,6 +356,57 @@ export const staffEs: StaffDictionary = {
         generic: "No se ha podido crear la invitaci\u00f3n. Int\u00e9ntalo otra vez.",
       },
     },
+    /**
+     * Familias. Este bloque NO habla de un colegio, y ahí está la gracia: un
+     * hijo dado de alta por su tutor nace sin colegio (migración 0066), así que
+     * ninguna tabla de colegio puede llegar a listarlo.
+     */
+    families: {
+      title: "Familias",
+      body:
+        "Una familia no pertenece a ningún colegio, así que estos alumnos no salen en la tabla de ningún colegio. Aquí están todos.",
+      timezoneNote:
+        "Las horas se muestran en UTC. Una familia no tiene colegio, así que no hay zona horaria de colegio que aplicar.",
+      summary: {
+        families: "Familias con cuenta",
+        children: "Hijos dados de alta",
+        pendingInvites: "Invitaciones sin canjear",
+      },
+      guardian: "Padre, madre o tutor",
+      noEmail: "Sin correo",
+      childrenCaption: "Hijos de {guardian}",
+      child: "Hijo",
+      code: "Código",
+      yearLevel: "Curso",
+      stage: "Etapa",
+      stagePrimary: "Primaria",
+      stageSecondary: "Secundaria",
+      device: "Dispositivo",
+      deviceYes: "Activo",
+      deviceNo: "Ninguno",
+      link: "Enlace de acceso",
+      linkLive: "Vivo, sin canjear",
+      linkNone: "Ninguno",
+      lastAccess: "Último acceso",
+      never: "No ha entrado nunca",
+      noChildren: "Todavía no ha dado de alta a ningún hijo.",
+      empty: "Todavía no hay ninguna familia con cuenta.",
+      emptyBody:
+        "En cuanto un tutor canjee su invitación y cree su cuenta, aparecerá aquí con sus hijos.",
+      invites: {
+        title: "Invitaciones pendientes",
+        caption: "Tutores invitados que todavía no han creado su cuenta",
+        email: "Correo",
+        issued: "Emitida",
+        expires: "Caduca",
+        empty: "No hay ninguna invitación sin canjear.",
+        emptyBody:
+          "Las invitaciones que emitas aquí arriba esperan en esta lista hasta que el tutor cree su cuenta.",
+        /* La lectura ha fallado. Decir aquí "no hay ninguna" sería mentir. */
+        unavailable:
+          "No se ha podido leer la cola de invitaciones. Eso no significa que esté vacía.",
+      },
+    },
     students: {
       title: "Alumnos",
       caption: "Alumnos matriculados en este colegio",
