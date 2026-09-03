@@ -958,3 +958,96 @@ export function armarEntradaReparto(p: {
     ...(p.examenes !== undefined ? { examenes: p.examenes } : {}),
   };
 }
+
+/* ---------------------------------------------------------------------------
+ * El calendario del plan, para el tutor
+ * ------------------------------------------------------------------------- */
+
+export interface TareaDelCalendario {
+  readonly id: string;
+  readonly ord: number;
+  readonly code: CodigoMateria | null;
+  readonly tipo: "leccion" | "practica";
+  readonly titulo: string;
+  readonly minutos: number;
+  /** Solo para lecciones: hay un `lesson_completed` del alumno. Las prácticas no llevan marca. */
+  readonly hecha: boolean;
+}
+
+export interface DiaDelCalendario {
+  /** `YYYY-MM-DD`. */
+  readonly fecha: string;
+  readonly minutos: number;
+  readonly tareas: readonly TareaDelCalendario[];
+}
+
+/**
+ * Todas las tareas del plan activo agrupadas por día, con título de lección o
+ * nombre de skill y la marca de hecha. Se lee con la sesión del tutor
+ * (`plan_tareas_select_dueno_o_tutor`); solo las lecciones completadas
+ * (`learning_events`) salen de `service_role`, como en `leccionesCompletadas`.
+ * Vacío si no hay plan.
+ */
+export async function calendarioDelPlanActivo(
+  studentId: string,
+  planId: string,
+): Promise<DiaDelCalendario[]> {
+  const { createClient } = await import("@/lib/supabase/server");
+  const supabase = await createClient();
+  const [tareasRes, completadas] = await Promise.all([
+    supabase
+      .from("plan_tareas")
+      .select(
+        "id, fecha, ord, tipo, minutos, lesson_id, subjects(code), lessons(title), skills(name)",
+      )
+      .eq("plan_id", planId)
+      .eq("student_id", studentId)
+      .order("fecha", { ascending: true })
+      .order("ord", { ascending: true }),
+    leccionesCompletadas(studentId),
+  ]);
+  if (tareasRes.error !== null || tareasRes.data === null) return [];
+
+  const primero = (v: unknown): Fila | null => {
+    if (Array.isArray(v)) return esFila(v[0]) ? v[0] : null;
+    return esFila(v) ? v : null;
+  };
+
+  const porFecha = new Map<string, TareaDelCalendario[]>();
+  for (const bruta of tareasRes.data) {
+    if (!esFila(bruta)) continue;
+    const id = texto(bruta["id"]);
+    const fecha = texto(bruta["fecha"]);
+    const ord = entero(bruta["ord"]);
+    const tipo = bruta["tipo"];
+    const minutos = numero(bruta["minutos"]) ?? 0;
+    if (id === null || fecha === null || ord === null) continue;
+    if (tipo !== "leccion" && tipo !== "practica") continue;
+    const codeBruto = primero(bruta["subjects"])?.["code"];
+    const titulo =
+      tipo === "leccion"
+        ? tituloDesdeI18n(primero(bruta["lessons"])?.["title"])
+        : tituloDesdeI18n(primero(bruta["skills"])?.["name"]);
+    const lessonId = texto(bruta["lesson_id"]);
+    const tarea: TareaDelCalendario = {
+      id,
+      ord,
+      code: esCodigoMateria(codeBruto) ? codeBruto : null,
+      tipo,
+      titulo,
+      minutos,
+      hecha: tipo === "leccion" && lessonId !== null && completadas.has(lessonId),
+    };
+    const lista = porFecha.get(fecha.slice(0, 10)) ?? [];
+    lista.push(tarea);
+    porFecha.set(fecha.slice(0, 10), lista);
+  }
+
+  return [...porFecha.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([fecha, tareas]) => ({
+      fecha,
+      minutos: tareas.reduce((n, t) => n + t.minutos, 0),
+      tareas: [...tareas].sort((a, b) => a.ord - b.ord),
+    }));
+}

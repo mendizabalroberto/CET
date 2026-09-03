@@ -11,7 +11,12 @@ import {
   regenerarPlan,
   type PlanState,
 } from "@/lib/plan/acciones";
-import type { BoletinResumen, EventoProximo, PlanResumen } from "@/lib/plan/consultas";
+import type {
+  BoletinResumen,
+  DiaDelCalendario,
+  EventoProximo,
+  PlanResumen,
+} from "@/lib/plan/consultas";
 import {
   anadirExamen,
   borrarExamen,
@@ -20,6 +25,9 @@ import {
 } from "@/lib/plan/examenes";
 import { MATERIAS_CON_CONTENIDO } from "@/lib/plan/tipos";
 
+import { fechaLegible } from "@/lib/plan/fecha-legible";
+
+import { CalendarioSemanal } from "./CalendarioSemanal";
 import { RobotLector } from "./RobotLector";
 
 type TechoVisible = {
@@ -49,6 +57,10 @@ interface Props {
   readonly eventos: readonly EventoProximo[];
   readonly yearLevel: number | null;
   readonly examenes: readonly ExamenResumen[];
+  /** Tareas del plan activo por día; vacío sin plan. */
+  readonly calendario: readonly DiaDelCalendario[];
+  /** `YYYY-MM-DD` en la zona del plan, del servidor. */
+  readonly hoy: string;
 }
 
 const ESTADO_INICIAL = { ok: false } as const;
@@ -74,23 +86,7 @@ function parsearTechos(valores: Valores | undefined): TechoVisible[] {
   }
 }
 
-/**
- * Una fecha civil («2026-08-24», sin hora) se pinta tal cual es, en cualquier
- * zona horaria. `new Date("2026-08-24")` es la medianoche UTC, y en La Paz
- * (UTC-4) `toLocaleDateString` la enseñaba como el 23: el plan «empezaba» un
- * día antes y el feriado del 24 caía en 23. Medido en `/dev/plan-preview` el
- * 02/09/2026. Un instante con hora (`createdAt`, `confirmadoAt`) sí se
- * convierte a la hora local, que es lo que se espera de un instante.
- */
-export function fechaLegible(iso: string, locale: string): string {
-  const fecha = new Date(iso);
-  if (Number.isNaN(fecha.getTime())) return iso;
-  const idioma = locale === "es" ? "es-ES" : "en-GB";
-  const esFechaCivil = /^\d{4}-\d{2}-\d{2}$/.test(iso);
-  return esFechaCivil
-    ? fecha.toLocaleDateString(idioma, { timeZone: "UTC" })
-    : fecha.toLocaleDateString(idioma);
-}
+export { fechaLegible };
 
 export function PlanDeEstudio({
   studentId,
@@ -101,6 +97,8 @@ export function PlanDeEstudio({
   eventos,
   yearLevel,
   examenes,
+  calendario,
+  hoy,
 }: Props) {
   const { t, fmt, locale } = useI18n();
   const P = t.tutor.child.plan;
@@ -597,6 +595,29 @@ export function PlanDeEstudio({
                 ))}
               </ul>
             </div>
+          ) : null}
+          {plan !== null && calendario.length > 0 ? (
+            <CalendarioSemanal
+              dias={calendario}
+              partes={plan.partes}
+              hoy={hoy}
+              locale={locale}
+              nombrePorCode={nombrePorCode}
+              fmt={fmt}
+              textos={{
+                title: P.weekTitle,
+                previous: P.weekPrevious,
+                next: P.weekNext,
+                free: P.weekFree,
+                outside: P.weekOutside,
+                lesson: P.weekLesson,
+                practice: P.weekPractice,
+                minutes: P.activeMinutesShort,
+                studied: P.weekStudied,
+                done: P.weekDone,
+                weekOf: P.weekOf,
+              }}
+            />
           ) : null}
           <div className="mt-4">
             <h3 className="text-ink font-semibold">{P.reportsTitle}</h3>

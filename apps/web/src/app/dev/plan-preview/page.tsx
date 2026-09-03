@@ -22,6 +22,7 @@ import { getServerDictionary } from "@/lib/i18n/server";
 import { LocaleProvider } from "@/lib/i18n/provider";
 import type { BoletinResumen, EventoProximo, PlanResumen } from "@/lib/plan/consultas";
 import type { ExamenResumen } from "@/lib/plan/examenes";
+import type { DiaDelCalendario } from "@/lib/plan/consultas";
 
 const STUDENT_ID = "00000000-0000-4000-8000-000000000001";
 
@@ -117,6 +118,40 @@ const examenes: ExamenResumen[] = [
   { id: "x2", fecha: "2026-10-14", subjectId: null, code: null, titulo: "Examen", origen: "documento" },
 ];
 
+const calendario: DiaDelCalendario[] = [
+  {
+    fecha: "2026-08-31",
+    minutos: 40,
+    tareas: [
+      { id: "t1", ord: 0, code: "math", tipo: "leccion", titulo: "Fracciones equivalentes", minutos: 20, hecha: true },
+      { id: "t2", ord: 1, code: "english", tipo: "practica", titulo: "Present simple", minutos: 20, hecha: false },
+    ],
+  },
+  {
+    fecha: "2026-09-01",
+    minutos: 40,
+    tareas: [
+      { id: "t3", ord: 0, code: "science", tipo: "leccion", titulo: "Circuitos eléctricos", minutos: 25, hecha: false },
+      { id: "t4", ord: 1, code: "math", tipo: "practica", titulo: "Sumar fracciones", minutos: 15, hecha: false },
+    ],
+  },
+  {
+    fecha: "2026-09-02",
+    minutos: 40,
+    tareas: [
+      { id: "t5", ord: 0, code: "math", tipo: "leccion", titulo: "Sumar y restar fracciones", minutos: 20, hecha: false },
+      { id: "t6", ord: 1, code: "english", tipo: "leccion", titulo: "Indefinite pronouns", minutos: 20, hecha: false },
+    ],
+  },
+  {
+    fecha: "2026-09-04",
+    minutos: 40,
+    tareas: [
+      { id: "t7", ord: 0, code: "science", tipo: "practica", titulo: "Circuitos", minutos: 40, hecha: false },
+    ],
+  },
+];
+
 interface Caso {
   readonly titulo: string;
   readonly nota: string;
@@ -200,6 +235,8 @@ export default async function PlanPreviewPage() {
               eventos={caso.eventos}
               yearLevel={6}
               examenes={caso.plan !== null ? examenes : []}
+              calendario={caso.plan !== null ? calendario : []}
+              hoy="2026-09-02"
             />
           </section>
         ))}

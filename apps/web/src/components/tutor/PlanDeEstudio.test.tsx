@@ -102,6 +102,8 @@ function renderizar(props: Partial<ComponentProps<typeof PlanDeEstudio>> = {}) {
       eventos={[]}
       yearLevel={null}
         examenes={[]}
+        calendario={[]}
+        hoy="2026-09-02"
       {...props}
     />,
   );
@@ -223,6 +225,8 @@ describe("PlanDeEstudio", () => {
         eventos={[]}
         yearLevel={null}
         examenes={[]}
+        calendario={[]}
+        hoy="2026-09-02"
       />,
     );
     expect(screen.getByText(/No marked dates in the next two months/)).toBeTruthy();

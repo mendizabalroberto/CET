@@ -11,7 +11,12 @@ import { notFound } from "next/navigation";
 
 import { PlanDeEstudio } from "@/components/tutor/PlanDeEstudio";
 import { getServerDictionary } from "@/lib/i18n/server";
-import { boletinesDeHijo, eventosProximos, planActivoDeHijo } from "@/lib/plan/consultas";
+import {
+  boletinesDeHijo,
+  calendarioDelPlanActivo,
+  eventosProximos,
+  planActivoDeHijo,
+} from "@/lib/plan/consultas";
 import { examenesDeAlumno } from "@/lib/plan/examenes";
 import { hoyEnZona } from "@/lib/plan/fecha";
 import { createClient } from "@/lib/supabase/server";
@@ -71,6 +76,7 @@ export default async function PlanDeHijoPage({ params }: PageProps) {
     yearLevelDeHijo(hijo.id),
     examenesDeAlumno(hijo.id),
   ]);
+  const calendario = plan === null ? [] : await calendarioDelPlanActivo(hijo.id, plan.id);
 
   return (
     <PlanDeEstudio
@@ -82,6 +88,8 @@ export default async function PlanDeHijoPage({ params }: PageProps) {
       eventos={eventos}
       yearLevel={yearLevel}
       examenes={examenes}
+      calendario={calendario}
+      hoy={hoy}
     />
   );
 }
